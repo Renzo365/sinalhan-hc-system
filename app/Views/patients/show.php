@@ -1,4 +1,12 @@
 <?php
+/**
+ * @var array $patient Patient demographic record
+ * @var array $vitals Vital signs history
+ * @var array $consultations Consultation records
+ * @var array $appointments Appointment history
+ * @var array $queueHistory Daily queue history logs
+ */
+
 $title = 'Patient Profile';
 $breadcrumbs = [
     'Patients' => '/patients',
