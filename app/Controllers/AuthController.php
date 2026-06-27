@@ -74,6 +74,7 @@ class AuthController extends Controller {
                 if ($_SESSION['must_change_password'] === 1) {
                     $this->redirect('/change-password');
                 } else {
+                    $_SESSION['login_welcome'] = true;
                     $this->redirect('/dashboard');
                 }
             } else {

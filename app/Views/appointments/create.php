@@ -21,7 +21,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <p class="text-secondary small mb-0">Select a patient, date, and purpose to book a health center checkup.</p>
     </div>
     <a href="<?= isset($patient) && $patient ? url('/patients/' . $patient['id']) : url('/appointments') ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Cancel
+        <i class="bi bi-arrow-left me-1"></i> Back to <?= isset($patient) && $patient ? 'Profile' : 'Appointments List' ?>
     </a>
 </div>
 

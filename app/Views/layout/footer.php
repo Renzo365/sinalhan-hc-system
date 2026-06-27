@@ -29,6 +29,19 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
+    // Show SweetAlert login welcome notification
+    <?php if (isset($_SESSION['login_welcome'])): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Welcome Back!',
+            text: 'You have successfully logged in as ' + <?= json_encode($_SESSION['user_fullname'] ?? $_SESSION['username'] ?? 'User') ?> + '.',
+            confirmButtonColor: '#0D7377',
+            timer: 3500,
+            timerProgressBar: true
+        });
+        <?php unset($_SESSION['login_welcome']); ?>
+    <?php endif; ?>
+
     // Show SweetAlert error notifications
     <?php if (isset($_SESSION['error_message'])): ?>
         Swal.fire({

@@ -7,12 +7,14 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/layout/header.php';
 ?>
 
-<div class="mb-4">
-    <a href="<?= url('/users') ?>" class="btn btn-outline-secondary btn-sm px-3 mb-3">
-        <i class="bi bi-arrow-left me-1"></i> Back to Accounts list
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h3 mb-1 fw-bold text-primary-dark">Edit User Account: <?= h($user['username']) ?></h2>
+        <p class="text-secondary small mb-0">Update demographics, assign role privileges, or modify account operational statuses.</p>
+    </div>
+    <a href="<?= url('/users') ?>" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Users
     </a>
-    <h2 class="h3 mb-1 fw-bold text-primary-dark">Edit User Account: <?= h($user['username']) ?></h2>
-    <p class="text-secondary small">Update demographics, assign role privileges, or modify account operational statuses.</p>
 </div>
 
 <div class="card card-premium shadow-sm">

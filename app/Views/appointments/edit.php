@@ -13,7 +13,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <p class="text-secondary small mb-0">Modify appointment timing, change booking status, or append clinical notes.</p>
     </div>
     <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Cancel
+        <i class="bi bi-arrow-left me-1"></i> Back to Appointments List
     </a>
 </div>
 

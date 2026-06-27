@@ -29,7 +29,7 @@ require __DIR__ . '/layout/header.php';
         <div class="card card-premium hover-action metric-card">
             <div>
                 <div class="metric-value"><?= number_format($stats['today_appointments']) ?></div>
-                <div class="metric-label mt-1">Today's Appts</div>
+                <div class="metric-label mt-1">Today's Appointments</div>
             </div>
             <div class="metric-icon-box accent">
                 <i class="bi bi-calendar2-check-fill"></i>

@@ -33,7 +33,7 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Date From -->
-            <div class="col-12 col-sm-6 col-md-3">
+            <div class="col-12 col-sm-6 col-md-2">
                 <label for="date_from" class="form-label fw-semibold text-secondary small">Scheduled Date From</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar3"></i></span>
@@ -47,7 +47,7 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Date To -->
-            <div class="col-12 col-sm-6 col-md-3">
+            <div class="col-12 col-sm-6 col-md-2">
                 <label for="date_to" class="form-label fw-semibold text-secondary small">Scheduled Date To</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar3"></i></span>
@@ -61,7 +61,7 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Status Filter -->
-            <div class="col-12 col-sm-6 col-md-2">
+            <div class="col-12 col-sm-6 col-md-3">
                 <label for="status" class="form-label fw-semibold text-secondary small">Status</label>
                 <select name="status" id="status" class="form-select bg-light">
                     <option value="">All Statuses</option>
@@ -73,9 +73,9 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Action Buttons -->
-            <div class="col-12 col-sm-6 col-md-1 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1" title="Apply Filters">
-                    <i class="bi bi-funnel"></i>
+            <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
                 </button>
                 <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary" title="Clear Filters">
                     <i class="bi bi-arrow-counterclockwise"></i>

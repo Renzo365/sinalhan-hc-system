@@ -14,7 +14,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <p class="text-secondary small mb-0">Record SOAP checkup notes, link vital signs, and assign consulting clinicians.</p>
     </div>
     <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Cancel
+        <i class="bi bi-arrow-left me-1"></i> Back to Profile
     </a>
 </div>
 

@@ -13,7 +13,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <p class="text-secondary small mb-0">Enter demographic details to create a new patient record.</p>
     </div>
     <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Cancel
+        <i class="bi bi-arrow-left me-1"></i> Back to Patients List
     </a>
 </div>
 

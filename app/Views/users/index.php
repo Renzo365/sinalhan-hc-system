@@ -23,7 +23,7 @@ unset($_SESSION['old_input']);
 <div class="card card-premium mb-4">
     <div class="card-body p-4 bg-white">
         <form action="<?= url('/users') ?>" method="GET" class="row g-3 align-items-end">
-            <div class="col-12 col-md-8">
+            <div class="col-12 col-md-6">
                 <label for="search" class="form-label text-secondary small fw-semibold">Search User</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
@@ -31,7 +31,7 @@ unset($_SESSION['old_input']);
                 </div>
             </div>
             
-            <div class="col-12 col-sm-8 col-md-3">
+            <div class="col-12 col-sm-6 col-md-4">
                 <label for="role" class="form-label text-secondary small fw-semibold">Filter by Role</label>
                 <select name="role" id="role" class="form-select bg-light">
                     <option value="">-- All Roles --</option>
@@ -40,10 +40,13 @@ unset($_SESSION['old_input']);
                 </select>
             </div>
             
-            <div class="col-12 col-sm-4 col-md-1 d-grid">
-                <button type="submit" class="btn btn-primary" title="Apply Filters">
-                    <i class="bi bi-funnel"></i>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
                 </button>
+                <a href="<?= url('/users') ?>" class="btn btn-outline-secondary" title="Clear Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
             </div>
         </form>
     </div>

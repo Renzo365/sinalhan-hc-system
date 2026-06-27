@@ -62,7 +62,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <!-- Submit Button -->
                     <div class="d-grid mb-2">
                         <button type="submit" class="btn btn-primary py-2 fw-semibold shadow-sm">
-                            Sign In <i class="bi bi-box-arrow-in-right ms-1"></i>
+                            Log In <i class="bi bi-box-arrow-in-right ms-1"></i>
                         </button>
                     </div>
                 </form>

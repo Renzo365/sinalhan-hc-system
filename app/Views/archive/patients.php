@@ -18,7 +18,7 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="card-body p-4 bg-white">
         <!-- Search and Filter Form -->
         <form action="<?= url('/archive/patients') ?>" method="GET" class="row g-3 align-items-end">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-4">
                 <label for="search" class="form-label text-secondary small fw-semibold">Search Patient</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
@@ -36,10 +36,13 @@ require dirname(__DIR__) . '/layout/header.php';
                 <input type="date" name="date_to" id="date_to" class="form-control bg-light" value="<?= h($filters['date_to']) ?>">
             </div>
             
-            <div class="col-12 col-md-1 d-grid">
-                <button type="submit" class="btn btn-primary" title="Apply Filters">
-                    <i class="bi bi-funnel"></i>
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
                 </button>
+                <a href="<?= url('/archive/patients') ?>" class="btn btn-outline-secondary" title="Clear Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
             </div>
         </form>
     </div>

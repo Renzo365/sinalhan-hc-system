@@ -48,12 +48,12 @@ require dirname(__DIR__) . '/layout/header.php';
                 <input type="date" name="date_to" id="date_to" class="form-control bg-light" value="<?= h($filters['date_to']) ?>">
             </div>
             
-            <div class="col-12 col-md-2 d-grid gap-2 d-md-flex">
-                <button type="submit" class="btn btn-primary w-100" title="Apply Filters">
-                    <i class="bi bi-funnel me-1"></i> Filter
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
                 </button>
-                <a href="<?= url('/audit-logs') ?>" class="btn btn-outline-secondary" title="Reset Filters">
-                    <i class="bi bi-x-lg"></i>
+                <a href="<?= url('/audit-logs') ?>" class="btn btn-outline-secondary" title="Clear Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
             </div>
         </form>
@@ -63,15 +63,15 @@ require dirname(__DIR__) . '/layout/header.php';
 <div class="card card-premium">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-center small" id="auditTable">
+            <table class="table table-hover align-middle mb-0 text-center small" id="auditTable" style="table-layout: fixed; width: 100%;">
                 <thead class="table-light">
                     <tr>
-                        <th class="text-start ps-4">Timestamp</th>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>Module</th>
-                        <th>IP Address</th>
-                        <th class="pe-4 text-start">Operation Details</th>
+                        <th class="text-start ps-4" style="width: 18%;">Timestamp</th>
+                        <th style="width: 15%;">User</th>
+                        <th style="width: 18%;">Action</th>
+                        <th style="width: 12%;">Module</th>
+                        <th style="width: 12%;">IP Address</th>
+                        <th class="pe-4 text-start" style="width: 25%;">Operation Details</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,7 +104,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <td><span class="badge <?= $badgeClass ?>"><?= h($log['action']) ?></span></td>
                                 <td><span class="badge bg-light text-dark border"><?= h($log['module']) ?></span></td>
                                 <td><code class="text-primary small"><?= h($log['ip_address']) ?></code></td>
-                                <td class="pe-4 text-start text-secondary" style="max-width: 300px; white-space: pre-wrap; font-size: 0.8rem;"><?= h($log['details']) ?></td>
+                                <td class="pe-4 text-start text-secondary" style="white-space: pre-wrap; word-break: break-word; font-size: 0.8rem;"><?= h($log['details']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
