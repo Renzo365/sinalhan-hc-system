@@ -7,6 +7,16 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/layout/header.php';
 ?>
 
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="h3 mb-1 fw-bold text-primary-dark">Patient Profile</h2>
+        <p class="text-secondary small mb-0">Detailed clinical record folder, demographics database, and medical checkup history.</p>
+    </div>
+    <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Directory
+    </a>
+</div>
+
 <!-- Header Card -->
 <div class="card card-premium mb-4 bg-white">
     <div class="card-body p-4">
