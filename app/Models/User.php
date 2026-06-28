@@ -169,21 +169,46 @@ class User extends Model {
      * @return int New count of failed attempts
      */
     public function incrementFailedAttempts($username) {
-        $stmt = $this->db->prepare("UPDATE users SET failed_attempts = failed_attempts + 1 WHERE username = :username AND deleted_at IS NULL");
-        $stmt->execute(['username' => $username]);
+        $resetWindow = 900; // 15 minutes in seconds
 
-        $stmt = $this->db->prepare("SELECT failed_attempts, id, status FROM users WHERE username = :username AND deleted_at IS NULL LIMIT 1");
-        $stmt->execute(['username' => $username]);
+        $stmt = $this->db->prepare("
+            SELECT id, failed_attempts, status,
+                   (last_failed_login_at IS NULL OR TIMESTAMPDIFF(SECOND, last_failed_login_at, NOW()) > :reset_window) as window_expired 
+            FROM users 
+            WHERE username = :username AND deleted_at IS NULL 
+            LIMIT 1
+        ");
+        $stmt->execute(['username' => $username, 'reset_window' => $resetWindow]);
         $user = $stmt->fetch();
 
         if ($user) {
-            // Auto suspend if attempts >= 5
-            if ($user['failed_attempts'] >= 5 && $user['status'] !== 'suspended') {
-                $suspendStmt = $this->db->prepare("UPDATE users SET status = 'suspended' WHERE id = :id");
-                $suspendStmt->execute(['id' => $user['id']]);
+            $id = $user['id'];
+            $status = $user['status'];
+            
+            // If the window has expired and they are not suspended, reset current attempts count to 0
+            $currentAttempts = ($user['window_expired'] && $status !== 'suspended') ? 0 : (int)$user['failed_attempts'];
+            $newAttempts = $currentAttempts + 1;
+
+            if ($newAttempts >= 5 && $status !== 'suspended') {
+                $updateStmt = $this->db->prepare("
+                    UPDATE users 
+                    SET failed_attempts = :attempts, 
+                        last_failed_login_at = NOW(), 
+                        status = 'suspended' 
+                    WHERE id = :id
+                ");
+                $updateStmt->execute(['attempts' => $newAttempts, 'id' => $id]);
                 return 5;
+            } else {
+                $updateStmt = $this->db->prepare("
+                    UPDATE users 
+                    SET failed_attempts = :attempts, 
+                        last_failed_login_at = NOW() 
+                    WHERE id = :id
+                ");
+                $updateStmt->execute(['attempts' => $newAttempts, 'id' => $id]);
+                return $newAttempts;
             }
-            return (int)$user['failed_attempts'];
         }
         return 0;
     }
@@ -195,7 +220,7 @@ class User extends Model {
      * @return bool
      */
     public function resetFailedAttempts($id) {
-        $stmt = $this->db->prepare("UPDATE users SET failed_attempts = 0 WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE users SET failed_attempts = 0, last_failed_login_at = NULL WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
 
@@ -206,7 +231,7 @@ class User extends Model {
      * @return bool
      */
     public function updateLoginTimestamp($id) {
-        $stmt = $this->db->prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, failed_attempts = 0 WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, failed_attempts = 0, last_failed_login_at = NULL WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
 

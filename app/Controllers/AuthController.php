@@ -17,7 +17,17 @@ class AuthController extends Controller {
      * Show the login page.
      */
     public function showLogin() {
-        $this->view('auth/login');
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $error = $_SESSION['login_error'] ?? null;
+        $username = $_SESSION['login_username'] ?? '';
+        
+        // Clear flash values so they don't persist on subsequent GET requests/refreshes
+        unset($_SESSION['login_error']);
+        unset($_SESSION['login_username']);
+
+        $this->view('auth/login', ['error' => $error, 'username' => $username]);
     }
 
     /**
@@ -28,8 +38,8 @@ class AuthController extends Controller {
         $password = $_POST['password'] ?? '';
 
         if (empty($username) || empty($password)) {
-            $error = 'Username and password are required.';
-            $this->view('auth/login', ['error' => $error, 'username' => $username]);
+            $this->setLoginError('Username and password are required.', $username);
+            $this->redirect('/login');
             return;
         }
 
@@ -39,15 +49,15 @@ class AuthController extends Controller {
             // Check status first
             if ($user['status'] === 'suspended') {
                 AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: suspended account ({$username})");
-                $error = 'This account has been suspended due to security lockout. Please contact an administrator.';
-                $this->view('auth/login', ['error' => $error, 'username' => $username]);
+                $this->setLoginError('This account has been suspended due to security lockout. Please contact an administrator.', $username);
+                $this->redirect('/login');
                 return;
             }
 
             if ($user['status'] === 'inactive') {
                 AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$username})");
-                $error = 'This account is inactive. Please contact an administrator.';
-                $this->view('auth/login', ['error' => $error, 'username' => $username]);
+                $this->setLoginError('This account is inactive. Please contact an administrator.', $username);
+                $this->redirect('/login');
                 return;
             }
 
@@ -89,15 +99,27 @@ class AuthController extends Controller {
                     $error = "Invalid username or password. (Failed attempts: {$attempts}/5. {$remaining} attempt(s) remaining before suspension)";
                 }
                 
-                $this->view('auth/login', ['error' => $error, 'username' => $username]);
+                $this->setLoginError($error, $username);
+                $this->redirect('/login');
             }
         } else {
             // Log failed login
             AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (non-existent username) for: " . $username);
             
-            $error = 'Invalid username or password.';
-            $this->view('auth/login', ['error' => $error, 'username' => $username]);
+            $this->setLoginError('Invalid username or password.', $username);
+            $this->redirect('/login');
         }
+    }
+
+    /**
+     * Helper to set login flash session variables.
+     */
+    private function setLoginError($error, $username) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION['login_error'] = $error;
+        $_SESSION['login_username'] = $username;
     }
 
     /**
