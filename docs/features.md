@@ -16,7 +16,15 @@ This value is computed atomically at the model level to prevent sequence gaps or
 ### 1.2 Duplicate Prevention
 When registering a new patient, an AJAX listener monitors first name and last name input fields on loss of focus (`blur`). If an exact matching active patient is found, a warning banner appears at the top of the form with a direct link to the matching patient's profile folder to prevent duplicate registrations.
 
-### 1.3 Active Directory Filtering
+### 1.3 Dual-Layer Input Validation & Formatting
+The Patient module enforces comprehensive client-side and server-side validation rules:
+* **Name Protection**: Rejects numeric digits and special symbols in name fields (`/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`). JavaScript blocks numeric keypresses in real-time.
+* **Standardized Philippine Mobile Format**: Enforces 11-digit mobile numbers starting with `09` (`/^09\d{9}$/`). Non-numeric input is stripped automatically on keypress.
+* **Date of Birth Boundaries**: Restricts DOB between `1900-01-01` and current date (`Today`) on both Flatpickr and PHP backend (`DateTime` validation).
+* **PhilHealth Auto-Formatting Mask**: Dynamically formats typed numbers into `XX-XXXXXXXXX-X` (12 digits with hyphens) and validates format uniqueness.
+* **Extended Demographics**: Captures ABO **Blood Type** (`A+`, `A-`, `B+`, `B-`, `AB+`, `AB-`, `O+`, `O-`, `Unknown`), **Occupation / Employment Status**, and **Emergency Contact Relationship** (e.g., *Spouse, Mother, Guardian*).
+
+### 1.4 Active Directory Filtering
 The main directory uses server-side search and filters:
 * **Text Search**: Matches against patient number, first/last/middle names, phone number, and barangay.
 * **Demographics Filter**: Narrow list by Sex (Male/Female), Barangay, or Age Group (Child `0-12`, Teen `13-19`, Adult `20-59`, Senior `60+`).
@@ -109,3 +117,18 @@ Extracts operational metrics by date range:
 
 ### 6.3 Audit Trails
 An admin-only dashboard indexes chronological logs of important data modifications (logins, registrations, database backups, patient archiving, password resets) showing the timestamp, IP address, user, and detailed action summary.
+
+---
+
+## 7. User Accounts & Access Control
+
+Admin-only management panel to handle health center staff access credentials:
+* **Dedicated User Registration Page**: Dedicated, sectioned registration page at `/users/create` for creating new accounts with credentials, demographics, Employee ID / PRC License numbers, and Department unit assignments.
+* **Role Hierarchy & Abuse Prevention**:
+  * **Main Administrator (User ID 1)** holds master permission over all administrator and staff accounts.
+  * **Co-Administrators (User ID > 1 with role `admin`)** can manage `staff` accounts, but are strictly blocked from promoting staff to `admin`, creating admin accounts (overridden to `staff`), or editing peer administrators.
+* **Status Lifecycle & Deactivation (No Account Deletion)**: Account deletion is permanently disabled to preserve audit and medical logs. Account status is managed via dedicated table action buttons (**Activate** `bi-person-check-fill` and **Deactivate** `bi-person-x-fill`).
+* **15-Minute Temporary Lockout Safeguard**: After 5 consecutive failed login attempts, an account is placed in a **15-minute temporary cooldown window**. Account status remains `active`, but authentication is blocked until the 15 minutes expire (displaying exact remaining time to the user).
+* **Admin Clear Lockout Button**: Administrators can instantly override a staff member's 15-minute lockout timer by clicking the **Clear Lockout** button (`bi-unlock-fill`) on the User Accounts directory table, writing a `USER_LOCKOUT_RESET` audit log.
+* **Security Password Reset**: Critical user resets require the logged-in administrator to enter their current password to authorize a custom temporary password. Validates that the new password is not identical to the user's existing password.
+* **CLI Account Unlocker**: Console utility (`php scripts/unlock_user.php [username]`) to clear lockouts and reset failed attempts directly from the server CLI.

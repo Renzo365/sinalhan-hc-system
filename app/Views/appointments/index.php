@@ -64,7 +64,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="col-12 col-sm-6 col-md-3">
                 <label for="status" class="form-label fw-semibold text-secondary small">Status</label>
                 <select name="status" id="status" class="form-select bg-light">
-                    <option value="">All Statuses</option>
+                    <option value="">-- All Statuses --</option>
                     <option value="Scheduled" <?= $filters['status'] === 'Scheduled' ? 'selected' : '' ?>>Scheduled</option>
                     <option value="Completed" <?= $filters['status'] === 'Completed' ? 'selected' : '' ?>>Completed</option>
                     <option value="Cancelled" <?= $filters['status'] === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>

@@ -83,6 +83,14 @@ require dirname(__DIR__) . '/layout/header.php';
                         <span class="fw-semibold"><?= h($patient['civil_status']) ?></span>
                     </li>
                     <li class="mb-3 d-flex justify-content-between">
+                        <span class="text-muted">Blood Type:</span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold"><?= h($patient['blood_type'] ?? 'Unknown') ?></span>
+                    </li>
+                    <li class="mb-3 d-flex justify-content-between">
+                        <span class="text-muted">Occupation:</span>
+                        <span class="fw-semibold"><?= h($patient['occupation'] ?? 'Unspecified') ?></span>
+                    </li>
+                    <li class="mb-3 d-flex justify-content-between">
                         <span class="text-muted">PhilHealth ID:</span>
                         <span class="fw-semibold"><?= h($patient['philhealth_no'] ?? 'Not Registered') ?></span>
                     </li>
@@ -96,7 +104,12 @@ require dirname(__DIR__) . '/layout/header.php';
                     <li class="mb-2">
                         <span class="text-muted d-block mb-1 fw-bold text-uppercase tracking-wider" style="font-size: 0.7rem;">Emergency Contact</span>
                         <?php if (!empty($patient['emergency_name'])): ?>
-                            <span class="fw-semibold d-block text-dark mb-1"><i class="bi bi-person me-1"></i><?= h($patient['emergency_name']) ?></span>
+                            <span class="fw-semibold d-block text-dark mb-1">
+                                <i class="bi bi-person me-1"></i><?= h($patient['emergency_name']) ?>
+                                <?php if (!empty($patient['emergency_relationship'])): ?>
+                                    <span class="text-muted small ms-1">(<?= h($patient['emergency_relationship']) ?>)</span>
+                                <?php endif; ?>
+                            </span>
                             <?php if (!empty($patient['emergency_no'])): ?>
                                 <span class="fw-semibold d-block text-secondary"><i class="bi bi-telephone me-1"></i><?= h($patient['emergency_no']) ?></span>
                             <?php endif; ?>

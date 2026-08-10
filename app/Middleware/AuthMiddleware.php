@@ -16,25 +16,45 @@ class AuthMiddleware {
             exit;
         }
 
-        // Enforce password change policy if flagged
-        if (isset($_SESSION['must_change_password']) && $_SESSION['must_change_password'] == 1) {
+        // Server-Side Inactivity Timeout (15 minutes = 900 seconds)
+        $idleTimeout = 900;
+        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $idleTimeout) {
+            $username = $_SESSION['username'] ?? 'User';
+
+            // Log session timeout in audit logs
+            \App\Models\AuditLog::log(
+                'SESSION_TIMEOUT',
+                'Auth',
+                "Session expired due to inactivity for user: {$username}"
+            );
+
+            // Destroy session
+            $_SESSION = [];
+            if (ini_get("session.use_cookies")) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000,
+                    $params["path"], $params["domain"],
+                    $params["secure"], $params["httponly"]
+                );
+            }
+            session_destroy();
+
+            // Flash timeout notice in a new clean session
+            session_start();
+            $_SESSION['timeout_message'] = "You've been logged out due to inactivity. Please sign in again.";
+
             $scriptName = $_SERVER['SCRIPT_NAME'];
             $basePath = str_replace('/index.php', '', $scriptName);
-            
-            // Determine current relative path to allow change-password and logout
-            $requestUri = explode('?', $_SERVER['REQUEST_URI'])[0];
-            $uri = '/';
-            if (strpos($requestUri, $basePath) === 0) {
-                $uri = substr($requestUri, strlen($basePath));
-            }
-            $uri = explode('?', $uri)[0];
-            if ($uri !== '/change-password' && $uri !== '/logout') {
-                header("Location: " . rtrim($basePath, '/') . '/change-password');
-                exit;
-            }
+            $redirectUrl = rtrim($basePath, '/') . '/login?timeout=1';
+            header("Location: {$redirectUrl}");
+            exit;
         }
+
+        // Update last activity timestamp
+        $_SESSION['last_activity'] = time();
 
         return true;
     }
 }
+
 

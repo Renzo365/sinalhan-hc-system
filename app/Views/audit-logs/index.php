@@ -18,11 +18,23 @@ require dirname(__DIR__) . '/layout/header.php';
                 <label for="user_id" class="form-label text-secondary small fw-semibold">Performed By</label>
                 <select name="user_id" id="user_id" class="form-select bg-light">
                     <option value="">-- All Users --</option>
-                    <?php foreach ($users as $u): ?>
+                    <?php foreach ($users as $u): 
+                        $uRoleLabel = ($u['id'] == 1) ? 'Main Admin' : ($u['role'] === 'admin' ? 'Co-Admin' : 'Staff');
+                    ?>
                         <option value="<?= $u['id'] ?>" <?= (isset($filters['user_id']) && $filters['user_id'] == $u['id']) ? 'selected' : '' ?>>
-                            <?= h($u['last_name']) ?>, <?= h($u['first_name']) ?> (<?= h($u['username']) ?>)
+                            <?= h($u['last_name']) ?>, <?= h($u['first_name']) ?> (<?= h($u['username']) ?>) - <?= $uRoleLabel ?>
                         </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-2">
+                <label for="role" class="form-label text-secondary small fw-semibold">User Role</label>
+                <select name="role" id="role" class="form-select bg-light">
+                    <option value="">-- All Roles --</option>
+                    <option value="main_admin" <?= (isset($filters['role']) && $filters['role'] === 'main_admin') ? 'selected' : '' ?>>Main Admin</option>
+                    <option value="co_admin" <?= (isset($filters['role']) && $filters['role'] === 'co_admin') ? 'selected' : '' ?>>Co-Admin</option>
+                    <option value="staff" <?= (isset($filters['role']) && $filters['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
                 </select>
             </div>
             
@@ -48,12 +60,12 @@ require dirname(__DIR__) . '/layout/header.php';
                 <input type="date" name="date_to" id="date_to" class="form-control bg-light" value="<?= h($filters['date_to']) ?>">
             </div>
             
-            <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-funnel"></i> Filter
+            <div class="col-12 col-md-12 d-flex justify-content-end gap-2 mt-3">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-funnel me-1"></i> Filter Logs
                 </button>
-                <a href="<?= url('/audit-logs') ?>" class="btn btn-outline-secondary" title="Clear Filters">
-                    <i class="bi bi-arrow-counterclockwise"></i>
+                <a href="<?= url('/audit-logs') ?>" class="btn btn-outline-secondary px-3" title="Clear Filters">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Clear
                 </a>
             </div>
         </form>
@@ -94,7 +106,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             }
                         ?>
                             <tr>
-                                <td class="text-start ps-4 fw-medium text-dark"><?= date('Y-m-d h:i:A', strtotime($log['created_at'])) ?></td>
+                                <td class="text-start ps-4 fw-medium text-dark" data-order="<?= h($log['created_at']) ?>"><?= date('Y-m-d h:i A', strtotime($log['created_at'])) ?></td>
                                 <td>
                                     <span class="fw-bold"><?= h($log['username'] ?? 'System') ?></span>
                                     <?php if ($log['user_fullname']): ?>

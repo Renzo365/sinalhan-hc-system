@@ -70,10 +70,27 @@ require dirname(__DIR__) . '/layout/header.php';
             
             <!-- Footer -->
             <div class="card-footer bg-light text-center py-3 border-0">
-                <span class="text-muted small">LAN-Based System &copy; <?= date('Y') ?></span>
+                <span class="text-muted small">&copy; <?= date('Y') ?> BHC SINALHAN CENTER</span>
             </div>
         </div>
     </div>
 </div>
+
+<?php if (!empty($timeoutMessage)): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Session Expired',
+            text: <?= json_encode($timeoutMessage) ?>,
+            confirmButtonColor: '#0D7377',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false
+        });
+    }
+});
+</script>
+<?php endif; ?>
 
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>

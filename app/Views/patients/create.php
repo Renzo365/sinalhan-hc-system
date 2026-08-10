@@ -57,8 +57,11 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="text" 
                                    name="first_name" 
                                    id="first_name" 
-                                   class="form-control" 
+                                   class="form-control name-input" 
                                    value="<?= h($input['first_name'] ?? '') ?>" 
+                                   pattern="[a-zA-ZñÑ\s\-\'\.]{2,50}"
+                                   maxlength="50"
+                                   minlength="2"
                                    required>
                         </div>
                         
@@ -68,7 +71,9 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="text" 
                                    name="middle_name" 
                                    id="middle_name" 
-                                   class="form-control" 
+                                   class="form-control name-input" 
+                                   pattern="[a-zA-ZñÑ\s\-\'\.]{2,50}"
+                                   maxlength="50"
                                    value="<?= h($input['middle_name'] ?? '') ?>">
                         </div>
 
@@ -78,8 +83,11 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="text" 
                                    name="last_name" 
                                    id="last_name" 
-                                   class="form-control" 
+                                   class="form-control name-input" 
                                    value="<?= h($input['last_name'] ?? '') ?>" 
+                                   pattern="[a-zA-ZñÑ\s\-\'\.]{2,50}"
+                                   maxlength="50"
+                                   minlength="2"
                                    required>
                         </div>
 
@@ -92,7 +100,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                        name="dob" 
                                        id="dob" 
                                        class="form-control bg-white" 
-                                       placeholder="Select date" 
+                                       placeholder="YYYY-MM-DD" 
                                        value="<?= h($input['dob'] ?? '') ?>" 
                                        required>
                             </div>
@@ -102,7 +110,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-sm-4">
                             <label for="sex" class="form-label fw-semibold text-secondary small">Biological Sex <span class="text-danger">*</span></label>
                             <select name="sex" id="sex" class="form-select" required>
-                                <option value="" disabled selected>Select sex</option>
+                                <option value="" disabled selected>-- Select sex --</option>
                                 <option value="Male" <?= ($input['sex'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
                                 <option value="Female" <?= ($input['sex'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
                             </select>
@@ -112,7 +120,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-sm-4">
                             <label for="civil_status" class="form-label fw-semibold text-secondary small">Civil Status <span class="text-danger">*</span></label>
                             <select name="civil_status" id="civil_status" class="form-select" required>
-                                <option value="" disabled selected>Select status</option>
+                                <option value="" disabled selected>-- Select status --</option>
                                 <?php $statuses = ['Single', 'Married', 'Widowed', 'Divorced', 'Separated'];
                                 foreach ($statuses as $status): ?>
                                     <option value="<?= $status ?>" <?= ($input['civil_status'] ?? '') === $status ? 'selected' : '' ?>>
@@ -120,6 +128,29 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+
+                        <!-- Blood Type -->
+                        <div class="col-12 col-sm-4">
+                            <label for="blood_type" class="form-label fw-semibold text-secondary small">Blood Type</label>
+                            <select name="blood_type" id="blood_type" class="form-select">
+                                <option value="Unknown" <?= ($input['blood_type'] ?? 'Unknown') === 'Unknown' ? 'selected' : '' ?>>Unknown / Unspecified</option>
+                                <?php foreach (['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bt): ?>
+                                    <option value="<?= $bt ?>" <?= ($input['blood_type'] ?? '') === $bt ? 'selected' : '' ?>><?= $bt ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Occupation -->
+                        <div class="col-12 col-sm-8">
+                            <label for="occupation" class="form-label fw-semibold text-secondary small">Occupation / Employment Status</label>
+                            <input type="text" 
+                                   name="occupation" 
+                                   id="occupation" 
+                                   class="form-control" 
+                                   placeholder="e.g. Self-Employed, Student, Vendor" 
+                                   maxlength="100" 
+                                   value="<?= h($input['occupation'] ?? '') ?>">
                         </div>
                     </div>
                 </div>
@@ -142,10 +173,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <input type="text" 
                                        name="contact_no" 
                                        id="contact_no" 
-                                       class="form-control" 
-                                       placeholder="e.g. 0917XXXXXXX" 
+                                       class="form-control phone-input" 
+                                       placeholder="09XXXXXXXXX" 
+                                       inputmode="numeric"
+                                       maxlength="11"
+                                       pattern="09[0-9]{9}"
                                        value="<?= h($input['contact_no'] ?? '') ?>">
                             </div>
+                            <div class="form-text text-muted small">11-digit mobile (09XXXXXXXXX)</div>
                         </div>
 
                         <!-- Barangay -->
@@ -156,6 +191,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                    id="barangay" 
                                    class="form-control" 
                                    value="<?= h($input['barangay'] ?? 'Sinalhan') ?>" 
+                                   maxlength="100"
+                                   minlength="2"
                                    required>
                         </div>
 
@@ -167,6 +204,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                       rows="3" 
                                       class="form-control" 
                                       placeholder="House no., street, block, subdivision..." 
+                                      minlength="5"
+                                      maxlength="500"
                                       required><?= h($input['address'] ?? '') ?></textarea>
                         </div>
                     </div>
@@ -191,9 +230,22 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="text" 
                                    name="emergency_name" 
                                    id="emergency_name" 
-                                   class="form-control" 
+                                   class="form-control name-input" 
                                    placeholder="Full Name" 
+                                   maxlength="100"
                                    value="<?= h($input['emergency_name'] ?? '') ?>">
+                        </div>
+
+                        <!-- Emergency Relationship -->
+                        <div class="col-12">
+                            <label for="emergency_relationship" class="form-label fw-semibold text-secondary small">Relationship to Patient</label>
+                            <input type="text" 
+                                   name="emergency_relationship" 
+                                   id="emergency_relationship" 
+                                   class="form-control" 
+                                   placeholder="e.g. Spouse, Mother, Guardian" 
+                                   maxlength="50"
+                                   value="<?= h($input['emergency_relationship'] ?? '') ?>">
                         </div>
 
                         <!-- Contact Person Number -->
@@ -202,9 +254,13 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="text" 
                                    name="emergency_no" 
                                    id="emergency_no" 
-                                   class="form-control" 
-                                   placeholder="Phone Number" 
+                                   class="form-control phone-input" 
+                                   placeholder="09XXXXXXXXX" 
+                                   inputmode="numeric"
+                                   maxlength="11"
+                                   pattern="09[0-9]{9}"
                                    value="<?= h($input['emergency_no'] ?? '') ?>">
+                            <div class="form-text text-muted small">11-digit mobile (09XXXXXXXXX)</div>
                         </div>
                     </div>
                 </div>
@@ -227,8 +283,10 @@ require dirname(__DIR__) . '/layout/header.php';
                                    id="philhealth_no" 
                                    class="form-control" 
                                    placeholder="XX-XXXXXXXXX-X" 
+                                   maxlength="14"
+                                   pattern="\d{2}-\d{9}-\d{1}"
                                    value="<?= h($input['philhealth_no'] ?? '') ?>">
-                            <div class="form-text text-muted small">Enter PhilHealth number if available.</div>
+                            <div class="form-text text-muted small">Format: XX-XXXXXXXXX-X</div>
                         </div>
                     </div>
                 </div>
@@ -259,8 +317,52 @@ document.addEventListener('DOMContentLoaded', function() {
     flatpickr("#dob", {
         dateFormat: "Y-m-d",
         maxDate: "today",
+        minDate: "1900-01-01",
         allowInput: true
     });
+
+    // Real-time Keystroke Filters
+    
+    // 1. Name inputs: Block numeric digits and special symbols
+    const nameFields = document.querySelectorAll('.name-input');
+    nameFields.forEach(field => {
+        field.addEventListener('input', function() {
+            // Remove digits and disallowed characters
+            this.value = this.value.replace(/[0-9!@#$%^&*()_+=~`{}|\\:;<>?\/]/g, '');
+        });
+    });
+
+    // 2. Mobile Phone inputs: Restrict to numeric digits only and cap at 11 chars
+    const phoneFields = document.querySelectorAll('.phone-input');
+    phoneFields.forEach(field => {
+        field.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11);
+            }
+        });
+    });
+
+    // 3. PhilHealth ID Auto-Formatter Mask (XX-XXXXXXXXX-X)
+    const philhealthInput = document.getElementById('philhealth_no');
+    if (philhealthInput) {
+        philhealthInput.addEventListener('input', function() {
+            let val = this.value.replace(/[^0-9]/g, '');
+            if (val.length > 12) val = val.slice(0, 12);
+            
+            let formatted = '';
+            if (val.length > 0) {
+                formatted += val.slice(0, 2);
+            }
+            if (val.length > 2) {
+                formatted += '-' + val.slice(2, 11);
+            }
+            if (val.length > 11) {
+                formatted += '-' + val.slice(11, 12);
+            }
+            this.value = formatted;
+        });
+    }
 
     // AJAX duplicate checking
     const firstNameInput = document.getElementById('first_name');

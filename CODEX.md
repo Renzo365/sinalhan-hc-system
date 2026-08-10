@@ -218,18 +218,18 @@ patient-management-system/
 
 ### 6.1 Authentication and User Roles
 
-The system will require users to log in before accessing protected modules. Each user will have a role that determines what actions they can perform.
+The system requires users to log in before accessing protected modules. Each user has a role (`admin` or `staff`) that determines what actions they can perform.
 
-For the capstone scope, the system will use two primary user roles:
+#### Role Hierarchy & Privilege Protection
+* **Main Administrator (User ID 1)**: Primary System Administrator with master authority over all administrator and staff accounts.
+* **Co-Administrators (User ID > 1 with role `admin`)**: Can manage standard `staff` accounts, but are strictly blocked from promoting staff to `admin`, creating admin accounts (overridden to `staff`), or modifying peer administrators.
+* **Staff**: Healthcare workers (BHWs, midwives, nurses, records personnel) handling daily clinical operations.
 
-| Role | Main Access |
-|---|---|
-| Admin | Full system access, user management, settings, backup, audit logs |
-| Staff | Daily health center operations such as patients, appointments, queue, vital signs, consultations, and reports depending on allowed access |
-
-Staff users may represent BHWs, midwives, nurses, records personnel, or other health center workers. Their job title can be stored as profile information, but the system permission model remains simpler with only `admin` and `staff` roles.
-
-This two-role design should match the capstone documentation unless the formal scope is revised to require more detailed role-based permissions.
+#### Account Lifecycle & Safeguards
+* **No Account Deletion**: Account deletion is permanently disabled across the system to preserve audit logs and clinical integrity. Accounts are activated or deactivated via table toggles (**Activate** `bi-person-check-fill` and **Deactivate** `bi-person-x-fill`).
+* **15-Minute Temporary Lockout**: Entering 5 consecutive wrong passwords triggers a **15-minute temporary cooldown**. Account status remains `active`, but login is blocked until the 15 minutes expire (displaying exact remaining minutes and seconds).
+* **Admin Lockout Override**: Administrators can clear a user's 15-minute lockout timer immediately by clicking the **Clear Lockout** button (`bi-unlock-fill`) on the User Accounts directory page.
+* **Password Resets**: Password resets require the logged-in administrator to enter their current password, and the system prevents setting temporary passwords to the user's current password. Forced password resets on first login (`must_change_password`) have been removed in favor of direct admin password resets.
 
 ### 6.2 Patient Management
 
@@ -237,11 +237,13 @@ Patient management is the main module of the system.
 
 Core features:
 
-- Register new patients.
+- Register new patients via `/patients/create` with dual-layer validation.
+- Enforce strict validation: letters-only in names (`/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`), 11-digit `09XXXXXXXXX` Philippine mobile numbers, DOB bounds (`1900-01-01 <= dob <= Today`), and PhilHealth mask (`XX-XXXXXXXXX-X`).
+- Record extended demographics: ABO **Blood Type**, **Occupation**, and **Emergency Contact Relationship**.
 - Search patients by name, patient number, age, sex, or barangay.
-- View patient profile.
+- View patient profile and full clinical history (Vitals, Consultations, Appointments, Queue).
 - Update patient demographic information.
-- Archive patient records when allowed.
+- Soft-delete / Archive patient records when allowed.
 - View patient-related history such as vitals and consultations.
 
 ### 6.3 Vital Signs

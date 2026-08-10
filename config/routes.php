@@ -73,11 +73,13 @@ return function (\App\Core\Router $router) {
 
     // User Management Routes (Admin Only)
     $router->get('/users', 'UserController@index', [AdminMiddleware::class]);
+    $router->get('/users/create', 'UserController@create', [AdminMiddleware::class]);
     $router->post('/users', 'UserController@store', [AdminMiddleware::class]);
     $router->get('/users/{id}/edit', 'UserController@edit', [AdminMiddleware::class]);
     $router->post('/users/{id}', 'UserController@update', [AdminMiddleware::class]);
     $router->post('/users/{id}/reset-password', 'UserController@resetPassword', [AdminMiddleware::class]);
     $router->post('/users/{id}/toggle-status', 'UserController@toggleStatus', [AdminMiddleware::class]);
+    $router->post('/users/{id}/reset-lockout', 'UserController@resetLockout', [AdminMiddleware::class]);
 };
 
 

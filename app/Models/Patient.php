@@ -123,12 +123,12 @@ class Patient extends Model {
 
         $sql = "INSERT INTO patients (
                     patient_no, first_name, middle_name, last_name, dob, sex, 
-                    civil_status, contact_no, barangay, address, 
-                    emergency_name, emergency_no, philhealth_no, created_by
+                    civil_status, blood_type, occupation, contact_no, barangay, address, 
+                    emergency_name, emergency_relationship, emergency_no, philhealth_no, created_by
                 ) VALUES (
                     :patient_no, :first_name, :middle_name, :last_name, :dob, :sex, 
-                    :civil_status, :contact_no, :barangay, :address, 
-                    :emergency_name, :emergency_no, :philhealth_no, :created_by
+                    :civil_status, :blood_type, :occupation, :contact_no, :barangay, :address, 
+                    :emergency_name, :emergency_relationship, :emergency_no, :philhealth_no, :created_by
                 )";
         
         $stmt = $this->db->prepare($sql);
@@ -140,10 +140,13 @@ class Patient extends Model {
             'dob' => $data['dob'],
             'sex' => $data['sex'],
             'civil_status' => $data['civil_status'],
+            'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : 'Unknown',
+            'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
             'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
             'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
             'address' => trim($data['address']),
             'emergency_name' => !empty($data['emergency_name']) ? trim($data['emergency_name']) : null,
+            'emergency_relationship' => !empty($data['emergency_relationship']) ? trim($data['emergency_relationship']) : null,
             'emergency_no' => !empty($data['emergency_no']) ? trim($data['emergency_no']) : null,
             'philhealth_no' => !empty($data['philhealth_no']) ? trim($data['philhealth_no']) : null,
             'created_by' => $data['created_by']
@@ -167,10 +170,13 @@ class Patient extends Model {
                     dob = :dob,
                     sex = :sex,
                     civil_status = :civil_status,
+                    blood_type = :blood_type,
+                    occupation = :occupation,
                     contact_no = :contact_no,
                     barangay = :barangay,
                     address = :address,
                     emergency_name = :emergency_name,
+                    emergency_relationship = :emergency_relationship,
                     emergency_no = :emergency_no,
                     philhealth_no = :philhealth_no,
                     updated_by = :updated_by,
@@ -186,10 +192,13 @@ class Patient extends Model {
             'dob' => $data['dob'],
             'sex' => $data['sex'],
             'civil_status' => $data['civil_status'],
+            'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : 'Unknown',
+            'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
             'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
             'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
             'address' => trim($data['address']),
             'emergency_name' => !empty($data['emergency_name']) ? trim($data['emergency_name']) : null,
+            'emergency_relationship' => !empty($data['emergency_relationship']) ? trim($data['emergency_relationship']) : null,
             'emergency_no' => !empty($data['emergency_no']) ? trim($data['emergency_no']) : null,
             'philhealth_no' => !empty($data['philhealth_no']) ? trim($data['philhealth_no']) : null,
             'updated_by' => $data['updated_by']

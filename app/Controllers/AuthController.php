@@ -22,12 +22,22 @@ class AuthController extends Controller {
         }
         $error = $_SESSION['login_error'] ?? null;
         $username = $_SESSION['login_username'] ?? '';
+        $timeoutMessage = $_SESSION['timeout_message'] ?? null;
+
+        if (isset($_GET['timeout']) && empty($timeoutMessage)) {
+            $timeoutMessage = "You've been logged out due to inactivity. Please sign in again.";
+        }
         
         // Clear flash values so they don't persist on subsequent GET requests/refreshes
         unset($_SESSION['login_error']);
         unset($_SESSION['login_username']);
+        unset($_SESSION['timeout_message']);
 
-        $this->view('auth/login', ['error' => $error, 'username' => $username]);
+        $this->view('auth/login', [
+            'error' => $error,
+            'username' => $username,
+            'timeoutMessage' => $timeoutMessage
+        ]);
     }
 
     /**
@@ -46,17 +56,19 @@ class AuthController extends Controller {
         $user = $this->userModel->findByUsername($username);
 
         if ($user) {
-            // Check status first
-            if ($user['status'] === 'suspended') {
-                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: suspended account ({$username})");
-                $this->setLoginError('This account has been suspended due to security lockout. Please contact an administrator.', $username);
+            // Check manual status deactivation
+            if ($user['status'] === 'inactive') {
+                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$username})");
+                $this->setLoginError('This account is inactive. Please contact an administrator.', $username);
                 $this->redirect('/login');
                 return;
             }
 
-            if ($user['status'] === 'inactive') {
-                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$username})");
-                $this->setLoginError('This account is inactive. Please contact an administrator.', $username);
+            // Check temporary 15-minute lockout cooldown
+            $lockoutStatus = $this->userModel->isLockedOut($user);
+            if ($lockoutStatus['is_locked']) {
+                AuditLog::log('LOGIN_BLOCKED_LOCKOUT', 'Auth', "Blocked login attempt during temporary lockout for username: {$username}");
+                $this->setLoginError("Too many failed login attempts. Account temporarily locked for {$lockoutStatus['remaining_formatted']}. Please try again later or contact an administrator.", $username);
                 $this->redirect('/login');
                 return;
             }
@@ -77,6 +89,7 @@ class AuthController extends Controller {
                 $_SESSION['user_role'] = $user['role'];
                 $_SESSION['user_fullname'] = trim($user['first_name'] . ' ' . $user['last_name']);
                 $_SESSION['must_change_password'] = (int)$user['must_change_password'];
+                $_SESSION['last_activity'] = time();
 
                 // Log successful login
                 AuditLog::log('LOGIN_SUCCESS', 'Auth', "User successfully logged in.");
@@ -93,10 +106,11 @@ class AuthController extends Controller {
                 AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (password mismatch) for username: {$username}. Failed attempts count: {$attempts}/5");
 
                 if ($attempts >= 5) {
-                    $error = 'This account has been suspended due to too many failed login attempts.';
+                    AuditLog::log('ACCOUNT_LOCKED', 'Auth', "Account temporarily locked for 15 minutes due to 5 consecutive failed attempts: {$username}");
+                    $error = 'Too many failed login attempts. Account temporarily locked for 15 minute(s). Please try again later or contact an administrator.';
                 } else {
                     $remaining = 5 - $attempts;
-                    $error = "Invalid username or password. (Failed attempts: {$attempts}/5. {$remaining} attempt(s) remaining before suspension)";
+                    $error = "Invalid username or password. (Failed attempts: {$attempts}/5. {$remaining} attempt(s) remaining before 15-minute temporary lockout)";
                 }
                 
                 $this->setLoginError($error, $username);

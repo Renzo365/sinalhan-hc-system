@@ -56,7 +56,7 @@ class AuditLog extends Model {
      * @return array List of matching audit logs
      */
     public function allFiltered($filters = []) {
-        $sql = "SELECT a.*, CONCAT(u.first_name, ' ', u.last_name) AS user_fullname 
+        $sql = "SELECT a.*, u.role AS user_role, u.id AS user_account_id, CONCAT(u.first_name, ' ', u.last_name) AS user_fullname 
                 FROM audit_logs a
                 LEFT JOIN users u ON a.user_id = u.id
                 WHERE 1=1";
@@ -75,6 +75,16 @@ class AuditLog extends Model {
         if (!empty($filters['user_id'])) {
             $sql .= " AND a.user_id = :user_id";
             $params['user_id'] = (int)$filters['user_id'];
+        }
+
+        if (!empty($filters['role'])) {
+            if ($filters['role'] === 'main_admin') {
+                $sql .= " AND (u.role = 'admin' AND u.id = 1)";
+            } elseif ($filters['role'] === 'co_admin') {
+                $sql .= " AND (u.role = 'admin' AND u.id != 1)";
+            } elseif ($filters['role'] === 'staff') {
+                $sql .= " AND u.role = 'staff'";
+            }
         }
 
         if (!empty($filters['action'])) {

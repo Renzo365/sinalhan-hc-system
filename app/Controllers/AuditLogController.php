@@ -25,6 +25,7 @@ class AuditLogController extends Controller {
             'date_from' => trim($_GET['date_from'] ?? ''),
             'date_to' => trim($_GET['date_to'] ?? ''),
             'user_id' => trim($_GET['user_id'] ?? ''),
+            'role' => trim($_GET['role'] ?? ''),
             'action' => trim($_GET['action'] ?? '')
         ];
 
@@ -34,7 +35,7 @@ class AuditLogController extends Controller {
         // Fetch all active users for dropdown
         try {
             $db = \App\Core\Database::getInstance()->getConnection();
-            $stmt = $db->query("SELECT id, username, first_name, last_name FROM users WHERE status = 'active' ORDER BY last_name ASC");
+            $stmt = $db->query("SELECT id, username, first_name, last_name, role FROM users WHERE status = 'active' ORDER BY last_name ASC");
             $users = $stmt->fetchAll() ?: [];
         } catch (\Exception $e) {
             $users = [];

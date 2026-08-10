@@ -18,6 +18,13 @@ User sessions are configured in [`public/index.php`](file:///c:/xampp/htdocs/sin
 * **Secure Cookie Flags**: Session cookies utilize `samesite => 'Lax'` configuration to mitigate Cross-Site Request Forgery (CSRF).
 * **ID Regeneration**: The session ID is regenerated using `session_regenerate_id(true)` immediately upon login to invalidate old session identifiers.
 
+### 1.3 Inactivity Auto-Logout & Session Expiration
+To prevent unauthorized access on unattended clinic workstations, the system enforces strict client-side and server-side inactivity monitoring:
+* **Idle Threshold**: 15 minutes (900 seconds) of inactivity.
+* **Client-Side Event Listener**: JavaScript monitors user interaction events (`mousemove`, `mousedown`, `keydown`, `scroll`, `click`, `touchstart`). If no events occur for 15 minutes, the system smoothly redirects the browser to the login page (`/login?timeout=1`).
+* **Server-Side Enforcement**: `AuthMiddleware` verifies `$_SESSION['last_activity']` on every HTTP request. If the threshold exceeds 15 minutes, the session is invalidated, a `SESSION_TIMEOUT` audit log is recorded, and the user is redirected to `/login`.
+* **SweetAlert Notification**: Upon redirection to the login screen, a SweetAlert2 warning modal alerts the user: *"Session Expired: You've been logged out due to inactivity. Please sign in again."*
+
 ---
 
 ## 2. Role-Based Access Control (RBAC)
@@ -35,6 +42,14 @@ System access is divided into two distinct levels to enforce the **Principle of 
 | Archive Registry & Restore | Access allowed | **Access Blocked** (Redirects to Dashboard) |
 
 Route guards are validated at the controller constructor level. If a staff user manually types the URL path of an administrator route (such as `/users` or `/backup`), they are blocked and redirected back to `/dashboard` with an authorization warning message.
+
+### 2.1 Administrative Privilege Isolation
+To prevent privilege escalation and account takeover vulnerabilities:
+* **Primary Administrator (Main Admin) Authority**: User ID 1 (`admin`) is designated as the Main System Administrator and holds master authority over all administrator and staff accounts.
+* **Co-Administrator Privilege Restrictions**: Co-Administrators (User ID > 1 with role `admin`) can manage standard `staff` accounts, but are strictly blocked from promoting staff to `admin`, creating admin accounts (automatically overridden to `staff`), or modifying, demoting, deactivating, or resetting the password of **any peer administrator account**. Any unauthorized attempt is blocked and logged as a `SECURITY_VIOLATION` event.
+* **Self-Exclusion Prevention**: Administrators are blocked from demoting their own role or deactivating their own active accounts.
+* **Account Deletion Safeguard**: Physical and soft deletion of user accounts is completely disabled to preserve clinical audit trails and log integrity. Access control is managed exclusively via `Active` and `Inactive` status toggles.
+* **Re-authentication & Password Validation Requirement**: Resetting a user's password requires the logged-in administrator to enter their current password to authorize the change. The system validates that the new temporary password is not identical to the user's current password hash.
 
 ---
 
@@ -61,17 +76,27 @@ All data-modifying HTTP POST operations (forms and AJAX calls) are validated aga
 * All forms render a hidden CSRF token input field using `<?= csrf_field() ?>`.
 * The Front Controller (`public/index.php`) intercepts all incoming `POST` requests and validates that the submitted `csrf_token` exactly matches the session-stored token. If the token is invalid, missing, or mismatched, the request is immediately terminated with a `403 Forbidden` response.
 
+### 3.4 Dual-Layer Input Validation & Data Sanitization
+To prevent invalid data injection, malformed records, and data corruption:
+* **Name Protection**: All name inputs (`first_name`, `middle_name`, `last_name`, `emergency_name`) are sanitized via `trim()` and `strip_tags()`, and validated against regex `/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`. Client-side JavaScript blocks numeric keypresses in real-time.
+* **Philippine Mobile Phone Standard**: Phone inputs (`contact_no`, `emergency_no`) strictly enforce the **11-digit `09XXXXXXXXX` format** (`/^09\d{9}$/`). JavaScript strips non-numeric characters and enforces an 11-digit maximum length.
+* **Date Bounds Enforcement**: Date of birth (`dob`) is parsed as a valid `Y-m-d` calendar date, strictly enforcing `1900-01-01 <= dob <= Today`. Future dates or impossible birth years are rejected.
+* **PhilHealth Auto-Formatting Mask**: PhilHealth IDs strictly enforce the 12-digit format `XX-XXXXXXXXX-X` (`/^\d{2}-\d{9}-\d{1}$/`). Client-side JavaScript auto-formats hyphens as the user types.
+* **Strict Whitelist Verification**: Dropdown fields (`sex`, `civil_status`, `blood_type`) use strict `in_array()` whitelist verification in PHP controllers before database interaction.
+
 ---
 
-## 4. Brute Force & Lockout Safeguards
+## 4. Brute Force & Temporary Lockout Safeguards
 
-To prevent brute force dictionary attacks on login credentials:
-1. The `users` table tracks failed login attempts using the `failed_attempts` column.
-2. A failed login attempt increments the count.
-3. If an account logs **5 consecutive failed attempts**, the system automatically transitions the user account status to `suspended` and writes an audit log.
-4. A suspended account is blocked from login attempts, even if they input the correct password.
-5. Successful login resets the `failed_attempts` counter back to `0`.
-6. Only an administrator can unlock the account by editing the user's status back to `Active` in the User Management dashboard.
+To prevent brute force dictionary attacks on login credentials without creating account lockout vulnerabilities:
+1. The `users` table tracks failed login attempts using `failed_attempts` and `last_failed_login_at`.
+2. Each failed login attempt increments `failed_attempts` and updates `last_failed_login_at = NOW()`.
+3. **Automatic Window Reset**: If an active user attempts a login more than **15 minutes** (900 seconds) after their previous failure, the counter automatically resets back to `1`.
+4. **15-Minute Temporary Lockout**: Upon reaching **5 consecutive failed attempts**, the user is placed in a **15-minute temporary lockout window**. Account status remains `active`, but authentication is strictly blocked during the 15 minutes, displaying remaining minutes and seconds.
+5. **Automatic Expiration**: Once the 15-minute cooldown expires, the user is automatically permitted to attempt logging in again.
+6. **Administrative Override Button**: An administrator can instantly override a staff member's 15-minute lockout by clicking the **Clear Lockout** action button (`bi-unlock-fill`) in the User Accounts directory (`/users`). This resets `failed_attempts` to `0` and logs a `USER_LOCKOUT_RESET` audit event.
+7. **CLI Unlock Utility**: Administrators can also run `php scripts/unlock_user.php [username]` from the server console to clear lockouts.
+8. **Successful Login Reset**: A successful login resets `failed_attempts` to `0` and clears `last_failed_login_at` to `NULL`.
 
 ---
 

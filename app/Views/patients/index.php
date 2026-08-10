@@ -36,7 +36,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="col-12 col-sm-6 col-md-2">
                 <label for="barangay" class="form-label fw-semibold text-secondary small">Barangay</label>
                 <select name="barangay" id="barangay" class="form-select bg-light">
-                    <option value="">All Barangays</option>
+                    <option value="">-- All Barangays --</option>
                     <?php foreach ($barangays as $brgy): ?>
                         <option value="<?= h($brgy) ?>" <?= $filters['barangay'] === $brgy ? 'selected' : '' ?>>
                             <?= h($brgy) ?>
@@ -49,7 +49,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="col-12 col-sm-6 col-md-2">
                 <label for="sex" class="form-label fw-semibold text-secondary small">Sex</label>
                 <select name="sex" id="sex" class="form-select bg-light">
-                    <option value="">All Sexes</option>
+                    <option value="">-- All Sexes --</option>
                     <option value="Male" <?= $filters['sex'] === 'Male' ? 'selected' : '' ?>>Male</option>
                     <option value="Female" <?= $filters['sex'] === 'Female' ? 'selected' : '' ?>>Female</option>
                 </select>
@@ -59,7 +59,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="col-12 col-sm-6 col-md-2">
                 <label for="age_group" class="form-label fw-semibold text-secondary small">Age Group</label>
                 <select name="age_group" id="age_group" class="form-select bg-light">
-                    <option value="">All Ages</option>
+                    <option value="">-- All Ages --</option>
                     <option value="child" <?= $filters['age_group'] === 'child' ? 'selected' : '' ?>>Child (0-12)</option>
                     <option value="teen" <?= $filters['age_group'] === 'teen' ? 'selected' : '' ?>>Teen (13-19)</option>
                     <option value="adult" <?= $filters['age_group'] === 'adult' ? 'selected' : '' ?>>Adult (20-59)</option>

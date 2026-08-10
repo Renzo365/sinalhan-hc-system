@@ -13,8 +13,16 @@
         <!-- User Profile Info -->
         <div class="text-end me-3">
             <span class="fw-bold d-block text-dark"><?= h($_SESSION['user_fullname'] ?? 'User') ?></span>
-            <span class="badge bg-light text-primary border border-primary-subtle text-capitalize small">
-                <?= h($_SESSION['user_role'] ?? 'Staff') ?>
+            <?php 
+            $topbarRoleDisplay = 'Staff';
+            $topbarBadgeClass = 'bg-light text-dark border';
+            if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+                $topbarRoleDisplay = ($_SESSION['user_id'] == 1) ? 'Admin' : 'Co-Admin';
+                $topbarBadgeClass = 'bg-light text-primary border border-primary-subtle';
+            }
+            ?>
+            <span class="badge <?= $topbarBadgeClass ?> small">
+                <?= h($topbarRoleDisplay) ?>
             </span>
         </div>
         

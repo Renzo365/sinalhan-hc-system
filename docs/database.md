@@ -58,7 +58,7 @@ erDiagram
 ## 3. Data Dictionary
 
 ### 3.1 `users` Table
-Stores login credentials, system roles, and profile information for health center staff.
+Stores login credentials, system roles, organizational assignments, and profile information for health center staff.
 
 | Column Name | Data Type | Constraints | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
@@ -71,9 +71,13 @@ Stores login credentials, system roles, and profile information for health cente
 | `last_name` | VARCHAR(50) | NOT NULL | | User's last name. |
 | `email` | VARCHAR(100) | UNIQUE | NULL | User's professional email address. |
 | `contact_no` | VARCHAR(20) | | NULL | User's contact/phone number. |
+| `employee_id` | VARCHAR(50) | | NULL | PRC License / Employee ID number. |
+| `department` | VARCHAR(100) | | NULL | Clinic Unit or Department assignment. |
 | `job_title` | VARCHAR(50) | | NULL | E.g., 'Nurse', 'Midwife', 'BHW', 'Records Officer'. |
-| `status` | ENUM('active', 'inactive') | NOT NULL | 'active' | Active status determines login authorization. |
-| `must_change_password`| TINYINT(1) | NOT NULL | 1 | Flag (1/0) forcing password change upon first login. |
+| `status` | ENUM('active', 'inactive') | NOT NULL | 'active' | Account status determining login authorization (inactive accounts blocked). |
+| `failed_attempts` | INT | NOT NULL | 0 | Count of consecutive failed login attempts before lockout. |
+| `last_login_at` | DATETIME | | NULL | Timestamp of last successful authentication. |
+| `last_failed_login_at` | DATETIME | | NULL | Timestamp of last failed authentication attempt. |
 | `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Record creation timestamp. |
 | `updated_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP* | Record modification timestamp. |
 
@@ -94,12 +98,15 @@ Stores demographics and profiles. Patient files can be soft-deleted (archived) i
 | `dob` | DATE | NOT NULL | | Patient's date of birth. |
 | `sex` | ENUM('Male', 'Female') | NOT NULL | | Patient's biological sex. |
 | `civil_status` | ENUM('Single', 'Married', 'Widowed', 'Divorced', 'Separated') | NOT NULL | | Patient's marital status. |
-| `contact_no` | VARCHAR(20) | | NULL | Patient's primary phone number. |
+| `blood_type` | ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown') | NOT NULL | 'Unknown' | Patient's ABO blood type classification. |
+| `occupation` | VARCHAR(100) | | NULL | Patient's occupation or employment status. |
+| `contact_no` | VARCHAR(20) | | NULL | Patient's primary phone number (11-digit 09XXXXXXXXX format). |
 | `barangay` | VARCHAR(100) | NOT NULL | 'Sinalhan' | Resident barangay. |
 | `address` | TEXT | NOT NULL | | Complete street address. |
 | `emergency_name` | VARCHAR(100) | | NULL | Contact person in case of emergency. |
-| `emergency_no` | VARCHAR(20) | | NULL | Phone number of emergency contact. |
-| `philhealth_no` | VARCHAR(20) | UNIQUE | NULL | PhilHealth ID number. |
+| `emergency_relationship`| VARCHAR(50) | | NULL | Relationship to emergency contact person. |
+| `emergency_no` | VARCHAR(20) | | NULL | Phone number of emergency contact (11-digit 09XXXXXXXXX format). |
+| `philhealth_no` | VARCHAR(20) | UNIQUE | NULL | PhilHealth ID number (XX-XXXXXXXXX-X format). |
 | `deleted_at` | TIMESTAMP | | NULL | Timestamp when patient was archived (NULL if active). |
 | `deleted_by` | INT | FK (`users.id`), NULL | NULL | Admin user who archived the record. |
 | `archive_reason` | TEXT | | NULL | Explanation for archiving the record. |
@@ -379,9 +386,13 @@ CREATE TABLE `users` (
   `last_name` VARCHAR(50) NOT NULL,
   `email` VARCHAR(100) DEFAULT NULL,
   `contact_no` VARCHAR(20) DEFAULT NULL,
+  `employee_id` VARCHAR(50) DEFAULT NULL,
+  `department` VARCHAR(100) DEFAULT NULL,
   `job_title` VARCHAR(50) DEFAULT NULL,
   `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-  `must_change_password` TINYINT(1) NOT NULL DEFAULT 1,
+  `failed_attempts` INT NOT NULL DEFAULT 0,
+  `last_login_at` DATETIME DEFAULT NULL,
+  `last_failed_login_at` DATETIME DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -399,10 +410,13 @@ CREATE TABLE `patients` (
   `dob` DATE NOT NULL,
   `sex` ENUM('Male', 'Female') NOT NULL,
   `civil_status` ENUM('Single', 'Married', 'Widowed', 'Divorced', 'Separated') NOT NULL,
+  `blood_type` ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown') NOT NULL DEFAULT 'Unknown',
+  `occupation` VARCHAR(100) DEFAULT NULL,
   `contact_no` VARCHAR(20) DEFAULT NULL,
   `barangay` VARCHAR(100) NOT NULL DEFAULT 'Sinalhan',
   `address` TEXT NOT NULL,
   `emergency_name` VARCHAR(100) DEFAULT NULL,
+  `emergency_relationship` VARCHAR(50) DEFAULT NULL,
   `emergency_no` VARCHAR(20) DEFAULT NULL,
   `philhealth_no` VARCHAR(20) DEFAULT NULL,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,

@@ -81,6 +81,32 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Inactivity Auto-Logout Monitor (15 Minutes)
+    <?php if (isset($_SESSION['user_id'])): ?>
+    (function() {
+        const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes of inactivity
+        let idleTimer;
+
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(onIdleTimeout, IDLE_TIMEOUT_MS);
+        }
+
+        function onIdleTimeout() {
+            // Smoothly auto-logout and redirect to login page with timeout flag
+            window.location.href = <?= json_encode(url('/login?timeout=1')) ?>;
+        }
+
+        // Reset timer on any user interaction
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(eventType) {
+            window.addEventListener(eventType, resetIdleTimer, { passive: true });
+        });
+
+        // Initialize timer
+        resetIdleTimer();
+    })();
+    <?php endif; ?>
 });
 </script>
 </body>
