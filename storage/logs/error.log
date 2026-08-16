@@ -1,0 +1,61 @@
+[2026-08-10 16:39:53] [Exception] User: guest | IP: 127.0.0.1 | URI: CLI/Unknown
+Exception: Exception: Simulated test database failure exception in C:\xampp\htdocs\sinalhan-hc-system\scratch\test_error_handler.php:20
+Stack Trace:
+#0 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:40:04] [Exception] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:40:21] [Exception] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:40:57] [Exception] User: guest | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:41:03] [Exception] User: guest | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:41:40] [Exception] User: guest | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:42:15] [Exception] User: guest | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-08-10 22:42:45] [Exception] User: guest | IP: ::1 | URI: /sinalhan-hc-system/public/test-error
+Exception: Exception: System Error Test: Demonstrating Global 500 Error Handling & Logging Engine. in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\AuthController.php:20
+Stack Trace:
+#0 [internal function]: App\Controllers\AuthController->testError()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------

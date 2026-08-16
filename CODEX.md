@@ -362,10 +362,19 @@ Recommended behavior:
 - Normal patient lists should show active records only.
 - Archived records should be visible from a separate admin-focused page.
 - Archiving should store `deleted_at`, `deleted_by`, and an optional `archive_reason`.
-- Admin users should be able to view archived records.
-- Admin users should be able to restore archived records when appropriate.
+- Admin users should be able to view and restore archived records when appropriate.
 - Staff users should not restore archived records unless explicitly allowed.
 - Permanent deletion should not be included in the initial capstone scope.
+
+### 6.11 System Reliability & Global Error Handling
+
+To handle unexpected system crashes, database outages, or unhandled PHP exceptions:
+
+- **Centralized Error Engine (`App\Core\ErrorHandler`)**: Captures uncaught exceptions, runtime errors, and fatal shutdown events globally.
+- **Structured Error Logging**: Writes complete crash traces (timestamp, user, client IP, requested URI, error message, file line, stack trace) to `storage/logs/error.log`.
+- **Audit Log Trail**: Automatically logs `SYSTEM_ERROR` events to the audit trail if database connection is accessible.
+- **500 Error Page (`app/Views/errors/500.php`)**: Replaces raw stack traces or blank screens with a clean healthcare-themed 500 error page featuring *"Try Again"* and *"Back to Dashboard"* buttons.
+- **Debug Mode Toggle**: Controlled via `'debug'` in `config/app.php` (enables detailed technical trace views in development, hides traces in production).
 
 This approach is safer for a health record system because old patient records may still be needed for accountability, history, or reporting.
 

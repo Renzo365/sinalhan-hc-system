@@ -10,6 +10,9 @@ $appConfig = require dirname(__DIR__) . '/config/app.php';
 // Set Timezone
 date_default_timezone_set($appConfig['timezone'] ?? 'Asia/Manila');
 
+// Register Global Error & Exception Handler
+\App\Core\ErrorHandler::register($appConfig['debug'] ?? false);
+
 // Configure Session Security
 $sessionConfig = $appConfig['session'] ?? [];
 session_name($sessionConfig['name'] ?? 'SINALHAN_HC_SESSION');
@@ -84,11 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // --- Initialize and Dispatch Router ---
 
-$router = new \App\Core\Router();
+try {
+    $router = new \App\Core\Router();
 
-// Load Routes
-$routeLoader = require dirname(__DIR__) . '/config/routes.php';
-$routeLoader($router);
+    // Load Routes
+    $routeLoader = require dirname(__DIR__) . '/config/routes.php';
+    $routeLoader($router);
 
-// Dispatch
-$router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+    // Dispatch
+    $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+} catch (\Throwable $e) {
+    \App\Core\ErrorHandler::handleException($e);
+}

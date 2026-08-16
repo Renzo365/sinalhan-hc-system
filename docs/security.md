@@ -100,8 +100,8 @@ To prevent brute force dictionary attacks on login credentials without creating 
 
 ---
 
-## 5. File & Backup Isolation
+## 5. File, Storage & Error Log Isolation
 
-* Database backups are exported directly to `storage/backups/` under the project directory.
-* Access to the backup downloads endpoint is restricted strictly to logged-in administrator accounts.
-* Filenames utilize date-stamped naming conventions to prevent path traversal downloads.
+* **Database Backups**: Database backups are exported directly to `storage/backups/` under the project directory. Access to the backup downloads endpoint is restricted strictly to logged-in administrator accounts with date-stamped naming conventions.
+* **Error Log Storage (`storage/logs/error.log`)**: All uncaught PHP exceptions and fatal runtime errors are intercepted by `App\Core\ErrorHandler` and appended to `storage/logs/error.log`.
+* **Stack Trace Information Masking**: In LAN production mode (`'debug' => false` in `config/app.php`), technical stack traces are hidden from users and replaced with a reassuring 500 error page. Detailed traces remain safely stored in `storage/logs/error.log` for administrator inspection.

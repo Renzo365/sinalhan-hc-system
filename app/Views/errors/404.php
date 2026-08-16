@@ -1,7 +1,21 @@
 <?php
 $title = 'Page Not Found';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    @session_start();
+}
+
+if (!function_exists('h')) {
+    function h($string) {
+        return htmlspecialchars($string ?? '', ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('url')) {
+    function url($path = '') {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $basePath = str_replace('/index.php', '', $scriptName);
+        return rtrim($basePath, '/') . '/' . ltrim($path, '/');
+    }
 }
 // Render within layout if logged in, otherwise show standalone page
 require dirname(__DIR__) . '/layout/header.php';

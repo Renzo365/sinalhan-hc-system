@@ -91,6 +91,14 @@ Provides shared utility functions for sub-controllers:
 * `redirect($url)`: Prepends base folder subdirectories dynamically.
 * `json($data, $statusCode)`: Formats and outputs HTTP JSON payloads.
 
+### 3.5 Global Error & Exception Handler (`app/Core/ErrorHandler.php`)
+Intercepts uncaught PHP exceptions, runtime errors, and fatal shutdown events:
+* **Global Handlers**: Registers `set_exception_handler`, `set_error_handler`, and `register_shutdown_function` in `public/index.php`.
+* **Structured Disk Logging**: Automatically appends crash details (timestamp, IP, URI, User ID, Exception type, file line number, and stack trace) to `storage/logs/error.log`.
+* **Audit Trail Integration**: Logs a `SYSTEM_ERROR` event to `audit_logs` if database connectivity remains active.
+* **User Experience & 500 View**: Cleans output buffers (`ob_end_clean()`) and renders a clean `app/Views/errors/500.php` page instead of a raw code stack trace or blank screen.
+* **Configurable Debug Mode**: Configured via `'debug'` in `config/app.php` (toggles technical stack traces on screen during development vs clean error messages for LAN deployment).
+
 ---
 
 ## 4. Middleware & Hooks
