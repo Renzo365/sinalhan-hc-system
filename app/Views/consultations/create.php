@@ -51,12 +51,88 @@ require dirname(__DIR__) . '/layout/header.php';
 
             <!-- SOAP note blocks -->
             <div class="card card-premium mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h3 class="card-title h6 mb-0 fw-bold text-dark">
                         <i class="bi bi-journal-medical text-primary me-2"></i>Clinical Documentation (SOAP)
                     </h3>
+                    <a href="<?= url('/patients/' . $patient['id']) ?>" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 0.75rem;">
+                        <i class="bi bi-person-badge me-1"></i> Open Full Patient Workstation <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
                 </div>
                 <div class="card-body p-4">
+                    <!-- CLINICAL SAFETY ALERTS & DECISION SUPPORT -->
+                    <?php
+                        $pmh = !empty($medicalHistory['past_medical_history']) ? (is_array($medicalHistory['past_medical_history']) ? $medicalHistory['past_medical_history'] : (json_decode($medicalHistory['past_medical_history'], true) ?: [])) : [];
+                        $allergyAlert = $pmh['Allergy'] ?? $pmh['Allergies'] ?? '';
+                        $hasHypertensionAlert = isset($pmh['Hypertension']);
+                        $hasDiabetesAlert = isset($pmh['Diabetes Mellitus']);
+                        $hasAsthmaAlert = isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma']);
+                    ?>
+
+                    <?php if (!empty($allergyAlert)): ?>
+                        <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center gap-3 p-3 mb-3" style="border-radius: 10px; background-color: #fee2e2;">
+                            <i class="bi bi-exclamation-octagon-fill text-danger fs-3"></i>
+                            <div>
+                                <strong class="text-danger d-block fs-6">⚠️ DRUG / FOOD ALLERGIES RECORDED</strong>
+                                <span class="text-dark small">Patient is known allergic to: <strong><?= h($allergyAlert) ?></strong>. Double-check prescription safety.</span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($activePrenatal)): ?>
+                        <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center gap-3 p-3 mb-3" style="border-radius: 10px; background-color: #ffe4e6;">
+                            <i class="bi bi-heart-pulse-fill text-pink fs-3"></i>
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <strong class="text-danger fs-6">🤰 ACTIVE PREGNANCY EPISODE</strong>
+                                    <span class="badge bg-pink text-white">G<?= h($activePrenatal['gravida']) ?>P<?= h($activePrenatal['para']) ?></span>
+                                    <?php if (!empty($activePrenatal['pre_eclampsia'])): ?>
+                                        <span class="badge bg-danger text-white">⚡ Pre-Eclampsia High-Risk</span>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="text-dark small">
+                                    LMP: <strong><?= date('M d, Y', strtotime($activePrenatal['lmp'])) ?></strong> &bull; 
+                                    EDC: <strong><?= date('M d, Y', strtotime($activePrenatal['edc'])) ?></strong> &bull; 
+                                    Current AOG: <strong><?= h($activePrenatal['aog_weeks'] ?? 'N/A') ?> wks</strong>
+                                </span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($hasHypertensionAlert || $hasDiabetesAlert || $hasAsthmaAlert): ?>
+                        <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-3 p-2 px-3 mb-3" style="border-radius: 10px;">
+                            <i class="bi bi-activity text-warning fs-4"></i>
+                            <div class="small">
+                                <strong>CHRONIC ILLNESS HISTORY:</strong>
+                                <?php if ($hasHypertensionAlert): ?><span class="badge bg-danger ms-1">Hypertension</span><?php endif; ?>
+                                <?php if ($hasDiabetesAlert): ?><span class="badge bg-warning text-dark ms-1">Diabetes Mellitus</span><?php endif; ?>
+                                <?php if ($hasAsthmaAlert): ?><span class="badge bg-info text-dark ms-1">Asthma</span><?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Latest Vital Signs Quick Strip -->
+                    <?php if (!empty($latestVitals)): ?>
+                        <div class="p-2 px-3 bg-light rounded-3 mb-4 border d-flex flex-wrap align-items-center gap-3 small text-secondary">
+                            <span class="fw-bold text-dark"><i class="bi bi-speedometer2 text-primary me-1"></i> Latest Vitals (<?= date('M d', strtotime($latestVitals['recorded_at'])) ?>):</span>
+                            <span>BP: <strong class="<?= ((int)($latestVitals['bp_systolic'] ?? 0) >= 140 || (int)($latestVitals['bp_diastolic'] ?? 0) >= 90) ? 'text-danger fw-bold' : 'text-dark' ?>"><?= h($latestVitals['bp_systolic'] ?? '-') ?>/<?= h($latestVitals['bp_diastolic'] ?? '-') ?> mmHg</strong></span>
+                            <span class="vr"></span>
+                            <span>Temp: <strong class="text-dark"><?= h($latestVitals['temperature'] ?? '-') ?> °C</strong></span>
+                            <span class="vr"></span>
+                            <span>HR: <strong class="text-dark"><?= h($latestVitals['heart_rate'] ?? '-') ?> bpm</strong></span>
+                            <span class="vr"></span>
+                            <span>RR: <strong class="text-dark"><?= h($latestVitals['respiratory_rate'] ?? '-') ?> cpm</strong></span>
+                            <?php if (!empty($latestVitals['oxygen_saturation'])): ?>
+                                <span class="vr"></span>
+                                <span>SpO2: <strong class="text-dark"><?= h($latestVitals['oxygen_saturation']) ?>%</strong></span>
+                            <?php endif; ?>
+                            <?php if (!empty($latestVitals['bmi'])): ?>
+                                <span class="vr"></span>
+                                <span>BMI: <strong class="text-dark"><?= h($latestVitals['bmi']) ?></strong></span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
                     <!-- Subjective (S) -->
                     <div class="mb-4">
                         <label for="subjective" class="form-label fw-bold text-primary-dark">Subjective (S) <span class="text-danger">*</span></label>

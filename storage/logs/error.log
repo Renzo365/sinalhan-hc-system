@@ -59,3 +59,237 @@ Stack Trace:
 #2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
 #3 {main}
 --------------------------------------------------------------------------------
+[2026-09-02 15:25:12] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:25:14] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:25:17] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:25:22] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:25:29] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/3
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('3')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:25:30] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/3
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('3')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:26:18] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/6
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('6')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:26:20] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/6
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('6')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:26:28] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/queue
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php:27
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php(27): PDO->query('SELECT q.*, \n  ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\QueueController.php(28): App\Models\QueueEntry->findAllToday()
+#2 [internal function]: App\Controllers\QueueController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:26:29] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/queue
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php:27
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php(27): PDO->query('SELECT q.*, \n  ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\QueueController.php(28): App\Models\QueueEntry->findAllToday()
+#2 [internal function]: App\Controllers\QueueController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:26:31] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/queue
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php:27
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php(27): PDO->query('SELECT q.*, \n  ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\QueueController.php(28): App\Models\QueueEntry->findAllToday()
+#2 [internal function]: App\Controllers\QueueController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:27:03] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/queue
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php:27
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php(27): PDO->query('SELECT q.*, \n  ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\QueueController.php(28): App\Models\QueueEntry->findAllToday()
+#2 [internal function]: App\Controllers\QueueController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:27:57] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/queue
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php:27
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\QueueEntry.php(27): PDO->query('SELECT q.*, \n  ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\QueueController.php(28): App\Models\QueueEntry->findAllToday()
+#2 [internal function]: App\Controllers\QueueController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:28:00] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:28:02] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:28:07] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 15:29:10] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/7
+Exception: Error: Class "App\Models\Immunization" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:211
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('7')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:21:39] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:21:40] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:21:43] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/3
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('3')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:22:01] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:22:02] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:22:50] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:22:52] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19
+Exception: Error: Call to undefined method App\Models\Patient::getDb() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:196
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientController->show('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(98): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:37:13] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19/consultations/create
+Exception: Error: Call to undefined method App\Models\VitalSigns::getLatestByPatientId() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php:42
+Stack Trace:
+#0 [internal function]: App\Controllers\ConsultationController->create('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:37:14] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19/consultations/create
+Exception: Error: Call to undefined method App\Models\VitalSigns::getLatestByPatientId() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php:42
+Stack Trace:
+#0 [internal function]: App\Controllers\ConsultationController->create('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:38:29] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19/consultations/create
+Exception: Error: Call to undefined method App\Models\VitalSigns::getLatestByPatientId() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php:42
+Stack Trace:
+#0 [internal function]: App\Controllers\ConsultationController->create('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-09-02 22:38:30] [Error] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/19/consultations/create
+Exception: Error: Call to undefined method App\Models\VitalSigns::getLatestByPatientId() in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php:42
+Stack Trace:
+#0 [internal function]: App\Controllers\ConsultationController->create('19')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------

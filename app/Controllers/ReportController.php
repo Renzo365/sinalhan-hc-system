@@ -143,6 +143,81 @@ class ReportController extends Controller {
                     ]);
                 }
                 break;
+
+            case 'maternal_health':
+                fputcsv($output, ['Patient ID', 'Patient Name', 'Age', 'Barangay', 'Gravida', 'Para', 'LMP', 'EDC', 'AOG (Wks)', 'Pre-Eclampsia Risk', 'Status']);
+                foreach ($data as $row) {
+                    fputcsv($output, [
+                        $row['patient_no'],
+                        "{$row['last_name']}, {$row['first_name']}",
+                        $row['patient_age'],
+                        $row['barangay'],
+                        'G' . $row['gravida'],
+                        'P' . $row['para'],
+                        $row['lmp'],
+                        $row['edc'],
+                        $row['calculated_aog'] ?: '0',
+                        !empty($row['pre_eclampsia']) ? 'YES (High Risk)' : 'No',
+                        !empty($row['is_active']) ? 'Active Pregnancy' : 'Concluded'
+                    ]);
+                }
+                break;
+
+            case 'epi_coverage':
+                fputcsv($output, ['Patient ID', 'Child Name', 'DOB', 'Age (Mos)', 'Barangay', 'Mother', 'BCG', 'HepB', 'Penta 1', 'Penta 2', 'Penta 3', 'OPV 1', 'OPV 2', 'OPV 3', 'IPV', 'MCV 1', 'MCV 2']);
+                foreach ($data as $row) {
+                    fputcsv($output, [
+                        $row['patient_no'],
+                        "{$row['last_name']}, {$row['first_name']}",
+                        $row['dob'],
+                        $row['age_months'],
+                        $row['barangay'],
+                        $row['mother_name'] ?: '-',
+                        $row['bcg_date'] ?: 'Pending',
+                        $row['hepb_date'] ?: 'Pending',
+                        $row['penta1_date'] ?: 'Pending',
+                        $row['penta2_date'] ?: 'Pending',
+                        $row['penta3_date'] ?: 'Pending',
+                        $row['opv1_date'] ?: 'Pending',
+                        $row['opv2_date'] ?: 'Pending',
+                        $row['opv3_date'] ?: 'Pending',
+                        $row['ipv_date'] ?: 'Pending',
+                        $row['mcv1_date'] ?: 'Pending',
+                        $row['mcv2_date'] ?: 'Pending'
+                    ]);
+                }
+                break;
+
+            case 'chronic_morbidity':
+                fputcsv($output, ['Patient ID', 'Patient Name', 'Age', 'Sex', 'Barangay', 'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Kidney Disease', 'PTB', 'Allergies', 'Smoking', 'Alcohol']);
+                foreach ($data as $row) {
+                    $pmh = is_array($row['past_medical_history']) ? $row['past_medical_history'] : (json_decode($row['past_medical_history'] ?? '[]', true) ?: []);
+                    $allergies = $pmh['Allergy'] ?? $pmh['Allergies'] ?? '-';
+                    $hasHtn = isset($pmh['Hypertension']) ? 'YES' : 'No';
+                    $hasDm = isset($pmh['Diabetes Mellitus']) ? 'YES' : 'No';
+                    $hasAsthma = (isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma'])) ? 'YES' : 'No';
+                    $hasCvd = (isset($pmh['Cardiovascular Disease']) || isset($pmh['Heart Disease'])) ? 'YES' : 'No';
+                    $hasCkd = (isset($pmh['Chronic Kidney Disease']) || isset($pmh['Kidney Disease'])) ? 'YES' : 'No';
+                    $hasPtb = (isset($pmh['Pulmonary Tuberculosis']) || isset($pmh['PTB'])) ? 'YES' : 'No';
+
+                    fputcsv($output, [
+                        $row['patient_no'],
+                        "{$row['last_name']}, {$row['first_name']}",
+                        $row['patient_age'],
+                        $row['sex'],
+                        $row['barangay'],
+                        $hasHtn,
+                        $hasDm,
+                        $hasAsthma,
+                        $hasCvd,
+                        $hasCkd,
+                        $hasPtb,
+                        $allergies,
+                        $row['smoking_status'] ?: 'Never',
+                        $row['alcohol_status'] ?: 'Never'
+                    ]);
+                }
+                break;
         }
 
         fclose($output);
@@ -163,6 +238,7 @@ class ReportController extends Controller {
                             JOIN patients p ON q.patient_id = p.id
                             WHERE q.queue_date BETWEEN :date_from AND :date_to
                             ORDER BY q.queue_date DESC, q.queue_no ASC";
+                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
                     
                 case 'consultations':
@@ -173,6 +249,7 @@ class ReportController extends Controller {
                             JOIN users u ON c.consulted_by = u.id
                             WHERE DATE(c.consulted_at) BETWEEN :date_from AND :date_to
                             ORDER BY c.consulted_at DESC";
+                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
                     
                 case 'registrations':
@@ -180,6 +257,7 @@ class ReportController extends Controller {
                             FROM patients 
                             WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN :date_from AND :date_to
                             ORDER BY created_at DESC";
+                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
                     
                 case 'queue_summary':
@@ -193,6 +271,7 @@ class ReportController extends Controller {
                             WHERE queue_date BETWEEN :date_from AND :date_to
                             GROUP BY queue_date
                             ORDER BY queue_date DESC";
+                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
                     
                 case 'vitals':
@@ -203,6 +282,56 @@ class ReportController extends Controller {
                             JOIN users u ON v.recorded_by = u.id
                             WHERE DATE(v.recorded_at) BETWEEN :date_from AND :date_to
                             ORDER BY v.recorded_at DESC";
+                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    break;
+
+                case 'maternal_health':
+                    $sql = "SELECT pr.*, 
+                                   p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.contact_no, p.barangay, p.blood_type, p.philhealth_no,
+                                   TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
+                                   TIMESTAMPDIFF(WEEK, pr.lmp, CURRENT_DATE()) AS calculated_aog,
+                                   (SELECT COUNT(*) FROM prenatal_visits pv WHERE pv.prenatal_id = pr.id) AS total_visits
+                            FROM prenatal_records pr
+                            JOIN patients p ON pr.patient_id = p.id
+                            WHERE p.deleted_at IS NULL AND (pr.is_active = 1 OR pr.edc BETWEEN :date_from AND :date_to)
+                            ORDER BY pr.edc ASC";
+                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    break;
+
+                case 'epi_coverage':
+                    $sql = "SELECT p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.dob, p.sex, p.barangay, p.mother_name,
+                                   TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
+                                   wb.birth_weight_kg, wb.birth_length_cm, wb.newborn_screening_done,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) = 'BCG' LIMIT 1) AS bcg_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%HEPATITIS%' LIMIT 1) AS hepb_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 1 LIMIT 1) AS penta1_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 2 LIMIT 1) AS penta2_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 3 LIMIT 1) AS penta3_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 1 LIMIT 1) AS opv1_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 2 LIMIT 1) AS opv2_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 3 LIMIT 1) AS opv3_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%IPV%' LIMIT 1) AS ipv_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MEASLES%') AND dose_number = 1 LIMIT 1) AS mcv1_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MMR%') AND dose_number = 2 LIMIT 1) AS mcv2_date
+                            FROM patients p
+                            LEFT JOIN wellbaby_records wb ON wb.patient_id = p.id
+                            WHERE p.deleted_at IS NULL AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5
+                            ORDER BY p.dob DESC";
+                    $params = [];
+                    break;
+
+                case 'chronic_morbidity':
+                    $sql = "SELECT pmh.*, 
+                                   p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.sex, p.contact_no, p.barangay, p.philhealth_no,
+                                   TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age
+                            FROM patient_medical_histories pmh
+                            JOIN patients p ON pmh.patient_id = p.id
+                            WHERE p.deleted_at IS NULL 
+                              AND pmh.past_medical_history IS NOT NULL 
+                              AND pmh.past_medical_history != '' 
+                              AND pmh.past_medical_history != '[]'
+                            ORDER BY p.last_name ASC, p.first_name ASC";
+                    $params = [];
                     break;
                     
                 default:
@@ -210,10 +339,7 @@ class ReportController extends Controller {
             }
 
             $stmt = $db->prepare($sql);
-            $stmt->execute([
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo
-            ]);
+            $stmt->execute($params);
             return $stmt->fetchAll() ?: [];
         } catch (\PDOException $e) {
             error_log("Report query failure: " . $e->getMessage());

@@ -140,6 +140,20 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                             </div>
 
+                            <!-- Program Type Selection -->
+                            <div class="col-12 col-sm-6">
+                                <label for="program_type" class="form-label fw-semibold text-secondary small">Clinical Program <span class="text-danger">*</span></label>
+                                <select name="program_type" id="program_type" class="form-select bg-light" required>
+                                    <option value="General OPD" <?= (isset($input['program_type']) && $input['program_type'] === 'General OPD') ? 'selected' : '' ?>>General OPD / Consultation</option>
+                                    <option value="Prenatal Care" <?= (isset($input['program_type']) && $input['program_type'] === 'Prenatal Care') ? 'selected' : '' ?>>Maternal & Prenatal Care</option>
+                                    <option value="Well Baby Immunization" <?= (isset($input['program_type']) && $input['program_type'] === 'Well Baby Immunization') ? 'selected' : '' ?>>Well Baby & EPI Routine Vaccines</option>
+                                    <option value="Senior Care" <?= (isset($input['program_type']) && $input['program_type'] === 'Senior Care') ? 'selected' : '' ?>>Senior Citizen Care</option>
+                                    <option value="Family Planning" <?= (isset($input['program_type']) && $input['program_type'] === 'Family Planning') ? 'selected' : '' ?>>Family Planning Services</option>
+                                    <option value="NCD / Hypertension" <?= (isset($input['program_type']) && $input['program_type'] === 'NCD / Hypertension') ? 'selected' : '' ?>>NCD / Hypertension / Diabetes</option>
+                                    <option value="Dental Care" <?= (isset($input['program_type']) && $input['program_type'] === 'Dental Care') ? 'selected' : '' ?>>Dental Care</option>
+                                </select>
+                            </div>
+
                             <!-- Purpose Selection -->
                             <div class="col-12 col-sm-6">
                                 <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger">*</span></label>
@@ -147,8 +161,10 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <option value="">-- Select Purpose --</option>
                                     <option value="General Check-up" <?= (isset($input['purpose']) && $input['purpose'] === 'General Check-up') ? 'selected' : '' ?>>General Check-up</option>
                                     <option value="Consultation (SOAP)" <?= (isset($input['purpose']) && $input['purpose'] === 'Consultation (SOAP)') ? 'selected' : '' ?>>Consultation (SOAP)</option>
-                                    <option value="Prenatal Care" <?= (isset($input['purpose']) && $input['purpose'] === 'Prenatal Care') ? 'selected' : '' ?>>Prenatal Care</option>
-                                    <option value="Immunization" <?= (isset($input['purpose']) && $input['purpose'] === 'Immunization') ? 'selected' : '' ?>>Immunization</option>
+                                    <option value="Prenatal Follow-up" <?= (isset($input['purpose']) && $input['purpose'] === 'Prenatal Follow-up') ? 'selected' : '' ?>>Prenatal Follow-up</option>
+                                    <option value="Routine EPI Vaccine" <?= (isset($input['purpose']) && $input['purpose'] === 'Routine EPI Vaccine') ? 'selected' : '' ?>>Routine EPI Vaccine</option>
+                                    <option value="Deworming / Vitamin A" <?= (isset($input['purpose']) && $input['purpose'] === 'Deworming / Vitamin A') ? 'selected' : '' ?>>Deworming / Vitamin A Supplementation</option>
+                                    <option value="Senior Citizen Checkup" <?= (isset($input['purpose']) && $input['purpose'] === 'Senior Citizen Checkup') ? 'selected' : '' ?>>Senior Citizen Checkup</option>
                                     <option value="Dental Check-up" <?= (isset($input['purpose']) && $input['purpose'] === 'Dental Check-up') ? 'selected' : '' ?>>Dental Check-up</option>
                                     <option value="Follow-up Visit" <?= (isset($input['purpose']) && $input['purpose'] === 'Follow-up Visit') ? 'selected' : '' ?>>Follow-up Visit</option>
                                     <option value="Others / Referrals" <?= (isset($input['purpose']) && $input['purpose'] === 'Others / Referrals') ? 'selected' : '' ?>>Others / Referrals</option>

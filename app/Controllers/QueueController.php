@@ -67,8 +67,15 @@ class QueueController extends Controller {
             return;
         }
 
+        $serviceType = trim($_POST['service_type'] ?? 'General OPD');
+        $validServices = ['General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care', 'Family Planning', 'Dental Care', 'NCD / Hypertension'];
+        if (!in_array($serviceType, $validServices)) {
+            $serviceType = 'General OPD';
+        }
+
         $data = [
             'patient_id' => $patientId,
+            'service_type' => $serviceType,
             'created_by' => $_SESSION['user_id']
         ];
 
@@ -78,7 +85,7 @@ class QueueController extends Controller {
             $queueEntry = $this->queueModel->findById($newId);
             $queueNoStr = sprintf('%03d', $queueEntry['queue_no']);
             
-            AuditLog::log('QUEUE_REGISTERED', 'Queue', "Enqueued patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}) with Queue No: {$queueNoStr}");
+            AuditLog::log('QUEUE_REGISTERED', 'Queue', "Enqueued patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}) for [{$serviceType}] with Queue No: {$queueNoStr}");
             
             $_SESSION['success_message'] = "Patient successfully enqueued! Queue No: {$queueNoStr}";
             

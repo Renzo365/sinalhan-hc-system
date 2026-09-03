@@ -39,6 +39,11 @@ class ConsultationController extends Controller {
 
         // Get vital signs history for linking
         $vitalsList = $this->vitalsModel->findByPatientId($patientId);
+        $latestVitals = $this->vitalsModel->getLatestByPatientId($patientId);
+
+        // Get IHP Medical History & Active Prenatal Episode for Clinical Decision Support
+        $medicalHistory = (new \App\Models\PatientMedicalHistory())->findByPatientId($patientId);
+        $activePrenatal = (new \App\Models\PrenatalRecord())->findActiveByPatientId($patientId);
 
         // Get active clinicians/staff list
         try {
@@ -59,6 +64,9 @@ class ConsultationController extends Controller {
         $this->view('consultations/create', [
             'patient' => $patient,
             'vitalsList' => $vitalsList,
+            'latestVitals' => $latestVitals,
+            'medicalHistory' => $medicalHistory,
+            'activePrenatal' => $activePrenatal,
             'clinicians' => $clinicians,
             'errors' => $errors,
             'input' => $input

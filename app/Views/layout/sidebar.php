@@ -1,8 +1,8 @@
 <?php
-$requestUri = explode('?', $_SERVER['REQUEST_URI'])[0];
-$basePath = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+$requestUri = explode('?', $_SERVER['REQUEST_URI'] ?? '/')[0];
+$basePath = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME'] ?? '');
 $uri = '/';
-if (strpos($requestUri, $basePath) === 0) {
+if ($basePath !== '' && strpos($requestUri, $basePath) === 0) {
     $uri = substr($requestUri, strlen($basePath));
 }
 $uri = explode('?', $uri)[0];
@@ -10,11 +10,13 @@ if ($uri === '') {
     $uri = '/';
 }
 
-function isActive($path, $currentUri) {
-    if ($path === '/dashboard') {
-        return ($currentUri === '/' || $currentUri === '/dashboard') ? 'active' : '';
+if (!function_exists('isActive')) {
+    function isActive($path, $currentUri) {
+        if ($path === '/dashboard') {
+            return ($currentUri === '/' || $currentUri === '/dashboard') ? 'active' : '';
+        }
+        return (strpos($currentUri, $path) === 0) ? 'active' : '';
     }
-    return (strpos($currentUri, $path) === 0) ? 'active' : '';
 }
 ?>
 <aside class="app-sidebar">

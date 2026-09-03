@@ -95,6 +95,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <th class="text-start ps-4">Scheduled Date</th>
                         <th>Time</th>
                         <th class="text-start">Patient Name</th>
+                        <th>Program</th>
                         <th class="text-start">Purpose</th>
                         <th>Status</th>
                         <th class="pe-4 text-end">Action</th>
@@ -103,7 +104,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <tbody>
                     <?php if (empty($appointments)): ?>
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-calendar-x d-block fs-3 mb-2 text-muted"></i>
                                 No appointments found matching the selected filters.
                             </td>
@@ -116,6 +117,13 @@ require dirname(__DIR__) . '/layout/header.php';
                             elseif ($a['status'] === 'Completed') $badgeClass = 'bg-success text-white';
                             elseif ($a['status'] === 'Cancelled') $badgeClass = 'bg-danger text-white';
                             elseif ($a['status'] === 'Missed') $badgeClass = 'bg-dark text-white';
+
+                            $pt = $a['program_type'] ?? 'General OPD';
+                            $ptBadge = 'badge bg-primary-soft text-primary';
+                            if (stripos($pt, 'prenatal') !== false) $ptBadge = 'badge bg-pink text-white';
+                            elseif (stripos($pt, 'baby') !== false || stripos($pt, 'immunization') !== false) $ptBadge = 'badge bg-success-soft text-success';
+                            elseif (stripos($pt, 'senior') !== false) $ptBadge = 'badge bg-purple text-white';
+                            elseif (stripos($pt, 'family') !== false) $ptBadge = 'badge bg-info text-dark';
                         ?>
                             <tr>
                                 <td class="text-start ps-4 text-secondary fw-semibold" style="white-space: nowrap;">
@@ -129,6 +137,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <?= h($a['patient_last']) ?>, <?= h($a['patient_first']) ?> 
                                         <span class="text-muted fw-normal font-monospace fs-7">(<?= h($a['patient_no']) ?>)</span>
                                     </a>
+                                </td>
+                                <td>
+                                    <span class="<?= $ptBadge ?>"><?= h($pt) ?></span>
                                 </td>
                                 <td class="text-start text-truncate text-secondary" style="max-width: 200px;" title="<?= h($a['purpose']) ?>">
                                     <?= h($a['purpose']) ?>

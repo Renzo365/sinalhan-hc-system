@@ -17,17 +17,18 @@ This value is computed atomically at the model level to prevent sequence gaps or
 When registering a new patient, an AJAX listener monitors first name and last name input fields on loss of focus (`blur`). If an exact matching active patient is found, a warning banner appears at the top of the form with a direct link to the matching patient's profile folder to prevent duplicate registrations.
 
 ### 1.3 Dual-Layer Input Validation & Formatting
-The Patient module enforces comprehensive client-side and server-side validation rules:
-* **Name Protection**: Rejects numeric digits and special symbols in name fields (`/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`). JavaScript blocks numeric keypresses in real-time.
+The Patient module enforces comprehensive client-side and server-side validation rules based on official **Annex A1: Individual Health Profile (IHP)** requirements:
+* **Name Protection**: Rejects numeric digits and special symbols in name fields (`/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`). Supports Name Suffixes (Jr., Sr., III).
 * **Standardized Philippine Mobile Format**: Enforces 11-digit mobile numbers starting with `09` (`/^09\d{9}$/`). Non-numeric input is stripped automatically on keypress.
 * **Date of Birth Boundaries**: Restricts DOB between `1900-01-01` and current date (`Today`) on both Flatpickr and PHP backend (`DateTime` validation).
-* **PhilHealth Auto-Formatting Mask**: Dynamically formats typed numbers into `XX-XXXXXXXXX-X` (12 digits with hyphens) and validates format uniqueness.
-* **Extended Demographics**: Captures ABO **Blood Type** (`A+`, `A-`, `B+`, `B-`, `AB+`, `AB-`, `O+`, `O-`, `Unknown`), **Occupation / Employment Status**, and **Emergency Contact Relationship** (e.g., *Spouse, Mother, Guardian*).
+* **Household Family Numbering**: Captures PhilHealth/CHO **Family Number** for family/household clustering.
+* **PhilHealth Auto-Formatting Mask & Categorization**: Dynamically formats typed numbers into `XX-XXXXXXXXX-X` (12 digits with hyphens) and stores membership status (*Member, Dependent, Non-Member*) and program type (*Sponsored, Employed, IPP/OFW, Lifetime*).
+* **Comprehensive Demographics**: Captures ABO **Blood Type**, **Religion**, **Educational Attainment**, **Occupation**, **Father/Mother/Spouse Identifiers**, and **Emergency Contact Relationship**.
 
-### 1.4 Active Directory Filtering
+### 1.4 Active Directory Filtering & Household Search
 The main directory uses server-side search and filters:
-* **Text Search**: Matches against patient number, first/last/middle names, phone number, and barangay.
-* **Demographics Filter**: Narrow list by Sex (Male/Female), Barangay, or Age Group (Child `0-12`, Teen `13-19`, Adult `20-59`, Senior `60+`).
+* **Multi-Parameter Search**: Matches against patient number, first/last/middle names, Family Number, PhilHealth PIN, phone number, and barangay.
+* **Demographics & Program Filters**: Narrow list by Sex (Male/Female), Barangay, Age Group (Well Baby `0-5`, Child `6-15`, Reproductive `15-49`, Adult `25-59`, Senior `60+`), or Program Category (*General OPD, Prenatal, Well Baby, Senior*).
 * **Exporting**: Prints search results or exports records to a CSV spreadsheet.
 
 ---
@@ -73,14 +74,15 @@ A consultation history log is displayed on the patient's profile. Clicking **Vie
 
 ## 4. Appointment Scheduling
 
-Manages patient scheduling and schedules clinic resources.
+Manages patient scheduling, service programs, and clinic provider resources.
 
-### 4.1 Conflict Prevention
-When selecting an appointment date and time, an AJAX conflict check queries the database for existing active bookings. If a clinician or time slot overlaps, a red alert box appears warning the staff to coordinate a reschedule.
+### 4.1 Program-Tagged Booking & Conflict Prevention
+* **Clinical Program Categorization**: Bookings are organized by program type: **General OPD**, **Prenatal Care**, **Well Baby Immunization**, or **Senior Care**.
+* **Overlap Prevention**: When selecting an appointment date and time, an AJAX conflict check queries the database for existing active bookings. If a clinician or time slot overlaps, a red alert box appears warning the staff to coordinate a reschedule.
 
 ### 4.2 Status Tracking & Quick Actions
-Appointments can be filtered by date range or status. Users can transition appointments using quick-action buttons:
-* **Scheduled**: Initial state.
+Appointments can be filtered by date range, program type, or status:
+* **Scheduled**: Initial booking state.
 * **Completed**: Linked to a patient's consultation.
 * **Cancelled**: Cancelled by staff or patient.
 * **Missed**: Automatically flagged if the patient fails to show up on the date.
@@ -89,33 +91,42 @@ Appointments can be filtered by date range or status. Users can transition appoi
 
 ## 5. Daily Operations Queue
 
-Optimizes daily patient flow inside the waiting area.
+Optimizes daily patient flow inside the waiting area and routes patients across care tracks.
 
-### 5.1 Daily Queue Numbers
-Enqueuing a patient generates an auto-incrementing queue number that resets daily:
-`001`, `002`, `003`...
+### 5.1 Service-Tagged Daily Queue Numbers
+Enqueuing a patient generates an auto-incrementing queue number that resets daily (`001`, `002`, `003`...) tagged with the clinical service track:
+* `General OPD`
+* `Prenatal Care`
+* `Well Baby Immunization`
+* `Senior Care`
 
 ### 5.2 Waiting Monitor Board
 Provides a dedicated, public-facing, full-screen monitor display at `/queue/display` designed to run on a TV or tablet in the lobby:
-* **Privacy Controls**: Exposes only queue numbers (e.g., `005`) and active call statuses, preserving patient privacy.
+* **Privacy Controls**: Exposes only queue numbers (e.g., `005`), program tags, and active call statuses, preserving patient privacy.
 * **Audio Chime System**: Generates a professional double-tone audio chime (using the browser's native `AudioContext` synth) when a new queue number is transitioned to "Called", alerting waiting patients without relying on external media assets or CDNs.
-* **Asynchronous Polling**: Feeds updates from the database every 5 seconds via JSON calls.
+* **Real-Time Polling**: Feeds updates from the database every 5 seconds via JSON calls without page flickering.
 
 ---
 
 ## 6. Reports & Data Auditing
 
-### 6.1 Report Generator
+### 6.1 Administrative Reports
 Extracts operational metrics by date range:
 * **Daily Patient Visits**: Log of checkups and registrations.
 * **Consultations Summary**: Volume of SOAP diagnoses.
 * **Queue Operations**: Metrics on wait times, cancellations, and completed operations.
+* **Vital Signs Records**: Log of triage records.
 
-### 6.2 Print layouts & CSV Exports
+### 6.2 DOH-Compliant Clinical Registries
+* **Maternal Health Registry**: Monitors active pregnancies, EDC due dates, dynamic AOG, GTPAL scores, and high-risk Pre-Eclampsia flags.
+* **Childhood Immunization (EPI) Coverage Report**: Tracks administered vaccine dates across BCG, Hep B, Pentavalent, OPV, IPV, Rota, and Measles/MMR, monitoring Fully Immunized Child (FIC) milestones.
+* **Chronic Morbidity & NCD Registry**: Surveillance report tracking registered citizens diagnosed with Hypertension, Diabetes, Asthma, Allergies, or Tuberculosis based on their PhilHealth Annex A1 IHP records.
+
+### 6.3 Print Layouts & CSV Exports
 * **Custom Print CSS**: Hides navigation sidebars, headers, and buttons during browser printing (Ctrl+P) or "Save as PDF" calls, formatting clean, printable grids.
-* **CSV Export**: Triggers a clean raw-comma export for use in spreadsheet software.
+* **Instant CSV Export**: Triggers a raw-comma stream download for use in spreadsheet software.
 
-### 6.3 Audit Trails
+### 6.4 Audit Trails
 An admin-only dashboard indexes chronological logs of important data modifications (logins, registrations, database backups, patient archiving, password resets) showing the timestamp, IP address, user, and detailed action summary.
 
 ---
@@ -132,3 +143,46 @@ Admin-only management panel to handle health center staff access credentials:
 * **Admin Clear Lockout Button**: Administrators can instantly override a staff member's 15-minute lockout timer by clicking the **Clear Lockout** button (`bi-unlock-fill`) on the User Accounts directory table, writing a `USER_LOCKOUT_RESET` audit log.
 * **Security Password Reset**: Critical user resets require the logged-in administrator to enter their current password to authorize a custom temporary password. Validates that the new password is not identical to the user's existing password.
 * **CLI Account Unlocker**: Console utility (`php scripts/unlock_user.php [username]`) to clear lockouts and reset failed attempts directly from the server CLI.
+
+---
+
+## 8. Maternal & Prenatal Care Tracking
+
+A specialized clinical module supporting midwives and nurses in managing pregnant patients through their gestational timeline:
+* **Automated Gestational Calculations**: Health staff enters LMP (Last Menstrual Period); the system automatically calculates:
+  * **EDC (Estimated Date of Confinement / Due Date)** via Naegele's Rule.
+  * **Dynamic AOG (Age of Gestation)** in current weeks and days.
+* **Obstetric GTPAL Index**: Computes and displays Gravida, Parity, Full-Term, Preterm, Abortions, and Living Children.
+* **Past Pregnancies Matrix**: Historical log of prior deliveries (delivery type NSD/CS/Abortion, place of delivery, infant gender, year, attendant, survival status, and maternal Tetanus Toxoid history).
+* **Serial Trimester Visit Logs**: Records serial clinical metrics per visit:
+  * Maternal BP & Weight
+  * **Fetal Heart Tone (FHT)** in bpm (with normal range alerts 120–160 bpm)
+  * **Fundal Height (FH)** in cm
+  * **Fetal Presentation** (*Cephalic, Breech, Transverse*)
+  * **TCB** / Maternal Tetanus status
+  * High-risk warnings (pre-eclampsia, severe hypertension).
+
+---
+
+## 9. Well Baby, Child Health & Routine Immunization
+
+A dedicated pediatric care and growth tracking module for infants and young children (0–5 years):
+* **Birth History & Newborn Screening**: Records birth weight, birth length, time of birth, delivery mode (NSD/CS), place of delivery, attendant, and **Newborn Screening** completion date and laboratory result.
+* **Maternal CPAB Linkage**: Tracks whether the child was protected against tetanus at birth (CPAB) based on the mother's immunization record.
+* **DOH EPI Routine Immunization Matrix**: Visual schedule tracker with date-administered timestamps for all mandatory childhood vaccines:
+  * *At Birth*: BCG, Hepatitis B (within 24 hrs)
+  * *6, 10, 14 Weeks*: Pentavalent 1–3, OPV 1–3, Rotavirus 1–2, IPV
+  * *9 & 12 Months*: MCV1 (Measles), MCV2 (MMR)
+* **National Supplementation Programs**: Tracks Vitamin A capsules and Deworming doses every 6 months.
+* **Pediatric Anthropometrics & Growth Monitoring**: Serial checkup logs for exact age in months, weight, height, **Head Circumference**, **Chest Circumference**, body temperature, and infant feeding practices (*Exclusive Breastfeeding / LAM, Bottle Feeding, Mixed Feeding*).
+
+---
+
+## 10. Clinical Decision Support (CDS) & Patient Safety Alerts
+
+An integrated safety engine that scans clinical histories and renders contextual warning banners across consultation forms, queues, and profiles:
+* **Allergy Alert Banner**: Prominently warns clinicians if a patient has documented drug, food, or contact allergies (e.g., Penicillin, Seafood) to prevent adverse medication events during consultation.
+* **Maternal Pre-Eclampsia High-Risk Banner**: Warns healthcare workers if an expectant mother has diagnosed hypertension, elevated BP, or pre-eclampsia history, advising immediate blood pressure checks and urine protein monitoring.
+* **Chronic NCD Warning Banners**: Contextual badges indicating active chronic conditions (Hypertension, Diabetes Mellitus, Bronchial Asthma) to encourage comprehensive chronic care management during routine visits.
+* **Vital Signs Quick Strip**: Displays latest recorded vitals directly within the SOAP consultation editor so clinicians don't need to switch between screens to review blood pressure, heart rate, or temperature.
+

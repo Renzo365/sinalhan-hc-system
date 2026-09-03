@@ -126,6 +126,10 @@ return [
 
 For in-depth technical analysis and system flows, review the documents inside the [`docs/`](docs) folder:
 
+* **[IHP Implementation Roadmap](IHP_phases.md)**: Phased, incremental roadmap for digitizing IHP, Maternal, and Well Baby patient records.
+* **[Clinical Records Analysis & Design](docs/records/analysis_and_design_of_hc_records.md)**: Architectural analysis of the three health center paper records.
+* **[UI Wireframes](docs/wireframes.md)**: Comprehensive low-fidelity wireframes including the modular Patient Profile Workstation.
+* **[File & Codebase Guide](docs/file_guide.md)**: Plain-English guide explaining the purpose of every file and directory.
 * **[Architecture Guide](docs/architecture.md)**: Details the MVC core engine, request lifecycles, and local network setups.
 * **[Database Design](docs/database.md)**: Tables schema, relationships, indexes, ERD diagram, and data dictionary.
 * **[Features Specifications](docs/features.md)**: Details clinical tools, calculated metrics, and operation dashboards.

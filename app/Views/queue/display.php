@@ -147,6 +147,9 @@
         <div class="now-serving-card">
             <div class="now-serving-label"><i class="bi bi-megaphone-fill me-2"></i>Now Serving</div>
             <div class="now-serving-number" id="nowServingNumber">000</div>
+            <div class="mt-2" id="nowServingServiceContainer" style="display: none;">
+                <span class="badge bg-info text-dark px-3 py-2 fs-5" id="nowServingService">General OPD</span>
+            </div>
         </div>
 
         <!-- 2. Waiting and Recently Called -->
@@ -245,6 +248,8 @@
 
         // 3. AJAX Poller
         const servingEl = document.getElementById('nowServingNumber');
+        const servingServiceContainer = document.getElementById('nowServingServiceContainer');
+        const servingServiceEl = document.getElementById('nowServingService');
         const waitingEl = document.getElementById('waitingListContainer');
         const calledEl = document.getElementById('calledListContainer');
 
@@ -264,6 +269,13 @@
                             playCallChime();
                         }
                         currentServing = data.serving;
+                    }
+
+                    if (data.serving && data.serving !== '000' && data.serving_service) {
+                        servingServiceEl.textContent = data.serving_service;
+                        servingServiceContainer.style.display = 'block';
+                    } else {
+                        servingServiceContainer.style.display = 'none';
                     }
                     initialLoad = false;
 

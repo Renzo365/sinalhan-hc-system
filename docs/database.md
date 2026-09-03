@@ -37,14 +37,20 @@ erDiagram
     users ||--o{ audit_logs : "performs (user_id)"
     users ||--o{ settings : "updates (updated_by)"
 
+    patients ||--o| patient_medical_histories : "has_profile"
     patients ||--o{ vital_signs : "undergoes"
     patients ||--o{ consultations : "receives"
     patients ||--o{ appointments : "books"
     patients ||--o{ queue_entries : "joins"
     patients ||--o{ prescriptions : "is_prescribed"
     patients ||--o{ immunizations : "gets"
-    patients ||--o{ maternal_records : "has"
-    patients ||--o{ child_health_records : "has"
+    patients ||--o{ prenatal_records : "maternal_episodes"
+    patients ||--o| wellbaby_records : "birth_and_child_record"
+    patients ||--o{ past_obstetric_histories : "prior_pregnancies"
+
+    prenatal_records ||--o{ prenatal_visits : "follow_up_checks"
+    wellbaby_records ||--o{ child_growth_logs : "growth_monitoring"
+    patients ||--o{ wellbaby_records : "mother_of"
 
     vital_signs ||--o| consultations : "linked_to"
     consultations ||--o{ prescriptions : "contains"
@@ -86,27 +92,39 @@ Stores login credentials, system roles, organizational assignments, and profile 
 ---
 
 ### 3.2 `patients` Table
-Stores demographics and profiles. Patient files can be soft-deleted (archived) instead of permanently deleted.
+Stores master demographics and core profile data. Every citizen (including pregnant women and infants) has a single master record. Patient files can be soft-deleted (archived) instead of permanently deleted.
 
 | Column Name | Data Type | Constraints | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique internal identifier for the patient. |
 | `patient_no` | VARCHAR(20) | UNIQUE, NOT NULL | | Human-readable ID (e.g., `P-YYYY-XXXXX`). |
+| `family_no` | VARCHAR(50) | | NULL | PhilHealth/CHO Family Identification Number for household grouping. |
 | `first_name` | VARCHAR(50) | NOT NULL | | Patient's first name. |
 | `middle_name` | VARCHAR(50) | | NULL | Patient's middle name. |
 | `last_name` | VARCHAR(50) | NOT NULL | | Patient's last name. |
+| `suffix` | VARCHAR(20) | | NULL | Name extension (e.g., 'Jr.', 'Sr.', 'III'). |
 | `dob` | DATE | NOT NULL | | Patient's date of birth. |
 | `sex` | ENUM('Male', 'Female') | NOT NULL | | Patient's biological sex. |
-| `civil_status` | ENUM('Single', 'Married', 'Widowed', 'Divorced', 'Separated') | NOT NULL | | Patient's marital status. |
+| `civil_status` | ENUM('Single', 'Married', 'Widowed', 'Divorced', 'Separated', 'Annulled', 'Others') | NOT NULL | | Patient's marital status. |
 | `blood_type` | ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown') | NOT NULL | 'Unknown' | Patient's ABO blood type classification. |
+| `religion` | VARCHAR(100) | | NULL | Religious affiliation. |
 | `occupation` | VARCHAR(100) | | NULL | Patient's occupation or employment status. |
+| `education_attainment` | ENUM('No Schooling', 'Elementary', 'High School', 'Vocational', 'College / Post-Graduate') | | NULL | Highest completed educational level. |
 | `contact_no` | VARCHAR(20) | | NULL | Patient's primary phone number (11-digit 09XXXXXXXXX format). |
 | `barangay` | VARCHAR(100) | NOT NULL | 'Sinalhan' | Resident barangay. |
 | `address` | TEXT | NOT NULL | | Complete street address. |
+| `phic_status` | ENUM('Member', 'Dependent', 'Non-Member') | NOT NULL | 'Non-Member' | PhilHealth membership status. |
+| `phic_type` | VARCHAR(100) | | NULL | PhilHealth category (e.g., 'Sponsored - NHTS', 'Employed - Private', 'IPP - OFW', 'Lifetime'). |
+| `philhealth_no` | VARCHAR(20) | UNIQUE | NULL | PhilHealth ID number (XX-XXXXXXXXX-X format). |
+| `father_name` | VARCHAR(150) | | NULL | Father's full name. |
+| `father_dob` | DATE | | NULL | Father's date of birth. |
+| `mother_name` | VARCHAR(150) | | NULL | Mother's maiden name. |
+| `mother_dob` | DATE | | NULL | Mother's date of birth. |
+| `spouse_name` | VARCHAR(150) | | NULL | Spouse's full name. |
+| `spouse_dob` | DATE | | NULL | Spouse's date of birth. |
 | `emergency_name` | VARCHAR(100) | | NULL | Contact person in case of emergency. |
 | `emergency_relationship`| VARCHAR(50) | | NULL | Relationship to emergency contact person. |
 | `emergency_no` | VARCHAR(20) | | NULL | Phone number of emergency contact (11-digit 09XXXXXXXXX format). |
-| `philhealth_no` | VARCHAR(20) | UNIQUE | NULL | PhilHealth ID number (XX-XXXXXXXXX-X format). |
 | `deleted_at` | TIMESTAMP | | NULL | Timestamp when patient was archived (NULL if active). |
 | `deleted_by` | INT | FK (`users.id`), NULL | NULL | Admin user who archived the record. |
 | `archive_reason` | TEXT | | NULL | Explanation for archiving the record. |
@@ -132,6 +150,7 @@ Records patient vitals. Multiple sets of vitals may exist for a patient over mul
 | `weight` | DECIMAL(5,2) | | NULL | Weight in kilograms (kg). |
 | `height` | DECIMAL(5,2) | | NULL | Height in centimeters (cm). |
 | `bmi` | DECIMAL(4,2) | | NULL | Body Mass Index (kg/m2), auto-calculated. |
+| `waist_circumference`| DECIMAL(5,2) | | NULL | Adult waist circumference in centimeters (cm). |
 | `oxygen_saturation`| INT | | NULL | Blood oxygen saturation SpO2 (%). |
 | `notes` | TEXT | | NULL | Observations or complaints about vitals. |
 | `recorded_by` | INT | FK (`users.id`), NOT NULL | | Staff member who took the vital signs. |
@@ -171,9 +190,10 @@ Manages future schedules and follow-up patient visits.
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique appointment identifier. |
 | `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Patient booked for the appointment. |
+| `program_type`| ENUM('General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care') | NOT NULL | 'General OPD' | Clinical service program. |
 | `appointment_date`| DATE | NOT NULL | | Scheduled date. |
 | `appointment_time`| TIME | NOT NULL | | Scheduled time. |
-| `purpose` | VARCHAR(255) | NOT NULL | | Goal (e.g., 'Prenatal', 'Follow-up', 'Vaccination'). |
+| `purpose` | VARCHAR(255) | NOT NULL | | Goal (e.g., 'Prenatal Follow-up', 'EPI Vaccination', 'Hypertension Check'). |
 | `status` | ENUM('Scheduled', 'Completed', 'Cancelled', 'Missed') | NOT NULL | 'Scheduled' | Booking status. |
 | `notes` | TEXT | | NULL | Additional instructions or remarks. |
 | `created_by` | INT | FK (`users.id`), NOT NULL | | Staff member who scheduled the appointment. |
@@ -190,6 +210,7 @@ Tracks patient routing, status, and processing times for the day's clinic queue.
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique queue entry identifier. |
 | `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Patient currently in queue. |
+| `service_type`| ENUM('General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care') | NOT NULL | 'General OPD' | Specialized service track for queue display and room routing. |
 | `queue_date` | DATE | NOT NULL | | Date of queue allocation. |
 | `queue_no` | INT | NOT NULL | | Daily queue number (resets daily from 1). |
 | `status` | ENUM('Waiting', 'Called', 'Serving', 'Completed', 'Cancelled') | NOT NULL | 'Waiting' | Current location in queue process. |
@@ -301,41 +322,153 @@ Stores lab results details and references physical diagnostic upload files.
 
 ---
 
-### 3.13 `maternal_records` Table *(Could-Have Enhancement)*
-Handles specialized obstetric/prenatal profile tracking for maternal health programs.
+### 3.13 `patient_medical_histories` Table
+Stores comprehensive Annex A1 Individual Health Profile (IHP) medical background, past surgical operations, family hereditary diseases, personal/social habits, and female menstrual history.
 
 | Column Name | Data Type | Constraints | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique maternal record identifier. |
-| `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Patient linked. |
-| `lmp` | DATE | | NULL | Last Menstrual Period date. |
-| `edc` | DATE | | NULL | Estimated Date of Confinement (due date). |
-| `gravida` | INT | | NULL | Total number of pregnancies. |
-| `para` | INT | | NULL | Total number of viable births (>20 weeks). |
-| `abortion` | INT | | NULL | Total number of miscarriages or abortions. |
-| `stillbirth` | INT | | NULL | Total number of stillbirths. |
-| `notes` | TEXT | | NULL | High-risk factors, warning signs. |
-| `created_by` | INT | FK (`users.id`), NOT NULL | | Registrar user. |
-| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Creation timestamp. |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique profile history identifier. |
+| `patient_id` | INT | UNIQUE, FK (`patients.id`) ON DELETE CASCADE | | Linked patient master record (1-to-1 relationship). |
+| `past_medical_history` | JSON / TEXT | | NULL | Checklist of past diseases (allergies, asthma, cancer organ, diabetes, hypertension highest BP, TB organ/category, etc.). |
+| `surgical_history` | JSON / TEXT | | NULL | Past operations and dates (Operation 1 & 2). |
+| `family_history` | JSON / TEXT | | NULL | Hereditary family diseases checklist (diabetes, hypertension, cancer, asthma, etc.). |
+| `smoking_status` | ENUM('Never', 'Yes', 'Quit') | | 'Never' | Tobacco smoking history. |
+| `smoking_pack_years` | DECIMAL(4,1) | | NULL | Estimated smoking pack-years. |
+| `alcohol_status` | ENUM('Never', 'Yes', 'Quit') | | 'Never' | Alcohol consumption history. |
+| `alcohol_bottles_per_day` | DECIMAL(4,1) | | NULL | Average bottles consumed per day. |
+| `illicit_drugs` | BOOLEAN | | FALSE | History of illicit drug use (TRUE/FALSE). |
+| `menarche_age` | INT | | NULL | Age at first menstrual period (females). |
+| `sexual_onset_age` | INT | | NULL | Age at onset of sexual intercourse. |
+| `lmp` | DATE | | NULL | Most recent Last Menstrual Period date. |
+| `period_duration_days` | INT | | NULL | Typical menstrual flow duration in days. |
+| `cycle_interval_days` | INT | | NULL | Menstrual cycle interval in days (e.g., 28 days). |
+| `pads_per_day` | INT | | NULL | Number of sanitary pads used per day during menstruation. |
+| `is_menopausal` | BOOLEAN | | FALSE | Menopausal status (TRUE/FALSE). |
+| `menopause_age` | INT | | NULL | Age when menopause started. |
+| `birth_control_method`| VARCHAR(100) | | NULL | Current contraceptive / family planning method used. |
+| `updated_by` | INT | FK (`users.id`), NULL | NULL | Staff who last updated medical history. |
+| `updated_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP* | Last updated timestamp. |
+
+---
+
+### 3.14 `prenatal_records` Table
+Tracks active and historical pregnancy episodes for female patients of reproductive age (1-to-many relationship with `patients`).
+
+| Column Name | Data Type | Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique pregnancy record episode identifier. |
+| `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Expectant mother master record. |
+| `husband_name` | VARCHAR(150) | | NULL | Husband / Partner full name. |
+| `gravida` | INT | NOT NULL | 1 | Total number of pregnancies (including current). |
+| `para` | INT | NOT NULL | 0 | Total number of deliveries / viable births. |
+| `term_births` | INT | NOT NULL | 0 | Number of full-term deliveries (T in GTPAL). |
+| `preterm_births` | INT | NOT NULL | 0 | Number of preterm deliveries (P in GTPAL). |
+| `abortions` | INT | NOT NULL | 0 | Number of miscarriages/abortions (A in GTPAL). |
+| `living_children` | INT | NOT NULL | 0 | Number of currently living children (L in GTPAL). |
+| `lmp` | DATE | NOT NULL | | Last Menstrual Period date. |
+| `edc` | DATE | NOT NULL | | Estimated Date of Confinement (calculated via Naegele's rule). |
+| `is_active` | BOOLEAN | NOT NULL | TRUE | TRUE if currently pregnant; FALSE once delivered or ended. |
+| `pre_eclampsia` | BOOLEAN | NOT NULL | FALSE | History of pregnancy-induced hypertension / pre-eclampsia. |
+| `fp_counselling` | BOOLEAN | NOT NULL | TRUE | Access to family planning counselling (TRUE/FALSE). |
+| `delivery_date` | DATE | | NULL | Actual delivery date (if episode is completed). |
+| `delivery_outcome` | ENUM('Live Birth', 'Stillbirth', 'Miscarriage', 'Ectopic', 'Other') | | NULL | Outcome of this pregnancy episode. |
+| `notes` | TEXT | | NULL | High-risk observations and clinical notes. |
+| `created_by` | INT | FK (`users.id`), NOT NULL | | Midwife / Health worker who opened the prenatal record. |
+| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Date record was created. |
 | `updated_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP* | Modification timestamp. |
 
 ---
 
-### 3.14 `child_health_records` Table *(Could-Have Enhancement)*
-Tracks newborn/infant developmental records, birth metrics, and delivery contexts.
+### 3.15 `prenatal_visits` Table
+Logs serial, recurring prenatal checkups across trimesters for an active pregnancy.
 
 | Column Name | Data Type | Constraints | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique child health record identifier. |
-| `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Patient linked. |
-| `birth_weight_kg` | DECIMAL(4,2) | | NULL | Body weight recorded immediately after birth (kg). |
-| `birth_height_cm` | DECIMAL(4,1) | | NULL | Body height recorded immediately after birth (cm). |
-| `delivery_type` | VARCHAR(50) | | NULL | E.g. 'Normal Spontaneous Delivery (NSD)', 'C-Section'. |
-| `place_of_delivery`| VARCHAR(150) | | NULL | Clinic, hospital name, or home. |
-| `notes` | TEXT | | NULL | Pediatric checks, birth anomalies, complications. |
-| `created_by` | INT | FK (`users.id`), NOT NULL | | Registrar user. |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique prenatal visit identifier. |
+| `prenatal_id` | INT | FK (`prenatal_records.id`) ON DELETE CASCADE | | Linked pregnancy episode. |
+| `visit_date` | DATE | NOT NULL | | Date of follow-up checkup. |
+| `chief_complaint` | VARCHAR(255) | | NULL | Patient's chief complaint during visit. |
+| `aog_weeks` | DECIMAL(4,1) | NOT NULL | | Age of Gestation at visit in weeks. |
+| `bp_systolic` | INT | | NULL | Maternal systolic blood pressure (mmHg). |
+| `bp_diastolic` | INT | | NULL | Maternal diastolic blood pressure (mmHg). |
+| `weight_kg` | DECIMAL(5,2) | | NULL | Maternal weight in kg during visit. |
+| `height_cm` | DECIMAL(5,2) | | NULL | Maternal height in cm. |
+| `fetal_heart_tone` | INT | | NULL | Fetal Heart Tone / Rate (bpm). |
+| `fundal_height_cm` | DECIMAL(4,1) | | NULL | Fundal height measurement in centimeters. |
+| `fetal_presentation` | ENUM('Cephalic', 'Breech', 'Transverse', 'Undetermined') | | 'Cephalic' | Fetal presentation / lie. |
+| `tcb` | VARCHAR(100) | | NULL | Target Client Benefit / Tetanus status indicator. |
+| `remarks` | TEXT | | NULL | Clinical observations, vitamins prescribed, next visit target. |
+| `attended_by` | INT | FK (`users.id`), NOT NULL | | Attending midwife, nurse, or physician. |
+| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Record creation timestamp. |
+
+---
+
+### 3.16 `past_obstetric_histories` Table
+Logs past pregnancy histories (Gravida 1, 2, 3...) for an expectant mother.
+
+| Column Name | Data Type | Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique obstetric history entry identifier. |
+| `patient_id` | INT | FK (`patients.id`) ON DELETE CASCADE | | Linked female patient master record. |
+| `gravida_no` | INT | NOT NULL | | Pregnancy number (e.g. 1 for 1st pregnancy, 2 for 2nd). |
+| `delivery_type` | ENUM('NSD', 'CS', 'Abortion', 'Other') | NOT NULL | 'NSD' | Type of delivery (Normal Spontaneous, C-Section, Abortion). |
+| `infant_sex` | ENUM('Male', 'Female', 'Unknown') | | 'Unknown' | Sex of the delivered child. |
+| `place_of_delivery`| VARCHAR(150) | | NULL | Hospital, lying-in clinic, or home. |
+| `year_delivered` | INT | | NULL | Calendar year when child was delivered. |
+| `attended_by` | VARCHAR(100) | | NULL | Delivery attendant (Doctor, Midwife, Nurse, Hilot/TBA). |
+| `status` | ENUM('Alive', 'Not Alive') | NOT NULL | 'Alive' | Current status of child. |
+| `birth_date` | DATE | | NULL | Child's exact date of birth if known. |
+| `tt_status` | VARCHAR(100) | | NULL | Tetanus Toxoid injection status and year given during that pregnancy. |
 | `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Creation timestamp. |
+
+---
+
+### 3.17 `wellbaby_records` Table
+Stores birth history, newborn screening, parental links, and infant care details for babies/children (0-5 years).
+
+| Column Name | Data Type | Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique Well Baby record identifier. |
+| `patient_id` | INT | UNIQUE, FK (`patients.id`) ON DELETE CASCADE | | Infant's master patient record (1-to-1 relationship). |
+| `mother_patient_id`| INT | FK (`patients.id`) ON DELETE SET NULL | NULL | Optional foreign key link to mother's registered patient profile. |
+| `birth_time` | TIME | | NULL | Time of birth. |
+| `birth_weight_kg` | DECIMAL(4,2) | NOT NULL | | Weight at birth in kilograms (kg). |
+| `birth_length_cm` | DECIMAL(4,1) | NOT NULL | | Length at birth in centimeters (cm). |
+| `place_of_delivery`| ENUM('Hospital', 'Lying-in', 'Home', 'Others') | NOT NULL | 'Lying-in' | Place where delivery occurred. |
+| `delivery_type` | ENUM('Normal Spontaneous Delivery (NSD)', 'Caesarean Section (CS)', 'Others') | NOT NULL | 'Normal Spontaneous Delivery (NSD)' | Method of delivery. |
+| `attended_by` | ENUM('Doctor', 'Nurse', 'Midwife', 'Hilot/TBA', 'Others') | NOT NULL | 'Midwife' | Person who delivered the baby. |
+| `newborn_screening_done` | BOOLEAN | NOT NULL | FALSE | Whether newborn screening test was performed (TRUE/FALSE). |
+| `newborn_screening_date` | DATE | | NULL | Date newborn screening was conducted. |
+| `newborn_screening_result` | VARCHAR(100) | | NULL | Screening result (Normal, Elevated, Pending). |
+| `mother_cpab_tt` | VARCHAR(100) | | NULL | Child Protected at Birth (CPAB) status / Mother's TT doses. |
+| `feeding_method` | ENUM('LAM / Exclusive Breastfeeding', 'Bottle Feed', 'Mixed') | NOT NULL | 'LAM / Exclusive Breastfeeding' | Primary feeding method. |
+| `created_by` | INT | FK (`users.id`), NOT NULL | | Staff member who registered the infant. |
+| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Registration timestamp. |
 | `updated_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP* | Modification timestamp. |
+
+---
+
+### 3.18 `child_growth_logs` Table
+Tracks periodic pediatric growth checkups, anthropometrics, feeding changes, and EPI immunization entries for children 0-5 years.
+
+| Column Name | Data Type | Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique growth monitoring entry identifier. |
+| `wellbaby_id` | INT | FK (`wellbaby_records.id`) ON DELETE CASCADE | | Linked child health record. |
+| `log_date` | DATE | NOT NULL | | Date of clinic checkup. |
+| `age_months` | DECIMAL(4,1) | NOT NULL | | Exact age in months at visit. |
+| `weight_kg` | DECIMAL(5,2) | NOT NULL | | Current weight in kilograms. |
+| `height_cm` | DECIMAL(5,2) | NOT NULL | | Current length/height in centimeters. |
+| `head_circumference_cm` | DECIMAL(4,1) | | NULL | Head circumference in centimeters. |
+| `chest_circumference_cm`| DECIMAL(4,1) | | NULL | Chest circumference in centimeters. |
+| `temperature` | DECIMAL(4,2) | | NULL | Body temperature in Celsius. |
+| `feeding_method` | ENUM('LAM / Exclusive Breastfeeding', 'Bottle Feed', 'Mixed') | NOT NULL | 'LAM / Exclusive Breastfeeding' | Current feeding practice. |
+| `vaccines_administered` | VARCHAR(255) | | NULL | Vaccines administered on this visit date (e.g., 'Penta 1, OPV 1, Rota 1'). |
+| `vitamin_a_dose` | BOOLEAN | | FALSE | Whether Vitamin A supplement was administered on this date. |
+| `deworming_dose` | BOOLEAN | | FALSE | Whether Deworming tablet was given on this date. |
+| `tcb_notes` | TEXT | | NULL | Target Client Benefit notes, developmental milestones, remarks. |
+| `recorded_by` | INT | FK (`users.id`), NOT NULL | | Attending nurse, midwife, or BHW. |
+| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Creation timestamp. |
 
 ---
 
@@ -487,6 +620,7 @@ CREATE TABLE `consultations` (
 CREATE TABLE `appointments` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
+  `program_type` ENUM('General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care') NOT NULL DEFAULT 'General OPD',
   `appointment_date` DATE NOT NULL,
   `appointment_time` TIME NOT NULL,
   `purpose` VARCHAR(255) NOT NULL,
@@ -506,6 +640,7 @@ CREATE TABLE `appointments` (
 CREATE TABLE `queue_entries` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
+  `service_type` ENUM('General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care') NOT NULL DEFAULT 'General OPD',
   `queue_date` DATE NOT NULL,
   `queue_no` INT NOT NULL,
   `status` ENUM('Waiting', 'Called', 'Serving', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Waiting',

@@ -84,6 +84,11 @@ To prevent invalid data injection, malformed records, and data corruption:
 * **PhilHealth Auto-Formatting Mask**: PhilHealth IDs strictly enforce the 12-digit format `XX-XXXXXXXXX-X` (`/^\d{2}-\d{9}-\d{1}$/`). Client-side JavaScript auto-formats hyphens as the user types.
 * **Strict Whitelist Verification**: Dropdown fields (`sex`, `civil_status`, `blood_type`) use strict `in_array()` whitelist verification in PHP controllers before database interaction.
 
+### 3.5 Clinical Module Authorization & Integrity Guards
+* **Maternal Program Biological Guards**: Enrollment into active pregnancy episodes (`/patients/{id}/prenatal/episode`) strictly validates patient biological sex (`sex === 'Female'`), rejecting invalid clinical enrollments with an error flash.
+* **Pediatric Age Bounds**: Well Baby and growth logs enforce infant/child age rules ($0 \le \text{age} \le 5\text{ years}$), preventing cross-program record pollution.
+* **Clinical Record Preservation**: Consultations, prenatal visits, and growth monitoring logs use soft-delete or cascade constraints linked to active patient files, ensuring historical medical logs remain protected during patient archiving.
+
 ---
 
 ## 4. Brute Force & Temporary Lockout Safeguards

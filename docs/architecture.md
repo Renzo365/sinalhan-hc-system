@@ -160,3 +160,42 @@ Ensure Apache listens on all network interfaces:
 Listen 80
 ```
 LAN workstations access the system using the server host's local IP (e.g., `http://192.168.1.100/sinalhan-hc-system/public` or custom local hosts DNS names mapped in the router/clients hosts files).
+
+---
+
+## 6. Clinical Workstation & Subsystem Architecture
+
+The system coordinates specialized clinical modules through standardized architectural patterns:
+
+### 6.1 Two-Stage Progressive Intake Architecture
+To prevent waiting room bottlenecks while maintaining comprehensive clinical depth:
+* **Stage 1: Fast Front-Desk Registration (`/patients/create`)**: Captures only essential identity, household (`family_no`), and PhilHealth categorization in 60–90 seconds.
+* **Stage 2: Modular Clinical Workstation (`/patients/{id}`)**: Enriches records progressively across 8 specialized, non-intrusive workstation tabs:
+  1. **Overview**: Vital signs snapshot, household family links, and medical condition summary.
+  2. **IHP History**: PhilHealth Annex A1 Individual Health Profile checklist, surgical logs, and habits.
+  3. **Consultations**: SOAP clinical notes with linked vitals and asynchronous modal viewers.
+  4. **Vitals Log**: Chronological blood pressure, pulse, temperature, and BMI trends.
+  5. **Immunizations**: Universal child and adult vaccination matrix with batch logs.
+  6. **Maternal Care (Female)**: Gestational tracker, Naegele EDC, dynamic AOG, serial follow-up checkups, and past deliveries matrix.
+  7. **Well Baby Care (Infants/Children 0–5y)**: Birth context, DOH EPI immunization tracker, Vitamin A/Deworming, and monthly growth logs.
+  8. **Appointments & Queue**: History of scheduled visits and clinic wait times.
+
+### 6.2 Clinical Decision Support (CDS) & Safety Alerts
+Real-time safety triggers scan patient profiles and render visual warning banners:
+* **Allergy Warnings**: Scans IHP history and highlights active allergies across the master profile and consultation creation forms.
+* **Pre-Eclampsia Alert**: Automatically flags pregnant patients with elevated BP or history of pregnancy-induced hypertension.
+* **Chronic Disease Banners**: Highlights patients with diagnosed Hypertension, Diabetes, or Asthma during SOAP checkups.
+* **Vital Signs Color Triage**: Automatically flags fever ($\ge 37.8^\circ\text{C}$), hypothermia ($< 35.0^\circ\text{C}$), hypertension ($\ge 140/90\text{ mmHg}$), hypotension ($< 90/60\text{ mmHg}$), and hypoxia ($SpO_2 < 95\%$).
+
+### 6.3 Clinical Calculators & Algorithms
+* **Naegele's Rule**: Computes Estimated Date of Confinement: $\text{EDC} = \text{LMP} + 1\text{ year} - 3\text{ months} + 7\text{ days}$.
+* **Dynamic Age of Gestation (AOG)**: Computes live gestational progress in exact weeks and days from LMP to the current date.
+* **Metric Body Mass Index (BMI)**: Computes $\text{BMI} = \frac{\text{Weight (kg)}}{(\text{Height (m)})^2}$ with WHO category mapping.
+
+### 6.4 Cross-Module Service Integration
+Clinical program tagging (`General OPD`, `Prenatal Care`, `Well Baby Immunization`, `Senior Care`) synchronizes:
+* **Queue Management**: Service-specific queue routing and lobby monitor display.
+* **Appointments**: Program-tagged scheduling with clinical purpose selection.
+* **Reporting Engine**: DOH-compliant Maternal Health Registry, Child EPI Coverage Report, and Morbidity Registry.
+* **Database Backup Engine**: Complete `.sql` snapshots including all 18 clinical, demographic, and administrative tables.
+

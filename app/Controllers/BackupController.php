@@ -61,13 +61,11 @@ class BackupController extends Controller {
     }
 
     /**
-     * Generate a new database backup SQL dump.
+     * Generate a new database backup SQL dump file on disk.
+     * 
+     * @return string|false Generated file path or false on error
      */
-    public function store() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
+    public function generateBackupSql() {
         try {
             $db = \App\Core\Database::getInstance()->getConnection();
             
@@ -123,13 +121,30 @@ class BackupController extends Controller {
             
             if (file_put_contents($filePath, $sqlDump) !== false) {
                 AuditLog::log('BACKUP_CREATED', 'Backup', "Created database backup: {$filename}");
-                $_SESSION['success_message'] = "Backup successfully created! ({$filename})";
+                return $filePath;
             } else {
-                $_SESSION['error_message'] = 'Failed to write backup file to disk.';
+                return false;
             }
         } catch (\Exception $e) {
             error_log("Database backup error: " . $e->getMessage());
-            $_SESSION['error_message'] = 'Database error occurred during backup: ' . $e->getMessage();
+            return false;
+        }
+    }
+
+    /**
+     * Generate a new database backup SQL dump and redirect.
+     */
+    public function store() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $filePath = $this->generateBackupSql();
+        if ($filePath) {
+            $filename = basename($filePath);
+            $_SESSION['success_message'] = "Backup successfully created! ({$filename})";
+        } else {
+            $_SESSION['error_message'] = 'Failed to generate database backup.';
         }
 
         $this->redirect('/backup');

@@ -92,12 +92,14 @@ class Appointment extends Model {
      * @return int|false New ID, or false on failure
      */
     public function create($data) {
+        $programType = !empty($data['program_type']) ? trim($data['program_type']) : 'General OPD';
+
         $sql = "INSERT INTO appointments (
                     patient_id, appointment_date, appointment_time, 
-                    purpose, status, notes, created_by
+                    purpose, program_type, status, notes, created_by
                 ) VALUES (
                     :patient_id, :appointment_date, :appointment_time, 
-                    :purpose, :status, :notes, :created_by
+                    :purpose, :program_type, :status, :notes, :created_by
                 )";
         
         $stmt = $this->db->prepare($sql);
@@ -107,6 +109,7 @@ class Appointment extends Model {
             'appointment_date' => $data['appointment_date'],
             'appointment_time' => $data['appointment_time'],
             'purpose' => trim($data['purpose']),
+            'program_type' => $programType,
             'status' => !empty($data['status']) ? $data['status'] : 'Scheduled',
             'notes' => !empty($data['notes']) ? trim($data['notes']) : null,
             'created_by' => (int)$data['created_by']
@@ -123,10 +126,13 @@ class Appointment extends Model {
      * @return bool True on success, false on failure
      */
     public function update($id, $data) {
+        $programType = !empty($data['program_type']) ? trim($data['program_type']) : 'General OPD';
+
         $sql = "UPDATE appointments SET 
                     appointment_date = :appointment_date,
                     appointment_time = :appointment_time,
                     purpose = :purpose,
+                    program_type = :program_type,
                     status = :status,
                     notes = :notes,
                     updated_by = :updated_by
@@ -139,6 +145,7 @@ class Appointment extends Model {
             'appointment_date' => $data['appointment_date'],
             'appointment_time' => $data['appointment_time'],
             'purpose' => trim($data['purpose']),
+            'program_type' => $programType,
             'status' => $data['status'],
             'notes' => !empty($data['notes']) ? trim($data['notes']) : null,
             'updated_by' => (int)$data['updated_by']

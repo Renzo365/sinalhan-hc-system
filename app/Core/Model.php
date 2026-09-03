@@ -8,4 +8,13 @@ class Model {
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
     }
+
+    /**
+     * Get the PDO database connection.
+     * 
+     * @return \PDO
+     */
+    public function getDb() {
+        return $this->db;
+    }
 }

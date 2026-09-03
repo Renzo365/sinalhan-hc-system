@@ -7,122 +7,133 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/layout/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Register Patient</h2>
-        <p class="text-secondary small mb-0">Enter demographic details to create a new patient record.</p>
+<div class="patient-form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 fw-bold text-primary-dark">Register Patient (Stage 1 Intake)</h2>
+            <p class="text-secondary small mb-0">Fast clinical intake: Enter demographic, household, and basic identity details.</p>
+        </div>
+        <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Patients List
+        </a>
     </div>
-    <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Back to Patients List
-    </a>
-</div>
 
-<!-- Errors Alert Box -->
-<?php if (isset($errors) && !empty($errors)): ?>
-    <div class="alert alert-danger mb-4 shadow-sm" role="alert">
-        <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the following errors:</div>
-        <ul class="mb-0 ps-3 small">
-            <?php foreach ($errors as $err): ?>
-                <li><?= h($err) ?></li>
-            <?php endforeach; ?>
-        </ul>
+    <!-- Errors Alert Box -->
+    <?php if (isset($errors) && !empty($errors)): ?>
+        <div class="alert alert-danger mb-4 shadow-sm" role="alert">
+            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the following errors:</div>
+            <ul class="mb-0 ps-3 small">
+                <?php foreach ($errors as $err): ?>
+                    <li><?= h($err) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <!-- Duplicate Name AJAX Warning Banner -->
+    <div class="alert alert-warning mb-4 shadow-sm d-none" id="duplicateWarningBanner" role="alert">
+        <div class="fw-bold mb-2"><i class="bi bi-exclamation-circle-fill me-2"></i>Possible Duplicate Patient Found!</div>
+        <p class="small mb-2">The system detected existing active record(s) with the exact same name:</p>
+        <div id="duplicateList" class="small fw-semibold ps-3 mb-2"></div>
+        <p class="small mb-0 text-muted">Please confirm that you are registering a different individual before saving.</p>
     </div>
-<?php endif; ?>
 
-<!-- Duplicate Name AJAX Warning Banner -->
-<div class="alert alert-warning mb-4 shadow-sm d-none" id="duplicateWarningBanner" role="alert">
-    <div class="fw-bold mb-2"><i class="bi bi-exclamation-circle-fill me-2"></i>Possible Duplicate Patient Found!</div>
-    <p class="small mb-2">The system detected existing active record(s) with the exact same name:</p>
-    <div id="duplicateList" class="small fw-semibold ps-3 mb-2"></div>
-    <p class="small mb-0 text-muted">Please confirm that you are registering a different person before saving.</p>
-</div>
+    <form action="<?= url('/patients') ?>" method="POST" id="patientForm" autocomplete="off">
+        <?= csrf_field() ?>
 
-<form action="<?= url('/patients') ?>" method="POST" id="patientForm" autocomplete="off">
-    <?= csrf_field() ?>
-
-    <div class="row g-4">
-        <!-- 1. Personal Information -->
-        <div class="col-12 col-lg-8">
-            <div class="card card-premium mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
+        <!-- CARD 1: Personal Identity -->
+        <div class="card card-premium mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                    <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">1</span>
                     <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                        <i class="bi bi-person-fill text-primary me-2"></i>Personal Information
+                        <i class="bi bi-person-badge text-primary me-2"></i>Personal Identity
                     </h3>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
                         <!-- First Name -->
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-6">
                             <label for="first_name" class="form-label fw-semibold text-secondary small">First Name <span class="text-danger">*</span></label>
                             <input type="text" 
                                    name="first_name" 
                                    id="first_name" 
                                    class="form-control name-input" 
                                    value="<?= h($input['first_name'] ?? '') ?>" 
-                                   pattern="[a-zA-ZñÑ\s\-\'\.]{2,50}"
+                                   placeholder="e.g. Juan"
                                    maxlength="50"
                                    minlength="2"
                                    required>
                         </div>
                         
                         <!-- Middle Name -->
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-6">
                             <label for="middle_name" class="form-label fw-semibold text-secondary small">Middle Name</label>
                             <input type="text" 
                                    name="middle_name" 
                                    id="middle_name" 
                                    class="form-control name-input" 
-                                   pattern="[a-zA-ZñÑ\s\-\'\.]{2,50}"
+                                   placeholder="e.g. Mercado"
                                    maxlength="50"
                                    value="<?= h($input['middle_name'] ?? '') ?>">
                         </div>
 
                         <!-- Last Name -->
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-8">
                             <label for="last_name" class="form-label fw-semibold text-secondary small">Last Name <span class="text-danger">*</span></label>
                             <input type="text" 
                                    name="last_name" 
                                    id="last_name" 
                                    class="form-control name-input" 
                                    value="<?= h($input['last_name'] ?? '') ?>" 
-                                   pattern="[a-zA-ZñÑ\s\-\'\.]{2,50}"
+                                   placeholder="e.g. Dela Cruz"
                                    maxlength="50"
                                    minlength="2"
                                    required>
                         </div>
 
-                        <!-- Date of Birth -->
+                        <!-- Suffix -->
                         <div class="col-12 col-sm-4">
+                            <label for="suffix" class="form-label fw-semibold text-secondary small">Suffix</label>
+                            <input type="text" 
+                                   name="suffix" 
+                                   id="suffix" 
+                                   class="form-control" 
+                                   placeholder="e.g. Jr., III"
+                                   maxlength="20"
+                                   value="<?= h($input['suffix'] ?? '') ?>">
+                        </div>
+
+                        <!-- Date of Birth -->
+                        <div class="col-12 col-sm-6">
                             <label for="dob" class="form-label fw-semibold text-secondary small">Date of Birth <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-date"></i></span>
                                 <input type="text" 
                                        name="dob" 
                                        id="dob" 
-                                       class="form-control bg-white" 
+                                       class="form-control bg-white dob-picker" 
                                        placeholder="YYYY-MM-DD" 
                                        value="<?= h($input['dob'] ?? '') ?>" 
                                        required>
                             </div>
                         </div>
 
-                        <!-- Sex -->
-                        <div class="col-12 col-sm-4">
+                        <!-- Biological Sex -->
+                        <div class="col-12 col-sm-6">
                             <label for="sex" class="form-label fw-semibold text-secondary small">Biological Sex <span class="text-danger">*</span></label>
                             <select name="sex" id="sex" class="form-select" required>
-                                <option value="" disabled selected>-- Select sex --</option>
+                                <option value="" disabled <?= empty($input['sex']) ? 'selected' : '' ?>>Select Sex</option>
                                 <option value="Male" <?= ($input['sex'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
                                 <option value="Female" <?= ($input['sex'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
                             </select>
                         </div>
 
                         <!-- Civil Status -->
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-6">
                             <label for="civil_status" class="form-label fw-semibold text-secondary small">Civil Status <span class="text-danger">*</span></label>
                             <select name="civil_status" id="civil_status" class="form-select" required>
-                                <option value="" disabled selected>-- Select status --</option>
-                                <?php $statuses = ['Single', 'Married', 'Widowed', 'Divorced', 'Separated'];
-                                foreach ($statuses as $status): ?>
+                                <option value="" disabled <?= empty($input['civil_status']) ? 'selected' : '' ?>>Select Status</option>
+                                <?php foreach (['Single', 'Married', 'Widowed', 'Divorced', 'Separated'] as $status): ?>
                                     <option value="<?= $status ?>" <?= ($input['civil_status'] ?? '') === $status ? 'selected' : '' ?>>
                                         <?= $status ?>
                                     </option>
@@ -131,276 +142,406 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
 
                         <!-- Blood Type -->
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-6">
                             <label for="blood_type" class="form-label fw-semibold text-secondary small">Blood Type</label>
                             <select name="blood_type" id="blood_type" class="form-select">
-                                <option value="Unknown" <?= ($input['blood_type'] ?? 'Unknown') === 'Unknown' ? 'selected' : '' ?>>Unknown / Unspecified</option>
+                                <option value="Unknown" <?= ($input['blood_type'] ?? 'Unknown') === 'Unknown' ? 'selected' : '' ?>>Unknown</option>
                                 <?php foreach (['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $bt): ?>
-                                    <option value="<?= $bt ?>" <?= ($input['blood_type'] ?? '') === $bt ? 'selected' : '' ?>><?= $bt ?></option>
+                                    <option value="<?= $bt ?>" <?= ($input['blood_type'] ?? '') === $bt ? 'selected' : '' ?>>
+                                        <?= $bt ?>
+                                    </option>
                                 <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2: Household & Address -->
+            <div class="card card-premium mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                    <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">2</span>
+                    <h3 class="card-title h6 mb-0 fw-bold text-dark">
+                        <i class="bi bi-house-door text-primary me-2"></i>Household & Address
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <!-- Family Number -->
+                        <div class="col-12 col-sm-6">
+                            <label for="family_no" class="form-label fw-semibold text-secondary small">
+                                Family Number (Household ID)
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-people-fill"></i></span>
+                                <input type="text" 
+                                       name="family_no" 
+                                       id="family_no" 
+                                       class="form-control" 
+                                       placeholder="e.g. FAM-0428"
+                                       maxlength="50"
+                                       value="<?= h($input['family_no'] ?? '') ?>">
+                            </div>
+                            <div class="form-text small text-muted">Links household members together in the directory.</div>
+                        </div>
+
+                        <!-- Contact No -->
+                        <div class="col-12 col-sm-6">
+                            <label for="contact_no" class="form-label fw-semibold text-secondary small">Contact No. (Mobile)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+                                <input type="tel" 
+                                       name="contact_no" 
+                                       id="contact_no" 
+                                       class="form-control phone-input" 
+                                       placeholder="09171234567" 
+                                       maxlength="11"
+                                       value="<?= h($input['contact_no'] ?? '') ?>">
+                            </div>
+                        </div>
+
+                        <!-- Barangay -->
+                        <div class="col-12 col-sm-6">
+                            <label for="barangay" class="form-label fw-semibold text-secondary small">Barangay <span class="text-danger">*</span></label>
+                            <select name="barangay" id="barangay" class="form-select" required>
+                                <option value="Sinalhan" <?= ($input['barangay'] ?? 'Sinalhan') === 'Sinalhan' ? 'selected' : '' ?>>Sinalhan (Catchment Area)</option>
+                                <option value="Aplaya" <?= ($input['barangay'] ?? '') === 'Aplaya' ? 'selected' : '' ?>>Aplaya</option>
+                                <option value="Caingin" <?= ($input['barangay'] ?? '') === 'Caingin' ? 'selected' : '' ?>>Caingin</option>
+                                <option value="Dila" <?= ($input['barangay'] ?? '') === 'Dila' ? 'selected' : '' ?>>Dila</option>
+                                <option value="Dita" <?= ($input['barangay'] ?? '') === 'Dita' ? 'selected' : '' ?>>Dita</option>
+                                <option value="Don Jose" <?= ($input['barangay'] ?? '') === 'Don Jose' ? 'selected' : '' ?>>Don Jose</option>
+                                <option value="Ibaba" <?= ($input['barangay'] ?? '') === 'Ibaba' ? 'selected' : '' ?>>Ibaba</option>
+                                <option value="Labas" <?= ($input['barangay'] ?? '') === 'Labas' ? 'selected' : '' ?>>Labas</option>
+                                <option value="Macabling" <?= ($input['barangay'] ?? '') === 'Macabling' ? 'selected' : '' ?>>Macabling</option>
+                                <option value="Malitlit" <?= ($input['barangay'] ?? '') === 'Malitlit' ? 'selected' : '' ?>>Malitlit</option>
+                                <option value="Market Area" <?= ($input['barangay'] ?? '') === 'Market Area' ? 'selected' : '' ?>>Market Area</option>
+                                <option value="Pooc" <?= ($input['barangay'] ?? '') === 'Pooc' ? 'selected' : '' ?>>Pooc</option>
+                                <option value="Pulong Santa Cruz" <?= ($input['barangay'] ?? '') === 'Pulong Santa Cruz' ? 'selected' : '' ?>>Pulong Santa Cruz</option>
+                                <option value="Santo Domingo" <?= ($input['barangay'] ?? '') === 'Santo Domingo' ? 'selected' : '' ?>>Santo Domingo</option>
+                                <option value="Tagapo" <?= ($input['barangay'] ?? '') === 'Tagapo' ? 'selected' : '' ?>>Tagapo</option>
+                                <option value="Other" <?= ($input['barangay'] ?? '') === 'Other' ? 'selected' : '' ?>>Other / Out of Town</option>
+                            </select>
+                        </div>
+
+                        <!-- Street Address -->
+                        <div class="col-12 col-sm-6">
+                            <label for="address" class="form-label fw-semibold text-secondary small">House No. / Street / Purok <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   name="address" 
+                                   id="address" 
+                                   class="form-control" 
+                                   placeholder="e.g. Blk 4 Lot 12 Purok 3"
+                                   maxlength="255"
+                                   value="<?= h($input['address'] ?? '') ?>" 
+                                   required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: PhilHealth & Socioeconomic -->
+            <div class="card card-premium mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                    <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">3</span>
+                    <h3 class="card-title h6 mb-0 fw-bold text-dark">
+                        <i class="bi bi-card-heading text-primary me-2"></i>PhilHealth & Socioeconomic
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <!-- PHIC Membership Status -->
+                        <div class="col-12 col-sm-6">
+                            <label for="phic_status" class="form-label fw-semibold text-secondary small">PhilHealth Status <span class="text-danger">*</span></label>
+                            <select name="phic_status" id="phic_status" class="form-select" required>
+                                <option value="Non-Member" <?= ($input['phic_status'] ?? 'Non-Member') === 'Non-Member' ? 'selected' : '' ?>>Non-Member</option>
+                                <option value="Member" <?= ($input['phic_status'] ?? '') === 'Member' ? 'selected' : '' ?>>Member (Direct/Indirect)</option>
+                                <option value="Dependent" <?= ($input['phic_status'] ?? '') === 'Dependent' ? 'selected' : '' ?>>Dependent</option>
+                            </select>
+                        </div>
+
+                        <!-- PHIC Type / Category -->
+                        <div class="col-12 col-sm-6">
+                            <label for="phic_type" class="form-label fw-semibold text-secondary small">PHIC Category / Type</label>
+                            <select name="phic_type" id="phic_type" class="form-select">
+                                <option value="">-- Select Category --</option>
+                                <option value="Sponsored - NHTS" <?= ($input['phic_type'] ?? '') === 'Sponsored - NHTS' ? 'selected' : '' ?>>Sponsored - NHTS / 4Ps</option>
+                                <option value="Sponsored - LGU" <?= ($input['phic_type'] ?? '') === 'Sponsored - LGU' ? 'selected' : '' ?>>Sponsored - LGU</option>
+                                <option value="Employed - Private" <?= ($input['phic_type'] ?? '') === 'Employed - Private' ? 'selected' : '' ?>>Employed - Private</option>
+                                <option value="Employed - Government" <?= ($input['phic_type'] ?? '') === 'Employed - Government' ? 'selected' : '' ?>>Employed - Government</option>
+                                <option value="Indigent" <?= ($input['phic_type'] ?? '') === 'Indigent' ? 'selected' : '' ?>>Indigent</option>
+                                <option value="Senior Citizen" <?= ($input['phic_type'] ?? '') === 'Senior Citizen' ? 'selected' : '' ?>>Senior Citizen</option>
+                                <option value="Lifetime Member" <?= ($input['phic_type'] ?? '') === 'Lifetime Member' ? 'selected' : '' ?>>Lifetime Member</option>
+                                <option value="Informal / Self-Earning" <?= ($input['phic_type'] ?? '') === 'Informal / Self-Earning' ? 'selected' : '' ?>>Informal / Self-Earning</option>
+                                <option value="IPP - OFW" <?= ($input['phic_type'] ?? '') === 'IPP - OFW' ? 'selected' : '' ?>>IPP - OFW</option>
+                                <option value="Others" <?= ($input['phic_type'] ?? '') === 'Others' ? 'selected' : '' ?>>Others</option>
+                            </select>
+                        </div>
+
+                        <!-- PhilHealth PIN -->
+                        <div class="col-12 col-sm-6">
+                            <label for="philhealth_no" class="form-label fw-semibold text-secondary small">PhilHealth PIN (12 Digits)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-credit-card-2-front"></i></span>
+                                <input type="text" 
+                                       name="philhealth_no" 
+                                       id="philhealth_no" 
+                                       class="form-control phic-mask" 
+                                       placeholder="XX-XXXXXXXXX-X" 
+                                       maxlength="14"
+                                       value="<?= h($input['philhealth_no'] ?? '') ?>">
+                            </div>
+                        </div>
+
+                        <!-- Educational Attainment -->
+                        <div class="col-12 col-sm-6">
+                            <label for="education_attainment" class="form-label fw-semibold text-secondary small">Educational Attainment</label>
+                            <select name="education_attainment" id="education_attainment" class="form-select">
+                                <option value="">-- Select Education --</option>
+                                <option value="No Schooling" <?= ($input['education_attainment'] ?? '') === 'No Schooling' ? 'selected' : '' ?>>No Schooling</option>
+                                <option value="Elementary" <?= ($input['education_attainment'] ?? '') === 'Elementary' ? 'selected' : '' ?>>Elementary</option>
+                                <option value="High School" <?= ($input['education_attainment'] ?? '') === 'High School' ? 'selected' : '' ?>>High School</option>
+                                <option value="Vocational" <?= ($input['education_attainment'] ?? '') === 'Vocational' ? 'selected' : '' ?>>Vocational</option>
+                                <option value="College / Post-Graduate" <?= ($input['education_attainment'] ?? '') === 'College / Post-Graduate' ? 'selected' : '' ?>>College / Post-Graduate</option>
                             </select>
                         </div>
 
                         <!-- Occupation -->
-                        <div class="col-12 col-sm-8">
-                            <label for="occupation" class="form-label fw-semibold text-secondary small">Occupation / Employment Status</label>
+                        <div class="col-12 col-sm-6">
+                            <label for="occupation" class="form-label fw-semibold text-secondary small">Occupation</label>
                             <input type="text" 
                                    name="occupation" 
                                    id="occupation" 
                                    class="form-control" 
-                                   placeholder="e.g. Self-Employed, Student, Vendor" 
-                                   maxlength="100" 
+                                   placeholder="e.g. Vendor, Driver, Student" 
+                                   maxlength="100"
                                    value="<?= h($input['occupation'] ?? '') ?>">
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 2. Contact and Address -->
-            <div class="card card-premium">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                        <i class="bi bi-geo-alt-fill text-primary me-2"></i>Contact & Address
-                    </h3>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <!-- Contact Number -->
-                        <div class="col-12 col-sm-4">
-                            <label for="contact_no" class="form-label fw-semibold text-secondary small">Primary Contact No.</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
-                                <input type="text" 
-                                       name="contact_no" 
-                                       id="contact_no" 
-                                       class="form-control phone-input" 
-                                       placeholder="09XXXXXXXXX" 
-                                       inputmode="numeric"
-                                       maxlength="11"
-                                       pattern="09[0-9]{9}"
-                                       value="<?= h($input['contact_no'] ?? '') ?>">
-                            </div>
-                            <div class="form-text text-muted small">11-digit mobile (09XXXXXXXXX)</div>
-                        </div>
-
-                        <!-- Barangay -->
-                        <div class="col-12 col-sm-8">
-                            <label for="barangay" class="form-label fw-semibold text-secondary small">Barangay <span class="text-danger">*</span></label>
+                        <!-- Religion -->
+                        <div class="col-12 col-sm-6">
+                            <label for="religion" class="form-label fw-semibold text-secondary small">Religion</label>
                             <input type="text" 
-                                   name="barangay" 
-                                   id="barangay" 
+                                   name="religion" 
+                                   id="religion" 
                                    class="form-control" 
-                                   value="<?= h($input['barangay'] ?? 'Sinalhan') ?>" 
+                                   placeholder="e.g. Roman Catholic, INC, Islam" 
                                    maxlength="100"
-                                   minlength="2"
-                                   required>
-                        </div>
-
-                        <!-- Complete Address -->
-                        <div class="col-12">
-                            <label for="address" class="form-label fw-semibold text-secondary small">Complete Address <span class="text-danger">*</span></label>
-                            <textarea name="address" 
-                                      id="address" 
-                                      rows="3" 
-                                      class="form-control" 
-                                      placeholder="House no., street, block, subdivision..." 
-                                      minlength="5"
-                                      maxlength="500"
-                                      required><?= h($input['address'] ?? '') ?></textarea>
+                                   value="<?= h($input['religion'] ?? '') ?>">
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Right Side Panel: emergency & identifiers -->
-        <div class="col-12 col-lg-4">
-            <!-- 3. Emergency Contact -->
+            <!-- CARD 4: Immediate Family & Emergency Contacts -->
             <div class="card card-premium mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                    <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">4</span>
                     <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                        <i class="bi bi-exclamation-circle text-primary me-2"></i>Emergency Contact
+                        <i class="bi bi-people text-primary me-2"></i>Immediate Family & Emergency Contacts
                     </h3>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
-                        <!-- Contact Person Name -->
-                        <div class="col-12">
-                            <label for="emergency_name" class="form-label fw-semibold text-secondary small">Contact Person Name</label>
+                        <!-- Father's Info -->
+                        <div class="col-12 col-sm-7">
+                            <label for="father_name" class="form-label fw-semibold text-secondary small">Father's Name</label>
+                            <input type="text" 
+                                   name="father_name" 
+                                   id="father_name" 
+                                   class="form-control name-input" 
+                                   placeholder="Full Name of Father" 
+                                   maxlength="150"
+                                   value="<?= h($input['father_name'] ?? '') ?>">
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <label for="father_dob" class="form-label fw-semibold text-secondary small">Father's DOB</label>
+                            <input type="text" 
+                                   name="father_dob" 
+                                   id="father_dob" 
+                                   class="form-control dob-picker" 
+                                   placeholder="YYYY-MM-DD" 
+                                   value="<?= h($input['father_dob'] ?? '') ?>">
+                        </div>
+
+                        <!-- Mother's Info -->
+                        <div class="col-12 col-sm-7">
+                            <label for="mother_name" class="form-label fw-semibold text-secondary small">Mother's Maiden Name</label>
+                            <input type="text" 
+                                   name="mother_name" 
+                                   id="mother_name" 
+                                   class="form-control name-input" 
+                                   placeholder="Maiden Name of Mother" 
+                                   maxlength="150"
+                                   value="<?= h($input['mother_name'] ?? '') ?>">
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <label for="mother_dob" class="form-label fw-semibold text-secondary small">Mother's DOB</label>
+                            <input type="text" 
+                                   name="mother_dob" 
+                                   id="mother_dob" 
+                                   class="form-control dob-picker" 
+                                   placeholder="YYYY-MM-DD" 
+                                   value="<?= h($input['mother_dob'] ?? '') ?>">
+                        </div>
+
+                        <!-- Spouse's Info -->
+                        <div class="col-12 col-sm-7">
+                            <label for="spouse_name" class="form-label fw-semibold text-secondary small">Spouse's Name (if married)</label>
+                            <input type="text" 
+                                   name="spouse_name" 
+                                   id="spouse_name" 
+                                   class="form-control name-input" 
+                                   placeholder="Full Name of Spouse" 
+                                   maxlength="150"
+                                   value="<?= h($input['spouse_name'] ?? '') ?>">
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <label for="spouse_dob" class="form-label fw-semibold text-secondary small">Spouse's DOB</label>
+                            <input type="text" 
+                                   name="spouse_dob" 
+                                   id="spouse_dob" 
+                                   class="form-control dob-picker" 
+                                   placeholder="YYYY-MM-DD" 
+                                   value="<?= h($input['spouse_dob'] ?? '') ?>">
+                        </div>
+
+                        <div class="col-12"><hr class="my-2 border-light-subtle"></div>
+
+                        <!-- Emergency Contact Person -->
+                        <div class="col-12 col-sm-4">
+                            <label for="emergency_name" class="form-label fw-semibold text-secondary small">Emergency Contact Person</label>
                             <input type="text" 
                                    name="emergency_name" 
                                    id="emergency_name" 
                                    class="form-control name-input" 
-                                   placeholder="Full Name" 
+                                   placeholder="e.g. Maria Dela Cruz" 
                                    maxlength="100"
                                    value="<?= h($input['emergency_name'] ?? '') ?>">
                         </div>
 
                         <!-- Emergency Relationship -->
-                        <div class="col-12">
-                            <label for="emergency_relationship" class="form-label fw-semibold text-secondary small">Relationship to Patient</label>
+                        <div class="col-12 col-sm-4">
+                            <label for="emergency_relationship" class="form-label fw-semibold text-secondary small">Relationship</label>
                             <input type="text" 
                                    name="emergency_relationship" 
                                    id="emergency_relationship" 
                                    class="form-control" 
-                                   placeholder="e.g. Spouse, Mother, Guardian" 
+                                   placeholder="e.g. Mother, Spouse, Sister" 
                                    maxlength="50"
                                    value="<?= h($input['emergency_relationship'] ?? '') ?>">
                         </div>
 
-                        <!-- Contact Person Number -->
-                        <div class="col-12">
-                            <label for="emergency_no" class="form-label fw-semibold text-secondary small">Contact Person Number</label>
-                            <input type="text" 
+                        <!-- Emergency Contact Number -->
+                        <div class="col-12 col-sm-4">
+                            <label for="emergency_no" class="form-label fw-semibold text-secondary small">Emergency Phone</label>
+                            <input type="tel" 
                                    name="emergency_no" 
                                    id="emergency_no" 
                                    class="form-control phone-input" 
-                                   placeholder="09XXXXXXXXX" 
-                                   inputmode="numeric"
+                                   placeholder="09187654321" 
                                    maxlength="11"
-                                   pattern="09[0-9]{9}"
                                    value="<?= h($input['emergency_no'] ?? '') ?>">
-                            <div class="form-text text-muted small">11-digit mobile (09XXXXXXXXX)</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 4. Identifiers -->
-            <div class="card card-premium mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
-                    <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                        <i class="bi bi-card-heading text-primary me-2"></i>Health Identifiers
-                    </h3>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <!-- PhilHealth No -->
-                        <div class="col-12">
-                            <label for="philhealth_no" class="form-label fw-semibold text-secondary small">PhilHealth ID No.</label>
-                            <input type="text" 
-                                   name="philhealth_no" 
-                                   id="philhealth_no" 
-                                   class="form-control" 
-                                   placeholder="XX-XXXXXXXXX-X" 
-                                   maxlength="14"
-                                   pattern="\d{2}-\d{9}-\d{1}"
-                                   value="<?= h($input['philhealth_no'] ?? '') ?>">
-                            <div class="form-text text-muted small">Format: XX-XXXXXXXXX-X</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Save Action Card -->
-            <div class="card card-premium bg-light border-0">
-                <div class="card-body p-4">
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary py-2 fw-semibold shadow-sm">
-                            <i class="bi bi-save me-2"></i>Save Patient
+            <!-- Submit & Navigation Action Bar (Sticky floating bar) -->
+            <div class="card card-premium sticky-form-action-bar mb-4 shadow">
+                <div class="card-body p-3 px-md-4 py-md-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="text-muted small">
+                        <i class="bi bi-info-circle me-1 text-primary"></i> Fields marked with (<span class="text-danger">*</span>) are mandatory.
+                    </span>
+                    <div class="d-flex gap-3">
+                        <a href="<?= url('/patients') ?>" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btnSubmitPatient">
+                            <i class="bi bi-check2-circle me-1 fs-5 align-middle"></i> Register Patient
                         </button>
-                        <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary py-2 fw-semibold">
-                            Cancel
-                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</form>
-
-<?php require dirname(__DIR__) . '/layout/footer.php'; ?>
+    </form>
+</div> <!-- Close patient-form-wrapper -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize flatpickr on DOB
-    flatpickr("#dob", {
-        dateFormat: "Y-m-d",
-        maxDate: "today",
-        minDate: "1900-01-01",
-        allowInput: true
-    });
+    // 1. Initialize Flatpickr for Date Inputs
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr(".dob-picker", {
+            dateFormat: "Y-m-d",
+            maxDate: "today",
+            allowInput: true
+        });
+    }
 
-    // Real-time Keystroke Filters
-    
-    // 1. Name inputs: Block numeric digits and special symbols
-    const nameFields = document.querySelectorAll('.name-input');
-    nameFields.forEach(field => {
-        field.addEventListener('input', function() {
-            // Remove digits and disallowed characters
-            this.value = this.value.replace(/[0-9!@#$%^&*()_+=~`{}|\\:;<>?\/]/g, '');
+    // 2. Real-time Name Masking (Letters, spaces, hyphens, apostrophes, dots, ñ/Ñ only)
+    const nameInputs = document.querySelectorAll('.name-input');
+    nameInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZñÑ\s\-\'\.]/g, '');
         });
     });
 
-    // 2. Mobile Phone inputs: Restrict to numeric digits only and cap at 11 chars
-    const phoneFields = document.querySelectorAll('.phone-input');
-    phoneFields.forEach(field => {
-        field.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
-            if (this.value.length > 11) {
-                this.value = this.value.slice(0, 11);
-            }
+    // 3. Real-time Philippine Phone Number Masking (Digits only, max 11)
+    const phoneInputs = document.querySelectorAll('.phone-input');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 11);
         });
     });
 
-    // 3. PhilHealth ID Auto-Formatter Mask (XX-XXXXXXXXX-X)
-    const philhealthInput = document.getElementById('philhealth_no');
-    if (philhealthInput) {
-        philhealthInput.addEventListener('input', function() {
-            let val = this.value.replace(/[^0-9]/g, '');
-            if (val.length > 12) val = val.slice(0, 12);
-            
+    // 4. Real-time PhilHealth PIN Masking (XX-XXXXXXXXX-X)
+    const phicInput = document.getElementById('philhealth_no');
+    if (phicInput) {
+        phicInput.addEventListener('input', function(e) {
+            let val = this.value.replace(/\D/g, '').substring(0, 12);
             let formatted = '';
-            if (val.length > 0) {
-                formatted += val.slice(0, 2);
-            }
-            if (val.length > 2) {
-                formatted += '-' + val.slice(2, 11);
-            }
-            if (val.length > 11) {
-                formatted += '-' + val.slice(11, 12);
-            }
+            if (val.length > 0) formatted += val.substring(0, 2);
+            if (val.length > 2) formatted += '-' + val.substring(2, 11);
+            if (val.length > 11) formatted += '-' + val.substring(11, 12);
             this.value = formatted;
         });
     }
 
-    // AJAX duplicate checking
-    const firstNameInput = document.getElementById('first_name');
-    const lastNameInput = document.getElementById('last_name');
+    // 5. AJAX Duplicate Check Trigger
+    const firstName = document.getElementById('first_name');
+    const lastName = document.getElementById('last_name');
     const warningBanner = document.getElementById('duplicateWarningBanner');
     const duplicateList = document.getElementById('duplicateList');
 
-    function checkDuplicateName() {
-        const fname = firstNameInput.value.trim();
-        const lname = lastNameInput.value.trim();
+    function checkDuplicates() {
+        const fn = firstName ? firstName.value.trim() : '';
+        const ln = lastName ? lastName.value.trim() : '';
 
-        if (fname.length > 0 && lname.length > 0) {
-            const checkUrl = `<?= url('/patients/check-duplicate') ?>?first_name=${encodeURIComponent(fname)}&last_name=${encodeURIComponent(lname)}`;
-            
-            fetch(checkUrl)
-                .then(response => response.json())
+        if (fn.length >= 2 && ln.length >= 2) {
+            fetch(`<?= url('/patients/check-duplicate') ?>?first_name=${encodeURIComponent(fn)}&last_name=${encodeURIComponent(ln)}`)
+                .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {
-                        duplicateList.innerHTML = '';
-                        data.forEach(match => {
-                            const li = document.createElement('div');
-                            li.className = 'mb-1';
-                            li.innerHTML = `<i class="bi bi-person-fill-exclamation me-1"></i> ${match.patient_no} &bull; ${match.last_name}, ${match.first_name} (${match.sex}, born ${match.dob}) resident of Brgy. ${match.barangay}`;
-                            duplicateList.appendChild(li);
+                        let html = '<ul class="mb-0">';
+                        data.forEach(p => {
+                            html += `<li><strong>${p.first_name} ${p.last_name}</strong> (Patient No: ${p.patient_no}, DOB: ${p.dob}, Barangay: ${p.barangay})</li>`;
                         });
+                        html += '</ul>';
+                        duplicateList.innerHTML = html;
                         warningBanner.classList.remove('d-none');
                     } else {
                         warningBanner.classList.add('d-none');
-                        duplicateList.innerHTML = '';
                     }
                 })
-                .catch(err => console.error('Failed to run duplicate name check:', err));
+                .catch(() => {
+                    warningBanner.classList.add('d-none');
+                });
+        } else {
+            warningBanner.classList.add('d-none');
         }
     }
 
-    if (firstNameInput && lastNameInput) {
-        firstNameInput.addEventListener('blur', checkDuplicateName);
-        lastNameInput.addEventListener('blur', checkDuplicateName);
+    if (firstName && lastName) {
+        firstName.addEventListener('blur', checkDuplicates);
+        lastName.addEventListener('blur', checkDuplicates);
     }
 });
 </script>
+
+<?php require dirname(__DIR__) . '/layout/footer.php'; ?>

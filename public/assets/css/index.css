@@ -50,6 +50,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 a {
@@ -79,49 +80,91 @@ a:hover {
 
 /* --- Login Page --- */
 .login-body {
-  background: linear-gradient(135deg, var(--login-gradient-start) 0%, var(--login-gradient-end) 100%);
+  background: url('../images/login_bg.png') center center / cover no-repeat fixed;
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .login-glow-1, .login-glow-2 {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  border-radius: 50%;
-  background: var(--login-bg-glow);
-  filter: blur(120px);
-  z-index: 1;
-  pointer-events: none;
-}
-.login-glow-1 {
-  top: -10%;
-  left: -10%;
-}
-.login-glow-2 {
-  bottom: -10%;
-  right: -10%;
+  display: none;
 }
 
 .login-card {
   border: none;
-  border-radius: 16px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.15);
   z-index: 2;
   overflow: hidden;
-  max-width: 450px;
+  max-width: 480px;
   width: 100%;
+  background-color: #ffffff;
 }
 .login-header-section {
   background-color: var(--color-sidebar);
   color: #fff;
-  padding: 30px;
+  padding: 34px 32px 28px;
   text-align: center;
   border-bottom: 4px solid var(--color-primary-light);
+}
+.login-header-icon {
+  font-size: 2.85rem;
+  margin-bottom: 0.5rem;
+  display: inline-block;
+}
+.login-title {
+  font-size: 1.5rem;
+  letter-spacing: -0.3px;
+  font-weight: 700;
+}
+.login-subtitle {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.login-card .card-body {
+  padding: 36px 36px 32px;
+}
+.login-card .form-label {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+.login-card .input-group-text {
+  font-size: 1.15rem;
+  padding: 0.65rem 0.95rem;
+}
+.login-card .form-control {
+  font-size: 1rem;
+  padding: 0.65rem 0.95rem;
+}
+.login-card .btn-primary {
+  font-size: 1.05rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.login-footer {
+  z-index: 2;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.login-footer-pill {
+  display: inline-block;
+  padding: 8px 22px;
+  background: rgba(10, 30, 32, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
 /* --- App Layout --- */
@@ -472,3 +515,208 @@ a:hover {
   background-color: var(--color-primary-soft);
 }
 
+/* --- Maternal & Prenatal Healthcare Pink Palette --- */
+:root {
+  --color-pink: #d63384;
+  --color-pink-hover: #b02a6b;
+  --color-pink-soft: rgba(214, 51, 132, 0.12);
+}
+
+.bg-pink {
+  background-color: #d63384 !important;
+}
+
+.text-pink {
+  color: #d63384 !important;
+}
+
+.border-pink {
+  border-color: #d63384 !important;
+}
+
+.btn-pink {
+  background-color: #d63384 !important;
+  border-color: #d63384 !important;
+  color: #ffffff !important;
+}
+
+.btn-pink:hover, 
+.btn-pink:focus, 
+.btn-pink:active {
+  background-color: #b02a6b !important;
+  border-color: #a02360 !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-pink {
+  background-color: transparent !important;
+  border-color: #d63384 !important;
+  color: #d63384 !important;
+}
+
+.btn-outline-pink:hover, 
+.btn-outline-pink:focus, 
+.btn-outline-pink:active {
+  background-color: #d63384 !important;
+  border-color: #d63384 !important;
+  color: #ffffff !important;
+}
+
+/* --- Workstation Modular Tab Strip & Panels (Underline Indicator Style) --- */
+#workstationTabs {
+  border-bottom: 2px solid #e9ecef !important;
+  gap: 4px;
+  background-color: #ffffff !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important; /* Strictly eliminates vertical scrollbar */
+  padding: 0 0.75rem 2px 0.75rem !important;
+  margin: 0 !important;
+  /* Restore visible horizontal scrollbar */
+  scrollbar-width: thin !important; /* Firefox */
+  scrollbar-color: #94a3b8 #f1f5f9 !important;
+}
+
+/* Horizontal scrollbar styling for Chrome, Edge, Safari, Brave */
+#workstationTabs::-webkit-scrollbar {
+  display: block !important;
+  height: 7px !important;
+}
+
+#workstationTabs::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 4px !important;
+}
+
+#workstationTabs::-webkit-scrollbar-thumb {
+  background: #94a3b8 !important;
+  border-radius: 4px !important;
+}
+
+#workstationTabs::-webkit-scrollbar-thumb:hover {
+  background: #64748b !important;
+}
+
+#workstationTabs .nav-item {
+  margin-bottom: 0 !important;
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0 !important;
+}
+
+#workstationTabs .nav-link {
+  border: none !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 3.5px solid transparent !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  color: #64748b !important;
+  font-weight: 600 !important;
+  font-size: 0.935rem;
+  padding: 0.9rem 1.15rem 0.8rem 1.15rem !important;
+  line-height: 1.5;
+  white-space: nowrap !important;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  margin-bottom: 0 !important;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+#workstationTabs .nav-link i {
+  color: #94a3b8 !important;
+  font-size: 1.1rem;
+  transition: color 0.15s ease;
+}
+
+#workstationTabs .nav-link .badge {
+  font-size: 0.75rem;
+  padding: 0.25em 0.55em;
+  border-radius: 12px;
+  transition: all 0.15s ease;
+}
+
+/* Hover state for inactive tabs */
+#workstationTabs .nav-link:hover {
+  color: #1e293b !important;
+  border-bottom: 3.5px solid #cbd5e1 !important;
+  background-color: transparent !important;
+}
+
+#workstationTabs .nav-link:hover i {
+  color: #475569 !important;
+}
+
+/* Active Tab State: colored text, colored icon, prominent colored line, no box */
+#workstationTabs .nav-link.active {
+  color: var(--color-primary) !important; /* #0D7377 Signature Healthcare Teal */
+  font-weight: 700 !important;
+  border-bottom: 3.5px solid var(--color-primary) !important;
+  background-color: transparent !important;
+}
+
+#workstationTabs .nav-link.active i {
+  color: var(--color-primary) !important;
+}
+
+#workstationTabs .nav-link.active .badge {
+  background-color: var(--color-primary-soft) !important;
+  color: var(--color-primary) !important;
+  border: 1px solid rgba(13, 115, 119, 0.3) !important;
+}
+
+/* Special Case: Prenatal Tab */
+#workstationTabs .nav-link.tab-prenatal:hover {
+  color: #d63384 !important;
+  border-bottom: 3.5px solid rgba(214, 51, 132, 0.4) !important;
+}
+#workstationTabs .nav-link.tab-prenatal:hover i {
+  color: #d63384 !important;
+}
+#workstationTabs .nav-link.tab-prenatal.active {
+  color: #d63384 !important;
+  border-bottom: 3.5px solid #d63384 !important;
+}
+#workstationTabs .nav-link.tab-prenatal.active i {
+  color: #d63384 !important;
+}
+
+/* Special Case: Well Baby Tab */
+#workstationTabs .nav-link.tab-wellbaby:hover {
+  color: #198754 !important;
+  border-bottom: 3.5px solid rgba(25, 135, 84, 0.4) !important;
+}
+#workstationTabs .nav-link.tab-wellbaby:hover i {
+  color: #198754 !important;
+}
+#workstationTabs .nav-link.tab-wellbaby.active {
+  color: #198754 !important;
+  border-bottom: 3.5px solid #198754 !important;
+}
+#workstationTabs .nav-link.tab-wellbaby.active i {
+  color: #198754 !important;
+}
+
+/* --- Single-Column Patient Form & Sticky Action Bar --- */
+.patient-form-wrapper {
+  max-width: 960px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sticky-form-action-bar {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  bottom: 1.25rem !important;
+  z-index: 1020 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(13, 115, 119, 0.22) !important;
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.14), 0 6px 12px -4px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 14px !important;
+}

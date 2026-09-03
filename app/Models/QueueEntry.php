@@ -98,13 +98,14 @@ class QueueEntry extends Model {
     public function create($data) {
         $date = date('Y-m-d');
         $queueNo = $this->getNextQueueNo($date);
+        $serviceType = !empty($data['service_type']) ? trim($data['service_type']) : 'General OPD';
         
         $sql = "INSERT INTO queue_entries (
                     patient_id, queue_date, queue_no, 
-                    status, time_in, created_by
+                    service_type, status, time_in, created_by
                 ) VALUES (
                     :patient_id, :queue_date, :queue_no, 
-                    'Waiting', CURRENT_TIME(), :created_by
+                    :service_type, 'Waiting', CURRENT_TIME(), :created_by
                 )";
         
         $stmt = $this->db->prepare($sql);
@@ -113,6 +114,7 @@ class QueueEntry extends Model {
             'patient_id' => (int)$data['patient_id'],
             'queue_date' => $date,
             'queue_no' => $queueNo,
+            'service_type' => $serviceType,
             'created_by' => (int)$data['created_by']
         ]);
 
@@ -190,13 +192,16 @@ class QueueEntry extends Model {
         $date = date('Y-m-d');
         
         // Serving: status = 'Serving' or last 'Called'
-        $stmtServing = $this->db->query("SELECT queue_no FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Serving' LIMIT 1");
-        $serving = $stmtServing->fetchColumn();
+        $stmtServing = $this->db->query("SELECT queue_no, service_type FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Serving' LIMIT 1");
+        $servingRow = $stmtServing->fetch();
         
-        if (!$serving) {
-            $stmtLastCalled = $this->db->query("SELECT queue_no FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Called' ORDER BY time_called DESC LIMIT 1");
-            $serving = $stmtLastCalled->fetchColumn();
+        if (!$servingRow) {
+            $stmtLastCalled = $this->db->query("SELECT queue_no, service_type FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Called' ORDER BY time_called DESC LIMIT 1");
+            $servingRow = $stmtLastCalled->fetch();
         }
+
+        $serving = $servingRow ? $servingRow['queue_no'] : null;
+        $servingService = $servingRow ? ($servingRow['service_type'] ?: 'General OPD') : '';
 
         // Waiting list (Waiting status)
         $stmtWaiting = $this->db->query("SELECT queue_no FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Waiting' ORDER BY queue_no ASC");
@@ -208,6 +213,7 @@ class QueueEntry extends Model {
 
         return [
             'serving' => $serving ? sprintf('%03d', $serving) : '000',
+            'serving_service' => $servingService,
             'waiting' => array_map(function($no) { return sprintf('%03d', $no); }, $waiting),
             'called' => array_map(function($no) { return sprintf('%03d', $no); }, $called)
         ];

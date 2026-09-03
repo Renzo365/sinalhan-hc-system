@@ -45,6 +45,16 @@ class VitalSigns extends Model {
     }
 
     /**
+     * Alias for latestByPatientId
+     * 
+     * @param int $patientId
+     * @return array|false
+     */
+    public function getLatestByPatientId($patientId) {
+        return $this->latestByPatientId($patientId);
+    }
+
+    /**
      * Insert a new set of vital signs.
      * 
      * @param array $data Vital signs fields
@@ -54,11 +64,11 @@ class VitalSigns extends Model {
         $sql = "INSERT INTO vital_signs (
                     patient_id, bp_systolic, bp_diastolic, heart_rate, 
                     respiratory_rate, temperature, weight, height, 
-                    bmi, oxygen_saturation, notes, recorded_by
+                    bmi, waist_circumference, oxygen_saturation, notes, recorded_by
                 ) VALUES (
                     :patient_id, :bp_systolic, :bp_diastolic, :heart_rate, 
                     :respiratory_rate, :temperature, :weight, :height, 
-                    :bmi, :oxygen_saturation, :notes, :recorded_by
+                    :bmi, :waist_circumference, :oxygen_saturation, :notes, :recorded_by
                 )";
         
         $stmt = $this->db->prepare($sql);
@@ -72,11 +82,12 @@ class VitalSigns extends Model {
             'weight' => !empty($data['weight']) ? (float)$data['weight'] : null,
             'height' => !empty($data['height']) ? (float)$data['height'] : null,
             'bmi' => !empty($data['bmi']) ? (float)$data['bmi'] : null,
+            'waist_circumference' => !empty($data['waist_circumference']) ? (float)$data['waist_circumference'] : null,
             'oxygen_saturation' => !empty($data['oxygen_saturation']) ? (int)$data['oxygen_saturation'] : null,
             'notes' => !empty($data['notes']) ? trim($data['notes']) : null,
             'recorded_by' => $data['recorded_by']
         ]);
 
-        return $result ? $this->db->lastInsertId() : false;
+        return $result ? (int)$this->db->lastInsertId() : false;
     }
 }

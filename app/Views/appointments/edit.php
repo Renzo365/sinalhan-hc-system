@@ -109,6 +109,21 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                             </div>
 
+                            <!-- Program Type Selection -->
+                            <div class="col-12 col-sm-6">
+                                <label for="program_type" class="form-label fw-semibold text-secondary small">Clinical Program <span class="text-danger">*</span></label>
+                                <?php $pt = $appointment['program_type'] ?? 'General OPD'; ?>
+                                <select name="program_type" id="program_type" class="form-select bg-light" required>
+                                    <option value="General OPD" <?= $pt === 'General OPD' ? 'selected' : '' ?>>General OPD / Consultation</option>
+                                    <option value="Prenatal Care" <?= $pt === 'Prenatal Care' ? 'selected' : '' ?>>Maternal & Prenatal Care</option>
+                                    <option value="Well Baby Immunization" <?= $pt === 'Well Baby Immunization' ? 'selected' : '' ?>>Well Baby & EPI Routine Vaccines</option>
+                                    <option value="Senior Care" <?= $pt === 'Senior Care' ? 'selected' : '' ?>>Senior Citizen Care</option>
+                                    <option value="Family Planning" <?= $pt === 'Family Planning' ? 'selected' : '' ?>>Family Planning Services</option>
+                                    <option value="NCD / Hypertension" <?= $pt === 'NCD / Hypertension' ? 'selected' : '' ?>>NCD / Hypertension / Diabetes</option>
+                                    <option value="Dental Care" <?= $pt === 'Dental Care' ? 'selected' : '' ?>>Dental Care</option>
+                                </select>
+                            </div>
+
                             <!-- Purpose Selection -->
                             <div class="col-12 col-sm-6">
                                 <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger">*</span></label>
@@ -116,8 +131,10 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <option value="">-- Select Purpose --</option>
                                     <option value="General Check-up" <?= $appointment['purpose'] === 'General Check-up' ? 'selected' : '' ?>>General Check-up</option>
                                     <option value="Consultation (SOAP)" <?= $appointment['purpose'] === 'Consultation (SOAP)' ? 'selected' : '' ?>>Consultation (SOAP)</option>
-                                    <option value="Prenatal Care" <?= $appointment['purpose'] === 'Prenatal Care' ? 'selected' : '' ?>>Prenatal Care</option>
-                                    <option value="Immunization" <?= $appointment['purpose'] === 'Immunization' ? 'selected' : '' ?>>Immunization</option>
+                                    <option value="Prenatal Follow-up" <?= $appointment['purpose'] === 'Prenatal Follow-up' ? 'selected' : '' ?>>Prenatal Follow-up</option>
+                                    <option value="Routine EPI Vaccine" <?= $appointment['purpose'] === 'Routine EPI Vaccine' ? 'selected' : '' ?>>Routine EPI Vaccine</option>
+                                    <option value="Deworming / Vitamin A" <?= $appointment['purpose'] === 'Deworming / Vitamin A' ? 'selected' : '' ?>>Deworming / Vitamin A Supplementation</option>
+                                    <option value="Senior Citizen Checkup" <?= $appointment['purpose'] === 'Senior Citizen Checkup' ? 'selected' : '' ?>>Senior Citizen Checkup</option>
                                     <option value="Dental Check-up" <?= $appointment['purpose'] === 'Dental Check-up' ? 'selected' : '' ?>>Dental Check-up</option>
                                     <option value="Follow-up Visit" <?= $appointment['purpose'] === 'Follow-up Visit' ? 'selected' : '' ?>>Follow-up Visit</option>
                                     <option value="Others / Referrals" <?= $appointment['purpose'] === 'Others / Referrals' ? 'selected' : '' ?>>Others / Referrals</option>

@@ -30,7 +30,8 @@ class PatientController extends Controller {
             'search' => trim($_GET['search'] ?? ''),
             'barangay' => trim($_GET['barangay'] ?? ''),
             'sex' => trim($_GET['sex'] ?? ''),
-            'age_group' => trim($_GET['age_group'] ?? '')
+            'age_group' => trim($_GET['age_group'] ?? ''),
+            'program_type' => trim($_GET['program_type'] ?? '')
         ];
 
         // Fetch patients
@@ -141,8 +142,9 @@ class PatientController extends Controller {
             return;
         }
 
-        // Get vital signs history
+        // Get vital signs history & latest record
         $vitalsHistory = $this->vitalsModel->findByPatientId($id);
+        $latestVitals = $this->vitalsModel->latestByPatientId($id);
 
         // Get consultation history
         $consultationsHistory = (new \App\Models\Consultation())->findByPatientId($id);
@@ -153,12 +155,67 @@ class PatientController extends Controller {
         // Get queue history
         $queueHistory = (new \App\Models\QueueEntry())->findByPatientId($id);
 
+        // Get IHP Medical History
+        $medicalHistory = (new \App\Models\PatientMedicalHistory())->findByPatientId($id);
+
+        // Get Household Family Members sharing the same family_no
+        $familyMembers = !empty($patient['family_no']) 
+            ? $this->patientModel->familyMembers($patient['family_no'], $id) 
+            : [];
+
+        // Get Active Maternal Prenatal Episode, Visits & Past Obstetric History (if female)
+        $activePrenatal = false;
+        $prenatalVisits = [];
+        $pastDeliveries = [];
+        $allPrenatalEpisodes = [];
+
+        if (strtolower($patient['sex']) === 'female') {
+            $prenatalModel = new \App\Models\PrenatalRecord();
+            $activePrenatal = $prenatalModel->findActiveByPatientId($id);
+            if ($activePrenatal) {
+                $prenatalVisits = (new \App\Models\PrenatalVisit())->findByPrenatalId($activePrenatal['id']);
+            }
+            $pastDeliveries = (new \App\Models\PastObstetricHistory())->findByPatientId($id);
+            $allPrenatalEpisodes = $prenatalModel->findAllByPatientId($id);
+        }
+
+        // Get Well Baby Record & Growth Logs (if child 0-5 or registered)
+        $wellbabyRecord = (new \App\Models\WellbabyRecord())->findByPatientId($id);
+        $growthLogs = [];
+        if ($wellbabyRecord) {
+            $growthLogs = (new \App\Models\ChildGrowthLog())->findByWellbabyId($wellbabyRecord['id']);
+        }
+
+        // Get Immunization records & map for this patient
+        $immModel = new \App\Models\Immunization();
+        $patientImmunizations = $immModel->findByPatientId($id);
+        $vaccineMap = $immModel->getVaccineMap($id);
+
+        // Fetch potential registered mothers for linking
+        $potentialMothers = $this->patientModel->findPotentialMothers(100);
+
+        // Compute Program Badge
+        $programBadge = $this->patientModel->getProgramBadge($id, $patient['dob'], $patient['sex']);
+
         $this->view('patients/show', [
             'patient' => $patient,
             'vitalsHistory' => $vitalsHistory,
+            'latestVitals' => $latestVitals,
             'consultationsHistory' => $consultationsHistory,
             'appointmentsHistory' => $appointmentsHistory,
-            'queueHistory' => $queueHistory
+            'queueHistory' => $queueHistory,
+            'medicalHistory' => $medicalHistory,
+            'familyMembers' => $familyMembers,
+            'activePrenatal' => $activePrenatal,
+            'prenatalVisits' => $prenatalVisits,
+            'pastDeliveries' => $pastDeliveries,
+            'allPrenatalEpisodes' => $allPrenatalEpisodes,
+            'wellbabyRecord' => $wellbabyRecord,
+            'growthLogs' => $growthLogs,
+            'patientImmunizations' => $patientImmunizations,
+            'vaccineMap' => $vaccineMap,
+            'potentialMothers' => $potentialMothers,
+            'programBadge' => $programBadge
         ]);
     }
 
@@ -363,6 +420,73 @@ class PatientController extends Controller {
             $address = trim($input['address']);
             if (mb_strlen($address) < 5 || mb_strlen($address) > 500) {
                 $errors[] = 'Complete Address must be between 5 and 500 characters.';
+            }
+        }
+
+        // 10. Suffix Validation
+        if (!empty($input['suffix']) && trim($input['suffix']) !== '') {
+            $suffix = trim($input['suffix']);
+            if (mb_strlen($suffix) > 20 || !preg_match('/^[a-zA-Z0-9\.\s\-]+$/', $suffix)) {
+                $errors[] = 'Name Suffix must be 20 characters or less (e.g. Jr., Sr., III).';
+            }
+        }
+
+        // 11. Family Number Format
+        if (!empty($input['family_no']) && trim($input['family_no']) !== '') {
+            $familyNo = trim($input['family_no']);
+            if (mb_strlen($familyNo) > 50 || !preg_match('/^[a-zA-Z0-9\-\_\s\.]+$/', $familyNo)) {
+                $errors[] = 'Family Number must be alphanumeric and under 50 characters.';
+            }
+        }
+
+        // 12. Educational Attainment Whitelist
+        if (!empty($input['education_attainment']) && trim($input['education_attainment']) !== '') {
+            $allowedEdu = ['No Schooling', 'Elementary', 'High School', 'Vocational', 'College / Post-Graduate'];
+            if (!in_array($input['education_attainment'], $allowedEdu, true)) {
+                $errors[] = 'Invalid Educational Attainment selected.';
+            }
+        }
+
+        // 13. PhilHealth Membership Status
+        if (!empty($input['phic_status'])) {
+            $allowedPhicStatus = ['Member', 'Dependent', 'Non-Member'];
+            if (!in_array($input['phic_status'], $allowedPhicStatus, true)) {
+                $errors[] = 'Invalid PhilHealth Status selected.';
+            }
+        }
+
+        // 14. Immediate Family Names Validation
+        $familyNames = [
+            'father_name' => "Father's Name",
+            'mother_name' => "Mother's Maiden Name",
+            'spouse_name' => "Spouse's Name"
+        ];
+
+        foreach ($familyNames as $field => $fieldLabel) {
+            if (!empty($input[$field]) && trim($input[$field]) !== '') {
+                $val = trim($input[$field]);
+                if (mb_strlen($val) > 150 || !preg_match('/^[a-zA-ZñÑ\s\-\'\.]{2,150}$/u', $val)) {
+                    $errors[] = "{$fieldLabel} must contain only letters, spaces, hyphens, or apostrophes (2 to 150 characters).";
+                }
+            }
+        }
+
+        // 15. Immediate Family Dates of Birth
+        $familyDobs = [
+            'father_dob' => "Father's Date of Birth",
+            'mother_dob' => "Mother's Date of Birth",
+            'spouse_dob' => "Spouse's Date of Birth"
+        ];
+
+        foreach ($familyDobs as $field => $fieldLabel) {
+            if (!empty($input[$field]) && trim($input[$field]) !== '') {
+                $dobVal = trim($input[$field]);
+                $d = \DateTime::createFromFormat('Y-m-d', $dobVal);
+                if (!$d || $d->format('Y-m-d') !== $dobVal) {
+                    $errors[] = "{$fieldLabel} must be a valid date in YYYY-MM-DD format.";
+                } elseif (strtotime($dobVal) > time()) {
+                    $errors[] = "{$fieldLabel} cannot be a future date.";
+                }
             }
         }
 

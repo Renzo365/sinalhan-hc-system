@@ -40,43 +40,41 @@ The original system vision is broad, but the capstone delivery should be focused
 
 These features are required for the system to be considered complete for capstone demonstration:
 
-1. Authentication and session management
-2. Role-based access control
-3. Patient registration, search, update, and profile view
-4. Vital signs recording
-5. Consultation records using SOAP-style notes
-6. Appointment scheduling
-7. Queue management with daily queue numbers
-8. Basic dashboard statistics
-9. Basic reports with printable or exportable output
-10. Audit logging for important data changes
-11. Database backup
+1. Authentication and session management (with role privilege boundaries and 15-minute lockout safeguard)
+2. Role-based access control (Admin vs Staff)
+3. Patient registration, search, update, archive/restore, and master profile workstation
+4. PhilHealth Annex A1 Individual Health Profile (IHP) medical history, surgical logs, and habits
+5. Vital signs recording with automated BMI calculation and color triage
+6. Consultation records using SOAP-style notes with clinical decision support banners
+7. Maternal & Pre-Natal Care tracking (Naegele EDC, dynamic AOG, GTPAL, serial follow-ups, and past deliveries matrix)
+8. Well Baby & Pediatric Growth Monitoring (birth context, DOH EPI vaccination matrix, Vitamin A/Deworming, and monthly growth logs)
+9. Appointment scheduling with Program Type tagging and time conflict prevention
+10. Queue management with daily queue numbers, Service Type routing, and lobby TV display board
+11. Dashboard statistics and operational metrics
+12. Comprehensive reporting engine with CSV/print exports and DOH clinical registries (Maternal, EPI, Morbidity)
+13. Audit logging for security and clinical accountability
+14. Database backup and snapshot generation
 
 ### 2.2 Should Have - Strong Supporting Features
 
-These features add value and should be implemented after the core system is stable:
+These features add value and have been implemented alongside the core system:
 
-1. PDF report generation
-2. CSV export for reports
-3. Advanced patient filters
-4. Archived records page with restore support
-5. User management for admin users
+1. CSV export and printable layouts for all reports and registries
+2. Multi-parameter patient directory filters (Age Group, Program Category, Barangay, Household Family No.)
+3. Admin-only archived records vault with restore support
+4. User management for admin users with privilege protection (Main Admin vs Co-Admin)
+5. Clinical Decision Support (CDS) alerts for Allergies, Pre-Eclampsia, and Chronic Illnesses
 
-### 2.3 Could Have - Polish and Enhancements
+### 2.3 Future Enhancements
 
-These features are useful but should not delay the core system:
+These features can be documented as future improvements:
 
-1. Prescription records
-2. Immunization records
-3. Laboratory request and result tracking
-4. Maternal and child health records
-5. Senior citizen records
-6. Patient photo capture
-7. Real-time-looking queue display using polling
-8. Dark mode
-9. Advanced analytics charts
-
-### 2.4 Future Enhancements
+1. Prescription inventory synchronization with clinic pharmacy
+2. Laboratory request and diagnostic image result attachment tracking
+3. Senior citizen specialized welfare tracking
+4. SMS appointment reminders and immunization notices
+5. Direct PhilHealth or DOH electronic API integration
+6. Offline-first synchronization across multiple health center satellite stations
 
 These features can be documented as future improvements:
 
@@ -203,11 +201,20 @@ patient-management-system/
 |   |-- logs/
 |   |-- uploads/
 |
+|-- IHP_phases.md
 |-- docs/
+|   |-- IHP_phases.md
 |   |-- architecture.md
 |   |-- database.md
 |   |-- features.md
+|   |-- file_guide.md
 |   |-- security.md
+|   |-- wireframes.md
+|   |-- records/
+|       |-- individual_health_profile.md
+|       |-- prenatal_record.md
+|       |-- wellbaby_record.md
+|       |-- analysis_and_design_of_hc_records.md
 |
 |-- tests/
 ```
@@ -231,20 +238,21 @@ The system requires users to log in before accessing protected modules. Each use
 * **Admin Lockout Override**: Administrators can clear a user's 15-minute lockout timer immediately by clicking the **Clear Lockout** button (`bi-unlock-fill`) on the User Accounts directory page.
 * **Password Resets**: Password resets require the logged-in administrator to enter their current password, and the system prevents setting temporary passwords to the user's current password. Forced password resets on first login (`must_change_password`) have been removed in favor of direct admin password resets.
 
-### 6.2 Patient Management
+### 6.2 Patient Management & Individual Health Profile (IHP)
 
-Patient management is the main module of the system.
+Patient management is the central operational module of the system, implementing the official **Annex A1: Individual Health Profile (IHP)** standard.
 
 Core features:
 
-- Register new patients via `/patients/create` with dual-layer validation.
-- Enforce strict validation: letters-only in names (`/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`), 11-digit `09XXXXXXXXX` Philippine mobile numbers, DOB bounds (`1900-01-01 <= dob <= Today`), and PhilHealth mask (`XX-XXXXXXXXX-X`).
-- Record extended demographics: ABO **Blood Type**, **Occupation**, and **Emergency Contact Relationship**.
-- Search patients by name, patient number, age, sex, or barangay.
-- View patient profile and full clinical history (Vitals, Consultations, Appointments, Queue).
-- Update patient demographic information.
-- Soft-delete / Archive patient records when allowed.
-- View patient-related history such as vitals and consultations.
+- **Universal Citizen Profile**: Every patient (including pregnant women and newborns) receives a single permanent master profile (`P-YYYY-XXXXX`).
+- **Household Family Numbering**: Captures PhilHealth/CHO **Family Number** for household grouping, allowing health workers to locate all family members under one roof.
+- **Strict Demographic Validation**: Letters-only names (`/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u`), name suffixes (Jr./Sr./III), 11-digit `09XXXXXXXXX` Philippine mobile numbers, DOB boundaries (`1900-01-01 <= dob <= Today`), auto-computed age groups, and PhilHealth mask (`XX-XXXXXXXXX-X`).
+- **PhilHealth & Socioeconomic Classification**: Membership status (*Member, Dependent, Non-Member*), program types (*Sponsored NHTS/LGU/NGA, IPP/OFW, Employed Gov/Private, Lifetime*), Educational Attainment (*Elementary, High School, Vocational, College/Post-Grad, No Schooling*), and Occupation.
+- **Immediate Family Identifiers**: Father's name & DOB, Mother's maiden name & DOB, and Spouse's name & DOB.
+- **Medical Background (IHP History)**: Structured history of past illnesses (Allergy, Asthma, Cancer, Diabetes, Hypertension highest BP, PTB category, etc.), past surgical operations and dates, hereditary family diseases, personal habits (smoking pack-years, alcohol bottles/day, illicit drugs), and female menstrual/reproductive history.
+- **Emergency Contact**: Contact person, verified relationship, and 11-digit emergency phone number.
+- **Directory Search & Program Tagging**: Search by patient name, patient ID, family number, PhilHealth PIN, or phone number. Filter by Age Group (*Well Baby 0-5, Children 6-15, Reproductive 15-49, Adults 25-59, Senior 60+*), Program Category (*General OPD, Prenatal, Well Baby, Senior*), or Barangay.
+- **Archiving & Restoration**: Soft-deletes inactive/deceased records (`deleted_at`, `deleted_by`, `archive_reason`) to protect historical clinical integrity while keeping active lists clean.
 
 ### 6.3 Vital Signs
 
@@ -283,60 +291,62 @@ The appointment scheduling module helps staff organize upcoming patient visits a
 
 Core features:
 
-- Create patient appointments.
+- Create patient appointments with **Program Type** categorization (*General OPD, Prenatal Care, Well Baby Immunization, Senior Care*).
 - Link each appointment to an existing patient.
-- Record appointment date, time, purpose, status, and notes.
-- View appointments by date or date range.
-- Search or filter appointments by patient, status, or schedule date.
+- Record appointment date, time, clinical purpose, status, and notes.
+- Real-time time conflict detection to prevent overlapping provider bookings.
+- View appointments by date, date range, status, or program type.
+- Search or filter appointments by patient name, patient number, status, or schedule date.
 - Update appointment status such as scheduled, completed, cancelled, or missed.
 - Show upcoming appointments on the dashboard.
 
 ### 6.6 Queue Management
 
-The queue module supports daily patient flow.
+The queue module supports daily patient flow and waiting area coordination.
 
 Core features:
 
-- Add patient to queue.
-- Generate queue number per day.
+- Add patient to queue with **Service Type** tagging (*General OPD, Prenatal Care, Well Baby Immunization, Senior Care*).
+- Generate sequential queue number per day (e.g. `001`, `002`).
 - Mark patient as waiting, called, serving, completed, or cancelled.
-- Show current queue list.
-- Optional public queue display for waiting area monitor.
-
-The public queue display should avoid exposing sensitive patient information. It should show queue numbers and service status only, unless the health center approves displaying names.
+- Public-facing, full-screen lobby monitor display at `/queue/display` for TV screens:
+  - Displays currently serving queue tickets per service program.
+  - Generates automated dual-tone audio chimes via browser Web Audio API when a patient ticket is called.
+  - Automatically polls database every 5 seconds for status changes without full page reloads.
+  - Privacy-first design: displays ticket numbers and program categories without exposing full patient names.
 
 ### 6.7 Dashboard
 
-The dashboard should provide quick operational summaries.
+The dashboard provides real-time operational and clinical summaries.
 
 Recommended dashboard cards:
 
-- Total patients
+- Total registered patients
 - Patients registered today
-- Consultations today
-- Current queue count
-- Completed queue entries today
+- Consultations completed today
+- Current active queue count
+- Completed queue tickets today
 - Upcoming appointments
 
-### 6.8 Reports
+### 6.8 Reports & Clinical Registries
 
-The reporting module should focus on useful and achievable reports.
+The reporting module produces administrative summaries and DOH-aligned clinical health registries:
 
-Recommended initial reports:
+Administrative Reports:
+- **Daily Patient Visits**: Chronological log of checkups and registrations.
+- **Consultations Summary**: Volume of SOAP diagnoses filtered by date range.
+- **Patient Registration Summary**: Demographic breakdown of intake volume.
+- **Queue Operations**: Metrics on wait times and completed tickets.
+- **Vital Signs Record Report**: Triage measurements log.
 
-- Daily patient visits
-- Consultation summary by date range
-- Patient registration summary
-- Queue summary
-- Vital signs record report
+Clinical Health Registries:
+- **Maternal Health Registry**: Registry of active and concluded pregnancies tracking LMP, EDC (due date), current AOG (weeks & days), GTPAL obstetric score, and Pre-Eclampsia High-Risk flags.
+- **Childhood Immunization (EPI) Coverage Report**: Registry of infants and young children tracking date-administered stamps for BCG, Hepatitis B, Pentavalent 1–3, OPV 1–3, IPV, Rotavirus 1–2, and Measles/MMR, identifying Fully Immunized Children (FIC).
+- **Chronic Morbidity & NCD Registry**: Disease surveillance registry indexing citizens diagnosed with chronic non-communicable conditions (Hypertension, Diabetes, Asthma, Allergies, Tuberculosis) from their PhilHealth Annex A1 IHP profiles.
 
-Recommended export formats:
-
-- Printable HTML
-- PDF
-- CSV
-
-Excel export can be listed as a future enhancement if time is limited.
+Export formats:
+- Printable HTML (with dedicated clean `@media print` CSS hiding navigation sidebars)
+- CSV Spreadsheet export with instant data stream download
 
 ### 6.9 Audit Logs
 
@@ -378,18 +388,43 @@ To handle unexpected system crashes, database outages, or unhandled PHP exceptio
 
 This approach is safer for a health record system because old patient records may still be needed for accountability, history, or reporting.
 
-### 6.11 Backup
+### 6.12 Maternal & Prenatal Care Tracking
 
-The system should allow an admin to create a database backup. For capstone scope, backup creation is more important than a full web-based restore workflow.
+Provides specialized clinical workflows for expectant mothers, implementing the official **City Health Office I Pre-Natal Record**:
 
-Recommended approach:
+- **Gestational Timeline**: Records **LMP** (Last Menstrual Period), automatically calculates **EDC** (Estimated Date of Confinement / Due Date via Naegele's rule: LMP + 1 year - 3 months + 7 days), and computes dynamic **AOG** (Age of Gestation in weeks and days).
+- **Obstetric GTPAL Scoring**: Captures Gravida (G), Parity (P), Full Term (T), Preterm (P), Abortion (A), and Living Children (L).
+- **Past Obstetric History**: Comprehensive registry of prior pregnancies (delivery method NSD/CS/Abortion, place of delivery, infant sex, calendar year, birth attendant, child status alive/deceased, maternal Tetanus Toxoid injection history).
+- **Serial Prenatal Visit Logs**: Structured clinical log across visits:
+  - Maternal Blood Pressure & Weight
+  - **Fetal Heart Tone (FHT)** in bpm
+  - **Fundal Height (FH)** in cm
+  - **Fetal Presentation** (*Cephalic, Breech, Transverse*)
+  - **Target Client Benefit (TCB)** / Tetanus status
+  - Midwife remarks, vitamin supplementation, and next appointment schedule.
+- **High-Risk Flags**: Highlights risks such as pre-eclampsia / pregnancy-induced hypertension, teenage pregnancy, or previous C-sections.
 
-- Admin-only backup page
-- Generate SQL backup file
-- Store backup under `storage/backups`
-- Include date and time in backup filename
+### 6.13 Well Baby, Child Health & Routine Immunization Tracking
 
-Full restore can be documented as a future enhancement because it is riskier and requires stronger safeguards.
+Implements the official **Well Baby Record (Brgy. Ibaba / CHO Santa Rosa)** for infants and young children (0-5 years):
+
+- **Birth Circumstances & History**: Exact birth time, birth weight (kg/g), birth length (cm), place of delivery (Hospital, Lying-in, Home), delivery method (NSD, CS), birth attendant, and **Newborn Screening** status, date, and findings.
+- **Parental Links & CPAB**: Links directly to registered Mother (`mother_patient_id`), Father's name, and **Child Protected Against Tetanus at Birth (CPAB)** maternal TT status.
+- **DOH EPI Routine Immunization Schedule**: Dedicated tracker matrix with date-administered timestamps:
+  - At Birth: BCG, Hepatitis B
+  - 6, 10, 14 Weeks: Pentavalent 1-3 (DPT-HepB-HiB), OPV 1-3, Rotavirus 1-2, IPV
+  - 9 & 12 Months: MCV1 (Anti-Measles), MCV2 / MMR
+- **Nutritional & Supplementation Programs**: Tracks semi-annual Vitamin A and Deworming doses.
+- **Periodic Growth Monitoring Log**: Serial growth measurements (Age in months, Weight kg, Height cm, Head Circumference cm, Chest Circumference cm, Body Temp), and Infant Feeding Practices (*LAM / Exclusive Breastfeeding, Bottle Feeding, Mixed Feeding*).
+
+### 6.14 Database Backup & Storage
+
+The system allows administrators to generate complete database backup snapshots:
+
+- Admin-only backup dashboard at `/backup`.
+- Generates structured SQL backup archives stored in `storage/backups/`.
+- Date-stamped filename conventions (`sinalhan_hc_backup_YYYY-MM-DD_HH-MM-SS.sql`) preventing path traversal.
+- Direct download and deletion controls with audit logging.
 
 ---
 

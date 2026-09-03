@@ -121,11 +121,18 @@ class AppointmentController extends Controller {
             return;
         }
 
+        $programType = trim($_POST['program_type'] ?? 'General OPD');
+        $validPrograms = ['General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care', 'Family Planning', 'Dental Care', 'NCD / Hypertension'];
+        if (!in_array($programType, $validPrograms)) {
+            $programType = 'General OPD';
+        }
+
         $data = [
             'patient_id' => $patientId,
             'appointment_date' => $_POST['appointment_date'],
             'appointment_time' => $_POST['appointment_time'],
             'purpose' => $_POST['purpose'],
+            'program_type' => $programType,
             'status' => $_POST['status'] ?? 'Scheduled',
             'notes' => $_POST['notes'] ?? '',
             'created_by' => $_SESSION['user_id']
@@ -134,7 +141,7 @@ class AppointmentController extends Controller {
         $newId = $this->appointmentModel->create($data);
 
         if ($newId) {
-            AuditLog::log('APPOINTMENT_CREATED', 'Appointments', "Scheduled appointment for patient: " . $patient['first_name'] . ' ' . $patient['last_name'] . " on " . date('M d, Y', strtotime($data['appointment_date'])) . " at " . date('h:i A', strtotime($data['appointment_time'])));
+            AuditLog::log('APPOINTMENT_CREATED', 'Appointments', "Scheduled [{$programType}] appointment for patient: " . $patient['first_name'] . ' ' . $patient['last_name'] . " on " . date('M d, Y', strtotime($data['appointment_date'])) . " at " . date('h:i A', strtotime($data['appointment_time'])));
             
             $_SESSION['success_message'] = 'Appointment scheduled successfully!';
             $this->redirect("/patients/{$patientId}#appointments-tab");
@@ -206,17 +213,24 @@ class AppointmentController extends Controller {
             return;
         }
 
+        $programType = trim($_POST['program_type'] ?? 'General OPD');
+        $validPrograms = ['General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care', 'Family Planning', 'Dental Care', 'NCD / Hypertension'];
+        if (!in_array($programType, $validPrograms)) {
+            $programType = 'General OPD';
+        }
+
         $data = [
             'appointment_date' => $_POST['appointment_date'],
             'appointment_time' => $_POST['appointment_time'],
             'purpose' => $_POST['purpose'],
+            'program_type' => $programType,
             'status' => $_POST['status'],
             'notes' => $_POST['notes'] ?? '',
             'updated_by' => $_SESSION['user_id']
         ];
 
         if ($this->appointmentModel->update($id, $data)) {
-            AuditLog::log('APPOINTMENT_UPDATED', 'Appointments', "Rescheduled appointment ID: {$id} for patient ID: " . $appointment['patient_id'] . " to " . date('M d, Y', strtotime($data['appointment_date'])) . " (" . $data['status'] . ")");
+            AuditLog::log('APPOINTMENT_UPDATED', 'Appointments', "Updated [{$programType}] appointment ID: {$id} for patient ID: " . $appointment['patient_id'] . " to " . date('M d, Y', strtotime($data['appointment_date'])) . " (" . $data['status'] . ")");
             
             $_SESSION['success_message'] = 'Appointment details updated successfully!';
             $this->redirect("/patients/{$appointment['patient_id']}#appointments-tab");
