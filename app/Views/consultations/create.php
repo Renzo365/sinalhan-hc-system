@@ -270,7 +270,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 $vLabel .= " | BP: {$v['bp_systolic']}/{$v['bp_diastolic']} mmHg";
                             }
                             if (!empty($v['temperature'])) {
-                                $vLabel .= " | Temp: {$v['temperature']}°C";
+                                $vLabel .= " | Temp: " . number_format((float)$v['temperature'], 1) . "°C";
                             }
                             if (!empty($v['weight'])) {
                                 $vLabel .= " | Wt: {$v['weight']}kg";
@@ -286,7 +286,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <option value="<?= $v['id'] ?>" 
                                     data-bp="<?= h(($v['bp_systolic'] ?? '-') . '/' . ($v['bp_diastolic'] ?? '-')) ?>"
                                     data-bp-high="<?= $isHighBp ? '1' : '0' ?>"
-                                    data-temp="<?= h($v['temperature'] ?? '-') ?>"
+                                    data-temp="<?= !empty($v['temperature']) ? number_format((float)$v['temperature'], 1) : '-' ?>"
                                     data-hr="<?= h($v['heart_rate'] ?? '-') ?>"
                                     data-rr="<?= h($v['respiratory_rate'] ?? '-') ?>"
                                     data-spo2="<?= h($v['oxygen_saturation'] ?? '') ?>"
