@@ -48,7 +48,7 @@ require dirname(__DIR__) . '/layout/header.php';
     $hasTbAlert = isset($pmh['Tuberculosis']);
 ?>
 
-<!-- 1. Patient Master Bar & Clinical Safety Strip -->
+<!-- 1. Patient Clinical Profile & Safety Card -->
 <div class="card card-premium mb-4 bg-white border">
     <div class="card-body p-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -73,8 +73,13 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
             </div>
 
-            <!-- Medical Background Drawer Toggle -->
-            <div>
+            <!-- Profile Context Action Buttons -->
+            <div class="d-flex align-items-center gap-2">
+                <?php if (!empty($activePrenatal)): ?>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#pregnancyDetailsCollapse" aria-expanded="false" aria-controls="pregnancyDetailsCollapse">
+                        <i class="bi bi-heart me-1 text-pink"></i> Obstetric Details <i class="bi bi-chevron-down ms-1"></i>
+                    </button>
+                <?php endif; ?>
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#medicalBackgroundCollapse" aria-expanded="false" aria-controls="medicalBackgroundCollapse">
                     <i class="bi bi-file-medical me-1"></i> Medical Background <i class="bi bi-chevron-down ms-1"></i>
                 </button>
@@ -101,6 +106,40 @@ require dirname(__DIR__) . '/layout/header.php';
                 <?php if ($hasTbAlert): ?>
                     <span class="badge bg-secondary-subtle text-dark border px-2 py-1"><i class="bi bi-lungs text-danger me-1"></i>Tuberculosis</span>
                 <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Active Pregnancy Context Strip (Integrated Option B) -->
+        <?php if (!empty($activePrenatal)): ?>
+            <div class="pt-2 mt-2 border-top small">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge bg-light text-pink border border-pink-subtle px-2 py-1 fw-semibold">
+                        <i class="bi bi-heart-pulse-fill me-1 text-pink"></i> Active Pregnancy
+                    </span>
+                    <span class="fw-bold text-dark">G<?= h($activePrenatal['gravida']) ?>P<?= h($activePrenatal['para']) ?></span>
+                    <span class="text-muted">&bull;</span>
+                    <span class="text-secondary">LMP: <strong class="text-dark"><?= date('M d, Y', strtotime($activePrenatal['lmp'])) ?></strong></span>
+                    <span class="text-muted">&bull;</span>
+                    <span class="text-secondary">EDC: <strong class="text-dark"><?= date('M d, Y', strtotime($activePrenatal['edc'])) ?></strong></span>
+                    <span class="text-muted">&bull;</span>
+                    <span class="text-secondary">AOG: <strong class="text-dark"><?= h($activePrenatal['aog_weeks'] ?? 'N/A') ?> wks</strong></span>
+                    <?php if (!empty($activePrenatal['pre_eclampsia'])): ?>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1">Pre-Eclampsia Risk</span>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Expandable Obstetric Drawer -->
+                <div class="collapse pt-2 mt-2 border-top" id="pregnancyDetailsCollapse">
+                    <div class="row g-2 text-secondary">
+                        <div class="col-6 col-md-3">Term Births: <strong class="text-dark"><?= (int)($activePrenatal['term_births'] ?? 0) ?></strong></div>
+                        <div class="col-6 col-md-3">Preterm Births: <strong class="text-dark"><?= (int)($activePrenatal['preterm_births'] ?? 0) ?></strong></div>
+                        <div class="col-6 col-md-3">Abortions: <strong class="text-dark"><?= (int)($activePrenatal['abortions'] ?? 0) ?></strong></div>
+                        <div class="col-6 col-md-3">Living Children: <strong class="text-dark"><?= (int)($activePrenatal['living_children'] ?? 0) ?></strong></div>
+                        <?php if (!empty($activePrenatal['notes'])): ?>
+                            <div class="col-12 mt-1">Obstetric Notes: <span class="text-dark fst-italic"><?= h($activePrenatal['notes']) ?></span></div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         <?php endif; ?>
     </div>
@@ -167,59 +206,20 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 </div>
 
-<!-- 2. Active Pregnancy Context (if applicable) -->
-<?php if (!empty($activePrenatal)): ?>
-    <div class="card card-premium mb-4 border-start border-4 border-danger bg-white">
-        <div class="card-body p-3">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold">
-                        <i class="bi bi-heart-pulse-fill me-1"></i> Active Pregnancy
-                    </span>
-                    <span class="fw-bold text-dark">G<?= h($activePrenatal['gravida']) ?>P<?= h($activePrenatal['para']) ?></span>
-                    <span class="text-muted">&bull;</span>
-                    <span class="small text-secondary">LMP: <strong class="text-dark"><?= date('M d, Y', strtotime($activePrenatal['lmp'])) ?></strong></span>
-                    <span class="text-muted">&bull;</span>
-                    <span class="small text-secondary">EDC: <strong class="text-dark"><?= date('M d, Y', strtotime($activePrenatal['edc'])) ?></strong></span>
-                    <span class="text-muted">&bull;</span>
-                    <span class="small text-secondary">AOG: <strong class="text-dark"><?= h($activePrenatal['aog_weeks'] ?? 'N/A') ?> wks</strong></span>
-                    <?php if (!empty($activePrenatal['pre_eclampsia'])): ?>
-                        <span class="badge bg-danger text-white ms-1">Pre-Eclampsia Risk</span>
-                    <?php endif; ?>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#pregnancyDetailsCollapse" aria-expanded="false" aria-controls="pregnancyDetailsCollapse">
-                    Obstetric Details <i class="bi bi-chevron-down ms-1"></i>
-                </button>
-            </div>
-
-            <div class="collapse border-top mt-2 pt-2" id="pregnancyDetailsCollapse">
-                <div class="row g-2 small text-secondary">
-                    <div class="col-6 col-md-3">Term Births: <strong class="text-dark"><?= (int)($activePrenatal['term_births'] ?? 0) ?></strong></div>
-                    <div class="col-6 col-md-3">Preterm Births: <strong class="text-dark"><?= (int)($activePrenatal['preterm_births'] ?? 0) ?></strong></div>
-                    <div class="col-6 col-md-3">Abortions: <strong class="text-dark"><?= (int)($activePrenatal['abortions'] ?? 0) ?></strong></div>
-                    <div class="col-6 col-md-3">Living Children: <strong class="text-dark"><?= (int)($activePrenatal['living_children'] ?? 0) ?></strong></div>
-                    <?php if (!empty($activePrenatal['notes'])): ?>
-                        <div class="col-12 mt-1">Clinical Notes: <span class="text-dark fst-italic"><?= h($activePrenatal['notes']) ?></span></div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-<?php endif; ?>
-
 <form action="<?= url('/consultations/' . $consultation['id']) ?>" method="POST" autocomplete="off" id="consultationForm">
     <?= csrf_field() ?>
     <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
     <input type="hidden" name="status" value="<?= h($consultation['status'] ?? 'Completed') ?>">
 
-    <!-- 3. Encounter Metadata & Vital Signs Selection Card -->
+    <!-- 2. Unified Consultation & SOAP Encounter Card -->
     <div class="card card-premium mb-4">
         <div class="card-header bg-white py-3 border-bottom">
             <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                <i class="bi bi-person-badge text-primary me-2"></i>Encounter Details & Vital Signs
+                <i class="bi bi-journal-medical text-primary me-2"></i>Consultation Encounter & SOAP Notes
             </h3>
         </div>
         <div class="card-body p-4">
+            <!-- Section A: Encounter Details & Vital Signs -->
             <div class="row g-3 mb-3">
                 <!-- Consulting Provider -->
                 <div class="col-12 col-md-6">
@@ -304,24 +304,20 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Dynamic Vitals Preview Box -->
-            <div id="vitalsPreviewContainer" class="p-3 bg-light rounded-3 border">
+            <div id="vitalsPreviewContainer" class="p-3 bg-light rounded-3 border mb-4">
                 <!-- Injected dynamically via JS -->
             </div>
-        </div>
-    </div>
 
-    <!-- 4. SOAP Clinical Documentation Card -->
-    <div class="card card-premium mb-4">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                <i class="bi bi-journal-medical text-primary me-2"></i>SOAP Clinical Documentation
-            </h3>
-        </div>
-        <div class="card-body p-4">
+            <!-- Section B: SOAP Clinical Notes Divider -->
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                <span class="fw-bold text-dark fs-6"><i class="bi bi-file-earmark-medical text-primary me-2"></i>SOAP Clinical Documentation</span>
+            </div>
+
             <!-- Subjective (S) -->
             <div class="mb-4">
-                <label for="subjective" class="form-label fw-bold text-dark">
-                    Subjective (S) &mdash; Chief Complaint & History of Present Illness <span class="text-danger">*</span>
+                <label for="subjective" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">S</span>
+                    <span>Subjective &mdash; Chief Complaint & History of Present Illness <span class="text-danger">*</span></span>
                 </label>
                 <div class="form-text text-muted small mb-2">Patient's chief complaint, reported symptoms, timeline, and history of present illness.</div>
                 <textarea name="subjective" 
@@ -334,8 +330,9 @@ require dirname(__DIR__) . '/layout/header.php';
 
             <!-- Objective (O) -->
             <div class="mb-4">
-                <label for="objective" class="form-label fw-bold text-dark">
-                    Objective (O) &mdash; Physical Examination & Clinical Findings <span class="text-danger">*</span>
+                <label for="objective" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">O</span>
+                    <span>Objective &mdash; Physical Examination & Clinical Findings <span class="text-danger">*</span></span>
                 </label>
                 <div class="form-text text-muted small mb-2">Physical examination observations, organ findings, and linked diagnostic indicators.</div>
                 <textarea name="objective" 
@@ -348,8 +345,9 @@ require dirname(__DIR__) . '/layout/header.php';
 
             <!-- Assessment (A) -->
             <div class="mb-4">
-                <label for="assessment" class="form-label fw-bold text-dark">
-                    Assessment (A) &mdash; Clinical Impression / Diagnosis <span class="text-danger">*</span>
+                <label for="assessment" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">A</span>
+                    <span>Assessment &mdash; Clinical Impression / Diagnosis <span class="text-danger">*</span></span>
                 </label>
                 <div class="form-text text-muted small mb-2">Primary clinical diagnosis, secondary impressions, or differential diagnosis.</div>
                 <textarea name="assessment" 
@@ -362,8 +360,9 @@ require dirname(__DIR__) . '/layout/header.php';
 
             <!-- Plan (P) -->
             <div class="mb-2">
-                <label for="plan" class="form-label fw-bold text-dark">
-                    Plan (P) &mdash; Treatment, Prescriptions & Recommendations <span class="text-danger">*</span>
+                <label for="plan" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">P</span>
+                    <span>Plan &mdash; Treatment, Prescriptions & Recommendations <span class="text-danger">*</span></span>
                 </label>
                 <div class="form-text text-muted small mb-2">Prescribed medications (dosage/frequency), non-pharmacological advice, lab requests, and follow-up return schedule.</div>
                 <textarea name="plan" 
@@ -432,22 +431,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
         previewContainer.innerHTML = `
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <div class="d-flex flex-wrap align-items-center gap-3 small text-secondary">
-                    <span class="fw-bold text-dark"><i class="bi bi-speedometer2 text-primary me-1"></i> ${escapeHtml(date)}:</span>
-                    <span>BP: <strong class="${isHighBp ? 'text-danger fw-bold' : 'text-dark'}">${escapeHtml(bp)} mmHg</strong></span>
-                    <span class="vr"></span>
-                    <span>Temp: <strong class="text-dark">${escapeHtml(temp)} °C</strong></span>
-                    <span class="vr"></span>
-                    <span>HR: <strong class="text-dark">${escapeHtml(hr)} bpm</strong></span>
-                    <span class="vr"></span>
-                    <span>RR: <strong class="text-dark">${escapeHtml(rr)} cpm</strong></span>
-                    ${spo2 ? `<span class="vr"></span><span>SpO2: <strong class="text-dark">${escapeHtml(spo2)}%</strong></span>` : ''}
-                    <span class="vr"></span>
-                    <span>Weight: <strong class="text-dark">${escapeHtml(weight)} kg</strong></span>
-                    <span class="vr"></span>
-                    <span>Height: <strong class="text-dark">${escapeHtml(height)} cm</strong></span>
-                    <span class="vr"></span>
-                    <span>BMI: <strong class="text-dark">${escapeHtml(bmi)}</strong></span>
+                <div class="d-flex flex-wrap align-items-center gap-2 small">
+                    <span class="fw-bold text-dark me-1"><i class="bi bi-speedometer2 text-primary me-1"></i> ${escapeHtml(date)}:</span>
+                    <span class="badge ${isHighBp ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
+                        BP: <strong class="${isHighBp ? 'text-danger' : 'text-dark'}">${escapeHtml(bp)} mmHg</strong>
+                    </span>
+                    <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                        Temp: <strong class="text-dark">${escapeHtml(temp)} °C</strong>
+                    </span>
+                    <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                        HR: <strong class="text-dark">${escapeHtml(hr)} bpm</strong>
+                    </span>
+                    <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                        RR: <strong class="text-dark">${escapeHtml(rr)} cpm</strong>
+                    </span>
+                    ${spo2 ? `<span class="badge bg-white text-dark border py-2 px-2 fw-normal">SpO2: <strong class="text-dark">${escapeHtml(spo2)}%</strong></span>` : ''}
+                    <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                        Weight: <strong class="text-dark">${escapeHtml(weight)} kg</strong>
+                    </span>
+                    <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                        Height: <strong class="text-dark">${escapeHtml(height)} cm</strong>
+                    </span>
+                    <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                        BMI: <strong class="text-dark">${escapeHtml(bmi)}</strong>
+                    </span>
                 </div>
                 <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 text-primary small" data-bs-toggle="collapse" data-bs-target="#vitalsDetailsCollapse">
                     Full Details <i class="bi bi-chevron-down ms-1"></i>

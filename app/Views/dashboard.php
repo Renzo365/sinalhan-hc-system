@@ -14,9 +14,9 @@ require __DIR__ . '/layout/header.php';
     <!-- Total Patients Card -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="card card-premium hover-action metric-card">
-            <div>
+            <div class="metric-data">
+                <span class="metric-label">Total Patients</span>
                 <div class="metric-value"><?= number_format($stats['total_patients']) ?></div>
-                <div class="metric-label mt-1">Total Patients</div>
             </div>
             <div class="metric-icon-box primary">
                 <i class="bi bi-people-fill"></i>
@@ -27,9 +27,9 @@ require __DIR__ . '/layout/header.php';
     <!-- Today's Appointments Card -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="card card-premium hover-action metric-card">
-            <div>
+            <div class="metric-data">
+                <span class="metric-label">Today's Appointments</span>
                 <div class="metric-value"><?= number_format($stats['today_appointments']) ?></div>
-                <div class="metric-label mt-1">Today's Appointments</div>
             </div>
             <div class="metric-icon-box accent">
                 <i class="bi bi-calendar2-check-fill"></i>
@@ -37,15 +37,15 @@ require __DIR__ . '/layout/header.php';
         </div>
     </div>
 
-    <!-- Queue Now Card -->
+    <!-- Today's Queue Card -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="card card-premium hover-action metric-card">
-            <div>
+            <div class="metric-data">
+                <span class="metric-label">Today's Queue</span>
                 <div class="metric-value"><?= number_format($stats['queue_now']) ?></div>
-                <div class="metric-label mt-1">Queue Count</div>
             </div>
             <div class="metric-icon-box warning">
-                <i class="bi bi-person-lines-fill"></i>
+                <i class="bi bi-ticket-perforated-fill"></i>
             </div>
         </div>
     </div>
@@ -53,9 +53,9 @@ require __DIR__ . '/layout/header.php';
     <!-- Completed Visits Today Card -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="card card-premium hover-action metric-card">
-            <div>
+            <div class="metric-data">
+                <span class="metric-label">Visits Completed</span>
                 <div class="metric-value"><?= number_format($stats['today_visits']) ?></div>
-                <div class="metric-label mt-1">Visits Completed</div>
             </div>
             <div class="metric-icon-box success">
                 <i class="bi bi-check-circle-fill"></i>

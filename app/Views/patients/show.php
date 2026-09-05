@@ -644,7 +644,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                     </span>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-medium" onclick="enterIhpEditMode()">
-                                    Edit IHP Record
+                                    <i class="bi bi-pencil-square me-1"></i>Edit IHP Record
                                 </button>
                             </div>
 
@@ -2974,16 +2974,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.bp_systolic || data.temperature || data.heart_rate || data.weight || data.height) {
                         const isHighBp = (parseInt(data.bp_systolic) >= 140 || parseInt(data.bp_diastolic) >= 90);
                         vitalsHtml = `
-                            <div class="p-3 bg-light rounded-3 mb-3 border d-flex flex-wrap align-items-center gap-3 small text-secondary">
-                                <span class="fw-bold text-dark"><i class="bi bi-speedometer2 text-primary me-1"></i> Linked Vital Signs:</span>
-                                ${data.bp_systolic && data.bp_diastolic ? `<span>BP: <strong class="${isHighBp ? 'text-danger fw-bold' : 'text-dark'}">${escapeHtml(data.bp_systolic)}/${escapeHtml(data.bp_diastolic)} mmHg</strong></span><span class="vr"></span>` : ''}
-                                ${data.temperature ? `<span>Temp: <strong class="text-dark">${escapeHtml(data.temperature)} °C</strong></span><span class="vr"></span>` : ''}
-                                ${data.heart_rate ? `<span>HR: <strong class="text-dark">${escapeHtml(data.heart_rate)} bpm</strong></span><span class="vr"></span>` : ''}
-                                ${data.respiratory_rate ? `<span>RR: <strong class="text-dark">${escapeHtml(data.respiratory_rate)} cpm</strong></span><span class="vr"></span>` : ''}
-                                ${data.oxygen_saturation ? `<span>SpO2: <strong class="text-dark">${escapeHtml(data.oxygen_saturation)}%</strong></span><span class="vr"></span>` : ''}
-                                ${data.weight ? `<span>Weight: <strong class="text-dark">${escapeHtml(data.weight)} kg</strong></span><span class="vr"></span>` : ''}
-                                ${data.height ? `<span>Height: <strong class="text-dark">${escapeHtml(data.height)} cm</strong></span><span class="vr"></span>` : ''}
-                                ${data.bmi ? `<span>BMI: <strong class="text-dark">${escapeHtml(data.bmi)}</strong></span>` : ''}
+                            <div class="p-3 bg-light rounded-3 mb-3 border">
+                                <div class="d-flex flex-wrap align-items-center gap-2 small">
+                                    <span class="fw-bold text-dark me-1"><i class="bi bi-speedometer2 text-primary me-1"></i> Linked Vital Signs:</span>
+                                    ${data.bp_systolic && data.bp_diastolic ? `
+                                        <span class="badge ${isHighBp ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
+                                            BP: <strong class="${isHighBp ? 'text-danger' : 'text-dark'}">${escapeHtml(data.bp_systolic)}/${escapeHtml(data.bp_diastolic)} mmHg</strong>
+                                        </span>` : ''}
+                                    ${data.temperature ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            Temp: <strong class="text-dark">${escapeHtml(data.temperature)} °C</strong>
+                                        </span>` : ''}
+                                    ${data.heart_rate ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            HR: <strong class="text-dark">${escapeHtml(data.heart_rate)} bpm</strong>
+                                        </span>` : ''}
+                                    ${data.respiratory_rate ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            RR: <strong class="text-dark">${escapeHtml(data.respiratory_rate)} cpm</strong>
+                                        </span>` : ''}
+                                    ${data.oxygen_saturation ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            SpO2: <strong class="text-dark">${escapeHtml(data.oxygen_saturation)}%</strong>
+                                        </span>` : ''}
+                                    ${data.weight ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            Weight: <strong class="text-dark">${escapeHtml(data.weight)} kg</strong>
+                                        </span>` : ''}
+                                    ${data.height ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            Height: <strong class="text-dark">${escapeHtml(data.height)} cm</strong>
+                                        </span>` : ''}
+                                    ${data.bmi ? `
+                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
+                                            BMI: <strong class="text-dark">${escapeHtml(data.bmi)}</strong>
+                                        </span>` : ''}
+                                </div>
                             </div>
                         `;
                     }
@@ -3038,32 +3064,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="d-flex flex-column gap-3">
                             <!-- Subjective (S) -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom">
-                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-chat-left-text me-2 text-primary"></i>Subjective (S) &mdash; Chief Complaint & History of Illness</span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">S</span>
+                                    <span class="fw-bold text-dark small text-uppercase">Subjective &mdash; Chief Complaint & History of Illness</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.subjective || 'No subjective complaint recorded.')}</div>
                             </div>
 
                             <!-- Objective (O) -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom">
-                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-clipboard2-pulse me-2 text-primary"></i>Objective (O) &mdash; Physical Examination & Clinical Findings</span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">O</span>
+                                    <span class="fw-bold text-dark small text-uppercase">Objective &mdash; Physical Examination & Clinical Findings</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.objective || 'No physical examination findings recorded.')}</div>
                             </div>
 
                             <!-- Assessment (A) -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom">
-                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-heart-pulse me-2 text-primary"></i>Assessment (A) &mdash; Clinical Impression / Diagnosis</span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">A</span>
+                                    <span class="fw-bold text-dark small text-uppercase">Assessment &mdash; Clinical Impression / Diagnosis</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small fw-medium" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.assessment || 'No clinical diagnosis recorded.')}</div>
                             </div>
 
                             <!-- Plan (P) -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom">
-                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-prescription2 me-2 text-primary"></i>Plan (P) &mdash; Treatment, Prescriptions & Recommendations</span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">P</span>
+                                    <span class="fw-bold text-dark small text-uppercase">Plan &mdash; Treatment, Prescriptions & Recommendations</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan or prescriptions recorded.')}</div>
                             </div>
