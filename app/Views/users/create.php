@@ -68,13 +68,18 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                 
                 <div class="col-12 col-md-6">
                     <label for="password" class="form-label fw-semibold text-secondary small">Initial Password <span class="text-danger">*</span> <span class="text-muted fw-normal">(Minimum 8 characters)</span></label>
-                    <input type="password" 
-                           name="password" 
-                           id="password" 
-                           class="form-control" 
-                           placeholder="Enter initial secure password" 
-                           required 
-                           minlength="8">
+                    <div class="input-group">
+                        <input type="password" 
+                               name="password" 
+                               id="password" 
+                               class="form-control border-end-0" 
+                               placeholder="Enter initial secure password" 
+                               required 
+                               minlength="8">
+                        <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -25,9 +25,17 @@ class PatientMedicalHistory extends Model {
 
         if ($row) {
             // Decode JSON fields if stored as JSON strings
-            $row['past_medical_history'] = !empty($row['past_medical_history']) ? json_decode($row['past_medical_history'], true) ?: $row['past_medical_history'] : [];
-            $row['surgical_history'] = !empty($row['surgical_history']) ? json_decode($row['surgical_history'], true) ?: $row['surgical_history'] : [];
-            $row['family_history'] = !empty($row['family_history']) ? json_decode($row['family_history'], true) ?: $row['family_history'] : [];
+            foreach (['past_medical_history', 'surgical_history', 'family_history'] as $f) {
+                if (!empty($row[$f])) {
+                    $decoded = json_decode($row[$f], true);
+                    $row[$f] = (json_last_error() === JSON_ERROR_NONE) ? $decoded : $row[$f];
+                } else {
+                    $row[$f] = [];
+                }
+                if ($row[$f] === '[]' || $row[$f] === '{}' || $row[$f] === null) {
+                    $row[$f] = [];
+                }
+            }
         }
 
         return $row;

@@ -18,7 +18,8 @@ return function (\App\Core\Router $router) {
     $router->post('/change-password', 'AuthController@changePassword', [AuthMiddleware::class]);
     
     // Logout Action
-    $router->post('/logout', 'AuthController@logout', [AuthMiddleware::class]);
+    $router->get('/logout', 'AuthController@logout');
+    $router->post('/logout', 'AuthController@logout');
 
     // Patient Management Routes
     $router->get('/patients', 'PatientController@index', [AuthMiddleware::class]);
@@ -50,6 +51,9 @@ return function (\App\Core\Router $router) {
     $router->get('/patients/{id}/consultations/create', 'ConsultationController@create', [AuthMiddleware::class]);
     $router->post('/consultations', 'ConsultationController@store', [AuthMiddleware::class]);
     $router->get('/consultations/{id}', 'ConsultationController@show', [AuthMiddleware::class]);
+    $router->get('/consultations/{id}/edit', 'ConsultationController@edit', [AuthMiddleware::class]);
+    $router->post('/consultations/{id}', 'ConsultationController@update', [AuthMiddleware::class]);
+    $router->post('/consultations/{id}/cancel', 'ConsultationController@cancel', [AuthMiddleware::class]);
 
     // Appointment Routes
     $router->get('/appointments', 'AppointmentController@index', [AuthMiddleware::class]);
@@ -81,7 +85,7 @@ return function (\App\Core\Router $router) {
     $router->post('/backup/delete', 'BackupController@delete', [AdminMiddleware::class]);
 
     // Patient Archiving Routes
-    $router->post('/patients/{id}/archive', 'PatientController@archive', [AuthMiddleware::class]);
+    $router->post('/patients/{id}/archive', 'PatientController@archive', [AdminMiddleware::class]);
     $router->get('/archive/patients', 'PatientController@archivedIndex', [AdminMiddleware::class]);
     $router->post('/archive/patients/{id}/restore', 'PatientController@restore', [AdminMiddleware::class]);
 

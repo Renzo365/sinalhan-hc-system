@@ -41,9 +41,12 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="password" 
                                    name="current_password" 
                                    id="current_password" 
-                                   class="form-control bg-light border-start-0" 
+                                   class="form-control bg-light border-start-0 border-end-0" 
                                    placeholder="Enter current password" 
                                    required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -55,9 +58,12 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="password" 
                                    name="new_password" 
                                    id="new_password" 
-                                   class="form-control bg-light border-start-0" 
+                                   class="form-control bg-light border-start-0 border-end-0" 
                                    placeholder="Min 8 characters" 
                                    required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                         <div class="form-text text-muted small">Must be different from your current temporary password.</div>
                     </div>
@@ -70,9 +76,12 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="password" 
                                    name="confirm_password" 
                                    id="confirm_password" 
-                                   class="form-control bg-light border-start-0" 
+                                   class="form-control bg-light border-start-0 border-end-0" 
                                    placeholder="Confirm new password" 
                                    required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
 

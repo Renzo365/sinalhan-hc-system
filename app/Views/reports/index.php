@@ -154,7 +154,7 @@ $reportName = $reportLabels[$type] ?? '';
         <?php else: ?>
             <!-- Actions bar (Hidden in print) -->
             <div class="d-flex justify-content-end gap-2 mb-3 no-print">
-                <button onclick="window.print()" class="btn btn-outline-primary d-flex align-items-center">
+                <button type="button" onclick="window.print()" class="btn btn-outline-primary d-flex align-items-center">
                     <i class="bi bi-printer me-2 fs-5"></i> Print Report
                 </button>
                 <a href="<?= url('/reports/export?type=' . urlencode($type) . '&date_from=' . urlencode($dateFrom) . '&date_to=' . urlencode($dateTo)) ?>" class="btn btn-primary d-flex align-items-center">

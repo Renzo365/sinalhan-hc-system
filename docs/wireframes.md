@@ -198,39 +198,45 @@ Key behavior:
 
 ## 7. Patient Profile Workstation (`/patients/{id}`)
 
-> **Vertical Sidebar & Workstation Layout**: The Patient Profile features a dedicated vertical Left Sidebar card (`col-lg-3`) containing identity, demographics, contact details, emergency info, and record management actions. The Right Content Area (`col-lg-9`) provides the Clinical Care Workstation action toolbar and modular tabs.
+> **Compact Master Header & Full-Width Workstation Layout**: The Patient Profile features a sleek, horizontal Master Header card (`col-12`) at the top displaying universal identity (avatar, full name, patient ID, program pill, age, sex, DOB, blood type, family code, and PHIC PIN) paired with patient-level actions (`Edit Profile`, `Print`, `Archive`). Clinical safety alerts appear directly below the header. The Clinical Care Workstation tabs occupy 100% full width (`col-12`), eliminating horizontal table cramping. Tab 1 (Overview) organizes demographic, civil, emergency, and household details alongside vital signs and IHP summaries.
 
 ```text
 +------------------------------------------------------------------------------------------------------------------------+
 | Patient Profile Workstation: P-2026-00042                                                          Staff Name | Logout |
-+----------------------+-------------------------------------------------------------------------------------------------+
-| Sidebar              | [!] CLINICAL SAFETY ALLERGY ALERT: Penicillin, Seafood Recorded                                 |
-|                      |                                                                                                 |
-| Dashboard            | +---------------------------+  +--------------------------------------------------------------+ |
-| Patients             | | [Avatar: MD]              |  | Clinical Care Workstation    [+ Enqueue] [+ Vitals] [+ Consult] |
-| Appointments         | | MARIA S. DELA CRUZ        |  | Manage checkups, IHP, maternal/child care, and appointments. |
-| Queue                | | 26 y/o • Female           |  +--------------------------------------------------------------+ |
-| Reports              | | [ Prenatal Care (29w) ]   |  | TABS: [Overview] [IHP History] [Consults (2)] [Vitals (3)]   | |
-|                      | |                           |  |       [Immunizations] [Prenatal Care *] [Appointments]       | |
-|                      | | • IDENTIFICATION          |  +--------------------------------------------------------------+ |
-|                      | | Patient ID: P-2026-00042  |  | TAB 1: OVERVIEW & CLINICAL SNAPSHOT                          | |
-|                      | | Birth Date: 1999-08-14    |  |                                                              | |
-|                      | | Blood Type: O+            |  | +-- Latest Vital Signs (2026-09-01) -----------------------+ | |
-|                      | | Civil: Married            |  | | BP: 138/88 mmHg  |  HR: 82 bpm  |  Temp: 36.7 °C         | | |
-|                      | |                           |  | | Wt: 58.5 kg      |  Ht: 154 cm  |  BMI: 24.7 (Normal)    | | |
-|                      | | • ADDRESS & CONTACT       |  | +----------------------------------------------------------+ | |
-|                      | | Purok 4, Sinalhan         |  |                                                              | |
-|                      | | 09171234567               |  | +-- Household Members (FAM-0428) -+ +-- IHP Health Summary --+ | |
-|                      | |                           |  | | • Pedro Dela Cruz (Spouse, 28y) | | • Asthma, Allergies    | | |
-|                      | | • PHILHEALTH              |  | | • Juan Dela Cruz Jr. (Son, 2y)  | | • Non-Smoker           | | |
-|                      | | PIN: 12-345678901-2       |  | +---------------------------------+ +------------------------+ | |
-|                      | | Category: Member (NHTS)   |  |                                                              | |
-|                      | |                           |  +--------------------------------------------------------------+ |
-|                      | | • ACTIONS                 |                                                                    |
-|                      | | [ Edit Info ]             |                                                                    |
-|                      | | [ Archive Patient ]       |                                                                    |
-|                      | +---------------------------+                                                                    |
-+----------------------+-------------------------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------------------------------------------+
+| [ <- Back to Directory ]                                                                                               |
+|                                                                                                                        |
+| +-- PATIENT MASTER HEADER CARD (Compact, Full-Width) ----------------------------------------------------------------+ |
+| | [MC]  DELA CRUZ, Maria Santos                   ID: P-2026-00042      [ Edit Profile ]  [ Print ]  [ Archive ]      | |
+| |       26 yrs • Female • Born Aug 14, 1999       Family # FAM-0428                                                    | |
+| |       [ Prenatal Care (29w) ]  [ Blood: O+ ]  [ PHIC: 12-345678901-2 ]                                               | |
+| +--------------------------------------------------------------------------------------------------------------------+ |
+|                                                                                                                        |
+| [!] CLINICAL SAFETY ALLERGY ALERT: Penicillin, Seafood Recorded                                                        |
+|                                                                                                                        |
+| +-- CLINICAL CARE WORKSTATION (FULL 100% WIDTH TABS) ----------------------------------------------------------------+ |
+| | TABS: [ Overview ] [ IHP History ] [ Consultations (2) ] [ Vitals Log (3) ] [ Immunizations (4) ]                  | |
+| |       [ Prenatal Care * ] [ Well Baby ] [ Appointments ]                                                           | |
+| |--------------------------------------------------------------------------------------------------------------------| |
+| | TAB 1: OVERVIEW & DEMOGRAPHIC PROFILE                                                                              | |
+| |                                                                                                                    | |
+| | +-- Demographic & Civil Profile -----------------+ +-- Emergency & Family Contacts ------------------------------+ | |
+| | | Civil Status: Married     Religion: Catholic   | | Emergency Contact: Pedro Dela Cruz (Spouse) - 0917-123-4567  | |
+| | | Address: Purok 4, Sinalhan, Santa Rosa, Laguna | | Mother's Name: Elena Santos                                  | |
+| | | Contact: 0917-123-4567    Education: College   | | Household Members: Pedro (Spouse, 28y), Juan Jr. (Son, 2y)  | |
+| | | Category: Member (NHTS)   Occupation: None     | |                                                              | |
+| | +------------------------------------------------+ +-------------------------------------------------------------+ | |
+| |                                                                                                                    | |
+| | +-- Latest Vital Signs Snapshot ---------------------------------------------------------------------------------+ | |
+| | | BP: 120/80 mmHg | HR: 76 bpm | Temp: 36.6 °C | Wt: 55 kg | Ht: 156 cm | BMI: 22.6 (Normal)   [ Record Vitals ]| |
+| | +----------------------------------------------------------------------------------------------------------------+ | |
+| |                                                                                                                    | |
+| | +-- Household Members (FAM-0428) ----------------+ +-- IHP Health Summary ---------------------------------------+ | |
+| | | • Pedro Dela Cruz (Spouse, 28y)                | | • Asthma, Allergies                                         | |
+| | | • Juan Dela Cruz Jr. (Son, 2y)                 | | • Non-Smoker, Non-Drinker          [ Edit IHP ]             | |
+| | +------------------------------------------------+ +-------------------------------------------------------------+ | |
+| +--------------------------------------------------------------------------------------------------------------------+ |
++------------------------------------------------------------------------------------------------------------------------+
 ```
 
 ---

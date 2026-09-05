@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "responsive": true,
             "order": [[0, "asc"], [1, "asc"]], // Order by date then time ascending
             "columnDefs": [
-                { "orderable": false, "targets": 5 } // Disable sorting on action buttons
+                { "orderable": false, "targets": 6 } // Disable sorting on action buttons (index 6)
             ],
             "language": {
                 "paginate": {

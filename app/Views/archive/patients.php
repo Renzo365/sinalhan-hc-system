@@ -82,7 +82,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <td><?= h($p['age']) ?> yrs / <?= h($p['sex']) ?></td>
                                 <td><?= h($p['barangay']) ?></td>
                                 <td><?= date('Y-m-d h:i A', strtotime($p['deleted_at'])) ?></td>
-                                <td><span class="badge bg-secondary"><?= h($p['archiver_name']) ?></span></td>
+                                <td><span class="badge bg-secondary"><?= h(!empty(trim($p['archiver_name'] ?? '')) ? $p['archiver_name'] : 'System') ?></span></td>
                                 <td class="text-secondary text-start text-truncate" style="max-width: 200px;" title="<?= h($p['archive_reason']) ?>">
                                     <?= h($p['archive_reason']) ?>
                                 </td>

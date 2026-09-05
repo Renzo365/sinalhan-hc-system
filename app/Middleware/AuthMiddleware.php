@@ -41,11 +41,11 @@ class AuthMiddleware {
 
             // Flash timeout notice in a new clean session
             session_start();
-            $_SESSION['timeout_message'] = "You've been logged out due to inactivity. Please sign in again.";
+            $_SESSION['session_timed_out'] = true;
 
             $scriptName = $_SERVER['SCRIPT_NAME'];
             $basePath = str_replace('/index.php', '', $scriptName);
-            $redirectUrl = rtrim($basePath, '/') . '/login?timeout=1';
+            $redirectUrl = rtrim($basePath, '/') . '/login';
             header("Location: {$redirectUrl}");
             exit;
         }

@@ -222,7 +222,10 @@ require dirname(__DIR__) . '/layout/header.php';
                         <label for="admin_password" class="form-label fw-semibold text-secondary small">Your Administrator Password <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key-fill"></i></span>
-                            <input type="password" name="admin_password" id="admin_password" class="form-control bg-light border-start-0" placeholder="Enter your current password to authorize" required>
+                            <input type="password" name="admin_password" id="admin_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Enter your current password to authorize" required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -231,7 +234,10 @@ require dirname(__DIR__) . '/layout/header.php';
                         <label for="new_password" class="form-label fw-semibold text-secondary small">New Temporary Password <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
-                            <input type="password" name="new_password" id="new_password" class="form-control bg-light border-start-0" placeholder="Minimum 8 characters" minlength="8" required>
+                            <input type="password" name="new_password" id="new_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Minimum 8 characters" minlength="8" required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -240,7 +246,10 @@ require dirname(__DIR__) . '/layout/header.php';
                         <label for="confirm_password" class="form-label fw-semibold text-secondary small">Confirm New Password <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
-                            <input type="password" name="confirm_password" id="confirm_password" class="form-control bg-light border-start-0" placeholder="Repeat new password" minlength="8" required>
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Repeat new password" minlength="8" required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -293,10 +302,23 @@ document.addEventListener('DOMContentLoaded', function() {
             targetUsername.textContent = '@' + username;
             form.action = '<?= url('/users/') ?>' + userId + '/reset-password';
             
-            // Clear inputs
-            document.getElementById('admin_password').value = '';
-            document.getElementById('new_password').value = '';
-            document.getElementById('confirm_password').value = '';
+            // Clear inputs and reset visibility states
+            ['admin_password', 'new_password', 'confirm_password'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.value = '';
+                    el.type = 'password';
+                }
+            });
+            resetModal.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+                btn.setAttribute('title', 'Show password');
+                btn.setAttribute('aria-label', 'Show password');
+            });
         });
     }
 });

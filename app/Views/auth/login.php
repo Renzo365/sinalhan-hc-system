@@ -49,9 +49,12 @@ require dirname(__DIR__) . '/layout/header.php';
                             <input type="password" 
                                    name="password" 
                                    id="password" 
-                                   class="form-control bg-light border-start-0" 
+                                   class="form-control bg-light border-start-0 border-end-0" 
                                    placeholder="Enter password" 
                                    required>
+                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -74,9 +77,14 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 </div>
 
-<?php if (!empty($timeoutMessage)): ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Clean up address bar query parameters (e.g. ?timeout=1) immediately
+    if (window.location.search) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    <?php if (!empty($timeoutMessage)): ?>
     if (typeof Swal !== 'undefined') {
         Swal.fire({
             icon: 'warning',
@@ -87,8 +95,8 @@ document.addEventListener('DOMContentLoaded', function() {
             allowOutsideClick: false
         });
     }
+    <?php endif; ?>
 });
 </script>
-<?php endif; ?>
 
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>

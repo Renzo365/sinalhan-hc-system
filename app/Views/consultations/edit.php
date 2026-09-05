@@ -1,17 +1,22 @@
 <?php
-$title = 'New Consultation';
+$title = 'Edit Consultation';
 $breadcrumbs = [
     'Patients' => '/patients',
     'Profile' => '/patients/' . $patient['id'],
-    'New Consultation' => null
+    'Edit Consultation' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">New Consultation</h2>
-        <p class="text-secondary small mb-0">Record SOAP checkup notes, link vital signs, and assign consulting clinicians.</p>
+        <h2 class="h3 mb-1 fw-bold text-primary-dark">Edit Consultation</h2>
+        <p class="text-secondary small mb-0">
+            Consultation record originally recorded on <?= date('M d, Y h:i A', strtotime($consultation['consulted_at'] ?? $consultation['created_at'])) ?><?= !empty($consultation['creator_name']) ? ' by ' . h($consultation['creator_name']) : '' ?>.
+            <?php if (!empty($consultation['updated_at']) && !empty($consultation['updater_name'])): ?>
+                &bull; <span class="text-muted">Last edited on <?= date('M d, Y h:i A', strtotime($consultation['updated_at'])) ?> by <?= h($consultation['updater_name']) ?></span>
+            <?php endif; ?>
+        </p>
     </div>
     <a href="<?= url('/patients/' . $patient['id'] . '#tab-consultations') ?>" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i> Back to Profile
@@ -202,10 +207,10 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 <?php endif; ?>
 
-<form action="<?= url('/consultations') ?>" method="POST" autocomplete="off" id="consultationForm">
+<form action="<?= url('/consultations/' . $consultation['id']) ?>" method="POST" autocomplete="off" id="consultationForm">
     <?= csrf_field() ?>
     <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-    <input type="hidden" name="status" value="Completed">
+    <input type="hidden" name="status" value="<?= h($consultation['status'] ?? 'Completed') ?>">
 
     <!-- 3. Encounter Metadata & Vital Signs Selection Card -->
     <div class="card card-premium mb-4">
@@ -226,12 +231,8 @@ require dirname(__DIR__) . '/layout/header.php';
                             if (!empty($c['job_title'])) {
                                 $cName .= " ({$c['job_title']})";
                             }
-                            $selected = '';
-                            if (empty($input['consulted_by']) && $c['id'] == $_SESSION['user_id']) {
-                                $selected = 'selected';
-                            } elseif (isset($input['consulted_by']) && (int)$input['consulted_by'] === (int)$c['id']) {
-                                $selected = 'selected';
-                            }
+                            $currentConsultedBy = isset($input['consulted_by']) ? (int)$input['consulted_by'] : (int)$consultation['consulted_by'];
+                            $selected = ($c['id'] == $currentConsultedBy) ? 'selected' : '';
                         ?>
                             <option value="<?= $c['id'] ?>" <?= $selected ?>>
                                 <?= h($cName) ?>
@@ -249,7 +250,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                name="consulted_at" 
                                id="consulted_at" 
                                class="form-control bg-white" 
-                               value="<?= h($input['consulted_at'] ?? '') ?>" 
+                               value="<?= h($input['consulted_at'] ?? $consultation['consulted_at'] ?? '') ?>" 
                                required>
                     </div>
                 </div>
@@ -262,7 +263,10 @@ require dirname(__DIR__) . '/layout/header.php';
                     <span class="text-muted fw-normal">Select triage entry to associate with this checkup</span>
                 </label>
                 <select name="vital_signs_id" id="vital_signs_id" class="form-select bg-light">
-                    <option value="" data-empty="1">-- No Linked Vital Signs --</option>
+                    <?php 
+                        $currentVitalSignsId = isset($input['vital_signs_id']) ? (int)$input['vital_signs_id'] : (int)($consultation['vital_signs_id'] ?? 0);
+                    ?>
+                    <option value="" data-empty="1" <?= empty($currentVitalSignsId) ? 'selected' : '' ?>>-- No Linked Vital Signs --</option>
                     <?php if (!empty($vitalsList)): ?>
                         <?php foreach ($vitalsList as $idx => $v): 
                             $vLabel = date('M d, Y h:i A', strtotime($v['recorded_at']));
@@ -276,12 +280,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 $vLabel .= " | Wt: {$v['weight']}kg";
                             }
                             $isHighBp = ((int)($v['bp_systolic'] ?? 0) >= 140 || (int)($v['bp_diastolic'] ?? 0) >= 90);
-                            $isSelected = '';
-                            if (empty($input['vital_signs_id']) && $idx === 0) {
-                                $isSelected = 'selected';
-                            } elseif (isset($input['vital_signs_id']) && (int)$input['vital_signs_id'] === (int)$v['id']) {
-                                $isSelected = 'selected';
-                            }
+                            $isSelected = ($currentVitalSignsId === (int)$v['id']) ? 'selected' : '';
                         ?>
                             <option value="<?= $v['id'] ?>" 
                                     data-bp="<?= h(($v['bp_systolic'] ?? '-') . '/' . ($v['bp_diastolic'] ?? '-')) ?>"
@@ -383,7 +382,7 @@ require dirname(__DIR__) . '/layout/header.php';
             Cancel
         </a>
         <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
-            <i class="bi bi-check-circle-fill me-1"></i> Save Consultation
+            <i class="bi bi-check-circle-fill me-1"></i> Update Consultation
         </button>
     </div>
 </form>
@@ -396,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
     flatpickr("#consulted_at", {
         enableTime: true,
         dateFormat: "Y-m-d H:i:S",
-        defaultDate: new Date(),
+        defaultDate: <?= json_encode($input['consulted_at'] ?? $consultation['consulted_at'] ?? date('Y-m-d H:i:s')) ?>,
         maxDate: "today",
         allowInput: true
     });

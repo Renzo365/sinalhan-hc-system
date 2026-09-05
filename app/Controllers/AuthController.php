@@ -22,10 +22,12 @@ class AuthController extends Controller {
         }
         $error = $_SESSION['login_error'] ?? null;
         $username = $_SESSION['login_username'] ?? '';
-        $timeoutMessage = $_SESSION['timeout_message'] ?? null;
-
-        if (isset($_GET['timeout']) && empty($timeoutMessage)) {
+        
+        // One-time session timeout notification via secure server session flash
+        $timeoutMessage = null;
+        if (!empty($_SESSION['session_timed_out'])) {
             $timeoutMessage = "You've been logged out due to inactivity. Please sign in again.";
+            unset($_SESSION['session_timed_out']);
         }
         
         // Clear flash values so they don't persist on subsequent GET requests/refreshes
@@ -68,7 +70,7 @@ class AuthController extends Controller {
             $lockoutStatus = $this->userModel->isLockedOut($user);
             if ($lockoutStatus['is_locked']) {
                 AuditLog::log('LOGIN_BLOCKED_LOCKOUT', 'Auth', "Blocked login attempt during temporary lockout for username: {$username}");
-                $this->setLoginError("Too many failed login attempts. Account temporarily locked for {$lockoutStatus['remaining_formatted']}. Please try again later or contact an administrator.", $username);
+                $this->setLoginError('Too many failed login attempts. Please try again later or contact your administrator.', $username);
                 $this->redirect('/login');
                 return;
             }
@@ -107,19 +109,17 @@ class AuthController extends Controller {
 
                 if ($attempts >= 5) {
                     AuditLog::log('ACCOUNT_LOCKED', 'Auth', "Account temporarily locked for 15 minutes due to 5 consecutive failed attempts: {$username}");
-                    $error = 'Too many failed login attempts. Account temporarily locked for 15 minute(s). Please try again later or contact an administrator.';
+                    $error = 'Too many failed login attempts. Please try again later or contact your administrator.';
                 } else {
-                    $remaining = 5 - $attempts;
-                    $error = "Invalid username or password. (Failed attempts: {$attempts}/5. {$remaining} attempt(s) remaining before 15-minute temporary lockout)";
+                    $error = 'Invalid username or password.';
                 }
                 
                 $this->setLoginError($error, $username);
                 $this->redirect('/login');
             }
         } else {
-            // Log failed login
+            // User does not exist
             AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (non-existent username) for: " . $username);
-            
             $this->setLoginError('Invalid username or password.', $username);
             $this->redirect('/login');
         }
@@ -144,8 +144,14 @@ class AuthController extends Controller {
             session_start();
         }
 
+        $isTimeout = isset($_GET['timeout']) || (isset($_GET['reason']) && $_GET['reason'] === 'timeout');
+
         if (isset($_SESSION['user_id'])) {
-            AuditLog::log('LOGOUT', 'Auth', "User logged out.");
+            if ($isTimeout) {
+                AuditLog::log('SESSION_TIMEOUT', 'Auth', "Session expired due to client inactivity for user: " . ($_SESSION['username'] ?? 'User'));
+            } else {
+                AuditLog::log('LOGOUT', 'Auth', "User logged out.");
+            }
         }
 
         // Clear session variables
@@ -163,7 +169,13 @@ class AuthController extends Controller {
         // Destroy session
         session_destroy();
 
-        // Redirect to login
+        // If timed out, flash one-time notification flag into a clean new session
+        if ($isTimeout) {
+            session_start();
+            $_SESSION['session_timed_out'] = true;
+        }
+
+        // Redirect to login cleanly without query parameters
         $this->redirect('/login');
     }
 

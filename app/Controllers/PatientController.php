@@ -508,6 +508,13 @@ class PatientController extends Controller {
             return;
         }
 
+        // Authorization check: Only administrators can archive patient records
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            $_SESSION['error_message'] = 'Unauthorized access: Only administrators can archive patient records.';
+            $this->redirect("/patients/{$id}");
+            return;
+        }
+
         // Validate archive reason
         $reason = $_POST['archive_reason'] ?? '';
         if (empty(trim($reason))) {

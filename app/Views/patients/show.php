@@ -75,274 +75,113 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
 </div>
 
 <!-- ==========================================================================
-   2-COLUMN WORKSTATION LAYOUT (Sidebar + Main Workspace)
+   PATIENT MASTER HEADER (Compact Universal Identity & Actions Banner)
    ========================================================================== -->
-<div class="row g-4">
-    
-    <!-- ======================================================================
-       LEFT COLUMN: Dedicated Patient Identity & Demographics Sidebar
-       ====================================================================== -->
-    <div class="col-12 col-xl-4 col-lg-4">
-        
-        <!-- Primary Patient Card -->
-        <div class="card card-premium shadow-sm border-0 mb-4 sticky-lg-top" style="top: 1rem; z-index: 10;">
-            <div class="card-body p-4">
-                
-                <!-- Avatar & Header Row -->
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <!-- Patient Avatar Circle -->
-                        <div class="avatar-circle-lg bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs" style="width: 56px; height: 56px; font-size: 1.4rem;">
-                            <?= strtoupper(mb_substr($patient['first_name'], 0, 1) . mb_substr($patient['last_name'], 0, 1)) ?>
-                        </div>
-                        <div>
-                            <h3 class="h5 fw-bold text-primary-dark mb-0 lh-sm">
-                                <?= h($patient['last_name']) ?>, <?= h($patient['first_name']) ?> <?= h($patient['middle_name'] ? mb_substr($patient['middle_name'], 0, 1) . '.' : '') ?> <?= h($patient['suffix'] ?? '') ?>
-                            </h3>
-                            <span class="text-muted small"><?= h($patient['age']) ?> yrs &bull; <?= h($patient['sex']) ?></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Edit Demographics Button -->
-                    <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary shadow-xs px-2 py-1" title="Edit Patient Identity & Demographics">
-                        <i class="bi bi-pencil-square me-1"></i> Edit
-                    </a>
+<div class="card card-premium shadow-sm border-0 mb-3">
+    <div class="card-body p-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            
+            <!-- Left: Avatar, Name, Badges & Baseline Demographics -->
+            <div class="d-flex align-items-center gap-3 min-w-0">
+                <div class="avatar-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.15rem;">
+                    <?= strtoupper(mb_substr($patient['first_name'], 0, 1) . mb_substr($patient['last_name'], 0, 1)) ?>
                 </div>
 
-                <!-- Program & Household Badges -->
-                <div class="d-flex flex-wrap gap-2 mb-3 pb-3 border-bottom">
-                    <!-- Program Pill -->
-                    <span class="badge <?= $programBadge['class'] ?? 'bg-primary text-white' ?> px-2 py-1 fs-7">
-                        <i class="bi <?= $programBadge['icon'] ?? 'bi-tag' ?> me-1"></i><?= $programBadge['label'] ?? 'General OPD' ?>
-                    </span>
-
-                    <!-- Family Number Badge -->
-                    <?php if (!empty($patient['family_no'])): ?>
-                        <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" 
-                           class="badge bg-light text-dark border text-decoration-none px-2 py-1 fs-7" 
-                           title="Click to view all household members in directory">
-                            <i class="bi bi-house-door-fill text-primary me-1"></i>Family # <?= h($patient['family_no']) ?>
-                        </a>
-                    <?php endif; ?>
-
-                    <!-- Blood Type Badge -->
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-7">
-                        <i class="bi bi-droplet-fill me-1"></i><?= h($patient['blood_type'] ?? 'Unknown') ?>
-                    </span>
-                </div>
-
-                <!-- Detailed Demographics List -->
-                <div class="small">
-                    
-                    <!-- Section: Personal Identity -->
-                    <div class="text-uppercase fw-bold text-muted tracking-wider mb-2" style="font-size: 0.7rem;">
-                        <i class="bi bi-person-lines-fill me-1"></i> Identification & Civil Status
+                <div class="min-w-0">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h3 class="h5 fw-bold text-primary-dark mb-0 lh-1">
+                            <?= h($patient['last_name']) ?>, <?= h($patient['first_name']) ?> <?= h($patient['middle_name'] ? mb_substr($patient['middle_name'], 0, 1) . '.' : '') ?> <?= h($patient['suffix'] ?? '') ?>
+                        </h3>
+                        <span class="badge bg-light text-dark border font-monospace fs-7">
+                            <?= h($patient['patient_no']) ?>
+                        </span>
+                        <span class="badge <?= $programBadge['class'] ?? 'bg-primary text-white' ?> fs-7">
+                            <i class="bi <?= $programBadge['icon'] ?? 'bi-tag' ?> me-1"></i><?= $programBadge['label'] ?? 'General OPD' ?>
+                        </span>
                     </div>
-                    <ul class="list-unstyled mb-3 ps-1">
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Patient ID:</span>
-                            <span class="font-monospace fw-semibold text-dark"><?= h($patient['patient_no']) ?></span>
-                        </li>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Date of Birth:</span>
-                            <span class="fw-medium text-dark"><?= date('M d, Y', strtotime($patient['dob'])) ?></span>
-                        </li>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Civil Status:</span>
-                            <span class="text-dark"><?= h($patient['civil_status']) ?></span>
-                        </li>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Religion:</span>
-                            <span class="text-dark"><?= h($patient['religion'] ?? 'Unspecified') ?></span>
-                        </li>
-                    </ul>
 
-                    <!-- Section: Address & Contact -->
-                    <div class="text-uppercase fw-bold text-muted tracking-wider mb-2" style="font-size: 0.7rem;">
-                        <i class="bi bi-geo-alt-fill me-1"></i> Address & Contact Info
-                    </div>
-                    <ul class="list-unstyled mb-3 ps-1">
-                        <li class="py-1">
-                            <span class="text-muted d-block">Barangay & Street:</span>
-                            <span class="fw-medium text-dark d-block"><?= h($patient['address']) ?>, Brgy. <?= h($patient['barangay']) ?></span>
-                        </li>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Primary Mobile:</span>
-                            <span class="font-monospace fw-semibold text-primary"><?= h($patient['contact_no'] ?? 'None registered') ?></span>
-                        </li>
-                    </ul>
-
-                    <!-- Section: PhilHealth & Socioeconomic -->
-                    <div class="text-uppercase fw-bold text-muted tracking-wider mb-2" style="font-size: 0.7rem;">
-                        <i class="bi bi-shield-shaded me-1"></i> PhilHealth & Socioeconomic
-                    </div>
-                    <ul class="list-unstyled mb-3 ps-1">
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">PhilHealth PIN:</span>
-                            <span class="font-monospace text-dark"><?= h($patient['philhealth_no'] ?? 'Unregistered') ?></span>
-                        </li>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">PHIC Status:</span>
-                            <span class="badge bg-light text-dark border"><?= h($patient['phic_status'] ?? 'Non-Member') ?></span>
-                        </li>
-                        <?php if (!empty($patient['phic_type'])): ?>
-                            <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                                <span class="text-muted">Category:</span>
-                                <span class="text-dark"><?= h($patient['phic_type']) ?></span>
-                            </li>
+                    <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary">
+                        <span><strong><?= h($patient['age']) ?></strong> yrs &bull; <?= h($patient['sex']) ?></span>
+                        <span class="text-muted">&bull;</span>
+                        <span>DOB: <strong><?= date('M d, Y', strtotime($patient['dob'])) ?></strong></span>
+                        <span class="text-muted">&bull;</span>
+                        <span>Blood: <strong class="text-danger"><?= h($patient['blood_type'] ?? 'Unknown') ?></strong></span>
+                        <?php if (!empty($patient['family_no'])): ?>
+                            <span class="text-muted">&bull;</span>
+                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="text-decoration-none text-secondary" title="View household in directory">
+                                <i class="bi bi-house-door-fill text-primary"></i> Fam # <?= h($patient['family_no']) ?>
+                            </a>
                         <?php endif; ?>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Education:</span>
-                            <span class="text-dark"><?= h($patient['education_attainment'] ?? 'Unspecified') ?></span>
-                        </li>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Occupation:</span>
-                            <span class="text-dark"><?= h($patient['occupation'] ?? 'Unspecified') ?></span>
-                        </li>
-                    </ul>
-
-                    <!-- Section: Family & Emergency Contact -->
-                    <div class="text-uppercase fw-bold text-muted tracking-wider mb-2" style="font-size: 0.7rem;">
-                        <i class="bi bi-person-exclamation me-1"></i> Emergency & Immediate Family
+                        <?php if (!empty($patient['philhealth_no'])): ?>
+                            <span class="text-muted">&bull;</span>
+                            <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
+                        <?php endif; ?>
                     </div>
-                    <ul class="list-unstyled mb-3 ps-1">
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Emergency Person:</span>
-                            <span class="fw-medium text-dark"><?= h($patient['emergency_name'] ?? 'None registered') ?></span>
-                        </li>
-                        <?php if (!empty($patient['emergency_relationship'])): ?>
-                            <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                                <span class="text-muted">Relationship:</span>
-                                <span class="text-dark"><?= h($patient['emergency_relationship']) ?></span>
-                            </li>
-                        <?php endif; ?>
-                        <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                            <span class="text-muted">Emergency Phone:</span>
-                            <span class="font-monospace text-danger"><?= h($patient['emergency_no'] ?? 'N/A') ?></span>
-                        </li>
-                        <?php if (!empty($patient['spouse_name'])): ?>
-                            <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                                <span class="text-muted">Spouse Name:</span>
-                                <span class="text-dark"><?= h($patient['spouse_name']) ?></span>
-                            </li>
-                        <?php endif; ?>
-                        <?php if (!empty($patient['mother_name'])): ?>
-                            <li class="d-flex justify-content-between py-1 border-bottom-subtle">
-                                <span class="text-muted">Mother's Name:</span>
-                                <span class="text-dark"><?= h($patient['mother_name']) ?></span>
-                            </li>
-                        <?php endif; ?>
-                    </ul>
-
                 </div>
-
-                <!-- Sidebar Footer Actions (Print & Archive) -->
-                <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm d-flex align-items-center shadow-xs">
-                        <i class="bi bi-printer me-1"></i> Print Profile
-                    </button>
-                    
-                    <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-                        <button class="btn btn-outline-danger btn-sm d-flex align-items-center shadow-xs" data-bs-toggle="modal" data-bs-target="#archivePatientModal">
-                            <i class="bi bi-archive me-1"></i> Archive
-                        </button>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Record Metadata Footer -->
-                <div class="mt-3 pt-2 text-center text-muted" style="font-size: 0.7rem;">
-                    <span>Created on <?= date('M d, Y', strtotime($patient['created_at'])) ?> by <?= h($patient['creator_name'] ?? 'System') ?></span>
-                </div>
-
             </div>
+
+            <!-- Right: Patient-Level Action Controls -->
+            <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-md-0">
+                <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs" title="Edit Patient Identity & Demographics">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                </a>
+                <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs" title="Print Patient Profile">
+                    <i class="bi bi-printer me-1"></i> Print
+                </button>
+                <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                    <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs" data-bs-toggle="modal" data-bs-target="#archivePatientModal" title="Archive Patient Record">
+                        <i class="bi bi-archive me-1"></i> Archive
+                    </button>
+                <?php endif; ?>
+            </div>
+
         </div>
-
     </div>
+</div>
 
-    <!-- ======================================================================
-       RIGHT COLUMN: Clinical Workstation Workspace & Tabs
-       ====================================================================== -->
-    <div class="col-12 col-xl-8 col-lg-8">
-        
-        <!-- Clinical Safety Alert Banners (Highlighted at top of workspace) -->
-        <?php if ($hasAllergy || $isPreEclampsia || $isHypertensive): ?>
-            <div class="d-flex flex-column gap-2 mb-3">
-                <?php if ($hasAllergy): ?>
-                    <div class="alert alert-danger d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0" role="alert">
-                        <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
-                        <div>
-                            <strong>CLINICAL SAFETY ALLERGY ALERT:</strong> <?= h($allergyText) ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($isPreEclampsia): ?>
-                    <div class="alert alert-danger d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0" role="alert">
-                        <i class="bi bi-heart-pulse-fill fs-5 me-2"></i>
-                        <div>
-                            <strong>HIGH-RISK PREGNANCY ALERT:</strong> Patient flagged for Pre-Eclampsia monitoring.
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($isHypertensive): ?>
-                    <div class="alert alert-warning d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0 text-dark" role="alert">
-                        <i class="bi bi-speedometer2 fs-5 me-2 text-danger"></i>
-                        <div>
-                            <strong>HYPERTENSION ALERT:</strong> Recorded BP is elevated (≥140/90 mmHg) or chronic history recorded.
-                        </div>
-                    </div>
-                <?php endif; ?>
+<!-- Clinical Safety Alert Banners (Universal across all tabs) -->
+<?php if ($hasAllergy || $isPreEclampsia || $isHypertensive): ?>
+    <div class="d-flex flex-column gap-2 mb-3">
+        <?php if ($hasAllergy): ?>
+            <div class="alert alert-danger d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0" role="alert">
+                <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
+                <div>
+                    <strong>CLINICAL SAFETY ALLERGY ALERT:</strong> <?= h($allergyText) ?>
+                </div>
             </div>
         <?php endif; ?>
 
-        <!-- Quick Clinical Actions Bar -->
-        <div class="card card-premium shadow-sm border-0 mb-3">
-            <div class="card-body p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-primary-subtle text-primary p-2 rounded-circle">
-                        <i class="bi bi-lightning-charge-fill"></i>
-                    </span>
-                    <div>
-                        <h4 class="h6 mb-0 fw-bold text-dark">Quick Clinical Actions</h4>
-                        <span class="text-muted small">Triage, vitals entry, and consultation shortcuts</span>
-                    </div>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <!-- Enqueue Today Action -->
-                    <form action="<?= url('/queue') ?>" method="POST" class="m-0 p-0">
-                        <?= csrf_field() ?>
-                        <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                        <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-2 shadow-xs">
-                            <i class="bi bi-person-lines-fill me-1"></i>
-                            <span>+ Enqueue</span>
-                        </button>
-                    </form>
-
-                    <!-- Take Vitals Action -->
-                    <button class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-2 shadow-xs" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
-                        <i class="bi bi-heart-pulse-fill me-1"></i>
-                        <span>+ Take Vitals</span>
-                    </button>
-
-                    <!-- New Consult Action (Primary Highlight) -->
-                    <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-primary btn-sm d-flex align-items-center px-3 py-2 shadow-xs fw-semibold">
-                        <i class="bi bi-journal-medical me-1"></i>
-                        <span>+ New Consult</span>
-                    </a>
+        <?php if ($isPreEclampsia): ?>
+            <div class="alert alert-danger d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0" role="alert">
+                <i class="bi bi-heart-pulse-fill fs-5 me-2"></i>
+                <div>
+                    <strong>HIGH-RISK PREGNANCY ALERT:</strong> Patient flagged for Pre-Eclampsia monitoring.
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
 
-        <!-- Workstation Modular Tab Strip & Panels -->
-        <div class="card card-premium shadow-sm border-0 mb-5">
-            
-            <!-- Sleek Single-Line Tab Bar -->
-            <div class="card-header bg-white p-0 border-0">
-                <ul class="nav nav-tabs m-0 border-0 flex-nowrap" id="workstationTabs" role="tablist">
-                    <!-- Tab 1: Overview -->
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active fw-semibold text-nowrap" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">
+        <?php if ($isHypertensive): ?>
+            <div class="alert alert-warning d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0 text-dark" role="alert">
+                <i class="bi bi-speedometer2 fs-5 me-2 text-danger"></i>
+                <div>
+                    <strong>HYPERTENSION ALERT:</strong> Recorded BP is elevated (&ge;140/90 mmHg) or chronic history recorded.
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
+<!-- ==========================================================================
+   CLINICAL WORKSTATION (FULL 100% WIDTH MODULAR TABS)
+   ========================================================================== -->
+<div class="card card-premium shadow-sm border-0 mb-5">
+    
+    <!-- Sleek Single-Line Tab Bar -->
+    <div class="card-header bg-white p-0 border-0">
+        <ul class="nav nav-tabs m-0 border-0 flex-nowrap" id="workstationTabs" role="tablist">
+            <!-- Tab 1: Overview -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-semibold text-nowrap" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">
                             <i class="bi bi-grid-1x2-fill me-1"></i> Overview
                         </button>
                     </li>
@@ -419,16 +258,117 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                        TAB 1: OVERVIEW & CLINICAL SNAPSHOT
                        ============================================================== -->
                     <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
-                        <div class="row g-4">
+                        <div class="row g-3">
                             
-                            <!-- Latest Vital Signs Snapshot Card -->
+                            <!-- 1. Demographic & Civil Profile Card -->
+                            <div class="col-12 col-lg-6">
+                                <div class="card border rounded-3 h-100 shadow-xs">
+                                    <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                                        <h5 class="h6 mb-0 fw-bold text-dark">
+                                            <i class="bi bi-person-lines-fill text-primary me-2"></i>Demographic & Civil Profile
+                                        </h5>
+                                        <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-xs btn-outline-primary py-1 px-2" title="Edit Demographics">
+                                            <i class="bi bi-pencil me-1"></i> Edit
+                                        </a>
+                                    </div>
+                                    <div class="card-body p-3 small">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Civil Status</span>
+                                                <span class="fw-semibold text-dark"><?= h($patient['civil_status']) ?></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Religion</span>
+                                                <span class="text-dark"><?= h($patient['religion'] ?? 'Unspecified') ?></span>
+                                            </div>
+                                            <div class="col-12 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Residential Address</span>
+                                                <span class="fw-medium text-dark"><i class="bi bi-geo-alt text-secondary me-1"></i><?= h($patient['address']) ?>, Brgy. <?= h($patient['barangay']) ?></span>
+                                            </div>
+                                            <div class="col-12 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Contact Number</span>
+                                                <span class="font-monospace fw-semibold text-primary"><i class="bi bi-telephone text-secondary me-1"></i><?= h($patient['contact_no'] ?? 'None registered') ?></span>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">PhilHealth Status</span>
+                                                <span class="badge bg-light text-dark border"><?= h($patient['phic_status'] ?? 'Non-Member') ?></span>
+                                                <?php if (!empty($patient['phic_type'])): ?>
+                                                    <span class="text-muted d-block" style="font-size: 0.7rem;"><?= h($patient['phic_type']) ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">PhilHealth PIN</span>
+                                                <span class="font-monospace text-dark"><?= h($patient['philhealth_no'] ?? 'Unregistered') ?></span>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Educational Attainment</span>
+                                                <span class="text-dark"><?= h($patient['education_attainment'] ?? 'Unspecified') ?></span>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Occupation</span>
+                                                <span class="text-dark"><?= h($patient['occupation'] ?? 'Unspecified') ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Emergency & Family Contacts Card -->
+                            <div class="col-12 col-lg-6">
+                                <div class="card border rounded-3 h-100 shadow-xs">
+                                    <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                                        <h5 class="h6 mb-0 fw-bold text-dark">
+                                            <i class="bi bi-person-exclamation text-danger me-2"></i>Emergency & Family Information
+                                        </h5>
+                                        <?php if (!empty($patient['family_no'])): ?>
+                                            <span class="badge bg-light text-dark border">Fam # <?= h($patient['family_no']) ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="card-body p-3 small">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Emergency Contact</span>
+                                                <span class="fw-semibold text-dark"><?= h($patient['emergency_name'] ?? 'None registered') ?></span>
+                                            </div>
+                                            <div class="col-6">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Relationship</span>
+                                                <span class="text-dark"><?= h($patient['emergency_relationship'] ?? 'N/A') ?></span>
+                                            </div>
+                                            <div class="col-12 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Emergency Phone</span>
+                                                <span class="font-monospace fw-semibold text-danger"><i class="bi bi-telephone-fill text-danger me-1"></i><?= h($patient['emergency_no'] ?? 'None provided') ?></span>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Spouse / Partner Name</span>
+                                                <span class="text-dark"><?= !empty($patient['spouse_name']) ? h($patient['spouse_name']) : '<span class="text-muted">None on record</span>' ?></span>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Mother\'s Maiden Name</span>
+                                                <span class="text-dark"><?= !empty($patient['mother_name']) ? h($patient['mother_name']) : '<span class="text-muted">None on record</span>' ?></span>
+                                            </div>
+                                            <div class="col-12 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Household Code</span>
+                                                <?php if (!empty($patient['family_no'])): ?>
+                                                    <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="text-decoration-none fw-medium text-primary">
+                                                        <i class="bi bi-house-door me-1"></i>Family Group # <?= h($patient['family_no']) ?> (Click to view members)
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="text-muted">No household number assigned</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Latest Vital Signs Snapshot Card (Full Width) -->
                             <div class="col-12">
                                 <div class="card border rounded-3 shadow-xs">
                                     <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
                                         <h5 class="h6 mb-0 fw-bold text-dark">
                                             <i class="bi bi-heart-pulse text-danger me-2"></i>Latest Vital Signs Snapshot
                                         </h5>
-                                        <button class="btn btn-sm btn-outline-primary py-1 px-2" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
                                             <i class="bi bi-plus-lg me-1"></i> Record Vitals
                                         </button>
                                     </div>
@@ -478,7 +418,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                         <span class="fw-bold fs-6 text-primary"><?= h($latestVitals['bmi'] ?? '--') ?></span>
                                                         <span class="text-muted d-block small" style="font-size: 0.65rem;">
                                                             <?php 
-                                                            $bmi = (float)($latestVitals['bmi'] ?? 0);
+                                                             $bmi = (float)($latestVitals['bmi'] ?? 0);
                                                             if ($bmi > 0 && $bmi < 18.5) echo '<span class="text-warning">Underweight</span>';
                                                             elseif ($bmi >= 18.5 && $bmi <= 24.9) echo '<span class="text-success">Normal</span>';
                                                             elseif ($bmi >= 25.0 && $bmi <= 29.9) echo '<span class="text-warning">Overweight</span>';
@@ -511,7 +451,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 </div>
                             </div>
 
-                            <!-- Household Members Card -->
+                            <!-- 4. Household Members Card -->
                             <div class="col-12 col-md-6">
                                 <div class="card border rounded-3 h-100 shadow-xs">
                                     <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
@@ -547,14 +487,14 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 </div>
                             </div>
 
-                            <!-- IHP Summary Card -->
+                            <!-- 5. IHP Summary Card -->
                             <div class="col-12 col-md-6">
                                 <div class="card border rounded-3 h-100 shadow-xs">
                                     <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
                                         <h5 class="h6 mb-0 fw-bold text-dark">
                                             <i class="bi bi-clipboard2-check text-primary me-2"></i>IHP Health Summary
                                         </h5>
-                                        <button class="btn btn-sm btn-outline-primary py-1 px-2" onclick="document.getElementById('tab-ihp-btn').click();">
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="editIhpFromOverview();">
                                             <i class="bi bi-pencil me-1"></i> Edit IHP
                                         </button>
                                     </div>
@@ -582,11 +522,16 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             </div>
                                         <?php else: ?>
                                             <p class="text-muted mb-0 py-2 text-center">
-                                                No IHP medical history recorded. <a href="javascript:void(0)" onclick="document.getElementById('tab-ihp-btn').click();">Complete IHP Form</a>.
+                                                No IHP medical history recorded. <a href="javascript:void(0)" onclick="editIhpFromOverview();">Complete IHP Form</a>.
                                             </p>
                                         <?php endif; ?>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- 6. Metadata Footer -->
+                            <div class="col-12 text-center text-muted pt-2" style="font-size: 0.75rem;">
+                                <span>Patient chart registered on <?= date('M d, Y \a\t h:i A', strtotime($patient['created_at'])) ?> <?= !empty($patient['creator_name']) ? 'by ' . h($patient['creator_name']) : '' ?></span>
                             </div>
 
                         </div>
@@ -596,240 +541,563 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                        TAB 2: ANNEX A1 INDIVIDUAL HEALTH PROFILE (IHP) FORM
                        ============================================================== -->
                     <div class="tab-pane fade" id="tab-ihp" role="tabpanel">
-                        <form action="<?= url('/patients/' . $patient['id'] . '/medical-history') ?>" method="POST" id="ihpForm">
-                            <?= csrf_field() ?>
+                        <?php 
+                        $pmhSaved = $medicalHistory['past_medical_history'] ?? [];
+                        $familySaved = $medicalHistory['family_history'] ?? [];
+                        $surgicalSaved = $medicalHistory['surgical_history'] ?? [];
 
-                            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        // Ensure JSON string arrays are decoded if they came as raw strings
+                        if (is_string($pmhSaved)) {
+                            $decoded = json_decode($pmhSaved, true);
+                            $pmhSaved = is_array($decoded) ? $decoded : ($pmhSaved === '[]' || $pmhSaved === '{}' ? [] : [$pmhSaved]);
+                        }
+                        if (is_string($familySaved)) {
+                            $decoded = json_decode($familySaved, true);
+                            $familySaved = is_array($decoded) ? $decoded : ($familySaved === '[]' || $familySaved === '{}' ? [] : [$familySaved]);
+                        }
+                        if (is_string($surgicalSaved)) {
+                            $decoded = json_decode($surgicalSaved, true);
+                            $surgicalSaved = is_array($decoded) ? $decoded : ($surgicalSaved === '[]' || $surgicalSaved === '{}' ? [] : [$surgicalSaved]);
+                        }
+
+                        // Build display list for Past Medical History
+                        $pmhDisplay = [];
+                        if (!empty($pmhSaved) && is_array($pmhSaved)) {
+                            foreach ($pmhSaved as $k => $v) {
+                                if (is_string($k) && !is_numeric($k) && trim($k) !== '' && trim($k) !== '[]') {
+                                    $pmhDisplay[] = ['condition' => trim($k), 'detail' => is_string($v) ? trim($v) : ''];
+                                } elseif (!empty($v) && is_string($v) && trim($v) !== '' && trim($v) !== '[]') {
+                                    $pmhDisplay[] = ['condition' => trim($v), 'detail' => ''];
+                                }
+                            }
+                        }
+
+                        // Build display list for Family History
+                        $familyDisplay = [];
+                        if (!empty($familySaved) && is_array($familySaved)) {
+                            foreach ($familySaved as $k => $v) {
+                                if (is_string($k) && !is_numeric($k) && trim($k) !== '' && trim($k) !== '[]') {
+                                    $familyDisplay[] = trim($k) . (!empty($v) && $v !== $k ? ': ' . trim($v) : '');
+                                } elseif (!empty($v) && is_string($v) && trim($v) !== '' && trim($v) !== '[]') {
+                                    $familyDisplay[] = trim($v);
+                                }
+                            }
+                        }
+
+                        // Build display list for Surgical History
+                        $surgicalDisplay = [];
+                        if (!empty($surgicalSaved) && is_array($surgicalSaved)) {
+                            foreach ($surgicalSaved as $surg) {
+                                if (is_array($surg) && (!empty($surg['operation']) || !empty($surg['date']))) {
+                                    $surgicalDisplay[] = $surg;
+                                } elseif (is_string($surg) && trim($surg) !== '' && trim($surg) !== '[]') {
+                                    $surgicalDisplay[] = ['operation' => trim($surg), 'date' => '', 'hospital' => ''];
+                                }
+                            }
+                        }
+
+                        $hasPmhData = !empty($pmhDisplay);
+                        $hasSurgicalData = !empty($surgicalDisplay);
+                        $hasFamilyData = !empty($familyDisplay);
+                        $hasLifestyleData = !empty($medicalHistory) && (
+                            ($medicalHistory['smoking_status'] ?? 'Never') !== 'Never' ||
+                            ($medicalHistory['alcohol_status'] ?? 'Never') !== 'Never' ||
+                            !empty($medicalHistory['illicit_drugs']) ||
+                            !empty($medicalHistory['smoking_pack_years']) ||
+                            !empty($medicalHistory['alcohol_bottles_per_day'])
+                        );
+                        $hasReproductiveData = $isFemale && !empty($medicalHistory) && (
+                            !empty($medicalHistory['menarche_age']) ||
+                            !empty($medicalHistory['sexual_onset_age']) ||
+                            !empty($medicalHistory['lmp']) ||
+                            !empty($medicalHistory['period_duration_days']) ||
+                            !empty($medicalHistory['cycle_interval_days']) ||
+                            !empty($medicalHistory['pads_per_day']) ||
+                            !empty($medicalHistory['is_menopausal']) ||
+                            !empty($medicalHistory['birth_control_method'])
+                        );
+
+                        $hasAnyIhpRecord = !empty($medicalHistory) && (
+                            $hasPmhData ||
+                            $hasSurgicalData ||
+                            $hasFamilyData ||
+                            $hasLifestyleData ||
+                            $hasReproductiveData ||
+                            !empty($medicalHistory['updated_at'])
+                        );
+                        ?>
+
+                        <!-- -----------------------------------------------------------
+                           MODE A: READ-ONLY VIEW (DEFAULT)
+                           ----------------------------------------------------------- -->
+                        <div id="ihp-view-mode">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-3 pb-2 border-bottom">
                                 <div>
                                     <h4 class="h6 mb-0 fw-bold text-dark">PhilHealth Annex A1: Individual Health Profile (IHP)</h4>
-                                    <span class="text-muted small">Record past chronic illnesses, surgeries, family heredity, social history, and reproductive health.</span>
+                                    <span class="text-muted small">
+                                        <?php if (!empty($medicalHistory['updated_at'])): ?>
+                                            Last updated on <?= date('M d, Y \a\t h:i A', strtotime($medicalHistory['updated_at'])) ?>
+                                            <?= !empty($medicalHistory['updater_name']) ? 'by ' . h($medicalHistory['updater_name']) : '' ?>
+                                        <?php else: ?>
+                                            Baseline patient medical history and PhilHealth Annex A1 profile
+                                        <?php endif; ?>
+                                    </span>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm px-3 shadow-xs">
-                                    <i class="bi bi-check2-circle me-1"></i> Save IHP Record
+                                <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-medium" onclick="enterIhpEditMode()">
+                                    Edit IHP Record
                                 </button>
                             </div>
 
-                            <?php 
-                            $pmhSaved = $medicalHistory['past_medical_history'] ?? [];
-                            $familySaved = $medicalHistory['family_history'] ?? [];
-                            $surgicalSaved = $medicalHistory['surgical_history'] ?? [];
-                            ?>
+                            <?php if ($hasAnyIhpRecord): ?>
+                                <div class="row g-3">
+                                    <!-- 1. Past Medical Illnesses Card -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                1. Past Medical Illnesses
+                                            </h5>
+                                            <?php if ($hasPmhData): ?>
+                                                <div class="d-flex flex-wrap gap-2 pt-1">
+                                                    <?php foreach ($pmhDisplay as $item): ?>
+                                                        <?php 
+                                                        $cond = $item['condition'];
+                                                        $det = $item['detail'];
+                                                        ?>
+                                                        <?php if (stripos($cond, 'Allergy') !== false || stripos($det, 'Allergy') !== false): ?>
+                                                            <span class="badge bg-danger text-white px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'Hypertension') !== false): ?>
+                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'Cancer') !== false): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false): ?>
+                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-1">
+                                                    No chronic illnesses or allergies recorded.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
 
-                            <div class="row g-3">
-                                <!-- 1. Past Medical History Checklist -->
-                                <div class="col-12">
-                                    <div class="card border rounded-3 p-3 shadow-xs">
-                                        <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                            <i class="bi bi-check2-square text-primary me-2"></i>1. Past Medical Illnesses
-                                        </h5>
-                                        <div class="row g-2 small mb-3">
-                                            <?php 
-                                            $conditions = [
-                                                'Allergy' => 'Allergy',
-                                                'Asthma' => 'Asthma',
-                                                'Cancer' => 'Cancer',
-                                                'Coronary Artery Disease' => 'Coronary Artery Disease',
-                                                'Diabetes Mellitus' => 'Diabetes Mellitus',
-                                                'Emphysema / COPD' => 'Emphysema / COPD',
-                                                'Epilepsy / Seizure' => 'Epilepsy / Seizure',
-                                                'Hepatitis' => 'Hepatitis',
-                                                'Hyperlipidemia' => 'Hyperlipidemia',
-                                                'Hypertension' => 'Hypertension',
-                                                'Peptic Ulcer Disease' => 'Peptic Ulcer Disease',
-                                                'Pneumonia' => 'Pneumonia',
-                                                'Pulmonary Tuberculosis (PTB)' => 'Pulmonary Tuberculosis (PTB)',
-                                                'Thyroid Disease' => 'Thyroid Disease',
-                                                'Urinary Tract Infection' => 'Urinary Tract Infection',
-                                                'Kidney Disease' => 'Kidney Disease',
-                                                'Mental Disorder' => 'Mental Disorder'
-                                            ];
-                                            foreach ($conditions as $k => $label): 
-                                                $checked = is_array($pmhSaved) && (isset($pmhSaved[$k]) || in_array($k, $pmhSaved));
-                                            ?>
-                                                <div class="col-6 col-md-4">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="<?= $k ?>" id="pmh_<?= md5($k) ?>" <?= $checked ? 'checked' : '' ?>>
-                                                        <label class="form-check-label text-secondary" for="pmh_<?= md5($k) ?>"><?= $label ?></label>
+                                    <!-- 2. Surgical History Card -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                2. Surgical Operations & Hospitalization
+                                            </h5>
+                                            <?php if ($hasSurgicalData): ?>
+                                                <ul class="list-group list-group-flush small">
+                                                    <?php foreach ($surgicalDisplay as $surg): ?>
+                                                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent border-bottom-subtle">
+                                                            <div>
+                                                                <span class="fw-semibold text-dark"><?= h($surg['operation'] ?? 'Surgical Procedure') ?></span>
+                                                                <?php if (!empty($surg['hospital'])): ?>
+                                                                    <span class="text-muted small ms-1">(<?= h($surg['hospital']) ?>)</span>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                            <span class="badge bg-light text-secondary border"><?= !empty($surg['date']) ? h($surg['date']) : 'Year N/A' ?></span>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-2">
+                                                    No prior surgeries or hospitalizations declared.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Family Hereditary Diseases Card -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                3. Family Hereditary Diseases
+                                            </h5>
+                                            <?php if ($hasFamilyData): ?>
+                                                <div class="d-flex flex-wrap gap-2 pt-1">
+                                                    <?php foreach ($familyDisplay as $fam): ?>
+                                                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
+                                                            <?= h($fam) ?>
+                                                        </span>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-2">
+                                                    No family hereditary conditions declared.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Personal & Social Lifestyle Card -->
+                                    <div class="col-12 <?= $isFemale ? 'col-md-6' : 'col-12' ?>">
+                                        <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                4. Personal & Social Lifestyle
+                                            </h5>
+                                            <div class="row g-2 small pt-1">
+                                                <div class="col-12 col-sm-6">
+                                                    <div class="p-2 rounded bg-light border">
+                                                        <span class="text-muted d-block small mb-1">Smoking Status:</span>
+                                                        <?php 
+                                                        $smk = $medicalHistory['smoking_status'] ?? 'Never';
+                                                        if ($smk === 'Yes'): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle">Active Smoker</span>
+                                                            <?php if (!empty($medicalHistory['smoking_pack_years'])): ?>
+                                                                <span class="text-dark small ms-1">(<?= h($medicalHistory['smoking_pack_years']) ?> pk-yrs)</span>
+                                                            <?php endif; ?>
+                                                        <?php elseif ($smk === 'Quit'): ?>
+                                                            <span class="badge bg-secondary-subtle text-secondary border">Quit Smoking</span>
+                                                            <?php if (!empty($medicalHistory['smoking_pack_years'])): ?>
+                                                                <span class="text-dark small ms-1">(<?= h($medicalHistory['smoking_pack_years']) ?> pk-yrs)</span>
+                                                            <?php endif; ?>
+                                                        <?php else: ?>
+                                                            <span class="text-dark">Never Smoked</span>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </div>
-                                            <?php endforeach; ?>
-                                        </div>
-
-                                        <!-- Specific Details Fields -->
-                                        <div class="row g-2 small border-top pt-2">
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Allergy Specifics</label>
-                                                <input type="text" name="allergy_specifics" class="form-control form-control-sm" placeholder="e.g. Penicillin, Seafood" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Allergy'] ?? '') : '') ?>">
-                                            </div>
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Hypertension (Highest BP)</label>
-                                                <input type="text" name="hypertension_highest_bp" class="form-control form-control-sm" placeholder="e.g. 150/90" value="<?= h(is_array($pmhSaved) ? str_replace('Highest BP: ', '', $pmhSaved['Hypertension'] ?? '') : '') ?>">
-                                            </div>
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Cancer (Organ/Type)</label>
-                                                <input type="text" name="cancer_organ" class="form-control form-control-sm" placeholder="e.g. Breast, Colon" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Cancer'] ?? '') : '') ?>">
-                                            </div>
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">PTB Category / Details</label>
-                                                <input type="text" name="ptb_details" class="form-control form-control-sm" placeholder="e.g. Cat 1 Completed" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['PTB'] ?? '') : '') ?>">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 2. Surgical History & 3. Family Heredity -->
-                                <div class="col-12 col-md-6">
-                                    <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                        <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                            <i class="bi bi-bandaid text-primary me-2"></i>2. Surgical Operations & Hospitalization
-                                        </h5>
-                                        <div class="row g-2 small">
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Name</label>
-                                                <input type="text" name="operation_1_name" class="form-control form-control-sm" placeholder="e.g. Appendectomy" value="<?= h($surgicalSaved[0]['operation'] ?? '') ?>">
-                                            </div>
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Date</label>
-                                                <input type="text" name="operation_1_date" class="form-control form-control-sm" placeholder="YYYY or Date" value="<?= h($surgicalSaved[0]['date'] ?? '') ?>">
-                                            </div>
-
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Name</label>
-                                                <input type="text" name="operation_2_name" class="form-control form-control-sm" placeholder="e.g. CS Delivery" value="<?= h($surgicalSaved[1]['operation'] ?? '') ?>">
-                                            </div>
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Date</label>
-                                                <input type="text" name="operation_2_date" class="form-control form-control-sm" placeholder="YYYY or Date" value="<?= h($surgicalSaved[1]['date'] ?? '') ?>">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                        <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                            <i class="bi bi-diagram-3 text-primary me-2"></i>3. Family Hereditary Diseases
-                                        </h5>
-                                        <div class="row g-2 small">
-                                            <?php 
-                                            $familyItems = ['Hypertension', 'Diabetes Mellitus', 'Cancer', 'Asthma', 'Kidney Disease', 'Coronary Artery Disease', 'Stroke', 'Mental Disorder', 'Bleeding Disorder'];
-                                            foreach ($familyItems as $item):
-                                                $famChecked = is_array($familySaved) && (isset($familySaved[$item]) || in_array($item, $familySaved));
-                                            ?>
-                                                <div class="col-6">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="family_history[]" value="<?= $item ?>" id="fam_<?= md5($item) ?>" <?= $famChecked ? 'checked' : '' ?>>
-                                                        <label class="form-check-label text-secondary" for="fam_<?= md5($item) ?>"><?= $item ?></label>
+                                                <div class="col-12 col-sm-6">
+                                                    <div class="p-2 rounded bg-light border">
+                                                        <span class="text-muted d-block small mb-1">Alcohol Drinking:</span>
+                                                        <?php 
+                                                        $alc = $medicalHistory['alcohol_status'] ?? 'Never';
+                                                        if ($alc === 'Yes'): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle">Regular / Occasional</span>
+                                                            <?php if (!empty($medicalHistory['alcohol_bottles_per_day'])): ?>
+                                                                <span class="text-dark small ms-1">(<?= h($medicalHistory['alcohol_bottles_per_day']) ?> btls/day)</span>
+                                                            <?php endif; ?>
+                                                        <?php elseif ($alc === 'Quit'): ?>
+                                                            <span class="badge bg-secondary-subtle text-secondary border">Quit Drinking</span>
+                                                        <?php else: ?>
+                                                            <span class="text-dark">Non-Drinker</span>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 4. Personal & Social History -->
-                                <div class="col-12 <?= $isFemale ? 'col-md-6' : 'col-12' ?>">
-                                    <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                        <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                            <i class="bi bi-cup-straw text-primary me-2"></i>4. Personal & Social Lifestyle
-                                        </h5>
-                                        <div class="row g-2 small">
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Smoking Status</label>
-                                                <select name="smoking_status" class="form-select form-select-sm">
-                                                    <option value="Never" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never</option>
-                                                    <option value="Yes" <?= ($medicalHistory['smoking_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Active)</option>
-                                                    <option value="Quit" <?= ($medicalHistory['smoking_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Smoking Pack Years</label>
-                                                <input type="number" step="0.1" name="smoking_pack_years" class="form-control form-control-sm" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>">
-                                            </div>
-
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Drinking Status</label>
-                                                <select name="alcohol_status" class="form-select form-select-sm">
-                                                    <option value="Never" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never</option>
-                                                    <option value="Yes" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Regular/Occasional)</option>
-                                                    <option value="Quit" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-12 col-sm-6">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Bottles / Day</label>
-                                                <input type="number" step="0.1" name="alcohol_bottles_per_day" class="form-control form-control-sm" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>">
-                                            </div>
-
-                                            <div class="col-12">
-                                                <div class="form-check mt-1">
-                                                    <input class="form-check-input" type="checkbox" name="illicit_drugs" value="1" id="illicit_drugs" <?= !empty($medicalHistory['illicit_drugs']) ? 'checked' : '' ?>>
-                                                    <label class="form-check-label text-secondary fw-semibold small" for="illicit_drugs">History of Illicit Drug Use</label>
+                                                <div class="col-12">
+                                                    <div class="p-2 rounded bg-light border d-flex justify-content-between align-items-center">
+                                                        <span class="text-muted small">Illicit Drug Use:</span>
+                                                        <?php if (!empty($medicalHistory['illicit_drugs'])): ?>
+                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Reported History</span>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">None Declared</span>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- 5. Female Reproductive History Card (if Female) -->
+                                    <?php if ($isFemale): ?>
+                                        <div class="col-12 col-md-6">
+                                            <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                                <h5 class="h6 fw-bold text-pink mb-2">
+                                                    5. Female Menstrual & Reproductive History
+                                                </h5>
+                                                <div class="row g-2 small pt-1">
+                                                    <div class="col-6">
+                                                        <span class="text-muted d-block">Menarche Age:</span>
+                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['menarche_age']) ? h($medicalHistory['menarche_age']) . ' yrs old' : '<span class="text-muted">Unspecified</span>' ?></span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <span class="text-muted d-block">Sexual Onset Age:</span>
+                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['sexual_onset_age']) ? h($medicalHistory['sexual_onset_age']) . ' yrs old' : '<span class="text-muted">Unspecified</span>' ?></span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <span class="text-muted d-block">Last Menstrual Period (LMP):</span>
+                                                        <span class="fw-bold text-primary"><?= !empty($medicalHistory['lmp']) ? date('M d, Y', strtotime($medicalHistory['lmp'])) : '<span class="text-muted fw-normal">None recorded</span>' ?></span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <span class="text-muted d-block">Menopausal:</span>
+                                                        <?php if (!empty($medicalHistory['is_menopausal'])): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border">Yes <?= !empty($medicalHistory['menopause_age']) ? '(Age ' . h($medicalHistory['menopause_age']) . ')' : '' ?></span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-light text-muted border">No</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <span class="text-muted d-block">Duration:</span>
+                                                        <span class="fw-medium text-dark"><?= !empty($medicalHistory['period_duration_days']) ? h($medicalHistory['period_duration_days']) . ' days' : '—' ?></span>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <span class="text-muted d-block">Cycle:</span>
+                                                        <span class="fw-medium text-dark"><?= !empty($medicalHistory['cycle_interval_days']) ? h($medicalHistory['cycle_interval_days']) . ' days' : '—' ?></span>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <span class="text-muted d-block">Pads/Day:</span>
+                                                        <span class="fw-medium text-dark"><?= !empty($medicalHistory['pads_per_day']) ? h($medicalHistory['pads_per_day']) : '—' ?></span>
+                                                    </div>
+                                                    <div class="col-12 border-top pt-2 mt-1">
+                                                        <span class="text-muted d-block">Family Planning Method:</span>
+                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['birth_control_method']) ? h($medicalHistory['birth_control_method']) : '<span class="text-muted fw-normal">None declared</span>' ?></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <!-- Clean Empty State Card -->
+                                <div class="card border border-dashed rounded-3 p-4 text-center bg-light shadow-xs my-2">
+                                    <h5 class="h6 fw-bold text-dark mb-1">No Individual Health Profile (IHP) On File</h5>
+                                    <p class="text-muted small mb-3 mx-auto" style="max-width: 520px;">
+                                        PhilHealth Annex A1 baseline medical history has not yet been recorded for this patient. Click below to record past chronic illnesses, surgical operations, family heredity, social history, and reproductive health.
+                                    </p>
+                                    <div>
+                                        <button type="button" class="btn btn-primary btn-sm px-4 fw-medium" onclick="enterIhpEditMode()">
+                                            Record IHP Medical History
+                                        </button>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- -----------------------------------------------------------
+                           MODE B: EDIT FORM (INITIALLY HIDDEN)
+                           ----------------------------------------------------------- -->
+                        <div id="ihp-edit-mode" class="d-none">
+                            <form action="<?= url('/patients/' . $patient['id'] . '/medical-history') ?>" method="POST" id="ihpForm">
+                                <?= csrf_field() ?>
+
+                                <div class="mb-3 pb-2 border-bottom">
+                                    <h4 class="h6 mb-0 fw-bold text-dark">PhilHealth Annex A1: Individual Health Profile (IHP)</h4>
+                                    <span class="text-muted small">Update past chronic illnesses, surgeries, family heredity, social history, and reproductive health.</span>
                                 </div>
 
-                                <!-- 5. Female Reproductive History (if Female) -->
-                                <?php if ($isFemale): ?>
+                                <div class="row g-3">
+                                    <!-- 1. Past Medical History Checklist -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                1. Past Medical Illnesses
+                                            </h5>
+                                            <div class="row g-2 small mb-3">
+                                                <?php 
+                                                $conditions = [
+                                                    'Allergy' => 'Allergy',
+                                                    'Asthma' => 'Asthma',
+                                                    'Cancer' => 'Cancer',
+                                                    'Coronary Artery Disease' => 'Coronary Artery Disease',
+                                                    'Diabetes Mellitus' => 'Diabetes Mellitus',
+                                                    'Emphysema / COPD' => 'Emphysema / COPD',
+                                                    'Epilepsy / Seizure' => 'Epilepsy / Seizure',
+                                                    'Hepatitis' => 'Hepatitis',
+                                                    'Hyperlipidemia' => 'Hyperlipidemia',
+                                                    'Hypertension' => 'Hypertension',
+                                                    'Peptic Ulcer Disease' => 'Peptic Ulcer Disease',
+                                                    'Pneumonia' => 'Pneumonia',
+                                                    'Pulmonary Tuberculosis (PTB)' => 'Pulmonary Tuberculosis (PTB)',
+                                                    'Thyroid Disease' => 'Thyroid Disease',
+                                                    'Urinary Tract Infection' => 'Urinary Tract Infection',
+                                                    'Kidney Disease' => 'Kidney Disease',
+                                                    'Mental Disorder' => 'Mental Disorder'
+                                                ];
+                                                foreach ($conditions as $k => $label): 
+                                                    $checked = is_array($pmhSaved) && (isset($pmhSaved[$k]) || in_array($k, $pmhSaved));
+                                                ?>
+                                                    <div class="col-6 col-md-4">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="<?= $k ?>" id="pmh_<?= md5($k) ?>" <?= $checked ? 'checked' : '' ?>>
+                                                            <label class="form-check-label text-secondary" for="pmh_<?= md5($k) ?>"><?= $label ?></label>
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+
+                                            <!-- Specific Details Fields -->
+                                            <div class="row g-2 small border-top pt-2">
+                                                <div class="col-12 col-sm-6 col-md-3">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Allergy Specifics</label>
+                                                    <input type="text" name="allergy_specifics" class="form-control form-control-sm" placeholder="e.g. Penicillin, Seafood" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Allergy'] ?? '') : '') ?>">
+                                                </div>
+                                                <div class="col-12 col-sm-6 col-md-3">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Hypertension (Highest BP)</label>
+                                                    <input type="text" name="hypertension_highest_bp" class="form-control form-control-sm" placeholder="e.g. 150/90" value="<?= h(is_array($pmhSaved) ? str_replace('Highest BP: ', '', $pmhSaved['Hypertension'] ?? '') : '') ?>">
+                                                </div>
+                                                <div class="col-12 col-sm-6 col-md-3">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Cancer (Organ/Type)</label>
+                                                    <input type="text" name="cancer_organ" class="form-control form-control-sm" placeholder="e.g. Breast, Colon" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Cancer'] ?? '') : '') ?>">
+                                                </div>
+                                                <div class="col-12 col-sm-6 col-md-3">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">PTB Category / Details</label>
+                                                    <input type="text" name="ptb_details" class="form-control form-control-sm" placeholder="e.g. Cat 1 Completed" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['PTB'] ?? '') : '') ?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Surgical History & 3. Family Heredity -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                            <h5 class="h6 fw-bold text-pink mb-2">
-                                                <i class="bi bi-gender-female text-pink me-2"></i>5. Female Menstrual & Reproductive History
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                2. Surgical Operations & Hospitalization
                                             </h5>
                                             <div class="row g-2 small">
-                                                <div class="col-6 col-sm-4">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Menarche Age</label>
-                                                    <input type="number" name="menarche_age" class="form-control form-control-sm" placeholder="e.g. 13" min="8" max="25" value="<?= h($medicalHistory['menarche_age'] ?? '') ?>">
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Name</label>
+                                                    <input type="text" name="operation_1_name" class="form-control form-control-sm" placeholder="e.g. Appendectomy" value="<?= h($surgicalSaved[0]['operation'] ?? '') ?>">
                                                 </div>
-                                                <div class="col-6 col-sm-4">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Sexual Onset</label>
-                                                    <input type="number" name="sexual_onset_age" class="form-control form-control-sm" placeholder="e.g. 20" min="10" max="60" value="<?= h($medicalHistory['sexual_onset_age'] ?? '') ?>">
-                                                </div>
-                                                <div class="col-12 col-sm-4">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">LMP Date</label>
-                                                    <input type="text" name="lmp" class="form-control form-control-sm dob-picker" placeholder="YYYY-MM-DD" value="<?= h($medicalHistory['lmp'] ?? '') ?>">
-                                                </div>
-
-                                                <div class="col-6 col-sm-4">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Duration (days)</label>
-                                                    <input type="number" name="period_duration_days" class="form-control form-control-sm" placeholder="e.g. 5" min="1" max="15" value="<?= h($medicalHistory['period_duration_days'] ?? '') ?>">
-                                                </div>
-                                                <div class="col-6 col-sm-4">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Cycle (days)</label>
-                                                    <input type="number" name="cycle_interval_days" class="form-control form-control-sm" placeholder="e.g. 28" min="15" max="60" value="<?= h($medicalHistory['cycle_interval_days'] ?? '') ?>">
-                                                </div>
-                                                <div class="col-12 col-sm-4">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Pads / Day</label>
-                                                    <input type="number" name="pads_per_day" class="form-control form-control-sm" placeholder="e.g. 3" min="1" max="20" value="<?= h($medicalHistory['pads_per_day'] ?? '') ?>">
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Date</label>
+                                                    <input type="text" name="operation_1_date" class="form-control form-control-sm" placeholder="YYYY or Date" value="<?= h($surgicalSaved[0]['date'] ?? '') ?>">
                                                 </div>
 
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="form-check mt-1">
-                                                        <input class="form-check-input" type="checkbox" name="is_menopausal" value="1" id="is_menopausal" <?= !empty($medicalHistory['is_menopausal']) ? 'checked' : '' ?>>
-                                                        <label class="form-check-label text-secondary fw-semibold small" for="is_menopausal">Menopausal</label>
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Name</label>
+                                                    <input type="text" name="operation_2_name" class="form-control form-control-sm" placeholder="e.g. CS Delivery" value="<?= h($surgicalSaved[1]['operation'] ?? '') ?>">
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Date</label>
+                                                    <input type="text" name="operation_2_date" class="form-control form-control-sm" placeholder="YYYY or Date" value="<?= h($surgicalSaved[1]['date'] ?? '') ?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                3. Family Hereditary Diseases
+                                            </h5>
+                                            <div class="row g-2 small">
+                                                <?php 
+                                                $familyItems = ['Hypertension', 'Diabetes Mellitus', 'Cancer', 'Asthma', 'Kidney Disease', 'Coronary Artery Disease', 'Stroke', 'Mental Disorder', 'Bleeding Disorder'];
+                                                foreach ($familyItems as $item):
+                                                    $famChecked = is_array($familySaved) && (isset($familySaved[$item]) || in_array($item, $familySaved));
+                                                ?>
+                                                    <div class="col-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="<?= $item ?>" id="fam_<?= md5($item) ?>" <?= $famChecked ? 'checked' : '' ?>>
+                                                            <label class="form-check-label text-secondary" for="fam_<?= md5($item) ?>"><?= $item ?></label>
+                                                        </div>
                                                     </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Personal & Social History -->
+                                    <div class="col-12 <?= $isFemale ? 'col-md-6' : 'col-12' ?>">
+                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                4. Personal & Social Lifestyle
+                                            </h5>
+                                            <div class="row g-2 small">
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Smoking Status</label>
+                                                    <select name="smoking_status" class="form-select form-select-sm">
+                                                        <option value="Never" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never</option>
+                                                        <option value="Yes" <?= ($medicalHistory['smoking_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Active)</option>
+                                                        <option value="Quit" <?= ($medicalHistory['smoking_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
+                                                    </select>
                                                 </div>
                                                 <div class="col-12 col-sm-6">
-                                                    <input type="number" name="menopause_age" class="form-control form-control-sm" placeholder="Menopause Age (e.g. 50)" min="30" max="70" value="<?= h($medicalHistory['menopause_age'] ?? '') ?>">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Smoking Pack Years</label>
+                                                    <input type="number" step="0.1" name="smoking_pack_years" class="form-control form-control-sm" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>">
+                                                </div>
+
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Drinking Status</label>
+                                                    <select name="alcohol_status" class="form-select form-select-sm">
+                                                        <option value="Never" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never</option>
+                                                        <option value="Yes" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Regular/Occasional)</option>
+                                                        <option value="Quit" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Bottles / Day</label>
+                                                    <input type="number" step="0.1" name="alcohol_bottles_per_day" class="form-control form-control-sm" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>">
                                                 </div>
 
                                                 <div class="col-12">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Family Planning Method in Use</label>
-                                                    <input type="text" name="birth_control_method" class="form-control form-control-sm" placeholder="e.g. Pills, BTL, IUD, Injectable, Condom, None" value="<?= h($medicalHistory['birth_control_method'] ?? '') ?>">
+                                                    <div class="form-check mt-1">
+                                                        <input class="form-check-input" type="checkbox" name="illicit_drugs" value="1" id="illicit_drugs" <?= !empty($medicalHistory['illicit_drugs']) ? 'checked' : '' ?>>
+                                                        <label class="form-check-label text-secondary fw-semibold small" for="illicit_drugs">History of Illicit Drug Use</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                <?php endif; ?>
-                            </div>
 
-                            <div class="mt-3 pt-2 text-end">
-                                <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold shadow-xs">
-                                    <i class="bi bi-check2-circle me-1"></i> Save IHP Medical History
-                                </button>
-                            </div>
-                        </form>
+                                    <!-- 5. Female Reproductive History (if Female) -->
+                                    <?php if ($isFemale): ?>
+                                        <div class="col-12 col-md-6">
+                                            <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                                <h5 class="h6 fw-bold text-pink mb-2">
+                                                    5. Female Menstrual & Reproductive History
+                                                </h5>
+                                                <div class="row g-2 small">
+                                                    <div class="col-6 col-sm-4">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Menarche Age</label>
+                                                        <input type="number" name="menarche_age" class="form-control form-control-sm" placeholder="e.g. 13" min="8" max="25" value="<?= h($medicalHistory['menarche_age'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-sm-4">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Sexual Onset</label>
+                                                        <input type="number" name="sexual_onset_age" class="form-control form-control-sm" placeholder="e.g. 20" min="10" max="60" value="<?= h($medicalHistory['sexual_onset_age'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-12 col-sm-4">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">LMP Date</label>
+                                                        <input type="text" name="lmp" class="form-control form-control-sm dob-picker" placeholder="YYYY-MM-DD" value="<?= h($medicalHistory['lmp'] ?? '') ?>">
+                                                    </div>
+
+                                                    <div class="col-6 col-sm-4">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Duration (days)</label>
+                                                        <input type="number" name="period_duration_days" class="form-control form-control-sm" placeholder="e.g. 5" min="1" max="15" value="<?= h($medicalHistory['period_duration_days'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-sm-4">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Cycle (days)</label>
+                                                        <input type="number" name="cycle_interval_days" class="form-control form-control-sm" placeholder="e.g. 28" min="15" max="60" value="<?= h($medicalHistory['cycle_interval_days'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-12 col-sm-4">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Pads / Day</label>
+                                                        <input type="number" name="pads_per_day" class="form-control form-control-sm" placeholder="e.g. 3" min="1" max="20" value="<?= h($medicalHistory['pads_per_day'] ?? '') ?>">
+                                                    </div>
+
+                                                    <div class="col-12 col-sm-6">
+                                                        <div class="form-check mt-1">
+                                                            <input class="form-check-input" type="checkbox" name="is_menopausal" value="1" id="is_menopausal" <?= !empty($medicalHistory['is_menopausal']) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label text-secondary fw-semibold small" for="is_menopausal">Menopausal</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6">
+                                                        <input type="number" name="menopause_age" class="form-control form-control-sm" placeholder="Menopause Age (e.g. 50)" min="30" max="70" value="<?= h($medicalHistory['menopause_age'] ?? '') ?>">
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Family Planning Method in Use</label>
+                                                        <input type="text" name="birth_control_method" class="form-control form-control-sm" placeholder="e.g. Pills, BTL, IUD, Injectable, Condom, None" value="<?= h($medicalHistory['birth_control_method'] ?? '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="mt-4 pt-3 border-top text-end">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 me-2" onclick="cancelIhpEditMode()">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold shadow-xs">
+                                        Save IHP Record
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- ==============================================================
@@ -862,14 +1130,32 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             </td>
                                         </tr>
                                     <?php else: ?>
-                                        <?php foreach ($consultationsHistory as $c): ?>
+                                        <?php 
+                                            $curUserId = (int)($_SESSION['user_id'] ?? 0);
+                                            $curRole = $_SESSION['role'] ?? 'staff';
+                                        ?>
+                                        <?php foreach ($consultationsHistory as $c): 
+                                            $canEditRow = ($curRole === 'admin' || $curUserId === (int)($c['created_by'] ?? 0) || $curUserId === (int)($c['consulted_by'] ?? 0)) && ($c['status'] !== 'Cancelled');
+                                            
+                                            $badgeClass = 'bg-success-subtle text-success border border-success-subtle';
+                                            if ($c['status'] === 'Cancelled') {
+                                                $badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
+                                            } elseif ($c['status'] === 'Open') {
+                                                $badgeClass = 'bg-secondary-subtle text-secondary border';
+                                            }
+                                        ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y h:i A', strtotime($c['consulted_at'])) ?></td>
                                                 <td><?= h($c['clinician_name']) ?></td>
                                                 <td class="text-start"><?= h(mb_strimwidth($c['assessment'], 0, 50, '...')) ?></td>
-                                                <td><span class="badge bg-success text-white"><?= h($c['status']) ?></span></td>
+                                                <td><span class="badge <?= $badgeClass ?>"><?= h($c['status']) ?></span></td>
                                                 <td class="pe-3 text-end">
-                                                    <button class="btn btn-sm btn-outline-primary py-1 px-2 view-consultation-btn" data-consultation-id="<?= $c['id'] ?>">
+                                                    <?php if ($canEditRow): ?>
+                                                        <a href="<?= url('/consultations/' . $c['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary py-1 px-2 me-1" title="Edit Consultation">
+                                                            <i class="bi bi-pencil-square me-1"></i>Edit
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 view-consultation-btn" data-consultation-id="<?= $c['id'] ?>">
                                                         <i class="bi bi-eye me-1"></i> View SOAP
                                                     </button>
                                                 </td>
@@ -887,7 +1173,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                     <div class="tab-pane fade" id="tab-vitals" role="tabpanel">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="h6 fw-bold text-dark mb-0">Vital Signs Log</h5>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
                                 <i class="bi bi-plus-lg me-1"></i> Record Vitals
                             </button>
                         </div>
@@ -945,7 +1231,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 <h5 class="h6 fw-bold text-dark mb-0">Universal Immunization Records</h5>
                                 <span class="text-muted small">Tracks vaccines administered across all life stages (EPI Routine Infant, HPV, COVID-19, Flu, Pneumococcal).</span>
                             </div>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#recordImmunizationModal">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#recordImmunizationModal">
                                 <i class="bi bi-plus-lg me-1"></i> Record Vaccine Dose
                             </button>
                         </div>
@@ -1010,13 +1296,13 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             <span class="text-muted small">Enrolled on <?= date('M d, Y', strtotime($activePrenatal['created_at'])) ?> by <?= h($activePrenatal['creator_name'] ?? 'Clinician') ?></span>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPrenatalModal">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPrenatalModal">
                                                 <i class="bi bi-pencil me-1"></i> Edit Details
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#concludePrenatalModal">
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#concludePrenatalModal">
                                                 <i class="bi bi-check2-circle me-1"></i> Conclude Episode
                                             </button>
-                                            <button class="btn btn-sm btn-pink text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
+                                            <button type="button" class="btn btn-sm btn-pink text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
                                                 <i class="bi bi-plus-lg me-1"></i> + Log Prenatal Visit
                                             </button>
                                         </div>
@@ -1078,7 +1364,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         <h6 class="fw-bold text-dark mb-0">
                                             <i class="bi bi-calendar2-check text-primary me-2"></i>Serial Prenatal Checkup Follow-up Visits
                                         </h6>
-                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
                                             <i class="bi bi-plus-circle me-1"></i> Log Checkup Visit
                                         </button>
                                     </div>
@@ -1165,7 +1451,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         </h6>
                                         <span class="text-muted small">Historical delivery outcomes, birth places, attendants, and maternal TT vaccination status.</span>
                                     </div>
-                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPastObstetricModal">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPastObstetricModal">
                                         <i class="bi bi-plus-circle me-1"></i> Add Past Delivery
                                     </button>
                                 </div>
@@ -1250,10 +1536,10 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             <span class="text-muted small">Registered on <?= date('M d, Y', strtotime($wellbabyRecord['created_at'])) ?> by <?= h($wellbabyRecord['creator_name'] ?? 'Midwife') ?></span>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editWellbabyModal">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#wellbabyBirthModal">
                                                 <i class="bi bi-pencil me-1"></i> Edit Birth Record
                                             </button>
-                                            <button class="btn btn-sm btn-success text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
+                                            <button type="button" class="btn btn-sm btn-success text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
                                                 <i class="bi bi-plus-lg me-1"></i> + Record Growth Visit
                                             </button>
                                         </div>
@@ -1406,7 +1692,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             </h6>
                                             <span class="text-muted small">Serial measurements of weight, height, head circumference, chest circumference, and feeding practices.</span>
                                         </div>
-                                        <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
+                                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
                                             <i class="bi bi-plus-circle me-1"></i> Record Growth Visit
                                         </button>
                                     </div>
@@ -1482,7 +1768,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                     <h5 class="h6 fw-bold text-dark mb-1">No Well Baby Infant Health Record</h5>
                                     <p class="text-muted small mb-3">Initializing the Well Baby Record (CHO Santa Rosa / Brgy. Ibaba) registers birth circumstances, Newborn Screening (NBS) certification, mother link, and mandatory EPI childhood vaccines.</p>
                                     <div>
-                                        <button class="btn btn-success text-white px-4 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#initWellbabyModal">
+                                        <button type="button" class="btn btn-success text-white px-4 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#wellbabyBirthModal">
                                             <i class="bi bi-plus-circle me-1"></i> Initialize Well Baby Record
                                         </button>
                                     </div>
@@ -1551,16 +1837,13 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
             </div>
         </div>
 
-    </div>
-</div>
-
 <!-- ==========================================================================
    WELL BABY & PEDIATRIC MODALS (If Child)
    ========================================================================== -->
 <?php if ($isChild): ?>
 
     <!-- 1. INITIALIZE / EDIT WELL BABY RECORD MODAL -->
-    <div class="modal fade" id="<?= $wellbabyRecord ? 'editWellbabyModal' : 'initWellbabyModal' ?>" tabindex="-1" aria-labelledby="wellbabyModalLabel" aria-hidden="true">
+    <div class="modal fade" id="wellbabyBirthModal" tabindex="-1" aria-labelledby="wellbabyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
                 <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
@@ -2445,11 +2728,11 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
 <div class="modal fade" id="viewConsultationModal" tabindex="-1" aria-labelledby="viewConsultationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold" id="viewConsultationModalLabel">
-                    <i class="bi bi-journal-medical me-2"></i>Consultation Details (SOAP Notes)
+            <div class="modal-header bg-white py-3 border-bottom" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold text-dark" id="viewConsultationModalLabel">
+                    <i class="bi bi-journal-medical text-primary me-2"></i>Consultation Details (SOAP Notes)
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
             <div class="modal-body p-4 bg-white" id="consultationDetailsContent">
@@ -2461,11 +2744,13 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                 </div>
             </div>
             
-            <div class="modal-footer bg-light py-3 border-0 d-flex justify-content-between" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button type="button" class="btn btn-outline-primary btn-sm px-3" onclick="window.print()">
-                    <i class="bi bi-printer me-1"></i> Print SOAP Note
+            <div class="modal-footer bg-light py-2 px-3 border-top d-flex justify-content-between" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print
                 </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+                <div class="d-flex align-items-center gap-2" id="consultationModalFooterRight">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -2510,6 +2795,80 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
 
 <!-- Client-side Scripts -->
 <script>
+// Global IHP Edit / View Mode Transition Functions
+let ihpFormInitialData = '';
+
+window.enterIhpEditMode = function() {
+    const viewMode = document.getElementById('ihp-view-mode');
+    const editMode = document.getElementById('ihp-edit-mode');
+    const form = document.getElementById('ihpForm');
+    if (viewMode && editMode) {
+        viewMode.classList.add('d-none');
+        editMode.classList.remove('d-none');
+        if (form) {
+            ihpFormInitialData = new URLSearchParams(new FormData(form)).toString();
+        }
+        const tabEl = document.getElementById('tab-ihp');
+        if (tabEl) {
+            tabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+};
+
+window.cancelIhpEditMode = function() {
+    const form = document.getElementById('ihpForm');
+    const viewMode = document.getElementById('ihp-view-mode');
+    const editMode = document.getElementById('ihp-edit-mode');
+    if (!form || !viewMode || !editMode) return;
+
+    const currentData = new URLSearchParams(new FormData(form)).toString();
+    const isDirty = (currentData !== ihpFormInitialData);
+
+    if (isDirty) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Discard Changes?',
+                text: 'You have modified fields in this IHP record. Are you sure you want to discard your changes?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Discard Changes',
+                cancelButtonText: 'Keep Editing'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.reset();
+                    const lmpInput = form.querySelector('input[name="lmp"]');
+                    if (lmpInput && lmpInput._flatpickr) {
+                        lmpInput._flatpickr.setDate(lmpInput.defaultValue || '', false);
+                    }
+                    editMode.classList.add('d-none');
+                    viewMode.classList.remove('d-none');
+                }
+            });
+        } else {
+            if (confirm('Discard unsaved changes to this IHP record?')) {
+                form.reset();
+                editMode.classList.add('d-none');
+                viewMode.classList.remove('d-none');
+            }
+        }
+    } else {
+        editMode.classList.add('d-none');
+        viewMode.classList.remove('d-none');
+    }
+};
+
+window.editIhpFromOverview = function() {
+    const ihpBtn = document.getElementById('tab-ihp-btn');
+    if (ihpBtn) {
+        ihpBtn.click();
+        setTimeout(function() {
+            enterIhpEditMode();
+        }, 150);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // 1. BMI Auto-calculation in Vitals Modal
     const weightInput = document.getElementById('weight');
@@ -2533,26 +2892,34 @@ document.addEventListener('DOMContentLoaded', function() {
         heightInput.addEventListener('input', calculateBMI);
     }
 
-    // 2. Tab switching based on URL hash (e.g. #tab-wellbaby opens Tab 7)
+    // 2. Tab switching based on URL hash (e.g. #tab-wellbaby, #appointments-tab, #consultations-tab)
     if (window.location.hash) {
         const hash = window.location.hash;
-        if (hash === '#ihp-history' || hash === '#tab-ihp') {
+        if (hash === '#ihp-history' || hash === '#tab-ihp' || hash === '#ihp-tab') {
             const ihpBtn = document.getElementById('tab-ihp-btn');
             if (ihpBtn) ihpBtn.click();
-        } else if (hash === '#tab-consultations') {
+        } else if (hash === '#edit-ihp') {
+            editIhpFromOverview();
+        } else if (hash === '#tab-consultations' || hash === '#consultations-tab') {
             const btn = document.getElementById('tab-consultations-btn');
             if (btn) btn.click();
-        } else if (hash === '#tab-vitals') {
+        } else if (hash === '#tab-vitals' || hash === '#vitals-tab') {
             const btn = document.getElementById('tab-vitals-btn');
             if (btn) btn.click();
-        } else if (hash === '#tab-prenatal') {
+        } else if (hash === '#tab-prenatal' || hash === '#prenatal-tab') {
             const btn = document.getElementById('tab-prenatal-btn');
             if (btn) btn.click();
-        } else if (hash === '#tab-wellbaby') {
+        } else if (hash === '#tab-wellbaby' || hash === '#wellbaby-tab') {
             const btn = document.getElementById('tab-wellbaby-btn');
             if (btn) btn.click();
-        } else if (hash === '#tab-immunizations') {
+        } else if (hash === '#tab-immunizations' || hash === '#immunizations-tab') {
             const btn = document.getElementById('tab-immunizations-btn');
+            if (btn) btn.click();
+        } else if (hash === '#tab-appointments' || hash === '#appointments-tab' || hash === '#queue-tab') {
+            const btn = document.getElementById('tab-appointments-btn');
+            if (btn) btn.click();
+        } else if (hash === '#tab-overview' || hash === '#overview-tab') {
+            const btn = document.getElementById('tab-overview-btn');
             if (btn) btn.click();
         }
     }
@@ -2576,6 +2943,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const consultationId = this.getAttribute('data-consultation-id');
             const modal = new bootstrap.Modal(viewConsultationModal);
             modal.show();
+
+            const footerRight = document.getElementById('consultationModalFooterRight');
+            if (footerRight) {
+                footerRight.innerHTML = `<button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
+            }
 
             consultationDetailsContent.innerHTML = `
                 <div class="text-center py-5">
@@ -2602,97 +2974,112 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.bp_systolic || data.temperature || data.heart_rate || data.weight || data.height) {
                         const isHighBp = (parseInt(data.bp_systolic) >= 140 || parseInt(data.bp_diastolic) >= 90);
                         vitalsHtml = `
-                            <div class="p-3 bg-light rounded-3 mb-4 border d-flex flex-wrap align-items-center gap-3 small text-secondary">
+                            <div class="p-3 bg-light rounded-3 mb-3 border d-flex flex-wrap align-items-center gap-3 small text-secondary">
                                 <span class="fw-bold text-dark"><i class="bi bi-speedometer2 text-primary me-1"></i> Linked Vital Signs:</span>
                                 ${data.bp_systolic && data.bp_diastolic ? `<span>BP: <strong class="${isHighBp ? 'text-danger fw-bold' : 'text-dark'}">${escapeHtml(data.bp_systolic)}/${escapeHtml(data.bp_diastolic)} mmHg</strong></span><span class="vr"></span>` : ''}
                                 ${data.temperature ? `<span>Temp: <strong class="text-dark">${escapeHtml(data.temperature)} °C</strong></span><span class="vr"></span>` : ''}
                                 ${data.heart_rate ? `<span>HR: <strong class="text-dark">${escapeHtml(data.heart_rate)} bpm</strong></span><span class="vr"></span>` : ''}
                                 ${data.respiratory_rate ? `<span>RR: <strong class="text-dark">${escapeHtml(data.respiratory_rate)} cpm</strong></span><span class="vr"></span>` : ''}
+                                ${data.oxygen_saturation ? `<span>SpO2: <strong class="text-dark">${escapeHtml(data.oxygen_saturation)}%</strong></span><span class="vr"></span>` : ''}
                                 ${data.weight ? `<span>Weight: <strong class="text-dark">${escapeHtml(data.weight)} kg</strong></span><span class="vr"></span>` : ''}
                                 ${data.height ? `<span>Height: <strong class="text-dark">${escapeHtml(data.height)} cm</strong></span><span class="vr"></span>` : ''}
-                                ${data.bmi ? `<span>BMI: <strong class="text-dark">${escapeHtml(data.bmi)}</strong></span><span class="vr"></span>` : ''}
-                                ${data.oxygen_saturation ? `<span>SpO2: <strong class="text-dark">${escapeHtml(data.oxygen_saturation)}%</strong></span>` : ''}
+                                ${data.bmi ? `<span>BMI: <strong class="text-dark">${escapeHtml(data.bmi)}</strong></span>` : ''}
                             </div>
                         `;
                     }
 
-                    let statusBadge = '<span class="badge bg-success px-3 py-1">Completed</span>';
+                    let statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Completed</span>';
                     if (data.status === 'Open') {
-                        statusBadge = '<span class="badge bg-primary px-3 py-1">Open</span>';
+                        statusBadge = '<span class="badge bg-secondary-subtle text-secondary border px-2 py-1">Open</span>';
                     } else if (data.status === 'Cancelled') {
-                        statusBadge = '<span class="badge bg-danger px-3 py-1">Cancelled</span>';
+                        statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Cancelled</span>';
+                    }
+
+                    let lastEditedHtml = '';
+                    if (data.formatted_updated && data.updater_name) {
+                        lastEditedHtml = `
+                            <div class="col-12 text-muted small mt-1">
+                                <i class="bi bi-pencil me-1"></i>Last edited on ${escapeHtml(data.formatted_updated)} by ${escapeHtml(data.updater_name)}
+                            </div>
+                        `;
+                    }
+
+                    let cancellationHtml = '';
+                    if (data.status === 'Cancelled' && data.archive_reason) {
+                        cancellationHtml = `
+                            <div class="col-12 alert alert-danger py-2 px-3 small mt-2 mb-0">
+                                <i class="bi bi-x-octagon-fill me-1"></i><strong>Cancellation Reason:</strong> ${escapeHtml(data.archive_reason)}
+                            </div>
+                        `;
                     }
 
                     consultationDetailsContent.innerHTML = `
                         <!-- Metadata Header Strip -->
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pb-3 mb-3 border-bottom">
-                            <div>
+                        <div class="row g-2 pb-3 mb-3 border-bottom align-items-center">
+                            <div class="col-12 col-md-5">
                                 <span class="text-muted small d-block">Consultation Date & Time:</span>
-                                <strong class="text-dark fs-6"><i class="bi bi-calendar-event me-1 text-primary"></i>${escapeHtml(data.formatted_date || data.consulted_at)}</strong>
+                                <strong class="text-dark"><i class="bi bi-calendar-event me-1 text-primary"></i>${escapeHtml(data.formatted_date || data.consulted_at)}</strong>
                             </div>
-                            <div>
+                            <div class="col-12 col-md-4">
                                 <span class="text-muted small d-block">Attending Clinician:</span>
-                                <strong class="text-dark fs-6"><i class="bi bi-person-badge me-1 text-primary"></i>${escapeHtml(data.clinician_name || 'Unassigned Clinician')}</strong>
+                                <strong class="text-dark"><i class="bi bi-person-badge me-1 text-primary"></i>${escapeHtml(data.clinician_name || 'Unassigned Clinician')}</strong>
                             </div>
-                            <div>
-                                <span class="text-muted small d-block">Consultation Status:</span>
+                            <div class="col-12 col-md-3 text-md-end">
+                                <span class="text-muted small d-block">Status:</span>
                                 ${statusBadge}
                             </div>
+                            ${lastEditedHtml}
+                            ${cancellationHtml}
                         </div>
 
                         ${vitalsHtml}
 
-                        <!-- SOAP Note Structured Cards -->
-                        <div class="row g-3">
+                        <!-- SOAP Note Clean Neutral Cards -->
+                        <div class="d-flex flex-column gap-3">
                             <!-- Subjective (S) -->
-                            <div class="col-12">
-                                <div class="card border-0 shadow-none bg-light" style="border-left: 4px solid #4f46e5 !important; border-radius: 8px;">
-                                    <div class="card-body p-3">
-                                        <h6 class="fw-bold text-primary mb-2 d-flex align-items-center small text-uppercase">
-                                            <i class="bi bi-chat-left-text-fill me-2"></i>Subjective (S) &mdash; Chief Complaint & History of Illness
-                                        </h6>
-                                        <div class="p-3 bg-white rounded border text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.subjective || 'No subjective complaint recorded.')}</div>
-                                    </div>
+                            <div class="card border rounded-3 bg-white">
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
+                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-chat-left-text me-2 text-primary"></i>Subjective (S) &mdash; Chief Complaint & History of Illness</span>
                                 </div>
+                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.subjective || 'No subjective complaint recorded.')}</div>
                             </div>
 
                             <!-- Objective (O) -->
-                            <div class="col-12">
-                                <div class="card border-0 shadow-none bg-light" style="border-left: 4px solid #06b6d4 !important; border-radius: 8px;">
-                                    <div class="card-body p-3">
-                                        <h6 class="fw-bold text-info mb-2 d-flex align-items-center small text-uppercase">
-                                            <i class="bi bi-clipboard2-pulse-fill me-2"></i>Objective (O) &mdash; Physical Examination & Clinical Findings
-                                        </h6>
-                                        <div class="p-3 bg-white rounded border text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.objective || 'No physical examination findings recorded.')}</div>
-                                    </div>
+                            <div class="card border rounded-3 bg-white">
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
+                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-clipboard2-pulse me-2 text-primary"></i>Objective (O) &mdash; Physical Examination & Clinical Findings</span>
                                 </div>
+                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.objective || 'No physical examination findings recorded.')}</div>
                             </div>
 
                             <!-- Assessment (A) -->
-                            <div class="col-12">
-                                <div class="card border-0 shadow-none bg-light" style="border-left: 4px solid #f59e0b !important; border-radius: 8px;">
-                                    <div class="card-body p-3">
-                                        <h6 class="fw-bold text-warning mb-2 d-flex align-items-center small text-uppercase">
-                                            <i class="bi bi-heart-pulse-fill me-2"></i>Assessment (A) &mdash; Clinical Impression / Diagnosis
-                                        </h6>
-                                        <div class="p-3 bg-white rounded border border-warning-subtle text-dark fw-bold small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.assessment || 'No clinical diagnosis recorded.')}</div>
-                                    </div>
+                            <div class="card border rounded-3 bg-white">
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
+                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-heart-pulse me-2 text-primary"></i>Assessment (A) &mdash; Clinical Impression / Diagnosis</span>
                                 </div>
+                                <div class="card-body p-3 text-dark small fw-medium" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.assessment || 'No clinical diagnosis recorded.')}</div>
                             </div>
 
                             <!-- Plan (P) -->
-                            <div class="col-12">
-                                <div class="card border-0 shadow-none bg-light" style="border-left: 4px solid #10b981 !important; border-radius: 8px;">
-                                    <div class="card-body p-3">
-                                        <h6 class="fw-bold text-success mb-2 d-flex align-items-center small text-uppercase">
-                                            <i class="bi bi-prescription2 me-2"></i>Plan (P) &mdash; Treatment, Prescriptions & Recommendations
-                                        </h6>
-                                        <div class="p-3 bg-white rounded border text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan or prescriptions recorded.')}</div>
-                                    </div>
+                            <div class="card border rounded-3 bg-white">
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
+                                    <span class="fw-bold text-dark small text-uppercase"><i class="bi bi-prescription2 me-2 text-primary"></i>Plan (P) &mdash; Treatment, Prescriptions & Recommendations</span>
                                 </div>
+                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan or prescriptions recorded.')}</div>
                             </div>
                         </div>
                     `;
+
+                    // Update modal footer actions (Edit button if authorized)
+                    const footerRight = document.getElementById('consultationModalFooterRight');
+                    if (footerRight) {
+                        let footerBtns = '';
+                        if (data.can_edit) {
+                            footerBtns += `<a href="<?= url('/consultations/') ?>${data.id}/edit" class="btn btn-primary btn-sm px-3"><i class="bi bi-pencil-square me-1"></i> Edit Consultation</a>`;
+                        }
+                        footerBtns += `<button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
+                        footerRight.innerHTML = footerBtns;
+                    }
                 })
                 .catch(err => {
                     consultationDetailsContent.innerHTML = `

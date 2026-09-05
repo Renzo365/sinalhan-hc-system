@@ -82,6 +82,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Global Password Visibility Toggle
+    document.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const inputGroup = this.closest('.input-group');
+            if (!inputGroup) return;
+            const input = inputGroup.querySelector('input[type="password"], input[type="text"]');
+            if (!input) return;
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                }
+                this.setAttribute('title', 'Hide password');
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+                this.setAttribute('title', 'Show password');
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
+    });
+
     // Inactivity Auto-Logout Monitor (15 Minutes)
     <?php if (isset($_SESSION['user_id'])): ?>
     (function() {
@@ -94,8 +122,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function onIdleTimeout() {
-            // Smoothly auto-logout and redirect to login page with timeout flag
-            window.location.href = <?= json_encode(url('/login?timeout=1')) ?>;
+            // Smoothly auto-logout and terminate session on server with timeout flag
+            window.location.href = <?= json_encode(url('/logout?timeout=1')) ?>;
         }
 
         // Reset timer on any user interaction
