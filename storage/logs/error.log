@@ -293,3 +293,111 @@ Stack Trace:
 #2 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
 #3 {main}
 --------------------------------------------------------------------------------
+[2026-09-06 22:33:31] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 22:33:33] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 22:33:34] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 22:33:34] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 22:33:34] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 22:33:40] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 22:33:45] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(166): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 23:09:37] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(169): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-06 23:10:04] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/patients/1/consultations/create
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\consultations\create.php(169): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\ConsultationController.php(64): App\Core\Controller->view('consultations/c...', Array)
+#4 [internal function]: App\Controllers\ConsultationController->create('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------

@@ -32,15 +32,46 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <?php
     // Parse IHP Medical History
-    $pmh = !empty($medicalHistory['past_medical_history']) ? (is_array($medicalHistory['past_medical_history']) ? $medicalHistory['past_medical_history'] : (json_decode($medicalHistory['past_medical_history'], true) ?: [])) : [];
-    $surg = !empty($medicalHistory['surgical_history']) ? (is_array($medicalHistory['surgical_history']) ? $medicalHistory['surgical_history'] : (json_decode($medicalHistory['surgical_history'], true) ?: [])) : [];
-    $fam = !empty($medicalHistory['family_history']) ? (is_array($medicalHistory['family_history']) ? $medicalHistory['family_history'] : (json_decode($medicalHistory['family_history'], true) ?: [])) : [];
+    $historyArray = function ($value) {
+        if (empty($value)) {
+            return [];
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : [];
+    };
+    $historyText = function ($value) use (&$historyText) {
+        if (is_array($value)) {
+            $parts = [];
+            foreach ($value as $key => $item) {
+                $text = $historyText($item);
+                if ($text === '') {
+                    continue;
+                }
+                if (is_string($key) && !is_numeric($key)) {
+                    $parts[] = trim($key) . ': ' . $text;
+                } else {
+                    $parts[] = $text;
+                }
+            }
+            return implode(', ', $parts);
+        }
+        return trim((string)$value);
+    };
+    $pmh = $historyArray($medicalHistory['past_medical_history'] ?? []);
+    $surg = $historyArray($medicalHistory['surgical_history'] ?? []);
+    $fam = $historyArray($medicalHistory['family_history'] ?? []);
     
-    $allergyAlert = $pmh['Allergy'] ?? $pmh['Allergies'] ?? '';
-    $hasHypertensionAlert = isset($pmh['Hypertension']);
-    $hasDiabetesAlert = isset($pmh['Diabetes Mellitus']);
-    $hasAsthmaAlert = isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma']);
-    $hasTbAlert = isset($pmh['Tuberculosis']);
+    $allergyAlert = $historyText($pmh['Allergy'] ?? $pmh['Allergies'] ?? '');
+    if (empty($allergyAlert) && (isset($pmh['Allergy']) || in_array('Allergy', $pmh, true))) {
+        $allergyAlert = 'Allergy Recorded';
+    }
+    $hasHypertensionAlert = isset($pmh['Hypertension']) || in_array('Hypertension', $pmh, true);
+    $hasDiabetesAlert = isset($pmh['Diabetes Mellitus']) || in_array('Diabetes Mellitus', $pmh, true);
+    $hasAsthmaAlert = isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma']) || in_array('Asthma', $pmh, true);
+    $hasTbAlert = isset($pmh['Pulmonary Tuberculosis (PTB)']) || isset($pmh['Tuberculosis']) || isset($pmh['PTB']) || in_array('Pulmonary Tuberculosis (PTB)', $pmh, true) || in_array('PTB', $pmh, true);
 ?>
 
 <!-- 1. Patient Clinical Profile & Safety Card -->
@@ -148,8 +179,12 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="fw-bold text-dark mb-1"><i class="bi bi-clipboard-pulse me-1 text-primary"></i>Past Medical History:</div>
                     <?php if (!empty($pmh)): ?>
                         <ul class="mb-0 ps-3 text-muted">
-                            <?php foreach ($pmh as $cond => $detail): ?>
-                                <li><strong><?= h($cond) ?></strong><?= is_string($detail) && $detail !== $cond && !empty($detail) ? ': ' . h($detail) : '' ?></li>
+                            <?php foreach ($pmh as $cond => $detail): 
+                                $condition = is_string($cond) && !is_numeric($cond) ? trim($cond) : $historyText($detail);
+                                $detailText = is_string($cond) && !is_numeric($cond) ? $historyText($detail) : '';
+                                if ($condition === '') continue;
+                            ?>
+                                <li><strong><?= h($condition) ?></strong><?= $detailText !== '' && $detailText !== $condition ? ': ' . h($detailText) : '' ?></li>
                             <?php endforeach; ?>
                         </ul>
                     <?php else: ?>
@@ -162,8 +197,20 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="fw-bold text-dark mb-1"><i class="bi bi-scissors me-1 text-primary"></i>Surgical History:</div>
                     <?php if (!empty($surg)): ?>
                         <ul class="mb-0 ps-3 text-muted">
-                            <?php foreach ($surg as $op => $yr): ?>
-                                <li><?= h($op) ?><?= !empty($yr) ? ' (' . h($yr) . ')' : '' ?></li>
+                            <?php foreach ($surg as $op => $yr): 
+                                if (is_array($yr)) {
+                                    $operation = $historyText($yr['operation'] ?? $yr['name'] ?? '');
+                                    $details = array_filter([
+                                        $historyText($yr['date'] ?? $yr['year'] ?? ''),
+                                        $historyText($yr['hospital'] ?? '')
+                                    ]);
+                                } else {
+                                    $operation = is_string($op) && !is_numeric($op) ? trim($op) : $historyText($yr);
+                                    $details = is_string($op) && !is_numeric($op) ? array_filter([$historyText($yr)]) : [];
+                                }
+                                if ($operation === '') continue;
+                            ?>
+                                <li><?= h($operation) ?><?= !empty($details) ? ' (' . h(implode(', ', $details)) . ')' : '' ?></li>
                             <?php endforeach; ?>
                         </ul>
                     <?php else: ?>
@@ -176,8 +223,12 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="fw-bold text-dark mb-1"><i class="bi bi-people me-1 text-primary"></i>Family History:</div>
                     <?php if (!empty($fam)): ?>
                         <ul class="mb-0 ps-3 text-muted">
-                            <?php foreach ($fam as $cond => $val): ?>
-                                <li><?= h($cond) ?></li>
+                            <?php foreach ($fam as $cond => $val): 
+                                $condition = is_string($cond) && !is_numeric($cond) ? trim($cond) : $historyText($val);
+                                $detailText = is_string($cond) && !is_numeric($cond) ? $historyText($val) : '';
+                                if ($condition === '') continue;
+                            ?>
+                                <li><?= h($condition) ?><?= $detailText !== '' && $detailText !== $condition ? ': ' . h($detailText) : '' ?></li>
                             <?php endforeach; ?>
                         </ul>
                     <?php else: ?>

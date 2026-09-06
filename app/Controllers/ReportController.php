@@ -193,12 +193,15 @@ class ReportController extends Controller {
                 foreach ($data as $row) {
                     $pmh = is_array($row['past_medical_history']) ? $row['past_medical_history'] : (json_decode($row['past_medical_history'] ?? '[]', true) ?: []);
                     $allergies = $pmh['Allergy'] ?? $pmh['Allergies'] ?? '-';
-                    $hasHtn = isset($pmh['Hypertension']) ? 'YES' : 'No';
-                    $hasDm = isset($pmh['Diabetes Mellitus']) ? 'YES' : 'No';
-                    $hasAsthma = (isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma'])) ? 'YES' : 'No';
-                    $hasCvd = (isset($pmh['Cardiovascular Disease']) || isset($pmh['Heart Disease'])) ? 'YES' : 'No';
-                    $hasCkd = (isset($pmh['Chronic Kidney Disease']) || isset($pmh['Kidney Disease'])) ? 'YES' : 'No';
-                    $hasPtb = (isset($pmh['Pulmonary Tuberculosis']) || isset($pmh['PTB'])) ? 'YES' : 'No';
+                    if ($allergies === '-' && (isset($pmh['Allergy']) || in_array('Allergy', $pmh))) {
+                        $allergies = 'Yes';
+                    }
+                    $hasHtn = (isset($pmh['Hypertension']) || in_array('Hypertension', $pmh)) ? 'YES' : 'No';
+                    $hasDm = (isset($pmh['Diabetes Mellitus']) || in_array('Diabetes Mellitus', $pmh)) ? 'YES' : 'No';
+                    $hasAsthma = (isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma']) || in_array('Asthma', $pmh)) ? 'YES' : 'No';
+                    $hasCvd = (isset($pmh['Cardiovascular Disease']) || isset($pmh['Heart Disease']) || isset($pmh['Coronary Artery Disease']) || in_array('Cardiovascular Disease', $pmh) || in_array('Coronary Artery Disease', $pmh)) ? 'YES' : 'No';
+                    $hasCkd = (isset($pmh['Chronic Kidney Disease']) || isset($pmh['Kidney Disease']) || in_array('Kidney Disease', $pmh)) ? 'YES' : 'No';
+                    $hasPtb = (isset($pmh['Pulmonary Tuberculosis (PTB)']) || isset($pmh['Pulmonary Tuberculosis']) || isset($pmh['PTB']) || isset($pmh['Tuberculosis']) || in_array('Pulmonary Tuberculosis (PTB)', $pmh) || in_array('PTB', $pmh)) ? 'YES' : 'No';
 
                     fputcsv($output, [
                         $row['patient_no'],

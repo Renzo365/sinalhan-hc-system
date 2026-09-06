@@ -36,9 +36,99 @@ class PatientMedicalHistory extends Model {
                     $row[$f] = [];
                 }
             }
+
+            $row['past_medical_history'] = self::normalizePastMedicalHistory($row['past_medical_history']);
+            $row['family_history'] = self::normalizeFamilyHistory($row['family_history']);
         }
 
         return $row;
+    }
+
+    /**
+     * Normalize and deduplicate past medical history array.
+     * Prevents duplicate illnesses caused by mixed numeric and associative keys.
+     *
+     * @param mixed $data
+     * @return array
+     */
+    public static function normalizePastMedicalHistory($data) {
+        if (empty($data)) {
+            return [];
+        }
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            $data = (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) ? $decoded : [$data];
+        }
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($data as $k => $v) {
+            $condition = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+            $detail = (is_string($k) && !is_numeric($k) && is_string($v)) ? trim($v) : '';
+
+            if ($condition === '' || $condition === '[]' || $condition === '{}') {
+                continue;
+            }
+
+            // Standardize aliases to canonical names
+            if (in_array($condition, ['PTB', 'Tuberculosis', 'Pulmonary Tuberculosis'], true)) {
+                $condition = 'Pulmonary Tuberculosis (PTB)';
+            } elseif ($condition === 'Allergies') {
+                $condition = 'Allergy';
+            }
+
+            // Deduplicate: If condition already exists, preserve non-empty detail
+            if (isset($normalized[$condition])) {
+                if (empty($normalized[$condition]) && !empty($detail)) {
+                    $normalized[$condition] = $detail;
+                }
+            } else {
+                $normalized[$condition] = $detail;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Normalize and deduplicate family history array.
+     *
+     * @param mixed $data
+     * @return array
+     */
+    public static function normalizeFamilyHistory($data) {
+        if (empty($data)) {
+            return [];
+        }
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            $data = (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) ? $decoded : [$data];
+        }
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($data as $k => $v) {
+            $condition = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+            $detail = (is_string($k) && !is_numeric($k) && is_string($v) && $v !== 'Yes' && $v !== $k) ? trim($v) : '';
+
+            if ($condition === '' || $condition === '[]' || $condition === '{}' || $condition === 'Yes') {
+                continue;
+            }
+
+            if (isset($normalized[$condition])) {
+                if (empty($normalized[$condition]) && !empty($detail)) {
+                    $normalized[$condition] = $detail;
+                }
+            } else {
+                $normalized[$condition] = $detail;
+            }
+        }
+
+        return $normalized;
     }
 
     /**
@@ -50,10 +140,13 @@ class PatientMedicalHistory extends Model {
      * @return bool
      */
     public function saveHistory($patientId, $data, $userId) {
-        // Encode array checklists to JSON if array passed
-        $pastMedical = is_array($data['past_medical_history'] ?? null) ? json_encode($data['past_medical_history']) : ($data['past_medical_history'] ?? null);
+        // Normalize and encode array checklists to JSON
+        $cleanPmh = self::normalizePastMedicalHistory($data['past_medical_history'] ?? []);
+        $cleanFam = self::normalizeFamilyHistory($data['family_history'] ?? []);
+
+        $pastMedical = !empty($cleanPmh) ? json_encode($cleanPmh) : null;
         $surgical = is_array($data['surgical_history'] ?? null) ? json_encode($data['surgical_history']) : ($data['surgical_history'] ?? null);
-        $family = is_array($data['family_history'] ?? null) ? json_encode($data['family_history']) : ($data['family_history'] ?? null);
+        $family = !empty($cleanFam) ? json_encode($cleanFam) : null;
 
         $sql = "INSERT INTO patient_medical_histories (
                     patient_id, past_medical_history, surgical_history, family_history,

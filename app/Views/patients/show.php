@@ -27,36 +27,6 @@ $breadcrumbs = [
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
-// Clinical Safety Flags Detection
-$hasAllergy = false;
-$allergyText = '';
-$pastMedical = $medicalHistory['past_medical_history'] ?? [];
-if (is_array($pastMedical)) {
-    if (!empty($pastMedical['Allergy'])) {
-        $hasAllergy = true;
-        $allergyText = $pastMedical['Allergy'];
-    } elseif (in_array('Allergy', $pastMedical) || !empty($pastMedical['allergy'])) {
-        $hasAllergy = true;
-        $allergyText = 'Allergy Recorded';
-    }
-} elseif (is_string($pastMedical) && stripos($pastMedical, 'allergy') !== false) {
-    $hasAllergy = true;
-    $allergyText = $pastMedical;
-}
-
-// Pre-Eclampsia Risk
-$isPreEclampsia = !empty($activePrenatal['pre_eclampsia']) && (int)$activePrenatal['pre_eclampsia'] === 1;
-
-// Hypertension Alert (BP >= 140/90 or recorded history)
-$isHypertensive = false;
-if (!empty($latestVitals['bp_systolic']) && (int)$latestVitals['bp_systolic'] >= 140) {
-    $isHypertensive = true;
-} elseif (!empty($latestVitals['bp_diastolic']) && (int)$latestVitals['bp_diastolic'] >= 90) {
-    $isHypertensive = true;
-} elseif (is_array($pastMedical) && (!empty($pastMedical['Hypertension']) || in_array('Hypertension', $pastMedical))) {
-    $isHypertensive = true;
-}
-
 $isFemale = (strtolower($patient['sex']) === 'female');
 $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
 ?>
@@ -139,37 +109,6 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
     </div>
 </div>
 
-<!-- Clinical Safety Alert Banners (Universal across all tabs) -->
-<?php if ($hasAllergy || $isPreEclampsia || $isHypertensive): ?>
-    <div class="d-flex flex-column gap-2 mb-3">
-        <?php if ($hasAllergy): ?>
-            <div class="alert alert-danger d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0" role="alert">
-                <i class="bi bi-exclamation-octagon-fill fs-5 me-2"></i>
-                <div>
-                    <strong>CLINICAL SAFETY ALLERGY ALERT:</strong> <?= h($allergyText) ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($isPreEclampsia): ?>
-            <div class="alert alert-danger d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0" role="alert">
-                <i class="bi bi-heart-pulse-fill fs-5 me-2"></i>
-                <div>
-                    <strong>HIGH-RISK PREGNANCY ALERT:</strong> Patient flagged for Pre-Eclampsia monitoring.
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($isHypertensive): ?>
-            <div class="alert alert-warning d-flex align-items-center py-2 px-3 mb-0 shadow-xs border-0 text-dark" role="alert">
-                <i class="bi bi-speedometer2 fs-5 me-2 text-danger"></i>
-                <div>
-                    <strong>HYPERTENSION ALERT:</strong> Recorded BP is elevated (&ge;140/90 mmHg) or chronic history recorded.
-                </div>
-            </div>
-        <?php endif; ?>
-    </div>
-<?php endif; ?>
 
 <!-- ==========================================================================
    CLINICAL WORKSTATION (FULL 100% WIDTH MODULAR TABS)
@@ -502,8 +441,34 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         <?php if ($medicalHistory): ?>
                                             <div class="mb-2">
                                                 <strong>Past Illnesses:</strong> 
-                                                <?php if (!empty($medicalHistory['past_medical_history'])): ?>
-                                                    <span class="text-dark"><?= is_array($medicalHistory['past_medical_history']) ? implode(', ', array_map(function($k, $v) { return is_string($k) ? "$k: $v" : $v; }, array_keys($medicalHistory['past_medical_history']), $medicalHistory['past_medical_history'])) : h($medicalHistory['past_medical_history']) ?></span>
+                                                <?php 
+                                                $overviewPmhList = [];
+                                                if (!empty($medicalHistory['past_medical_history']) && is_array($medicalHistory['past_medical_history'])) {
+                                                    $seenPmh = [];
+                                                    foreach ($medicalHistory['past_medical_history'] as $k => $v) {
+                                                        $c = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+                                                        $d = (is_string($k) && !is_numeric($k) && is_string($v)) ? trim($v) : '';
+                                                        if (in_array($c, ['PTB', 'Tuberculosis', 'Pulmonary Tuberculosis'], true)) {
+                                                            $c = 'Pulmonary Tuberculosis (PTB)';
+                                                        } elseif ($c === 'Allergies') {
+                                                            $c = 'Allergy';
+                                                        }
+                                                        if ($c === '' || $c === '[]' || $c === '{}') continue;
+                                                        if (isset($seenPmh[$c])) {
+                                                            if (!empty($d) && empty($seenPmh[$c])) {
+                                                                $seenPmh[$c] = $d;
+                                                            }
+                                                            continue;
+                                                        }
+                                                        $seenPmh[$c] = $d;
+                                                    }
+                                                    foreach ($seenPmh as $cond => $det) {
+                                                        $overviewPmhList[] = !empty($det) ? "{$cond} ({$det})" : $cond;
+                                                    }
+                                                }
+                                                ?>
+                                                <?php if (!empty($overviewPmhList)): ?>
+                                                    <span class="text-dark"><?= h(implode(', ', $overviewPmhList)) ?></span>
                                                 <?php else: ?>
                                                     <span class="text-muted">None declared.</span>
                                                 <?php endif; ?>
@@ -514,8 +479,29 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             </div>
                                             <div>
                                                 <strong>Family Heredity:</strong> 
-                                                <?php if (!empty($medicalHistory['family_history'])): ?>
-                                                    <span class="text-dark"><?= is_array($medicalHistory['family_history']) ? implode(', ', $medicalHistory['family_history']) : h($medicalHistory['family_history']) ?></span>
+                                                <?php 
+                                                $overviewFamList = [];
+                                                if (!empty($medicalHistory['family_history']) && is_array($medicalHistory['family_history'])) {
+                                                    $seenFam = [];
+                                                    foreach ($medicalHistory['family_history'] as $k => $v) {
+                                                        $c = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+                                                        $d = (is_string($k) && !is_numeric($k) && is_string($v) && $v !== 'Yes' && $v !== $k) ? trim($v) : '';
+                                                        if ($c === '' || $c === '[]' || $c === '{}' || $c === 'Yes') continue;
+                                                        if (isset($seenFam[$c])) {
+                                                            if (!empty($d) && empty($seenFam[$c])) {
+                                                                $seenFam[$c] = $d;
+                                                            }
+                                                            continue;
+                                                        }
+                                                        $seenFam[$c] = $d;
+                                                    }
+                                                    foreach ($seenFam as $cond => $det) {
+                                                        $overviewFamList[] = !empty($det) ? "{$cond}: {$det}" : $cond;
+                                                    }
+                                                }
+                                                ?>
+                                                <?php if (!empty($overviewFamList)): ?>
+                                                    <span class="text-dark"><?= h(implode(', ', $overviewFamList)) ?></span>
                                                 <?php else: ?>
                                                     <span class="text-muted">None declared.</span>
                                                 <?php endif; ?>
@@ -560,27 +546,55 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                             $surgicalSaved = is_array($decoded) ? $decoded : ($surgicalSaved === '[]' || $surgicalSaved === '{}' ? [] : [$surgicalSaved]);
                         }
 
-                        // Build display list for Past Medical History
+                        // Build display list for Past Medical History (Deduplicated)
                         $pmhDisplay = [];
+                        $seenConditions = [];
                         if (!empty($pmhSaved) && is_array($pmhSaved)) {
                             foreach ($pmhSaved as $k => $v) {
-                                if (is_string($k) && !is_numeric($k) && trim($k) !== '' && trim($k) !== '[]') {
-                                    $pmhDisplay[] = ['condition' => trim($k), 'detail' => is_string($v) ? trim($v) : ''];
-                                } elseif (!empty($v) && is_string($v) && trim($v) !== '' && trim($v) !== '[]') {
-                                    $pmhDisplay[] = ['condition' => trim($v), 'detail' => ''];
+                                $cond = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+                                $det = (is_string($k) && !is_numeric($k) && is_string($v)) ? trim($v) : '';
+
+                                if (in_array($cond, ['PTB', 'Tuberculosis', 'Pulmonary Tuberculosis'], true)) {
+                                    $cond = 'Pulmonary Tuberculosis (PTB)';
+                                } elseif ($cond === 'Allergies') {
+                                    $cond = 'Allergy';
                                 }
+
+                                if ($cond === '' || $cond === '[]' || $cond === '{}') {
+                                    continue;
+                                }
+
+                                if (isset($seenConditions[$cond])) {
+                                    if (!empty($det)) {
+                                        foreach ($pmhDisplay as &$item) {
+                                            if ($item['condition'] === $cond && empty($item['detail'])) {
+                                                $item['detail'] = $det;
+                                            }
+                                        }
+                                        unset($item);
+                                    }
+                                    continue;
+                                }
+
+                                $seenConditions[$cond] = true;
+                                $pmhDisplay[] = ['condition' => $cond, 'detail' => $det];
                             }
                         }
 
-                        // Build display list for Family History
+                        // Build display list for Family History (Deduplicated)
                         $familyDisplay = [];
+                        $seenFamily = [];
                         if (!empty($familySaved) && is_array($familySaved)) {
                             foreach ($familySaved as $k => $v) {
-                                if (is_string($k) && !is_numeric($k) && trim($k) !== '' && trim($k) !== '[]') {
-                                    $familyDisplay[] = trim($k) . (!empty($v) && $v !== $k ? ': ' . trim($v) : '');
-                                } elseif (!empty($v) && is_string($v) && trim($v) !== '' && trim($v) !== '[]') {
-                                    $familyDisplay[] = trim($v);
+                                $cond = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+                                $det = (is_string($k) && !is_numeric($k) && is_string($v) && $v !== 'Yes' && $v !== $k) ? trim($v) : '';
+
+                                if ($cond === '' || $cond === '[]' || $cond === '{}' || $cond === 'Yes' || isset($seenFamily[$cond])) {
+                                    continue;
                                 }
+
+                                $seenFamily[$cond] = true;
+                                $familyDisplay[] = !empty($det) ? "{$cond}: {$det}" : $cond;
                             }
                         }
 
@@ -908,7 +922,13 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                     'Mental Disorder' => 'Mental Disorder'
                                                 ];
                                                 foreach ($conditions as $k => $label): 
-                                                    $checked = is_array($pmhSaved) && (isset($pmhSaved[$k]) || in_array($k, $pmhSaved));
+                                                    $checked = false;
+                                                    if (is_array($pmhSaved)) {
+                                                        $checked = isset($pmhSaved[$k]) || in_array($k, $pmhSaved);
+                                                        if (!$checked && $k === 'Pulmonary Tuberculosis (PTB)') {
+                                                            $checked = isset($pmhSaved['PTB']) || isset($pmhSaved['Tuberculosis']) || in_array('PTB', $pmhSaved) || in_array('Tuberculosis', $pmhSaved);
+                                                        }
+                                                    }
                                                 ?>
                                                     <div class="col-6 col-md-4">
                                                         <div class="form-check">
@@ -923,7 +943,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             <div class="row g-2 small border-top pt-2">
                                                 <div class="col-12 col-sm-6 col-md-3">
                                                     <label class="form-label fw-semibold text-secondary small mb-1">Allergy Specifics</label>
-                                                    <input type="text" name="allergy_specifics" class="form-control form-control-sm" placeholder="e.g. Penicillin, Seafood" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Allergy'] ?? '') : '') ?>">
+                                                    <input type="text" name="allergy_specifics" class="form-control form-control-sm" placeholder="e.g. Penicillin, Seafood" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Allergy'] ?? $pmhSaved['Allergies'] ?? '') : '') ?>">
                                                 </div>
                                                 <div class="col-12 col-sm-6 col-md-3">
                                                     <label class="form-label fw-semibold text-secondary small mb-1">Hypertension (Highest BP)</label>
@@ -935,7 +955,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 </div>
                                                 <div class="col-12 col-sm-6 col-md-3">
                                                     <label class="form-label fw-semibold text-secondary small mb-1">PTB Category / Details</label>
-                                                    <input type="text" name="ptb_details" class="form-control form-control-sm" placeholder="e.g. Cat 1 Completed" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['PTB'] ?? '') : '') ?>">
+                                                    <input type="text" name="ptb_details" class="form-control form-control-sm" placeholder="e.g. Cat 1 Completed" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Pulmonary Tuberculosis (PTB)'] ?? $pmhSaved['PTB'] ?? $pmhSaved['Tuberculosis'] ?? '') : '') ?>">
                                                 </div>
                                             </div>
                                         </div>

@@ -33,13 +33,24 @@ class PatientMedicalHistoryController extends Controller {
             return;
         }
 
-        // Process Checklists and Structured Text
-        $pastMedical = $_POST['past_medical_history'] ?? [];
-        if (!is_array($pastMedical)) {
-            $pastMedical = !empty($_POST['past_medical_history']) ? [$_POST['past_medical_history']] : [];
+        // Process Checklists and Structured Text - build associative map [Condition => Detail]
+        $rawPastMedical = $_POST['past_medical_history'] ?? [];
+        if (!is_array($rawPastMedical)) {
+            $rawPastMedical = !empty($_POST['past_medical_history']) ? [$_POST['past_medical_history']] : [];
         }
 
-        // If specific detail fields are filled, append them
+        $pastMedical = [];
+        foreach ($rawPastMedical as $k => $item) {
+            $item = trim((string)$item);
+            if ($item === '' || $item === '[]') continue;
+            if (is_string($k) && !is_numeric($k)) {
+                $pastMedical[$k] = $item;
+            } else {
+                $pastMedical[$item] = '';
+            }
+        }
+
+        // If specific detail fields are filled, update the condition in the map (no duplicate numeric items)
         if (!empty($_POST['allergy_specifics'])) {
             $pastMedical['Allergy'] = trim($_POST['allergy_specifics']);
         }
@@ -50,7 +61,8 @@ class PatientMedicalHistoryController extends Controller {
             $pastMedical['Hypertension'] = 'Highest BP: ' . trim($_POST['hypertension_highest_bp']);
         }
         if (!empty($_POST['ptb_details'])) {
-            $pastMedical['PTB'] = trim($_POST['ptb_details']);
+            $pastMedical['Pulmonary Tuberculosis (PTB)'] = trim($_POST['ptb_details']);
+            unset($pastMedical['PTB'], $pastMedical['Tuberculosis']);
         }
 
         // Process Surgical History
@@ -70,10 +82,17 @@ class PatientMedicalHistoryController extends Controller {
             ];
         }
 
-        // Process Family Heredity
-        $family = $_POST['family_history'] ?? [];
-        if (!is_array($family)) {
-            $family = !empty($_POST['family_history']) ? [$_POST['family_history']] : [];
+        // Process Family Heredity - build associative map [Condition => Detail]
+        $rawFamily = $_POST['family_history'] ?? [];
+        if (!is_array($rawFamily)) {
+            $rawFamily = !empty($_POST['family_history']) ? [$_POST['family_history']] : [];
+        }
+        $family = [];
+        foreach ($rawFamily as $k => $v) {
+            $cond = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
+            if ($cond === '' || $cond === '[]' || $cond === 'Yes') continue;
+            $detail = (is_string($k) && !is_numeric($k) && !empty($v) && $v !== 'Yes' && $v !== $k) ? trim($v) : '';
+            $family[$cond] = $detail;
         }
         if (!empty($_POST['family_other'])) {
             $family['Other'] = trim($_POST['family_other']);

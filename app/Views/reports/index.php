@@ -506,12 +506,12 @@ $reportName = $reportLabels[$type] ?? '';
                                                 <td><?= h($row['patient_age']) ?> yrs / <?= h($row['sex']) ?></td>
                                                 <td><?= h($row['barangay']) ?></td>
                                                 <td>
-                                                    <?php if (isset($pmh['Hypertension'])): ?><span class="badge bg-danger mb-1">Hypertension</span><br><?php endif; ?>
-                                                    <?php if (isset($pmh['Diabetes Mellitus'])): ?><span class="badge bg-warning text-dark mb-1">Diabetes</span><br><?php endif; ?>
-                                                    <?php if (isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma'])): ?><span class="badge bg-info text-dark mb-1">Asthma</span><br><?php endif; ?>
-                                                    <?php if (isset($pmh['Cardiovascular Disease']) || isset($pmh['Heart Disease'])): ?><span class="badge bg-danger mb-1">Heart Disease</span><br><?php endif; ?>
-                                                    <?php if (isset($pmh['Chronic Kidney Disease']) || isset($pmh['Kidney Disease'])): ?><span class="badge bg-dark text-white mb-1">Kidney Disease</span><br><?php endif; ?>
-                                                    <?php if (isset($pmh['Pulmonary Tuberculosis']) || isset($pmh['PTB'])): ?><span class="badge bg-secondary mb-1">PTB</span><br><?php endif; ?>
+                                                    <?php if (isset($pmh['Hypertension']) || in_array('Hypertension', $pmh)): ?><span class="badge bg-danger mb-1">Hypertension</span><br><?php endif; ?>
+                                                    <?php if (isset($pmh['Diabetes Mellitus']) || in_array('Diabetes Mellitus', $pmh)): ?><span class="badge bg-warning text-dark mb-1">Diabetes</span><br><?php endif; ?>
+                                                    <?php if (isset($pmh['Asthma']) || isset($pmh['Bronchial Asthma']) || in_array('Asthma', $pmh)): ?><span class="badge bg-info text-dark mb-1">Asthma</span><br><?php endif; ?>
+                                                    <?php if (isset($pmh['Cardiovascular Disease']) || isset($pmh['Heart Disease']) || isset($pmh['Coronary Artery Disease']) || in_array('Cardiovascular Disease', $pmh) || in_array('Coronary Artery Disease', $pmh)): ?><span class="badge bg-danger mb-1">Heart Disease</span><br><?php endif; ?>
+                                                    <?php if (isset($pmh['Chronic Kidney Disease']) || isset($pmh['Kidney Disease']) || in_array('Kidney Disease', $pmh)): ?><span class="badge bg-dark text-white mb-1">Kidney Disease</span><br><?php endif; ?>
+                                                    <?php if (isset($pmh['Pulmonary Tuberculosis (PTB)']) || isset($pmh['Pulmonary Tuberculosis']) || isset($pmh['PTB']) || isset($pmh['Tuberculosis']) || in_array('Pulmonary Tuberculosis (PTB)', $pmh) || in_array('PTB', $pmh)): ?><span class="badge bg-secondary mb-1">PTB</span><br><?php endif; ?>
                                                 </td>
                                                 <td class="text-start">
                                                     <?php if (!empty($allergies)): ?>
