@@ -31,6 +31,18 @@ if "%MYSQL_PATH%"=="" (
     exit /b 1
 )
 
+echo.
+echo [WARNING] Running this script will INITIALIZE / RESET the 'sinalhan_hc_system' database!
+echo If you have existing patient data on this PC, it will be wiped and replaced with default seeds.
+echo.
+set /p "CONFIRM=Are you sure you want to proceed? (Type YES to continue): "
+if /i not "%CONFIRM%"=="YES" (
+    echo Setup cancelled by user. No changes were made.
+    pause
+    exit /b 0
+)
+echo.
+
 echo [1/3] Using MySQL client at: %MYSQL_PATH%
 echo [2/3] Checking MySQL connection...
 "%MYSQL_PATH%" -u root -e "SELECT 1;" >nul 2>&1

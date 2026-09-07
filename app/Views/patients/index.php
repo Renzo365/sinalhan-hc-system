@@ -195,3 +195,35 @@ require dirname(__DIR__) . '/layout/header.php';
 </div>
 
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!empty($patients)): ?>
+        $('#patientsTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "pageLength": 10,
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "order": [[2, "asc"]], // Sort by Full Name ascending by default
+            "columnDefs": [
+                { "orderable": false, "targets": 7 } // Action button column
+            ],
+            "language": {
+                "search": "_INPUT_",
+                "searchPlaceholder": "Quick filter table...",
+                "lengthMenu": "Show _MENU_ entries",
+                "paginate": {
+                    "previous": "<i class='bi bi-chevron-left'></i>",
+                    "next": "<i class='bi bi-chevron-right'></i>"
+                }
+            }
+        });
+    <?php endif; ?>
+});
+</script>
+
