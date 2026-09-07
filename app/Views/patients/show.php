@@ -214,7 +214,9 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         <div class="row g-2">
                                             <div class="col-6">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Civil Status</span>
-                                                <span class="fw-semibold text-dark"><?= h($patient['civil_status']) ?></span>
+                                                <span class="fw-semibold text-dark">
+                                                    <?= ($patient['civil_status'] === 'Others' && !empty($patient['civil_status_other'])) ? 'Others (' . h($patient['civil_status_other']) . ')' : h($patient['civil_status']) ?>
+                                                </span>
                                             </div>
                                             <div class="col-6">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Religion</span>
@@ -236,7 +238,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 <?php endif; ?>
                                             </div>
                                             <div class="col-6 border-top pt-2 mt-1">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">PhilHealth PIN</span>
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">PhilHealth Identification No. (PIN)</span>
                                                 <span class="font-monospace text-dark"><?= h($patient['philhealth_no'] ?? 'Unregistered') ?></span>
                                             </div>
                                             <div class="col-6 border-top pt-2 mt-1">
@@ -257,7 +259,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 <div class="card border rounded-3 h-100 shadow-xs">
                                     <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
                                         <h5 class="h6 mb-0 fw-bold text-dark">
-                                            <i class="bi bi-person-exclamation text-danger me-2"></i>Emergency & Family Information
+                                            <i class="bi bi-person-exclamation text-danger me-2"></i>Immediate Family & Emergency Contacts
                                         </h5>
                                         <?php if (!empty($patient['family_no'])): ?>
                                             <span class="badge bg-light text-dark border">Fam # <?= h($patient['family_no']) ?></span>
@@ -265,25 +267,35 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                     </div>
                                     <div class="card-body p-3 small">
                                         <div class="row g-2">
-                                            <div class="col-6">
+                                            <div class="col-12">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Father's Full Name</span>
+                                                <span class="text-dark">
+                                                    <?= !empty($patient['father_name']) ? h($patient['father_name']) . (!empty($patient['father_dob']) ? ' <span class="text-muted small">(DOB: ' . date('M d, Y', strtotime($patient['father_dob'])) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
+                                                </span>
+                                            </div>
+                                            <div class="col-12 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Mother's Maiden Name</span>
+                                                <span class="text-dark">
+                                                    <?= !empty($patient['mother_name']) ? h($patient['mother_name']) . (!empty($patient['mother_dob']) ? ' <span class="text-muted small">(DOB: ' . date('M d, Y', strtotime($patient['mother_dob'])) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
+                                                </span>
+                                            </div>
+                                            <div class="col-12 border-top pt-2 mt-1">
+                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Spouse's Full Name</span>
+                                                <span class="text-dark">
+                                                    <?= !empty($patient['spouse_name']) ? h($patient['spouse_name']) . (!empty($patient['spouse_dob']) ? ' <span class="text-muted small">(DOB: ' . date('M d, Y', strtotime($patient['spouse_dob'])) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
+                                                </span>
+                                            </div>
+                                            <div class="col-6 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Emergency Contact</span>
                                                 <span class="fw-semibold text-dark"><?= h($patient['emergency_name'] ?? 'None registered') ?></span>
                                             </div>
-                                            <div class="col-6">
+                                            <div class="col-6 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Relationship</span>
                                                 <span class="text-dark"><?= h($patient['emergency_relationship'] ?? 'N/A') ?></span>
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Emergency Phone</span>
                                                 <span class="font-monospace fw-semibold text-danger"><i class="bi bi-telephone-fill text-danger me-1"></i><?= h($patient['emergency_no'] ?? 'None provided') ?></span>
-                                            </div>
-                                            <div class="col-6 border-top pt-2 mt-1">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Spouse / Partner Name</span>
-                                                <span class="text-dark"><?= !empty($patient['spouse_name']) ? h($patient['spouse_name']) : '<span class="text-muted">None on record</span>' ?></span>
-                                            </div>
-                                            <div class="col-6 border-top pt-2 mt-1">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Mother\'s Maiden Name</span>
-                                                <span class="text-dark"><?= !empty($patient['mother_name']) ? h($patient['mother_name']) : '<span class="text-muted">None on record</span>' ?></span>
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Household Code</span>
@@ -531,6 +543,8 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                         $pmhSaved = $medicalHistory['past_medical_history'] ?? [];
                         $familySaved = $medicalHistory['family_history'] ?? [];
                         $surgicalSaved = $medicalHistory['surgical_history'] ?? [];
+                        $peSaved = $medicalHistory['physical_examination'] ?? [];
+                        $immSaved = $medicalHistory['external_immunizations'] ?? [];
 
                         // Ensure JSON string arrays are decoded if they came as raw strings
                         if (is_string($pmhSaved)) {
@@ -545,6 +559,17 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                             $decoded = json_decode($surgicalSaved, true);
                             $surgicalSaved = is_array($decoded) ? $decoded : ($surgicalSaved === '[]' || $surgicalSaved === '{}' ? [] : [$surgicalSaved]);
                         }
+                        if (is_string($peSaved)) {
+                            $decoded = json_decode($peSaved, true);
+                            $peSaved = is_array($decoded) ? $decoded : [];
+                        }
+                        $peSaved = \App\Models\PatientMedicalHistory::normalizePhysicalExamination($peSaved);
+
+                        if (is_string($immSaved)) {
+                            $decoded = json_decode($immSaved, true);
+                            $immSaved = is_array($decoded) ? $decoded : [];
+                        }
+                        $immSaved = \App\Models\PatientMedicalHistory::normalizeImmunizations($immSaved);
 
                         // Build display list for Past Medical History (Deduplicated)
                         $pmhDisplay = [];
@@ -589,12 +614,30 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 $cond = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
                                 $det = (is_string($k) && !is_numeric($k) && is_string($v) && $v !== 'Yes' && $v !== $k) ? trim($v) : '';
 
-                                if ($cond === '' || $cond === '[]' || $cond === '{}' || $cond === 'Yes' || isset($seenFamily[$cond])) {
+                                if (in_array($cond, ['PTB', 'Tuberculosis', 'Pulmonary Tuberculosis'], true)) {
+                                    $cond = 'Pulmonary Tuberculosis (PTB)';
+                                } elseif ($cond === 'Allergies') {
+                                    $cond = 'Allergy';
+                                }
+
+                                if ($cond === '' || $cond === '[]' || $cond === '{}' || $cond === 'Yes') {
+                                    continue;
+                                }
+
+                                if (isset($seenFamily[$cond])) {
+                                    if (!empty($det)) {
+                                        foreach ($familyDisplay as &$item) {
+                                            if ($item['condition'] === $cond && empty($item['detail'])) {
+                                                $item['detail'] = $det;
+                                            }
+                                        }
+                                        unset($item);
+                                    }
                                     continue;
                                 }
 
                                 $seenFamily[$cond] = true;
-                                $familyDisplay[] = !empty($det) ? "{$cond}: {$det}" : $cond;
+                                $familyDisplay[] = ['condition' => $cond, 'detail' => $det];
                             }
                         }
 
@@ -609,6 +652,29 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 }
                             }
                         }
+
+                        // Check physical examination findings
+                        $peSystems = [
+                            'skin' => 'Skin',
+                            'heent' => 'HEENT',
+                            'chest_lungs' => 'Chest / Lungs',
+                            'heart' => 'Heart',
+                            'abdomen' => 'Abdomen',
+                            'extremities' => 'Extremities'
+                        ];
+                        $hasPeFindings = false;
+                        foreach ($peSystems as $sKey => $sLabel) {
+                            if (!empty($peSaved[$sKey]) && is_array($peSaved[$sKey])) {
+                                $hasPeFindings = true;
+                                break;
+                            }
+                        }
+                        if (!empty($peSaved['remarks'])) {
+                            $hasPeFindings = true;
+                        }
+
+                        // Check lifetime immunizations
+                        $hasImmData = !empty($immSaved['children']) || !empty($immSaved['young_women']) || !empty($immSaved['pregnant']) || !empty($immSaved['elderly']) || !empty($immSaved['others']);
 
                         $hasPmhData = !empty($pmhDisplay);
                         $hasSurgicalData = !empty($surgicalDisplay);
@@ -630,6 +696,18 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                             !empty($medicalHistory['is_menopausal']) ||
                             !empty($medicalHistory['birth_control_method'])
                         );
+                        $hasObstetricData = $isFemale && !empty($medicalHistory) && (
+                            isset($medicalHistory['gravida']) ||
+                            isset($medicalHistory['para']) ||
+                            !empty($medicalHistory['delivery_type']) ||
+                            !empty($medicalHistory['pre_eclampsia'])
+                        );
+                        $hasBaselineVitals = !empty($medicalHistory) && (
+                            !empty($medicalHistory['baseline_bp_systolic']) ||
+                            !empty($medicalHistory['baseline_heart_rate']) ||
+                            !empty($medicalHistory['baseline_height']) ||
+                            !empty($medicalHistory['baseline_weight'])
+                        );
 
                         $hasAnyIhpRecord = !empty($medicalHistory) && (
                             $hasPmhData ||
@@ -637,6 +715,10 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                             $hasFamilyData ||
                             $hasLifestyleData ||
                             $hasReproductiveData ||
+                            $hasObstetricData ||
+                            $hasPeFindings ||
+                            $hasImmData ||
+                            $hasBaselineVitals ||
                             !empty($medicalHistory['updated_at'])
                         );
                         ?>
@@ -708,11 +790,11 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         </div>
                                     </div>
 
-                                    <!-- 2. Surgical History Card -->
+                                    <!-- 2. Past Surgical History Card -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 shadow-xs h-100">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                2. Surgical Operations & Hospitalization
+                                                2. Past Surgical History & Hospitalization
                                             </h5>
                                             <?php if ($hasSurgicalData): ?>
                                                 <ul class="list-group list-group-flush small">
@@ -736,37 +818,15 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         </div>
                                     </div>
 
-                                    <!-- 3. Family Hereditary Diseases Card -->
+                                    <!-- 4. Personal & Social Lifestyle Card -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 shadow-xs h-100">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                3. Family Hereditary Diseases
-                                            </h5>
-                                            <?php if ($hasFamilyData): ?>
-                                                <div class="d-flex flex-wrap gap-2 pt-1">
-                                                    <?php foreach ($familyDisplay as $fam): ?>
-                                                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
-                                                            <?= h($fam) ?>
-                                                        </span>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-2">
-                                                    No family hereditary conditions declared.
-                                                </p>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-
-                                    <!-- 4. Personal & Social Lifestyle Card -->
-                                    <div class="col-12 <?= $isFemale ? 'col-md-6' : 'col-12' ?>">
-                                        <div class="card border rounded-3 p-3 shadow-xs h-100">
-                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                4. Personal & Social Lifestyle
+                                                4. Personal & Social History
                                             </h5>
                                             <div class="row g-2 small pt-1">
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="p-2 rounded bg-light border">
+                                                    <div class="p-2 rounded bg-light border h-100">
                                                         <span class="text-muted d-block small mb-1">Smoking Status:</span>
                                                         <?php 
                                                         $smk = $medicalHistory['smoking_status'] ?? 'Never';
@@ -786,7 +846,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                     </div>
                                                 </div>
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="p-2 rounded bg-light border">
+                                                    <div class="p-2 rounded bg-light border h-100">
                                                         <span class="text-muted d-block small mb-1">Alcohol Drinking:</span>
                                                         <?php 
                                                         $alc = $medicalHistory['alcohol_status'] ?? 'Never';
@@ -816,12 +876,162 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         </div>
                                     </div>
 
-                                    <!-- 5. Female Reproductive History Card (if Female) -->
+                                    <!-- 3. Family Hereditary Diseases Card (Full Width with Color-Coded Badges) -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                3. Family History (Hereditary Diseases)
+                                            </h5>
+                                            <?php if ($hasFamilyData): ?>
+                                                <div class="d-flex flex-wrap gap-2 pt-1">
+                                                    <?php foreach ($familyDisplay as $item): ?>
+                                                        <?php 
+                                                        $cond = $item['condition'];
+                                                        $det = $item['detail'];
+                                                        ?>
+                                                        <?php if (stripos($cond, 'Allergy') !== false || stripos($det, 'Allergy') !== false): ?>
+                                                            <span class="badge bg-danger text-white px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'Hypertension') !== false): ?>
+                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'Cancer') !== false): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false): ?>
+                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-1">
+                                                    No family hereditary conditions declared.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. Lifetime Immunizations Card -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                5. Lifetime Immunization Record (Annex A1)
+                                            </h5>
+                                            <?php if ($hasImmData): ?>
+                                                <div class="small pt-1">
+                                                    <?php if (!empty($immSaved['children'])): ?>
+                                                        <div class="mb-2">
+                                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Children Vaccines:</span>
+                                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                                <?php foreach ($immSaved['children'] as $v): ?>
+                                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1"><?= h($v) ?></span>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <?php if (!empty($immSaved['young_women'])): ?>
+                                                        <div class="mb-2">
+                                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Young Women Vaccines:</span>
+                                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                                <?php foreach ($immSaved['young_women'] as $v): ?>
+                                                                    <span class="badge bg-pink-subtle text-pink border border-pink-subtle px-2 py-1"><?= h($v) ?></span>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <?php if (!empty($immSaved['pregnant'])): ?>
+                                                        <div class="mb-2">
+                                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Pregnant Vaccines:</span>
+                                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                                <?php foreach ($immSaved['pregnant'] as $v): ?>
+                                                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1"><?= h($v) ?></span>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <?php if (!empty($immSaved['elderly'])): ?>
+                                                        <div class="mb-2">
+                                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Elderly / Immunocompromised:</span>
+                                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                                <?php foreach ($immSaved['elderly'] as $v): ?>
+                                                                    <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1"><?= h($v) ?></span>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <?php if (!empty($immSaved['others'])): ?>
+                                                        <div>
+                                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Others:</span>
+                                                            <span class="fw-medium text-dark"><?= h($immSaved['others']) ?></span>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-2">
+                                                    No lifetime immunization history recorded.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 6. Physical Examination Findings (6-System Checklist) -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                6. Pertinent Physical Examination Findings (Annex A1)
+                                            </h5>
+                                            <?php if ($hasPeFindings): ?>
+                                                <div class="row g-2 small pt-1">
+                                                    <?php foreach ($peSystems as $sKey => $sLabel): ?>
+                                                        <div class="col-12 col-sm-6 col-md-4">
+                                                            <div class="p-2 rounded bg-light border h-100">
+                                                                <span class="fw-bold text-secondary d-block mb-1" style="font-size: 0.75rem;"><?= $sLabel ?>:</span>
+                                                                <?php if (!empty($peSaved[$sKey]) && is_array($peSaved[$sKey])): ?>
+                                                                    <div class="d-flex flex-wrap gap-1">
+                                                                        <?php foreach ($peSaved[$sKey] as $finding): ?>
+                                                                            <span class="badge bg-white text-dark border px-2 py-1"><?= h($finding) ?></span>
+                                                                        <?php endforeach; ?>
+                                                                    </div>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted fst-italic" style="font-size: 0.75rem;">Normal / Unremarkable</span>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                    <?php if (!empty($peSaved['remarks'])): ?>
+                                                        <div class="col-12 mt-2">
+                                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Physical Exam Remarks / Notes:</span>
+                                                            <span class="text-dark fw-medium"><?= h($peSaved['remarks']) ?></span>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-2">
+                                                    No physical examination findings on record.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7. Female Menstrual & Reproductive History (if Female) -->
                                     <?php if ($isFemale): ?>
                                         <div class="col-12 col-md-6">
                                             <div class="card border rounded-3 p-3 shadow-xs h-100">
                                                 <h5 class="h6 fw-bold text-pink mb-2">
-                                                    5. Female Menstrual & Reproductive History
+                                                    7. Female Menstrual & Reproductive History
                                                 </h5>
                                                 <div class="row g-2 small pt-1">
                                                     <div class="col-6">
@@ -863,6 +1073,37 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- 8. Pregnancy History Card (if Female) -->
+                                        <div class="col-12 col-md-6">
+                                            <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                                <h5 class="h6 fw-bold text-pink mb-2">
+                                                    8. Pregnancy & Obstetric History
+                                                </h5>
+                                                <div class="row g-2 small pt-1">
+                                                    <div class="col-6">
+                                                        <span class="text-muted d-block">Gravida / Para (G/P):</span>
+                                                        <span class="fw-bold text-dark">G<?= h($medicalHistory['gravida'] ?? '0') ?> P<?= h($medicalHistory['para'] ?? '0') ?> (F:<?= h($medicalHistory['term_births'] ?? '0') ?> P:<?= h($medicalHistory['preterm_births'] ?? '0') ?> A:<?= h($medicalHistory['abortions'] ?? '0') ?> L:<?= h($medicalHistory['living_children'] ?? '0') ?>)</span>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <span class="text-muted d-block">Type of Delivery:</span>
+                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['delivery_type']) ? h($medicalHistory['delivery_type']) : 'Unspecified' ?></span>
+                                                    </div>
+                                                    <div class="col-6 border-top pt-2 mt-1">
+                                                        <span class="text-muted d-block">Pre-eclampsia / PIH History:</span>
+                                                        <?php if (!empty($medicalHistory['pre_eclampsia'])): ?>
+                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Yes (Reported)</span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-light text-muted border">No</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <div class="col-6 border-top pt-2 mt-1">
+                                                        <span class="text-muted d-block">Access to FP Counselling:</span>
+                                                        <span class="badge bg-light text-dark border"><?= (!empty($medicalHistory['fp_counselling']) && (int)$medicalHistory['fp_counselling'] === 1) ? 'Yes' : 'No' ?></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             <?php else: ?>
@@ -870,7 +1111,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 <div class="card border border-dashed rounded-3 p-4 text-center bg-light shadow-xs my-2">
                                     <h5 class="h6 fw-bold text-dark mb-1">No Individual Health Profile (IHP) On File</h5>
                                     <p class="text-muted small mb-3 mx-auto" style="max-width: 520px;">
-                                        PhilHealth Annex A1 baseline medical history has not yet been recorded for this patient. Click below to record past chronic illnesses, surgical operations, family heredity, social history, and reproductive health.
+                                        PhilHealth Annex A1 baseline medical history has not yet been recorded for this patient. Click below to record past chronic illnesses, surgical operations, family heredity, social history, immunizations, physical exam, and reproductive health.
                                     </p>
                                     <div>
                                         <button type="button" class="btn btn-primary btn-sm px-4 fw-medium" onclick="enterIhpEditMode()">
@@ -888,84 +1129,148 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                             <form action="<?= url('/patients/' . $patient['id'] . '/medical-history') ?>" method="POST" id="ihpForm">
                                 <?= csrf_field() ?>
 
-                                <div class="mb-3 pb-2 border-bottom">
-                                    <h4 class="h6 mb-0 fw-bold text-dark">PhilHealth Annex A1: Individual Health Profile (IHP)</h4>
-                                    <span class="text-muted small">Update past chronic illnesses, surgeries, family heredity, social history, and reproductive health.</span>
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                    <div>
+                                        <h4 class="h6 mb-0 fw-bold text-dark">PhilHealth Annex A1: Individual Health Profile (IHP)</h4>
+                                        <span class="text-muted small">Update past chronic illnesses, surgeries, family heredity, social habits, immunizations, physical exam, and reproductive health.</span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="cancelIhpEditMode()">
+                                            Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold shadow-xs">
+                                            Save IHP Record
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="row g-3">
-                                    <!-- 1. Past Medical History Checklist -->
+                                    <!-- 1. Past Medical History Checklist (with Proximity Inputs) -->
                                     <div class="col-12">
                                         <div class="card border rounded-3 p-3 shadow-xs">
-                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                1. Past Medical Illnesses
-                                            </h5>
-                                            <div class="row g-2 small mb-3">
-                                                <?php 
-                                                $conditions = [
-                                                    'Allergy' => 'Allergy',
-                                                    'Asthma' => 'Asthma',
-                                                    'Cancer' => 'Cancer',
-                                                    'Coronary Artery Disease' => 'Coronary Artery Disease',
-                                                    'Diabetes Mellitus' => 'Diabetes Mellitus',
-                                                    'Emphysema / COPD' => 'Emphysema / COPD',
-                                                    'Epilepsy / Seizure' => 'Epilepsy / Seizure',
-                                                    'Hepatitis' => 'Hepatitis',
-                                                    'Hyperlipidemia' => 'Hyperlipidemia',
-                                                    'Hypertension' => 'Hypertension',
-                                                    'Peptic Ulcer Disease' => 'Peptic Ulcer Disease',
-                                                    'Pneumonia' => 'Pneumonia',
-                                                    'Pulmonary Tuberculosis (PTB)' => 'Pulmonary Tuberculosis (PTB)',
-                                                    'Thyroid Disease' => 'Thyroid Disease',
-                                                    'Urinary Tract Infection' => 'Urinary Tract Infection',
-                                                    'Kidney Disease' => 'Kidney Disease',
-                                                    'Mental Disorder' => 'Mental Disorder'
-                                                ];
-                                                foreach ($conditions as $k => $label): 
-                                                    $checked = false;
-                                                    if (is_array($pmhSaved)) {
-                                                        $checked = isset($pmhSaved[$k]) || in_array($k, $pmhSaved);
-                                                        if (!$checked && $k === 'Pulmonary Tuberculosis (PTB)') {
-                                                            $checked = isset($pmhSaved['PTB']) || isset($pmhSaved['Tuberculosis']) || in_array('PTB', $pmhSaved) || in_array('Tuberculosis', $pmhSaved);
-                                                        }
-                                                    }
-                                                ?>
-                                                    <div class="col-6 col-md-4">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="<?= $k ?>" id="pmh_<?= md5($k) ?>" <?= $checked ? 'checked' : '' ?>>
-                                                            <label class="form-check-label text-secondary" for="pmh_<?= md5($k) ?>"><?= $label ?></label>
-                                                        </div>
-                                                    </div>
-                                                <?php endforeach; ?>
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                                    1. Past Medical History (Illnesses)
+                                                </h5>
+                                                <span class="text-muted small">Check condition and provide details where applicable</span>
                                             </div>
 
-                                            <!-- Specific Details Fields -->
-                                            <div class="row g-2 small border-top pt-2">
-                                                <div class="col-12 col-sm-6 col-md-3">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Allergy Specifics</label>
-                                                    <input type="text" name="allergy_specifics" class="form-control form-control-sm" placeholder="e.g. Penicillin, Seafood" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Allergy'] ?? $pmhSaved['Allergies'] ?? '') : '') ?>">
+                                            <!-- Group 1A: Conditions with Specific Details (2 Columns) -->
+                                            <div class="row g-3 small mb-3">
+                                                <!-- Allergy -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="Allergy" id="pmh_allergy" <?= (isset($pmhSaved['Allergy']) || in_array('Allergy', $pmhSaved) || isset($pmhSaved['Allergies']) || in_array('Allergies', $pmhSaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="pmh_allergy">Allergy</label>
+                                                        </div>
+                                                        <input type="text" name="allergy_specifics" class="form-control form-control-sm bg-white" placeholder="Specify allergens (e.g. Penicillin, Seafood)" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Allergy'] ?? $pmhSaved['Allergies'] ?? '') : '') ?>">
+                                                    </div>
                                                 </div>
-                                                <div class="col-12 col-sm-6 col-md-3">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Hypertension (Highest BP)</label>
-                                                    <input type="text" name="hypertension_highest_bp" class="form-control form-control-sm" placeholder="e.g. 150/90" value="<?= h(is_array($pmhSaved) ? str_replace('Highest BP: ', '', $pmhSaved['Hypertension'] ?? '') : '') ?>">
+
+                                                <!-- Hypertension -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="Hypertension" id="pmh_hypertension" <?= (isset($pmhSaved['Hypertension']) || in_array('Hypertension', $pmhSaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="pmh_hypertension">Hypertension</label>
+                                                        </div>
+                                                        <input type="text" name="hypertension_highest_bp" class="form-control form-control-sm bg-white" placeholder="Highest BP (e.g. 160/100)" value="<?= h(is_array($pmhSaved) ? str_replace('Highest BP: ', '', $pmhSaved['Hypertension'] ?? '') : '') ?>">
+                                                    </div>
                                                 </div>
-                                                <div class="col-12 col-sm-6 col-md-3">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Cancer (Organ/Type)</label>
-                                                    <input type="text" name="cancer_organ" class="form-control form-control-sm" placeholder="e.g. Breast, Colon" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Cancer'] ?? '') : '') ?>">
+
+                                                <!-- Cancer -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="Cancer" id="pmh_cancer" <?= (isset($pmhSaved['Cancer']) || in_array('Cancer', $pmhSaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="pmh_cancer">Cancer</label>
+                                                        </div>
+                                                        <input type="text" name="cancer_organ" class="form-control form-control-sm bg-white" placeholder="Specify organ (e.g. Breast, Colon)" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Cancer'] ?? '') : '') ?>">
+                                                    </div>
                                                 </div>
-                                                <div class="col-12 col-sm-6 col-md-3">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">PTB Category / Details</label>
-                                                    <input type="text" name="ptb_details" class="form-control form-control-sm" placeholder="e.g. Cat 1 Completed" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Pulmonary Tuberculosis (PTB)'] ?? $pmhSaved['PTB'] ?? $pmhSaved['Tuberculosis'] ?? '') : '') ?>">
+
+                                                <!-- Hepatitis -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="Hepatitis" id="pmh_hepatitis" <?= (isset($pmhSaved['Hepatitis']) || in_array('Hepatitis', $pmhSaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="pmh_hepatitis">Hepatitis</label>
+                                                        </div>
+                                                        <input type="text" name="hepatitis_type" class="form-control form-control-sm bg-white" placeholder="Specify type (e.g. Hepatitis B)" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Hepatitis'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Tuberculosis & PTB Category -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="Pulmonary Tuberculosis (PTB)" id="pmh_ptb" <?= (isset($pmhSaved['Pulmonary Tuberculosis (PTB)']) || isset($pmhSaved['PTB']) || isset($pmhSaved['Tuberculosis']) || in_array('Pulmonary Tuberculosis (PTB)', $pmhSaved) || in_array('PTB', $pmhSaved) || in_array('Tuberculosis', $pmhSaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="pmh_ptb">Tuberculosis / PTB</label>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <input type="text" name="tuberculosis_organ" class="form-control form-control-sm bg-white" placeholder="Organ (e.g. Lungs, Spine)" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Tuberculosis'] ?? '') : '') ?>">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="text" name="ptb_details" class="form-control form-control-sm bg-white" placeholder="PTB Category (e.g. Cat 1)" value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Pulmonary Tuberculosis (PTB)'] ?? $pmhSaved['PTB'] ?? '') : '') ?>">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Others -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="Others" id="pmh_others" <?= (isset($pmhSaved['Others']) || in_array('Others', $pmhSaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="pmh_others">Others (Specify)</label>
+                                                        </div>
+                                                        <input type="text" name="pmh_other_specify" class="form-control form-control-sm bg-white" placeholder="Specify other illnesses..." value="<?= h(is_array($pmhSaved) ? ($pmhSaved['Others'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Group 1B: Common Illnesses Checklist (4 Columns) -->
+                                            <div class="border-top pt-2">
+                                                <span class="text-secondary fw-semibold small d-block mb-2">Other Chronic & Systemic Illnesses:</span>
+                                                <div class="row g-2 small">
+                                                    <?php
+                                                    $pmhGeneral = [
+                                                        'Asthma' => 'Asthma',
+                                                        'Cerebrovascular Disease' => 'Cerebrovascular Disease (Stroke)',
+                                                        'Coronary Artery Disease' => 'Coronary Artery Disease',
+                                                        'Diabetes Mellitus' => 'Diabetes Mellitus',
+                                                        'Emphysema' => 'Emphysema / COPD',
+                                                        'Epilepsy / Seizure Disease' => 'Epilepsy / Seizure Disease',
+                                                        'Hyperlipidemia' => 'Hyperlipidemia',
+                                                        'Peptic Ulcer Disease' => 'Peptic Ulcer Disease',
+                                                        'Pneumonia' => 'Pneumonia',
+                                                        'Thyroid Disease' => 'Thyroid Disease',
+                                                        'Urinary Tract Infection' => 'Urinary Tract Infection (UTI)'
+                                                    ];
+                                                    foreach ($pmhGeneral as $gKey => $gLabel):
+                                                        $gChecked = is_array($pmhSaved) && (isset($pmhSaved[$gKey]) || in_array($gKey, $pmhSaved) || ($gKey === 'Cerebrovascular Disease' && in_array('Stroke', $pmhSaved)) || ($gKey === 'Emphysema' && in_array('Emphysema / COPD', $pmhSaved)) || ($gKey === 'Epilepsy / Seizure Disease' && in_array('Epilepsy / Seizure', $pmhSaved)));
+                                                    ?>
+                                                        <div class="col-12 col-sm-6 col-md-3">
+                                                            <div class="p-2 border rounded bg-light h-100 d-flex align-items-center">
+                                                                <div class="form-check mb-0">
+                                                                    <input class="form-check-input" type="checkbox" name="past_medical_history[]" value="<?= $gKey ?>" id="pmh_g_<?= md5($gKey) ?>" <?= $gChecked ? 'checked' : '' ?>>
+                                                                    <label class="form-check-label fw-semibold text-dark small" for="pmh_g_<?= md5($gKey) ?>"><?= $gLabel ?></label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- 2. Surgical History & 3. Family Heredity -->
+                                    <!-- 2. Past Surgical History -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 h-100 shadow-xs">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                2. Surgical Operations & Hospitalization
+                                                2. Past Surgical History & Hospitalization
                                             </h5>
                                             <div class="row g-2 small">
                                                 <div class="col-12 col-sm-6">
@@ -974,7 +1279,7 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 </div>
                                                 <div class="col-12 col-sm-6">
                                                     <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Date</label>
-                                                    <input type="text" name="operation_1_date" class="form-control form-control-sm" placeholder="YYYY or Date" value="<?= h($surgicalSaved[0]['date'] ?? '') ?>">
+                                                    <input type="text" name="operation_1_date" class="form-control form-control-sm" placeholder="YYYY or YYYY-MM-DD" value="<?= h($surgicalSaved[0]['date'] ?? '') ?>">
                                                 </div>
 
                                                 <div class="col-12 col-sm-6">
@@ -983,64 +1288,42 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 </div>
                                                 <div class="col-12 col-sm-6">
                                                     <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Date</label>
-                                                    <input type="text" name="operation_2_date" class="form-control form-control-sm" placeholder="YYYY or Date" value="<?= h($surgicalSaved[1]['date'] ?? '') ?>">
+                                                    <input type="text" name="operation_2_date" class="form-control form-control-sm" placeholder="YYYY or YYYY-MM-DD" value="<?= h($surgicalSaved[1]['date'] ?? '') ?>">
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 col-md-6">
-                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                3. Family Hereditary Diseases
-                                            </h5>
-                                            <div class="row g-2 small">
-                                                <?php 
-                                                $familyItems = ['Hypertension', 'Diabetes Mellitus', 'Cancer', 'Asthma', 'Kidney Disease', 'Coronary Artery Disease', 'Stroke', 'Mental Disorder', 'Bleeding Disorder'];
-                                                foreach ($familyItems as $item):
-                                                    $famChecked = is_array($familySaved) && (isset($familySaved[$item]) || in_array($item, $familySaved));
-                                                ?>
-                                                    <div class="col-6">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="<?= $item ?>" id="fam_<?= md5($item) ?>" <?= $famChecked ? 'checked' : '' ?>>
-                                                            <label class="form-check-label text-secondary" for="fam_<?= md5($item) ?>"><?= $item ?></label>
-                                                        </div>
-                                                    </div>
-                                                <?php endforeach; ?>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- 4. Personal & Social History -->
-                                    <div class="col-12 <?= $isFemale ? 'col-md-6' : 'col-12' ?>">
+                                    <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 h-100 shadow-xs">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                4. Personal & Social Lifestyle
+                                                4. Personal / Social History
                                             </h5>
                                             <div class="row g-2 small">
                                                 <div class="col-12 col-sm-6">
                                                     <label class="form-label fw-semibold text-secondary small mb-1">Smoking Status</label>
                                                     <select name="smoking_status" class="form-select form-select-sm">
-                                                        <option value="Never" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never</option>
+                                                        <option value="Never" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never (No)</option>
                                                         <option value="Yes" <?= ($medicalHistory['smoking_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Active)</option>
                                                         <option value="Quit" <?= ($medicalHistory['smoking_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Smoking Pack Years</label>
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">No. of Pack Years</label>
                                                     <input type="number" step="0.1" name="smoking_pack_years" class="form-control form-control-sm" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>">
                                                 </div>
 
                                                 <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Drinking Status</label>
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Drinking</label>
                                                     <select name="alcohol_status" class="form-select form-select-sm">
-                                                        <option value="Never" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never</option>
+                                                        <option value="Never" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never (No)</option>
                                                         <option value="Yes" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Regular/Occasional)</option>
                                                         <option value="Quit" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Bottles / Day</label>
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">No. of Bottles / Day</label>
                                                     <input type="number" step="0.1" name="alcohol_bottles_per_day" class="form-control form-control-sm" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>">
                                                 </div>
 
@@ -1054,12 +1337,334 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                         </div>
                                     </div>
 
-                                    <!-- 5. Female Reproductive History (if Female) -->
+                                    <!-- 3. Family History (Hereditary Diseases) Checklist (Matching Section 1 Layout) -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                                    3. Family History (Hereditary Diseases)
+                                                </h5>
+                                                <span class="text-muted small">Check hereditary condition and provide details where applicable</span>
+                                            </div>
+
+                                            <!-- Group 3A: Hereditary Conditions with Specific Details (2 Columns) -->
+                                            <div class="row g-3 small mb-3">
+                                                <!-- Allergy -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Allergy" id="fam_allergy" <?= (isset($familySaved['Allergy']) || in_array('Allergy', $familySaved) || isset($familySaved['Allergies']) || in_array('Allergies', $familySaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="fam_allergy">Allergy</label>
+                                                        </div>
+                                                        <input type="text" name="fam_allergy_specifics" class="form-control form-control-sm bg-white" placeholder="Specify allergens (e.g. Asthma, Eczema, Food)" value="<?= h(is_array($familySaved) ? ($familySaved['Allergy'] ?? $familySaved['Allergies'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Hypertension -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Hypertension" id="fam_hypertension" <?= (isset($familySaved['Hypertension']) || in_array('Hypertension', $familySaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="fam_hypertension">Hypertension</label>
+                                                        </div>
+                                                        <input type="text" name="fam_hypertension_highest_bp" class="form-control form-control-sm bg-white" placeholder="Highest BP / Complication (e.g. 180/100, Stroke)" value="<?= h(is_array($familySaved) ? str_replace('Highest BP: ', '', $familySaved['Hypertension'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Cancer -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Cancer" id="fam_cancer" <?= (isset($familySaved['Cancer']) || in_array('Cancer', $familySaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="fam_cancer">Cancer</label>
+                                                        </div>
+                                                        <input type="text" name="fam_cancer_organ" class="form-control form-control-sm bg-white" placeholder="Specify organ (e.g. Breast, Colon)" value="<?= h(is_array($familySaved) ? ($familySaved['Cancer'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Hepatitis -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Hepatitis" id="fam_hepatitis" <?= (isset($familySaved['Hepatitis']) || in_array('Hepatitis', $familySaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="fam_hepatitis">Hepatitis</label>
+                                                        </div>
+                                                        <input type="text" name="fam_hepatitis_type" class="form-control form-control-sm bg-white" placeholder="Specify type (e.g. Hepatitis B)" value="<?= h(is_array($familySaved) ? ($familySaved['Hepatitis'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Tuberculosis & PTB Category -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Tuberculosis" id="fam_ptb" <?= (isset($familySaved['Tuberculosis']) || isset($familySaved['PTB Category']) || in_array('Tuberculosis', $familySaved) || in_array('PTB Category', $familySaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="fam_ptb">Tuberculosis / PTB</label>
+                                                        </div>
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <input type="text" name="fam_tuberculosis_organ" class="form-control form-control-sm bg-white" placeholder="Organ (e.g. Pulmonary)" value="<?= h(is_array($familySaved) ? ($familySaved['Tuberculosis'] ?? '') : '') ?>">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="text" name="fam_ptb_details" class="form-control form-control-sm bg-white" placeholder="PTB Category (e.g. Active)" value="<?= h(is_array($familySaved) ? ($familySaved['PTB Category'] ?? '') : '') ?>">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Others -->
+                                                <div class="col-12 col-md-6">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Others" id="fam_others" <?= (isset($familySaved['Others']) || in_array('Others', $familySaved)) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label fw-semibold text-dark" for="fam_others">Others (Specify)</label>
+                                                        </div>
+                                                        <input type="text" name="family_other" class="form-control form-control-sm bg-white" placeholder="Specify other hereditary illnesses..." value="<?= h(is_array($familySaved) ? ($familySaved['Others'] ?? '') : '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Group 3B: Hereditary Illnesses Checklist (4 Columns) -->
+                                            <div class="border-top pt-2">
+                                                <span class="text-secondary fw-semibold small d-block mb-2">Other Hereditary & Familial Conditions:</span>
+                                                <div class="row g-2 small">
+                                                    <?php
+                                                    $familyGeneral = [
+                                                        'Asthma' => 'Asthma',
+                                                        'Cerebrovascular Disease' => 'Cerebrovascular Disease (Stroke)',
+                                                        'Coronary Artery Disease' => 'Coronary Artery Disease',
+                                                        'Diabetes Mellitus' => 'Diabetes Mellitus',
+                                                        'Emphysema' => 'Emphysema / COPD',
+                                                        'Epilepsy / Seizure Disease' => 'Epilepsy / Seizure Disease',
+                                                        'Hyperlipidemia' => 'Hyperlipidemia',
+                                                        'Kidney Disease' => 'Kidney Disease',
+                                                        'Mental Disorder' => 'Mental Disorder',
+                                                        'Peptic Ulcer Disease' => 'Peptic Ulcer Disease',
+                                                        'Pneumonia' => 'Pneumonia',
+                                                        'Thyroid Disease' => 'Thyroid Disease'
+                                                    ];
+                                                    foreach ($familyGeneral as $fKey => $fLabel):
+                                                        $fChecked = is_array($familySaved) && (isset($familySaved[$fKey]) || in_array($fKey, $familySaved));
+                                                    ?>
+                                                        <div class="col-12 col-sm-6 col-md-3">
+                                                            <div class="p-2 border rounded bg-light h-100 d-flex align-items-center">
+                                                                <div class="form-check mb-0">
+                                                                    <input class="form-check-input" type="checkbox" name="family_history[]" value="<?= $fKey ?>" id="fam_g_<?= md5($fKey) ?>" <?= $fChecked ? 'checked' : '' ?>>
+                                                                    <label class="form-check-label fw-semibold text-dark small" for="fam_g_<?= md5($fKey) ?>"><?= $fLabel ?></label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. Lifetime Immunization Matrix (Annex A1 Standard) -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                5. Lifetime Immunizations (Annex A1)
+                                            </h5>
+                                            <div class="small">
+                                                <!-- For children -->
+                                                <label class="fw-semibold text-secondary small d-block mb-1">For Children:</label>
+                                                <div class="row g-1 mb-2">
+                                                    <?php 
+                                                    $childVax = ['BCG', 'OPV1 / IPV1', 'OPV2 / IPV2', 'OPV3 / IPV3', 'DPT1', 'DPT2', 'DPT3', 'Measles', 'Hepatitis B1', 'Hepatitis B2', 'Hepatitis B3', 'Hepatitis A', 'Varicella (Chicken Pox)'];
+                                                    $savedChild = $immSaved['children'] ?? [];
+                                                    foreach ($childVax as $cv): 
+                                                    ?>
+                                                        <div class="col-6 col-sm-4">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="imm_children[]" value="<?= $cv ?>" id="imm_c_<?= md5($cv) ?>" <?= in_array($cv, $savedChild, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-dark" for="imm_c_<?= md5($cv) ?>" style="font-size: 0.75rem;"><?= $cv ?></label>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+
+                                                <!-- For young women -->
+                                                <label class="fw-semibold text-secondary small d-block mb-1 border-top pt-2">For Young Women:</label>
+                                                <div class="row g-1 mb-2">
+                                                    <?php 
+                                                    $ywVax = ['HPV', 'MMR'];
+                                                    $savedYw = $immSaved['young_women'] ?? [];
+                                                    foreach ($ywVax as $yv): 
+                                                    ?>
+                                                        <div class="col-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="imm_young_women[]" value="<?= $yv ?>" id="imm_yw_<?= md5($yv) ?>" <?= in_array($yv, $savedYw, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-dark" for="imm_yw_<?= md5($yv) ?>" style="font-size: 0.75rem;"><?= $yv ?></label>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+
+                                                <!-- For pregnant women -->
+                                                <label class="fw-semibold text-secondary small d-block mb-1 border-top pt-2">For Pregnant Women:</label>
+                                                <div class="row g-1 mb-2">
+                                                    <?php 
+                                                    $pregVax = ['Tetanus Toxoid'];
+                                                    $savedPreg = $immSaved['pregnant'] ?? [];
+                                                    foreach ($pregVax as $pv): 
+                                                    ?>
+                                                        <div class="col-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="imm_pregnant[]" value="<?= $pv ?>" id="imm_p_<?= md5($pv) ?>" <?= in_array($pv, $savedPreg, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-dark" for="imm_p_<?= md5($pv) ?>" style="font-size: 0.75rem;"><?= $pv ?></label>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+
+                                                <!-- For elderly and immunocompromised -->
+                                                <label class="fw-semibold text-secondary small d-block mb-1 border-top pt-2">For Elderly & Immunocompromised:</label>
+                                                <div class="row g-1 mb-2">
+                                                    <?php 
+                                                    $eldVax = ['Pneumococcal Vaccine', 'Flu Vaccine'];
+                                                    $savedEld = $immSaved['elderly'] ?? [];
+                                                    foreach ($eldVax as $ev): 
+                                                    ?>
+                                                        <div class="col-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="imm_elderly[]" value="<?= $ev ?>" id="imm_e_<?= md5($ev) ?>" <?= in_array($ev, $savedEld, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-dark" for="imm_e_<?= md5($ev) ?>" style="font-size: 0.75rem;"><?= $ev ?></label>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+
+                                                <!-- Others specify -->
+                                                <div class="border-top pt-2">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Others (Specify)</label>
+                                                    <input type="text" name="imm_others_specify" class="form-control form-control-sm" placeholder="Specify other vaccines received..." value="<?= h($immSaved['others'] ?? '') ?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 6. Pertinent Physical Examination Checklist (Annex A1 6 Systems) -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                6. Pertinent Physical Examination Findings Checklist (Annex A1)
+                                            </h5>
+                                            <div class="row g-3 small">
+                                                <!-- Skin -->
+                                                <div class="col-12 col-md-4">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <span class="fw-bold text-dark d-block mb-2"><i class="bi bi-person me-1 text-primary"></i>Skin</span>
+                                                        <?php 
+                                                        $skinItems = ['Pallor', 'Rashes', 'Jaundice', 'Good skin turgor'];
+                                                        $savedSkin = $peSaved['skin'] ?? [];
+                                                        foreach ($skinItems as $si): ?>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="pe_skin[]" value="<?= $si ?>" id="pe_skin_<?= md5($si) ?>" <?= in_array($si, $savedSkin, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-secondary" for="pe_skin_<?= md5($si) ?>"><?= $si ?></label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- HEENT -->
+                                                <div class="col-12 col-md-4">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <span class="fw-bold text-dark d-block mb-2"><i class="bi bi-eye me-1 text-primary"></i>HEENT</span>
+                                                        <?php 
+                                                        $heentItems = [
+                                                            'Anicteric sclerae', 'Intact tympanic membrane', 'Tonsillopharyngeal congestion',
+                                                            'Exudates', 'Pupils briskly reactive to light', 'Alar flaring',
+                                                            'Hypertrophic tonsils', 'Aural discharge', 'Nasal discharge', 'Palpable mass'
+                                                        ];
+                                                        $savedHeent = $peSaved['heent'] ?? [];
+                                                        foreach ($heentItems as $hi): ?>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="pe_heent[]" value="<?= $hi ?>" id="pe_heent_<?= md5($hi) ?>" <?= in_array($hi, $savedHeent, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-secondary" for="pe_heent_<?= md5($hi) ?>"><?= $hi ?></label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Chest / Lungs -->
+                                                <div class="col-12 col-md-4">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <span class="fw-bold text-dark d-block mb-2"><i class="bi bi-lungs me-1 text-primary"></i>Chest / Lungs</span>
+                                                        <?php 
+                                                        $chestItems = ['Symmetrical chest expansion', 'Retractions', 'Wheezes', 'Clear breath sounds', 'Crackles / rales'];
+                                                        $savedChest = $peSaved['chest_lungs'] ?? [];
+                                                        foreach ($chestItems as $ci): ?>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="pe_chest_lungs[]" value="<?= $ci ?>" id="pe_cl_<?= md5($ci) ?>" <?= in_array($ci, $savedChest, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-secondary" for="pe_cl_<?= md5($ci) ?>"><?= $ci ?></label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Heart -->
+                                                <div class="col-12 col-md-4">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <span class="fw-bold text-dark d-block mb-2"><i class="bi bi-heart-pulse me-1 text-primary"></i>Heart</span>
+                                                        <?php 
+                                                        $heartItems = ['Adynamic precordium', 'Normal rate regular rhythm', 'Heaves / thrills', 'Murmurs'];
+                                                        $savedHeart = $peSaved['heart'] ?? [];
+                                                        foreach ($heartItems as $hti): ?>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="pe_heart[]" value="<?= $hti ?>" id="pe_ht_<?= md5($hti) ?>" <?= in_array($hti, $savedHeart, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-secondary" for="pe_ht_<?= md5($hti) ?>"><?= $hti ?></label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Abdomen -->
+                                                <div class="col-12 col-md-4">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <span class="fw-bold text-dark d-block mb-2"><i class="bi bi-shield-shaded me-1 text-primary"></i>Abdomen</span>
+                                                        <?php 
+                                                        $abdoItems = ['Flat', 'Flabby', 'Tenderness', 'Globular', 'Muscle guarding', 'Palpable mass'];
+                                                        $savedAbdo = $peSaved['abdomen'] ?? [];
+                                                        foreach ($abdoItems as $ai): ?>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="pe_abdomen[]" value="<?= $ai ?>" id="pe_ab_<?= md5($ai) ?>" <?= in_array($ai, $savedAbdo, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-secondary" for="pe_ab_<?= md5($ai) ?>"><?= $ai ?></label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Extremities -->
+                                                <div class="col-12 col-md-4">
+                                                    <div class="p-2 border rounded bg-light h-100">
+                                                        <span class="fw-bold text-dark d-block mb-2"><i class="bi bi-activity me-1 text-primary"></i>Extremities</span>
+                                                        <?php 
+                                                        $extItems = ['Gross deformity', 'Normal gait', 'Full and equal pulses'];
+                                                        $savedExt = $peSaved['extremities'] ?? [];
+                                                        foreach ($extItems as $ei): ?>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="pe_extremities[]" value="<?= $ei ?>" id="pe_ext_<?= md5($ei) ?>" <?= in_array($ei, $savedExt, true) ? 'checked' : '' ?>>
+                                                                <label class="form-check-label text-secondary" for="pe_ext_<?= md5($ei) ?>"><?= $ei ?></label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Remarks -->
+                                                <div class="col-12">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Physical Examination Remarks / Other Findings</label>
+                                                    <textarea name="pe_remarks" class="form-control form-control-sm" rows="2" placeholder="Record other physical examination findings or clinical notes..."><?= h($peSaved['remarks'] ?? '') ?></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7. Female Menstrual & Reproductive History (if Female) -->
                                     <?php if ($isFemale): ?>
                                         <div class="col-12 col-md-6">
                                             <div class="card border rounded-3 p-3 h-100 shadow-xs">
                                                 <h5 class="h6 fw-bold text-pink mb-2">
-                                                    5. Female Menstrual & Reproductive History
+                                                    7. Female Menstrual & Reproductive History
                                                 </h5>
                                                 <div class="row g-2 small">
                                                     <div class="col-6 col-sm-4">
@@ -1101,6 +1706,64 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                     <div class="col-12">
                                                         <label class="form-label fw-semibold text-secondary small mb-1">Family Planning Method in Use</label>
                                                         <input type="text" name="birth_control_method" class="form-control form-control-sm" placeholder="e.g. Pills, BTL, IUD, Injectable, Condom, None" value="<?= h($medicalHistory['birth_control_method'] ?? '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 8. Pregnancy History Card (if Female) -->
+                                        <div class="col-12 col-md-6">
+                                            <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                                <h5 class="h6 fw-bold text-pink mb-2">
+                                                    8. Pregnancy & Obstetric History (Annex A1)
+                                                </h5>
+                                                <div class="row g-2 small">
+                                                    <div class="col-6 col-sm-3">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Gravida</label>
+                                                        <input type="number" name="gravida" class="form-control form-control-sm" min="0" max="25" placeholder="G" value="<?= h($medicalHistory['gravida'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-sm-3">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Parity</label>
+                                                        <input type="number" name="para" class="form-control form-control-sm" min="0" max="25" placeholder="P" value="<?= h($medicalHistory['para'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-12 col-sm-6">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Type of Delivery</label>
+                                                        <input type="text" name="delivery_type" class="form-control form-control-sm" placeholder="e.g. NSD, CS, Forceps" value="<?= h($medicalHistory['delivery_type'] ?? '') ?>">
+                                                    </div>
+
+                                                    <div class="col-6 col-sm-3">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Full Term</label>
+                                                        <input type="number" name="term_births" class="form-control form-control-sm" min="0" max="25" placeholder="F" value="<?= h($medicalHistory['term_births'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-sm-3">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Premature</label>
+                                                        <input type="number" name="preterm_births" class="form-control form-control-sm" min="0" max="25" placeholder="P" value="<?= h($medicalHistory['preterm_births'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-sm-3">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Abortion</label>
+                                                        <input type="number" name="abortions" class="form-control form-control-sm" min="0" max="25" placeholder="A" value="<?= h($medicalHistory['abortions'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-sm-3">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1">Living Children</label>
+                                                        <input type="number" name="living_children" class="form-control form-control-sm" min="0" max="25" placeholder="L" value="<?= h($medicalHistory['living_children'] ?? '') ?>">
+                                                    </div>
+
+                                                    <div class="col-12 col-sm-6 border-top pt-2 mt-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="pre_eclampsia" value="1" id="pre_eclampsia" <?= !empty($medicalHistory['pre_eclampsia']) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label text-secondary fw-semibold small" for="pre_eclampsia">Pregnancy-Induced Hypertension (Pre-eclampsia)</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 border-top pt-2 mt-2">
+                                                        <label class="form-label fw-semibold text-secondary small mb-1 d-block">Access to Family Planning Counselling</label>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="radio" name="fp_counselling" id="fp_counselling_yes" value="1" <?= (!isset($medicalHistory['fp_counselling']) || (int)$medicalHistory['fp_counselling'] === 1) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label small" for="fp_counselling_yes">Yes</label>
+                                                        </div>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="radio" name="fp_counselling" id="fp_counselling_no" value="0" <?= (isset($medicalHistory['fp_counselling']) && (int)$medicalHistory['fp_counselling'] === 0) ? 'checked' : '' ?>>
+                                                            <label class="form-check-label small" for="fp_counselling_no">No</label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

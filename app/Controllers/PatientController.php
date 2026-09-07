@@ -334,8 +334,8 @@ class PatientController extends Controller {
 
         if (!empty($input['emergency_name']) && trim($input['emergency_name']) !== '') {
             $emergencyName = trim($input['emergency_name']);
-            if (!preg_match('/^[a-zA-ZñÑ\s\-\'\.]{2,100}$/u', $emergencyName)) {
-                $errors[] = 'Emergency Contact Person Name must contain only letters, spaces, or hyphens (2 to 100 characters).';
+            if (!preg_match('/^[a-zA-ZñÑ\s\-\'\.\,]{2,100}$/u', $emergencyName)) {
+                $errors[] = 'Emergency Contact Person Name must contain only letters, spaces, hyphens, commas, or apostrophes (2 to 100 characters).';
             }
         }
 
@@ -392,11 +392,13 @@ class PatientController extends Controller {
             }
         }
 
-        // 7. Civil Status Whitelist
+        // 7. Civil Status Whitelist & Conditional 'Others' Validation
         if (!empty($input['civil_status'])) {
-            $allowedStatuses = ['Single', 'Married', 'Widowed', 'Divorced', 'Separated'];
+            $allowedStatuses = ['Single', 'Married', 'Widow/Widower', 'Annulled', 'Separated', 'Others'];
             if (!in_array($input['civil_status'], $allowedStatuses, true)) {
                 $errors[] = 'Invalid Civil Status selected.';
+            } elseif ($input['civil_status'] === 'Others' && empty(trim($input['civil_status_other'] ?? ''))) {
+                $errors[] = 'Please specify the Civil Status when "Others" is selected.';
             }
         }
 
@@ -423,11 +425,11 @@ class PatientController extends Controller {
             }
         }
 
-        // 10. Suffix Validation
+        // 10. Suffix / Extension Validation
         if (!empty($input['suffix']) && trim($input['suffix']) !== '') {
             $suffix = trim($input['suffix']);
             if (mb_strlen($suffix) > 20 || !preg_match('/^[a-zA-Z0-9\.\s\-]+$/', $suffix)) {
-                $errors[] = 'Name Suffix must be 20 characters or less (e.g. Jr., Sr., III).';
+                $errors[] = 'Extension (Sr., Jr., etc.) must be 20 characters or less.';
             }
         }
 
@@ -441,7 +443,7 @@ class PatientController extends Controller {
 
         // 12. Educational Attainment Whitelist
         if (!empty($input['education_attainment']) && trim($input['education_attainment']) !== '') {
-            $allowedEdu = ['No Schooling', 'Elementary', 'High School', 'Vocational', 'College / Post-Graduate'];
+            $allowedEdu = ['No Schooling', 'Elementary', 'High School', 'Vocational', 'College degree, post graduate'];
             if (!in_array($input['education_attainment'], $allowedEdu, true)) {
                 $errors[] = 'Invalid Educational Attainment selected.';
             }
@@ -465,8 +467,8 @@ class PatientController extends Controller {
         foreach ($familyNames as $field => $fieldLabel) {
             if (!empty($input[$field]) && trim($input[$field]) !== '') {
                 $val = trim($input[$field]);
-                if (mb_strlen($val) > 150 || !preg_match('/^[a-zA-ZñÑ\s\-\'\.]{2,150}$/u', $val)) {
-                    $errors[] = "{$fieldLabel} must contain only letters, spaces, hyphens, or apostrophes (2 to 150 characters).";
+                if (mb_strlen($val) > 150 || !preg_match('/^[a-zA-ZñÑ\s\-\'\.\,]{2,150}$/u', $val)) {
+                    $errors[] = "{$fieldLabel} must contain only letters, spaces, hyphens, commas, or apostrophes (2 to 150 characters).";
                 }
             }
         }

@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
         enableTime: true,
         dateFormat: "Y-m-d H:i:S",
         defaultDate: <?= json_encode($input['consulted_at'] ?? $consultation['consulted_at'] ?? date('Y-m-d H:i:s')) ?>,
-        maxDate: "today",
+        maxDate: new Date(),
         allowInput: true
     });
 

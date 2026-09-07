@@ -196,13 +196,13 @@ class Patient extends Model {
 
         $sql = "INSERT INTO patients (
                     patient_no, family_no, first_name, middle_name, last_name, suffix, dob, sex, 
-                    civil_status, blood_type, religion, occupation, education_attainment,
+                    civil_status, civil_status_other, blood_type, religion, occupation, education_attainment,
                     contact_no, barangay, address, phic_status, phic_type, philhealth_no,
                     father_name, father_dob, mother_name, mother_dob, spouse_name, spouse_dob,
                     emergency_name, emergency_relationship, emergency_no, created_by
                 ) VALUES (
                     :patient_no, :family_no, :first_name, :middle_name, :last_name, :suffix, :dob, :sex, 
-                    :civil_status, :blood_type, :religion, :occupation, :education_attainment,
+                    :civil_status, :civil_status_other, :blood_type, :religion, :occupation, :education_attainment,
                     :contact_no, :barangay, :address, :phic_status, :phic_type, :philhealth_no,
                     :father_name, :father_dob, :mother_name, :mother_dob, :spouse_name, :spouse_dob,
                     :emergency_name, :emergency_relationship, :emergency_no, :created_by
@@ -219,6 +219,7 @@ class Patient extends Model {
             'dob' => $data['dob'],
             'sex' => $data['sex'],
             'civil_status' => $data['civil_status'],
+            'civil_status_other' => ($data['civil_status'] === 'Others' && !empty($data['civil_status_other'])) ? trim($data['civil_status_other']) : null,
             'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : 'Unknown',
             'religion' => !empty($data['religion']) ? trim($data['religion']) : null,
             'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
@@ -261,6 +262,7 @@ class Patient extends Model {
                     dob = :dob,
                     sex = :sex,
                     civil_status = :civil_status,
+                    civil_status_other = :civil_status_other,
                     blood_type = :blood_type,
                     religion = :religion,
                     occupation = :occupation,
@@ -295,6 +297,7 @@ class Patient extends Model {
             'dob' => $data['dob'],
             'sex' => $data['sex'],
             'civil_status' => $data['civil_status'],
+            'civil_status_other' => ($data['civil_status'] === 'Others' && !empty($data['civil_status_other'])) ? trim($data['civil_status_other']) : null,
             'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : 'Unknown',
             'religion' => !empty($data['religion']) ? trim($data['religion']) : null,
             'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,

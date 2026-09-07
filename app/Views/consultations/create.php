@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
         enableTime: true,
         dateFormat: "Y-m-d H:i:S",
         defaultDate: new Date(),
-        maxDate: "today",
+        maxDate: new Date(),
         allowInput: true
     });
 

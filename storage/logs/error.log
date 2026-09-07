@@ -401,3 +401,51 @@ Stack Trace:
 #6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
 #7 {main}
 --------------------------------------------------------------------------------
+[2026-09-07 09:46:55] [TypeError] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/patients/2
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\show.php(962): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(200): App\Core\Controller->view('patients/show', Array)
+#4 [internal function]: App\Controllers\PatientController->show('2')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-07 09:47:11] [TypeError] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/patients/2
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\show.php(962): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(200): App\Core\Controller->view('patients/show', Array)
+#4 [internal function]: App\Controllers\PatientController->show('2')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-07 09:49:05] [TypeError] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/patients/2
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\show.php(962): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(200): App\Core\Controller->view('patients/show', Array)
+#4 [internal function]: App\Controllers\PatientController->show('2')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-09-07 09:49:09] [TypeError] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/patients/2
+Exception: TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php:5
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\helpers.php(5): htmlspecialchars(Array, 3, 'UTF-8')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\show.php(962): h(Array)
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(200): App\Core\Controller->view('patients/show', Array)
+#4 [internal function]: App\Controllers\PatientController->show('2')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
