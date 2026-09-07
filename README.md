@@ -90,22 +90,31 @@ cd C:\xampp\htdocs
 git clone https://github.com/your-username/sinalhan-hc-system.git
 ```
 
-### 2. Database Initialization
+### 2. Database Initialization (Quick Setup)
+
+Choose either of the two methods below:
+
+#### Method A: 1-Click Automated Setup (Recommended)
+1. Start **Apache** and **MySQL** in your XAMPP Control Panel.
+2. Double-click **`setup_db.bat`** in the project root folder.
+   * It will automatically create the `sinalhan_hc_system` database, build all tables, and seed the default accounts.
+
+#### Method B: Manual Import via phpMyAdmin
 1. Start **Apache** and **MySQL** in your XAMPP Control Panel.
 2. Open your browser and navigate to `http://localhost/phpmyadmin/`.
-3. Create a new database named `sinalhan_hc`.
-4. Import the schema and seed data:
-   * Import [`database/schema.sql`](database/schema.sql) first.
-   * Import [`database/seed.sql`](database/seed.sql) to populate initial lookup roles and administrative accounts.
+3. Click **Import** in the top navigation bar.
+4. Select [`database/complete_setup.sql`](database/complete_setup.sql) and click **Go**.
+   * *(Note: Alternatively, you can import `database/schema.sql` followed by `database/seed.sql`)*
 
 ### 3. Connection Configuration
-Navigate to `config/database.php` and verify the MySQL connection settings:
+Navigate to `config/database.php` and verify the MySQL connection settings (pre-configured for standard XAMPP):
 ```php
 return [
-    'host' => 'localhost',
-    'dbname' => 'sinalhan_hc',
+    'host' => '127.0.0.1',
+    'port' => '3306',
+    'dbname' => 'sinalhan_hc_system',
     'username' => 'root',
-    'password' => '', // Set your local database password here
+    'password' => '',
     'charset' => 'utf8mb4'
 ];
 ```
@@ -115,10 +124,11 @@ return [
    ```text
    http://localhost/sinalhan-hc-system/public/
    ```
-2. Log in using the default administrator credentials:
-   * **Username**: `admin`
-   * **Password**: `AdminPassword123`
-3. Upon first login, the system will prompt you to change the temporary password to a secure one before proceeding to the main dashboard.
+2. Log in using any of the default clinic accounts:
+   * **Administrator**: `admin` / `admin1234`
+   * **BHW Staff**: `records_staff` / `staff1234`
+   * **Midwife**: `midwife_user` / `staff1234`
+3. Upon first login with default credentials, the system prompts you to change your password before proceeding to the workstation.
 
 ---
 
