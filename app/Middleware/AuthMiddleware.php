@@ -8,9 +8,20 @@ class AuthMiddleware {
             session_start();
         }
 
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+            || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+        $scriptName = $_SERVER['SCRIPT_NAME'];
+        $basePath = str_replace('/index.php', '', $scriptName);
+
         if (!isset($_SESSION['user_id'])) {
-            $scriptName = $_SERVER['SCRIPT_NAME'];
-            $basePath = str_replace('/index.php', '', $scriptName);
+            if ($isAjax) {
+                http_response_code(401);
+                header('Content-Type: application/json');
+                echo json_encode(['error' => 'Unauthenticated', 'message' => 'Your session has expired. Please log in again.']);
+                exit;
+            }
+
             $redirectUrl = rtrim($basePath, '/') . '/login';
             header("Location: {$redirectUrl}");
             exit;
@@ -28,7 +39,7 @@ class AuthMiddleware {
                 "Session expired due to inactivity for user: {$username}"
             );
 
-            // Destroy session
+            // Clean session data
             $_SESSION = [];
             if (ini_get("session.use_cookies")) {
                 $params = session_get_cookie_params();
@@ -39,13 +50,15 @@ class AuthMiddleware {
             }
             session_destroy();
 
-            // Flash timeout notice in a new clean session
-            session_start();
-            $_SESSION['session_timed_out'] = true;
+            if ($isAjax) {
+                http_response_code(401);
+                header('Content-Type: application/json');
+                echo json_encode(['error' => 'Session Timeout', 'message' => 'You have been logged out due to inactivity.']);
+                exit;
+            }
 
-            $scriptName = $_SERVER['SCRIPT_NAME'];
-            $basePath = str_replace('/index.php', '', $scriptName);
-            $redirectUrl = rtrim($basePath, '/') . '/login';
+            // Redirect with explicit timeout query parameter (fail-safe against cookie race conditions)
+            $redirectUrl = rtrim($basePath, '/') . '/login?timeout=1';
             header("Location: {$redirectUrl}");
             exit;
         }

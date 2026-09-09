@@ -37,10 +37,11 @@ class User extends Model {
      * @param string $newPasswordHash
      * @return bool
      */
-    public function updatePassword($userId, $newPasswordHash) {
+    public function updatePassword($userId, $newPasswordHash, $mustChangePassword = 0) {
         $stmt = $this->db->prepare("
             UPDATE users 
             SET password_hash = :password_hash, 
+                must_change_password = :must_change_password,
                 failed_attempts = 0,
                 last_failed_login_at = NULL,
                 updated_at = CURRENT_TIMESTAMP 
@@ -48,7 +49,38 @@ class User extends Model {
         ");
         return $stmt->execute([
             'password_hash' => $newPasswordHash,
+            'must_change_password' => (int)$mustChangePassword,
             'id' => $userId
+        ]);
+    }
+
+    /**
+     * Update user self-service profile details.
+     * Note: Strictly restricted to contact and personal name fields.
+     * Cannot modify administrative fields like role, status, username, or employee_id.
+     * 
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function updateProfile($id, $data) {
+        $sql = "UPDATE users SET 
+                first_name = :first_name, 
+                middle_name = :middle_name, 
+                last_name = :last_name, 
+                email = :email, 
+                contact_no = :contact_no, 
+                updated_at = CURRENT_TIMESTAMP 
+                WHERE id = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'first_name' => trim($data['first_name'] ?? ''),
+            'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
+            'last_name' => trim($data['last_name'] ?? ''),
+            'email' => !empty($data['email']) ? trim($data['email']) : null,
+            'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null
         ]);
     }
 

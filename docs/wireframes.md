@@ -275,6 +275,49 @@ Key behavior:
 
 ---
 
+## 7.1.1 Patient Profile - Tab: PHIC / PCB Patient Ledger (Page 3)
+
+> **Dedicated Tab**: Digitizes Page 3 of 6 ("PHILIPPINE HEALTH INSURANCE CORPORATION — PCB PATIENT LEDGER") for tracking primary care benefit mandated preventive services and diagnostic encounters.
+
+```text
++------------------------------------------------------------------------------------------------------------------------+
+| CLINICAL CARE WORKSTATION TABS:                                                                                        |
+| [ Overview ]  [ IHP History ]  [ * PHIC / PCB Ledger ]  [ Consultations (3) ]  [ Vitals (4) ]  [ Immunizations (2) ]  |
++------------------------------------------------------------------------------------------------------------------------+
+|                                                                                                                        |
+| +-- PHIC MEMBERSHIP STATUS BANNER -----------------------------------------------------------------------------------+ |
+| | [PHIC Shield]  DELA CRUZ, Maria Santos          PIN: 12-345678901-2       [ Edit Demographics ]                    | |
+| |                Status: [ Member ]               Category: Sponsored - NHTS                                         | |
+| +--------------------------------------------------------------------------------------------------------------------+ |
+|                                                                                                                        |
+| +-- CARD 1: OBLIGATED SERVICES (ANNUAL PREVENTIVE TRACKING) ---------------------------------------------------------+ |
+| | Fiscal Year: [ 2026 v ]    Hypertension Status: (o) Non-Hypertensive (1x/yr)  ( ) Hypertensive (Monthly)           | |
+| |                                                                               [ Update / Save Obligated Services ] | |
+| | +------------------------------------+--------------+------------+------------+------------+------------+----------+ | |
+| | | Primary Preventive Services        | Frequency    | 1st Qtr    | 2nd Qtr    | 3rd Qtr    | 4th Qtr    | Status   | | |
+| | |------------------------------------+--------------+------------+------------+------------+------------+----------| | |
+| | | 1. BP Measurements                 | Once a year  | 2026-01-15 | 2026-04-10 | 2026-07-12 | --         | [3 of 4] | | |
+| | | 2. Clinical Breast Examination     | Once a year  | 2026-01-15 | --         | --         | --         | [Done]   | | |
+| | | 3. Visual Inspection w/ Acetic Acid| Once a year  | 2026-02-20 | --         | --         | --         | [Done]   | | |
+| | +------------------------------------+--------------+------------+------------+------------+------------+----------+ | |
+| +--------------------------------------------------------------------------------------------------------------------+ |
+|                                                                                                                        |
+| +-- CARD 2: DIAGNOSTIC & PCB SERVICES ENCOUNTER LEDGER --------------------------------------------------------------+ |
+| | Sub-Tabs / Filter: [ All Records ] [ Diagnostic Examinations ] [ Other PCB1 Services ] [ Other Services ]          | |
+| |                                                                               [ + Record Diagnostic / Service ]    | |
+| | +------------+--------------------------+---------------------+------------+-----------------+-------------------+ | |
+| | | Date       | Category                 | Service / Test Type | Diagnosis  | Given / Referred| Remarks & Actions | | |
+| | |------------+--------------------------+---------------------+------------+-----------------+-------------------| | |
+| | | 2026-02-15 | Diagnostic Examination   | Complete Blood Count| Routine    | [Given In-Clinic| Normal values [x] | | |
+| | | 2026-03-02 | Other PCB1 Services      | Lifestyle Counseling| Overweight | [Given In-Clinic| 15 mins diet  [x] | | |
+| | | 2026-04-10 | Diagnostic Examination   | Fasting Blood Sugar | Pre-DM     | [Referred: CHO1]| Fasting 10 hrs[x] | | |
+| | +------------+--------------------------+---------------------+------------+-----------------+-------------------+ | |
+| +--------------------------------------------------------------------------------------------------------------------+ |
++------------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
 ## 7.2 Patient Profile - Tab 6: Maternal & Prenatal Care Workstation
 
 > **Context-Aware Trigger**: Displayed prominently for female patients with an active pregnancy or obstetric history.

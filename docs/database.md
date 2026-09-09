@@ -47,6 +47,8 @@ erDiagram
     patients ||--o{ prenatal_records : "maternal_episodes"
     patients ||--o| wellbaby_records : "birth_and_child_record"
     patients ||--o{ past_obstetric_histories : "prior_pregnancies"
+    patients ||--o{ pcb_obligated_services : "annual_preventive_tracking"
+    patients ||--o{ pcb_service_logs : "diagnostic_pcb_encounters"
 
     prenatal_records ||--o{ prenatal_visits : "follow_up_checks"
     wellbaby_records ||--o{ child_growth_logs : "growth_monitoring"
@@ -490,6 +492,46 @@ Tracks periodic pediatric growth checkups, anthropometrics, feeding changes, and
 | `tcb_notes` | TEXT | | NULL | Target Client Benefit notes, developmental milestones, remarks. |
 | `recorded_by` | INT | FK (`users.id`), NOT NULL | | Attending nurse, midwife, or BHW. |
 | `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Creation timestamp. |
+
+---
+
+### 3.19 `pcb_obligated_services` Table
+Stores annual quarterly tracking for PhilHealth Primary Care Benefit (PCB1 / Konsulta) mandated preventive services (BP monitoring, periodic clinical breast exam, visual inspection with acetic acid).
+
+| Column Name | Data Type | Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique internal identifier. |
+| `patient_id` | INT | FOREIGN KEY, NOT NULL | | Links to `patients.id` (ON DELETE CASCADE). |
+| `service_year` | INT | NOT NULL | | Calendar/fiscal year of tracking (e.g. 2026). |
+| `is_hypertensive` | TINYINT(1) | NOT NULL | 0 | 0 = Non-hypertensive (1x/yr), 1 = Hypertensive (monthly). |
+| `bp_q1` .. `bp_q4` | DATE | NULL | NULL | Dates BP monitoring performed for Q1 through Q4. |
+| `cbe_q1` .. `cbe_q4` | DATE | NULL | NULL | Dates Periodic Clinical Breast Exam performed for Q1 through Q4. |
+| `via_q1` .. `via_q4` | DATE | NULL | NULL | Dates Visual Inspection with Acetic Acid (VIA) performed. |
+| `remarks` | TEXT | | NULL | Clinical observations, compliance notes, or medications. |
+| `updated_by` | INT | FOREIGN KEY | NULL | Staff who last modified the record (ON DELETE SET NULL). |
+| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Record creation timestamp. |
+| `updated_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP* | Record modification timestamp. |
+
+---
+
+### 3.20 `pcb_service_logs` Table
+Stores individual encounter records for Diagnostic Examination Services, Other PCB1 Services, and Other Services (Page 3 of the PhilHealth PCB Patient Ledger).
+
+| Column Name | Data Type | Constraints | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique internal identifier. |
+| `patient_id` | INT | FOREIGN KEY, NOT NULL | | Links to `patients.id` (ON DELETE CASCADE). |
+| `service_category` | ENUM('Diagnostic', 'PCB1', 'Other') | NOT NULL | 'Diagnostic' | Service category from Page 3 ledger. |
+| `service_date` | DATE | NOT NULL | | Date service/test was performed or ordered. |
+| `diagnosis` | VARCHAR(255) | | NULL | Indication or diagnosis (e.g. 'Hypertension', 'Routine Checkup'). |
+| `service_type` | VARCHAR(150) | NOT NULL | | Test or service name (e.g. 'CBC', 'Urinalysis', 'FBS', 'Chest X-Ray'). |
+| `status_given` | TINYINT(1) | NOT NULL | 0 | 1 = Given in-clinic, 0 = Not given. |
+| `status_referred` | TINYINT(1) | NOT NULL | 0 | 1 = Referred out, 0 = Not referred. |
+| `referred_to` | VARCHAR(150) | | NULL | Facility or specialist referred to. |
+| `remarks` | TEXT | | NULL | Lab values, test findings, or encounter notes. |
+| `recorded_by` | INT | FOREIGN KEY, NOT NULL | | User who recorded the encounter. |
+| `created_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Timestamp record was created. |
+| `updated_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP* | Timestamp record was last updated. |
 
 ---
 

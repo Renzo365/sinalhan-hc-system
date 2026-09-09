@@ -4,8 +4,8 @@ require dirname(__DIR__) . '/layout/header.php';
 ?>
 
 <div class="login-body">
-    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 py-4 position-relative" style="z-index: 2;">
-        <div class="card login-card">
+    <div class="container d-flex flex-column justify-content-center align-items-center min-vh-100 py-4 py-sm-5 position-relative" style="z-index: 2;">
+        <div class="card login-card" style="max-width: 480px; width: 100%;">
             <!-- Header Section -->
             <div class="login-header-section">
                 <i class="bi bi-heart-pulse-fill text-info login-header-icon"></i>
@@ -14,7 +14,16 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
             
             <!-- Form Section -->
-            <div class="card-body bg-white">
+            <div class="card-body p-4 bg-white">
+                <?php if (!empty($timeoutMessage)): ?>
+                    <div class="alert alert-warning d-flex align-items-center mb-4 py-2.5 px-3 small border-0 shadow-xs rounded-3" role="alert">
+                        <i class="bi bi-clock-history text-warning fs-5 me-2 flex-shrink-0"></i>
+                        <div>
+                            <strong>Session Expired:</strong> <?= h($timeoutMessage) ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger d-flex align-items-center mb-4 py-2 px-3 small" role="alert">
                         <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0"></i>
@@ -60,7 +69,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- Submit Button -->
                     <div class="d-grid mt-4 mb-2">
-                        <button type="submit" class="btn btn-primary fw-semibold shadow-sm">
+                        <button type="submit" class="btn btn-primary py-2 fw-semibold shadow-sm">
                             Log In <i class="bi bi-box-arrow-in-right ms-1"></i>
                         </button>
                     </div>

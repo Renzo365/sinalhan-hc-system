@@ -277,16 +277,24 @@ require dirname(__DIR__) . '/layout/header.php';
                         <label for="phic_type" class="form-label fw-semibold text-secondary small">PHIC Category / Type</label>
                         <select name="phic_type" id="phic_type" class="form-select">
                             <option value="">-- Select Category --</option>
-                            <option value="Sponsored - NHTS" <?= ($input['phic_type'] ?? '') === 'Sponsored - NHTS' ? 'selected' : '' ?>>Sponsored - NHTS / 4Ps</option>
-                            <option value="Sponsored - LGU" <?= ($input['phic_type'] ?? '') === 'Sponsored - LGU' ? 'selected' : '' ?>>Sponsored - LGU</option>
-                            <option value="Employed - Private" <?= ($input['phic_type'] ?? '') === 'Employed - Private' ? 'selected' : '' ?>>Employed - Private</option>
-                            <option value="Employed - Government" <?= ($input['phic_type'] ?? '') === 'Employed - Government' ? 'selected' : '' ?>>Employed - Government</option>
-                            <option value="Indigent" <?= ($input['phic_type'] ?? '') === 'Indigent' ? 'selected' : '' ?>>Indigent</option>
-                            <option value="Senior Citizen" <?= ($input['phic_type'] ?? '') === 'Senior Citizen' ? 'selected' : '' ?>>Senior Citizen</option>
-                            <option value="Lifetime Member" <?= ($input['phic_type'] ?? '') === 'Lifetime Member' ? 'selected' : '' ?>>Lifetime Member</option>
-                            <option value="Informal / Self-Earning" <?= ($input['phic_type'] ?? '') === 'Informal / Self-Earning' ? 'selected' : '' ?>>Informal / Self-Earning</option>
-                            <option value="IPP - OFW" <?= ($input['phic_type'] ?? '') === 'IPP - OFW' ? 'selected' : '' ?>>IPP - OFW</option>
-                            <option value="Others" <?= ($input['phic_type'] ?? '') === 'Others' ? 'selected' : '' ?>>Others</option>
+                            <optgroup label="1. Sponsored">
+                                <option value="Sponsored - NHTS" <?= ($input['phic_type'] ?? '') === 'Sponsored - NHTS' ? 'selected' : '' ?>>Sponsored - NHTS (National Household Targeting System)</option>
+                                <option value="Sponsored - NGS / NGA" <?= in_array(($input['phic_type'] ?? ''), ['Sponsored - NGS / NGA', 'Sponsored - NGS', 'Sponsored - NGA'], true) ? 'selected' : '' ?>>Sponsored - NGS / NGA (National Government)</option>
+                                <option value="Sponsored - LGU" <?= ($input['phic_type'] ?? '') === 'Sponsored - LGU' ? 'selected' : '' ?>>Sponsored - LGU (Local Government Unit)</option>
+                                <option value="Sponsored - Private" <?= ($input['phic_type'] ?? '') === 'Sponsored - Private' ? 'selected' : '' ?>>Sponsored - Private</option>
+                            </optgroup>
+                            <optgroup label="2. Individually Paying Program (IPP)">
+                                <option value="IPP - Organized Group (OG)" <?= in_array(($input['phic_type'] ?? ''), ['IPP - Organized Group (OG)', 'IPP - OG'], true) ? 'selected' : '' ?>>IPP - Organized Group (OG)</option>
+                                <option value="IPP - OFW" <?= ($input['phic_type'] ?? '') === 'IPP - OFW' ? 'selected' : '' ?>>IPP - OFW (Overseas Filipino Worker)</option>
+                                <option value="IPP - Voluntary / Self-Employed" <?= in_array(($input['phic_type'] ?? ''), ['IPP - Voluntary / Self-Employed', 'Informal / Self-Earning'], true) ? 'selected' : '' ?>>IPP - Voluntary / Self-Employed</option>
+                            </optgroup>
+                            <optgroup label="3. Employed">
+                                <option value="Employed - Government" <?= ($input['phic_type'] ?? '') === 'Employed - Government' ? 'selected' : '' ?>>Employed - Government (Formal Sector)</option>
+                                <option value="Employed - Private" <?= ($input['phic_type'] ?? '') === 'Employed - Private' ? 'selected' : '' ?>>Employed - Private (Formal Sector)</option>
+                            </optgroup>
+                            <optgroup label="4. Lifetime">
+                                <option value="Lifetime Member" <?= ($input['phic_type'] ?? '') === 'Lifetime Member' ? 'selected' : '' ?>>Lifetime Member (Retirees / Pensioners)</option>
+                            </optgroup>
                         </select>
                     </div>
 

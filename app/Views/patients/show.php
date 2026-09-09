@@ -27,19 +27,67 @@ $breadcrumbs = [
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
-$isFemale = (strtolower($patient['sex']) === 'female');
-$isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
+$patientSex = !empty($patient['sex']) ? trim($patient['sex']) : '';
+$isFemale = (strtolower($patientSex) === 'female');
+$hasNumericAge = (isset($patient['age']) && $patient['age'] !== '' && is_numeric($patient['age']));
+$isChild = ($hasNumericAge && (int)$patient['age'] <= 5) || !empty($wellbabyRecord);
+
+// Robust patient full name formatting
+$lastName = trim($patient['last_name'] ?? '');
+$firstName = trim($patient['first_name'] ?? '');
+$middleName = trim($patient['middle_name'] ?? '');
+$suffix = trim($patient['suffix'] ?? '');
+
+if (!empty($lastName) && !empty($firstName)) {
+    $fullNameFormatted = $lastName . ', ' . $firstName;
+    if (!empty($middleName)) {
+        $fullNameFormatted .= ' ' . mb_substr($middleName, 0, 1) . '.';
+    }
+    if (!empty($suffix)) {
+        $fullNameFormatted .= ' ' . $suffix;
+    }
+} elseif (!empty($lastName)) {
+    $fullNameFormatted = $lastName . (!empty($suffix) ? ' ' . $suffix : '');
+} elseif (!empty($firstName)) {
+    $fullNameFormatted = $firstName . (!empty($suffix) ? ' ' . $suffix : '');
+} else {
+    $fullNameFormatted = 'Unnamed Patient';
+}
+
+// Avatar Initials or fallback icon
+$avatarInitials = '';
+if (!empty($firstName) || !empty($lastName)) {
+    $avatarInitials = strtoupper(
+        (!empty($firstName) ? mb_substr($firstName, 0, 1) : '') .
+        (!empty($lastName) ? mb_substr($lastName, 0, 1) : '')
+    );
+}
+
+$formatDateSafe = function($dateStr, $format = 'M d, Y') {
+    if (empty($dateStr) || $dateStr === '0000-00-00' || $dateStr === '0000-00-00 00:00:00') {
+        return null;
+    }
+    $ts = strtotime($dateStr);
+    return ($ts !== false && $ts > 0) ? date($format, $ts) : null;
+};
+
+// Valid Date of Birth check
+$dobFormatted = $formatDateSafe($patient['dob'] ?? null) ?? 'Unspecified';
+$isValidDob = ($formatDateSafe($patient['dob'] ?? null) !== null);
+
+$ageVal = ($hasNumericAge) ? h($patient['age']) : null;
+$hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blood_type'])) !== 'unknown');
 ?>
 
 <!-- ==========================================================================
    PAGE HEADER (Title, Subtitle & Action)
    ========================================================================== -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="min-w-0">
         <h2 class="h3 mb-1 fw-bold text-primary-dark">Clinical Care Workstation</h2>
         <p class="text-secondary small mb-0">Manage check-ups, PhilHealth IHP profile, maternal/child care, vitals, and appointments.</p>
     </div>
-    <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary">
+    <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary text-nowrap flex-shrink-0">
         <i class="bi bi-arrow-left me-1"></i> Back to Directory
     </a>
 </div>
@@ -49,18 +97,26 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
    ========================================================================== -->
 <div class="card card-premium shadow-sm border-0 mb-3">
     <div class="card-body p-3">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
             
             <!-- Left: Avatar, Name, Badges & Baseline Demographics -->
-            <div class="d-flex align-items-center gap-3 min-w-0">
+            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
                 <div class="avatar-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.15rem;">
-                    <?= strtoupper(mb_substr($patient['first_name'], 0, 1) . mb_substr($patient['last_name'], 0, 1)) ?>
+                    <?php if (!empty($avatarInitials)): ?>
+                        <?= h($avatarInitials) ?>
+                    <?php else: ?>
+                        <i class="bi bi-person-fill fs-4"></i>
+                    <?php endif; ?>
                 </div>
 
                 <div class="min-w-0">
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                         <h3 class="h5 fw-bold text-primary-dark mb-0 lh-1">
-                            <?= h($patient['last_name']) ?>, <?= h($patient['first_name']) ?> <?= h($patient['middle_name'] ? mb_substr($patient['middle_name'], 0, 1) . '.' : '') ?> <?= h($patient['suffix'] ?? '') ?>
+                            <?php if ($fullNameFormatted === 'Unnamed Patient'): ?>
+                                <span class="text-muted fst-italic">Unnamed Patient</span>
+                            <?php else: ?>
+                                <?= h($fullNameFormatted) ?>
+                            <?php endif; ?>
                         </h3>
                         <span class="badge bg-light text-dark border font-monospace fs-7">
                             <?= h($patient['patient_no']) ?>
@@ -70,36 +126,44 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                         </span>
                     </div>
 
+                    <?php
+                    $demographicsItems = [];
+                    if ($ageVal !== null && $patientSex !== '') {
+                        $demographicsItems[] = '<span><strong>' . $ageVal . '</strong> yrs &bull; ' . h($patientSex) . '</span>';
+                    } elseif ($ageVal !== null) {
+                        $demographicsItems[] = '<span><strong>' . $ageVal . '</strong> yrs</span>';
+                    } elseif ($patientSex !== '') {
+                        $demographicsItems[] = '<span>' . h($patientSex) . '</span>';
+                    }
+                    $demographicsItems[] = '<span>DOB: <strong class="' . ($isValidDob ? 'text-dark' : 'text-muted') . '">' . h($dobFormatted) . '</strong></span>';
+                    if ($hasBloodType) {
+                        $demographicsItems[] = '<span>Blood: <strong class="text-danger">' . h($patient['blood_type']) . '</strong></span>';
+                    } else {
+                        $demographicsItems[] = '<span>Blood: <span class="text-muted">Unknown</span></span>';
+                    }
+                    if (!empty($patient['family_no'])) {
+                        $demographicsItems[] = '<a href="' . url('/patients?search=' . urlencode($patient['family_no'])) . '" class="text-decoration-none text-secondary" title="View household in directory"><i class="bi bi-house-door-fill text-primary me-1"></i>Fam # ' . h($patient['family_no']) . '</a>';
+                    }
+                    if (!empty($patient['philhealth_no'])) {
+                        $demographicsItems[] = '<span>PHIC: <span class="font-monospace text-dark">' . h($patient['philhealth_no']) . '</span></span>';
+                    }
+                    ?>
                     <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary">
-                        <span><strong><?= h($patient['age']) ?></strong> yrs &bull; <?= h($patient['sex']) ?></span>
-                        <span class="text-muted">&bull;</span>
-                        <span>DOB: <strong><?= date('M d, Y', strtotime($patient['dob'])) ?></strong></span>
-                        <span class="text-muted">&bull;</span>
-                        <span>Blood: <strong class="text-danger"><?= h($patient['blood_type'] ?? 'Unknown') ?></strong></span>
-                        <?php if (!empty($patient['family_no'])): ?>
-                            <span class="text-muted">&bull;</span>
-                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="text-decoration-none text-secondary" title="View household in directory">
-                                <i class="bi bi-house-door-fill text-primary"></i> Fam # <?= h($patient['family_no']) ?>
-                            </a>
-                        <?php endif; ?>
-                        <?php if (!empty($patient['philhealth_no'])): ?>
-                            <span class="text-muted">&bull;</span>
-                            <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
-                        <?php endif; ?>
+                        <?= implode('<span class="text-muted">&bull;</span>', $demographicsItems) ?>
                     </div>
                 </div>
             </div>
 
             <!-- Right: Patient-Level Action Controls -->
-            <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-md-0">
-                <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs" title="Edit Patient Identity & Demographics">
+            <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0">
+                <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Edit Patient Identity & Demographics">
                     <i class="bi bi-pencil-square me-1"></i> Edit Profile
                 </a>
-                <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs" title="Print Patient Profile">
+                <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Print Patient Profile">
                     <i class="bi bi-printer me-1"></i> Print
                 </button>
                 <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-                    <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs" data-bs-toggle="modal" data-bs-target="#archivePatientModal" title="Archive Patient Record">
+                    <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#archivePatientModal" title="Archive Patient Record">
                         <i class="bi bi-archive me-1"></i> Archive
                     </button>
                 <?php endif; ?>
@@ -116,19 +180,32 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
 <div class="card card-premium shadow-sm border-0 mb-5">
     
     <!-- Sleek Single-Line Tab Bar -->
-    <div class="card-header bg-white p-0 border-0">
+    <div class="card-header bg-white p-0 border-0 position-relative workstation-tabs-wrapper">
+        <button type="button" class="workstation-tab-scroll-btn scroll-prev" id="tabScrollPrev" title="Scroll left" aria-label="Scroll tabs left">
+            <i class="bi bi-chevron-left"></i>
+        </button>
         <ul class="nav nav-tabs m-0 border-0 flex-nowrap" id="workstationTabs" role="tablist">
             <!-- Tab 1: Overview -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-semibold text-nowrap" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">
-                            <i class="bi bi-grid-1x2-fill me-1"></i> Overview
-                        </button>
-                    </li>
+                    <i class="bi bi-grid-1x2-fill me-1"></i> Overview
+                </button>
+            </li>
                     
                     <!-- Tab 2: IHP Medical History -->
                     <li class="nav-item" role="presentation">
                         <button class="nav-link fw-semibold text-nowrap" id="tab-ihp-btn" data-bs-toggle="tab" data-bs-target="#tab-ihp" type="button" role="tab">
                             <i class="bi bi-file-earmark-medical-fill me-1"></i> IHP History
+                        </button>
+                    </li>
+
+                    <!-- Tab: PHIC / PCB Ledger (Page 3) -->
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold text-nowrap" id="tab-pcb-btn" data-bs-toggle="tab" data-bs-target="#tab-pcb" type="button" role="tab">
+                            <i class="bi bi-card-checklist me-1"></i> PHIC / PCB Ledger
+                            <?php if (!empty($pcbServiceLogs)): ?>
+                                <span class="badge bg-light text-secondary border ms-1"><?= count($pcbServiceLogs) ?></span>
+                            <?php endif; ?>
                         </button>
                     </li>
 
@@ -187,6 +264,9 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                         </button>
                     </li>
                 </ul>
+                <button type="button" class="workstation-tab-scroll-btn scroll-next" id="tabScrollNext" title="Scroll right" aria-label="Scroll tabs right">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
 
             <!-- Tab Panels Body -->
@@ -224,11 +304,22 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Residential Address</span>
-                                                <span class="fw-medium text-dark"><i class="bi bi-geo-alt text-secondary me-1"></i><?= h($patient['address']) ?>, Brgy. <?= h($patient['barangay']) ?></span>
+                                                <?php 
+                                                $addressParts = array_filter([
+                                                    trim($patient['address'] ?? ''),
+                                                    !empty($patient['barangay']) ? 'Brgy. ' . trim($patient['barangay']) : ''
+                                                ]);
+                                                $fullAddress = !empty($addressParts) ? implode(', ', $addressParts) : 'None registered';
+                                                ?>
+                                                <span class="fw-medium text-dark"><i class="bi bi-geo-alt text-secondary me-1"></i><?= h($fullAddress) ?></span>
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Contact Number</span>
-                                                <span class="font-monospace fw-semibold text-primary"><i class="bi bi-telephone text-secondary me-1"></i><?= h($patient['contact_no'] ?? 'None registered') ?></span>
+                                                <?php if (!empty($patient['contact_no'])): ?>
+                                                    <span class="font-monospace fw-semibold text-dark"><i class="bi bi-telephone text-secondary me-1"></i><a href="tel:<?= h($patient['contact_no']) ?>" class="text-decoration-none text-dark"><?= h($patient['contact_no']) ?></a></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted fst-italic"><i class="bi bi-telephone text-muted me-1"></i>None registered</span>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="col-6 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">PhilHealth Status</span>
@@ -270,19 +361,19 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             <div class="col-12">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Father's Full Name</span>
                                                 <span class="text-dark">
-                                                    <?= !empty($patient['father_name']) ? h($patient['father_name']) . (!empty($patient['father_dob']) ? ' <span class="text-muted small">(DOB: ' . date('M d, Y', strtotime($patient['father_dob'])) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
+                                                    <?= !empty($patient['father_name']) ? h($patient['father_name']) . ($formatDateSafe($patient['father_dob'] ?? null) ? ' <span class="text-muted small">(DOB: ' . $formatDateSafe($patient['father_dob']) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
                                                 </span>
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Mother's Maiden Name</span>
                                                 <span class="text-dark">
-                                                    <?= !empty($patient['mother_name']) ? h($patient['mother_name']) . (!empty($patient['mother_dob']) ? ' <span class="text-muted small">(DOB: ' . date('M d, Y', strtotime($patient['mother_dob'])) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
+                                                    <?= !empty($patient['mother_name']) ? h($patient['mother_name']) . ($formatDateSafe($patient['mother_dob'] ?? null) ? ' <span class="text-muted small">(DOB: ' . $formatDateSafe($patient['mother_dob']) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
                                                 </span>
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Spouse's Full Name</span>
                                                 <span class="text-dark">
-                                                    <?= !empty($patient['spouse_name']) ? h($patient['spouse_name']) . (!empty($patient['spouse_dob']) ? ' <span class="text-muted small">(DOB: ' . date('M d, Y', strtotime($patient['spouse_dob'])) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
+                                                    <?= !empty($patient['spouse_name']) ? h($patient['spouse_name']) . ($formatDateSafe($patient['spouse_dob'] ?? null) ? ' <span class="text-muted small">(DOB: ' . $formatDateSafe($patient['spouse_dob']) . ')</span>' : '') : '<span class="text-muted">None on record</span>' ?>
                                                 </span>
                                             </div>
                                             <div class="col-6 border-top pt-2 mt-1">
@@ -295,7 +386,11 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Emergency Phone</span>
-                                                <span class="font-monospace fw-semibold text-danger"><i class="bi bi-telephone-fill text-danger me-1"></i><?= h($patient['emergency_no'] ?? 'None provided') ?></span>
+                                                <?php if (!empty($patient['emergency_no'])): ?>
+                                                    <span class="font-monospace fw-semibold text-dark"><i class="bi bi-telephone-fill text-danger me-1"></i><a href="tel:<?= h($patient['emergency_no']) ?>" class="text-decoration-none text-dark"><?= h($patient['emergency_no']) ?></a></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted fst-italic"><i class="bi bi-telephone text-muted me-1"></i>None provided</span>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <span class="text-muted d-block" style="font-size: 0.75rem;">Household Code</span>
@@ -394,8 +489,14 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 <span>Recorded By: <?= h($latestVitals['recorder_name'] ?? 'Clinician') ?></span>
                                             </div>
                                         <?php else: ?>
-                                            <div class="text-center py-3 text-muted">
-                                                <p class="mb-2 small">No vital signs recorded yet.</p>
+                                            <div class="text-center py-4 text-muted">
+                                                <div class="mb-2">
+                                                    <i class="bi bi-heart-pulse fs-2 text-secondary opacity-50"></i>
+                                                </div>
+                                                <p class="mb-2 fw-medium text-secondary">No vital signs recorded yet for this patient.</p>
+                                                <button type="button" class="btn btn-sm btn-outline-primary shadow-xs px-3" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
+                                                    <i class="bi bi-plus-circle me-1"></i> Record First Vital Signs
+                                                </button>
                                             </div>
                                         <?php endif; ?>
                                     </div>
@@ -430,9 +531,10 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                                 <?php endforeach; ?>
                                             </div>
                                         <?php else: ?>
-                                            <p class="text-muted mb-0 py-2 text-center">
-                                                No other relatives registered under this household code.
-                                            </p>
+                                            <div class="text-center py-3 text-muted">
+                                                <i class="bi bi-house-door fs-3 text-secondary opacity-50 d-block mb-1"></i>
+                                                <span class="text-secondary small">No other relatives registered under this household code.</span>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -1781,6 +1883,365 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
                                 </div>
                             </form>
                         </div>
+                    </div>
+
+                    <!-- ==============================================================
+                       TAB: PHIC / PCB PATIENT LEDGER (ANNEX A1 PAGE 3)
+                       ============================================================== -->
+                    <div class="tab-pane fade" id="tab-pcb" role="tabpanel">
+                        
+                        <!-- 1. Top PHIC Membership & Identity Card -->
+                        <div class="card border rounded-3 p-3 shadow-xs mb-3 bg-white">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-primary-subtle text-primary p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="bi bi-shield-check fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <h4 class="h6 mb-0 fw-bold text-dark">PHILIPPINE HEALTH INSURANCE CORPORATION</h4>
+                                            <span class="badge bg-primary text-white fw-medium">PCB PATIENT LEDGER</span>
+                                        </div>
+                                        <div class="text-muted small">
+                                            Santa Rosa City Health Office I &bull; Page 3 Primary Care Benefit (PCB1) Service Record
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <div class="p-2 rounded bg-light border text-center">
+                                        <span class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">PhilHealth PIN</span>
+                                        <span class="fw-bold text-primary font-monospace small"><?= !empty($patient['philhealth_no']) ? h($patient['philhealth_no']) : '<span class="text-muted fw-normal">No PIN Recorded</span>' ?></span>
+                                    </div>
+                                    <div class="p-2 rounded bg-light border text-center">
+                                        <span class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Membership Status</span>
+                                        <span class="badge <?= ($patient['phic_status'] ?? '') === 'Member' ? 'bg-success' : (($patient['phic_status'] ?? '') === 'Dependent' ? 'bg-info text-dark' : 'bg-secondary') ?>">
+                                            <?= h($patient['phic_status'] ?? 'Non-Member') ?>
+                                        </span>
+                                    </div>
+                                    <div class="p-2 rounded bg-light border text-center">
+                                        <span class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">PHIC Category</span>
+                                        <span class="fw-semibold text-dark small"><?= !empty($patient['phic_type']) ? h($patient['phic_type']) : 'General / Standard' ?></span>
+                                    </div>
+                                    <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary py-2 px-3" title="Edit PhilHealth Demographics">
+                                        <i class="bi bi-pencil me-1"></i> Edit PHIC Info
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Card 1: Obligated Services (Annual Tracking Grid) -->
+                        <div class="card border rounded-3 shadow-xs mb-4">
+                            <div class="card-header bg-white py-3 border-bottom d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+                                <div>
+                                    <h5 class="h6 mb-0 fw-bold text-dark">
+                                        <i class="bi bi-calendar-check text-primary me-2"></i>1. Obligated Primary Preventive Services (PCB1)
+                                    </h5>
+                                    <span class="text-muted small">Annual and quarterly monitoring matrix for mandated preventive care services.</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <label for="pcb_year_select" class="form-label mb-0 small text-muted text-nowrap">Year:</label>
+                                        <select name="pcb_year" id="pcb_year_select" class="form-select form-select-sm" onchange="window.location.href='<?= url('/patients/' . $patient['id']) ?>?pcb_year=' + this.value + '#tab-pcb'">
+                                            <?php 
+                                            $currYr = (int)date('Y');
+                                            for ($yr = $currYr + 1; $yr >= $currYr - 3; $yr--): ?>
+                                                <option value="<?= $yr ?>" <?= $pcbYear === $yr ? 'selected' : '' ?>><?= $yr ?></option>
+                                            <?php endfor; ?>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#obligatedEditCollapse" aria-expanded="false" aria-controls="obligatedEditCollapse">
+                                        <i class="bi bi-pencil-square me-1"></i> Update Dates
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Collapsible Form for Editing Obligated Services Dates -->
+                            <div class="collapse" id="obligatedEditCollapse">
+                                <div class="card-body bg-light border-bottom p-3">
+                                    <form action="<?= url('/patients/' . $patient['id'] . '/pcb/obligated') ?>" method="POST">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="service_year" value="<?= $pcbYear ?>">
+                                        
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold text-secondary small mb-1">Hypertension Classification for BP Frequency:</label>
+                                                <div class="d-flex gap-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="is_hypertensive" id="is_htn_no" value="0" <?= empty($pcbObligated['is_hypertensive']) ? 'checked' : '' ?>>
+                                                        <label class="form-check-label small" for="is_htn_no">
+                                                            <strong>Non-Hypertensive</strong> (Frequency: Once a year)
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="is_hypertensive" id="is_htn_yes" value="1" <?= !empty($pcbObligated['is_hypertensive']) ? 'checked' : '' ?>>
+                                                        <label class="form-check-label small text-danger" for="is_htn_yes">
+                                                            <strong>Hypertensive</strong> (Frequency: Once a month / quarterly review)
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Row 1: BP Measurements -->
+                                            <div class="col-12">
+                                                <h6 class="small fw-bold text-dark mb-1">1. BP Measurements (Dates Performed)</h6>
+                                                <div class="row g-2">
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">1st Qtr (Jan-Mar)</label>
+                                                        <input type="date" name="bp_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q1'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">2nd Qtr (Apr-Jun)</label>
+                                                        <input type="date" name="bp_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q2'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">3rd Qtr (Jul-Sep)</label>
+                                                        <input type="date" name="bp_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q3'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">4th Qtr (Oct-Dec)</label>
+                                                        <input type="date" name="bp_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q4'] ?? '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Row 2: Periodic Clinical Breast Examination -->
+                                            <div class="col-12">
+                                                <h6 class="small fw-bold text-dark mb-1">2. Periodic Clinical Breast Examination (Dates Performed)</h6>
+                                                <div class="row g-2">
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">1st Qtr</label>
+                                                        <input type="date" name="cbe_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q1'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">2nd Qtr</label>
+                                                        <input type="date" name="cbe_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q2'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">3rd Qtr</label>
+                                                        <input type="date" name="cbe_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q3'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">4th Qtr</label>
+                                                        <input type="date" name="cbe_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q4'] ?? '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Row 3: Visual Inspection with Acetic Acid -->
+                                            <div class="col-12">
+                                                <h6 class="small fw-bold text-dark mb-1">3. Visual Inspection with Acetic Acid / VIA (Dates Performed)</h6>
+                                                <div class="row g-2">
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">1st Qtr</label>
+                                                        <input type="date" name="via_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">2nd Qtr</label>
+                                                        <input type="date" name="via_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">3rd Qtr</label>
+                                                        <input type="date" name="via_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
+                                                    </div>
+                                                    <div class="col-6 col-md-3">
+                                                        <label class="form-label small text-muted mb-1">4th Qtr</label>
+                                                        <input type="date" name="via_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label small text-muted mb-1">Clinical Remarks / Compliance Notes</label>
+                                                <input type="text" name="remarks" class="form-control form-control-sm" placeholder="e.g. Regular compliance, hypertensive medications prescribed..." value="<?= h($pcbObligated['remarks'] ?? '') ?>">
+                                            </div>
+
+                                            <div class="col-12 text-end pt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="collapse" data-bs-target="#obligatedEditCollapse">Cancel</button>
+                                                <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">Save Obligated Dates (<?= $pcbYear ?>)</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Read-Only Table View matching Page 3 -->
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 text-center small">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-start ps-3" style="width: 32%;">Primary Preventive Services</th>
+                                            <th style="width: 18%;">Frequency</th>
+                                            <th style="width: 12.5%;">1<sup>st</sup> Qtr</th>
+                                            <th style="width: 12.5%;">2<sup>nd</sup> Qtr</th>
+                                            <th style="width: 12.5%;">3<sup>rd</sup> Qtr</th>
+                                            <th style="width: 12.5%;" class="pe-3">4<sup>th</sup> Qtr</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Service 1: BP Measurements -->
+                                        <tr>
+                                            <td class="text-start ps-3 fw-bold text-dark">
+                                                1. BP Measurements
+                                                <?php if (!empty($pcbObligated['is_hypertensive'])): ?>
+                                                    <span class="badge bg-danger-subtle text-danger border ms-1">Hypertensive</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-success-subtle text-success border ms-1">Non-Hypertensive</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?= !empty($pcbObligated['is_hypertensive']) ? '<span class="text-danger fw-medium">Once a month</span>' : '<span class="text-muted">Once a year</span>' ?>
+                                            </td>
+                                            <td><?= !empty($pcbObligated['bp_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= !empty($pcbObligated['bp_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= !empty($pcbObligated['bp_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td class="pe-3"><?= !empty($pcbObligated['bp_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                        </tr>
+
+                                        <!-- Service 2: Periodic Clinical Breast Exam -->
+                                        <tr>
+                                            <td class="text-start ps-3 fw-bold text-dark">2. Periodic Clinical Breast Examination</td>
+                                            <td class="text-muted">Once a year</td>
+                                            <td><?= !empty($pcbObligated['cbe_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= !empty($pcbObligated['cbe_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= !empty($pcbObligated['cbe_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td class="pe-3"><?= !empty($pcbObligated['cbe_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                        </tr>
+
+                                        <!-- Service 3: Visual Inspection with Acetic Acid -->
+                                        <tr>
+                                            <td class="text-start ps-3 fw-bold text-dark">3. Visual Inspection with Acetic Acid (VIA)</td>
+                                            <td class="text-muted">Once a year</td>
+                                            <td><?= !empty($pcbObligated['via_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= !empty($pcbObligated['via_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= !empty($pcbObligated['via_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td class="pe-3"><?= !empty($pcbObligated['via_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <?php if (!empty($pcbObligated['remarks'])): ?>
+                                <div class="card-footer bg-light py-2 px-3 small border-top text-muted">
+                                    <strong class="text-dark">Remarks:</strong> <?= h($pcbObligated['remarks']) ?>
+                                    <?php if (!empty($pcbObligated['updater_name'])): ?>
+                                        &bull; <span class="fst-italic">Last updated by <?= h($pcbObligated['updater_name']) ?> on <?= date('M d, Y h:i A', strtotime($pcbObligated['updated_at'])) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- 3. Card 2: Diagnostic Examination, Other PCB1, & Other Services Encounter Ledger -->
+                        <div class="card border rounded-3 shadow-xs">
+                            <div class="card-header bg-white py-3 border-bottom d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+                                <div>
+                                    <h5 class="h6 mb-0 fw-bold text-dark">
+                                        <i class="bi bi-journal-medical text-primary me-2"></i>2. Diagnostic Examination & PCB Services Encounter Ledger
+                                    </h5>
+                                    <span class="text-muted small">Diagnostic tests, laboratory orders, and clinical services performed or referred under the PCB1 package.</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-primary px-3 fw-medium" data-bs-toggle="modal" data-bs-target="#recordPcbServiceModal">
+                                    <i class="bi bi-plus-lg me-1"></i> Record Service / Test
+                                </button>
+                            </div>
+
+                            <!-- Filter Pills -->
+                            <div class="card-body bg-light py-2 px-3 border-bottom">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <div class="btn-group btn-group-sm" role="group" id="pcbCategoryFilters">
+                                        <button type="button" class="btn btn-outline-primary active" onclick="filterPcbRows('all', this)">All Encounters</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="filterPcbRows('Diagnostic', this)">Diagnostic Examinations</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="filterPcbRows('PCB1', this)">Other PCB1 Services</button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="filterPcbRows('Other', this)">Other Services</button>
+                                    </div>
+                                    <span class="text-muted small">
+                                        Total Records: <strong class="text-dark" id="pcbRowCount"><?= count($pcbServiceLogs) ?></strong>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Encounter Records Table -->
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 small text-center" id="pcbServiceLogsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="text-start ps-3" style="width: 14%;">Date</th>
+                                            <th style="width: 15%;">Section / Category</th>
+                                            <th class="text-start" style="width: 22%;">Service / Test Type</th>
+                                            <th class="text-start" style="width: 18%;">Diagnosis</th>
+                                            <th style="width: 11%;">Given</th>
+                                            <th style="width: 12%;">Referred</th>
+                                            <th class="pe-3 text-end" style="width: 8%;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (empty($pcbServiceLogs)): ?>
+                                            <tr id="pcbNoRecordsRow">
+                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                    <i class="bi bi-clipboard2-pulse fs-3 d-block mb-2 text-secondary"></i>
+                                                    <p class="fw-medium mb-1">No diagnostic or PCB services recorded yet</p>
+                                                    <p class="small text-muted mb-3">Click below to record lab examinations, diagnostic tests, or primary care benefit encounters.</p>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recordPcbServiceModal">
+                                                        <i class="bi bi-plus-lg me-1"></i> Record Service
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php else: ?>
+                                            <?php foreach ($pcbServiceLogs as $log): ?>
+                                                <tr class="pcb-log-row" data-category="<?= h($log['service_category']) ?>">
+                                                    <td class="text-start ps-3 fw-medium text-dark font-monospace">
+                                                        <?= date('M d, Y', strtotime($log['service_date'])) ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php if ($log['service_category'] === 'Diagnostic'): ?>
+                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1">Diagnostic Exam</span>
+                                                        <?php elseif ($log['service_category'] === 'PCB1'): ?>
+                                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Other PCB1</span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">Other Services</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="text-start fw-bold text-dark">
+                                                        <?= h($log['service_type']) ?>
+                                                        <?php if (!empty($log['remarks'])): ?>
+                                                            <div class="text-muted small fw-normal"><?= h($log['remarks']) ?></div>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="text-start text-secondary">
+                                                        <?= !empty($log['diagnosis']) ? h($log['diagnosis']) : '<span class="text-muted fst-italic">&mdash;</span>' ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php if (!empty($log['status_given'])): ?>
+                                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                                                <i class="bi bi-check-lg me-1"></i>Given
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">&mdash;</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php if (!empty($log['status_referred'])): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1" title="<?= !empty($log['referred_to']) ? 'Referred to: ' . h($log['referred_to']) : 'Referred' ?>">
+                                                                <i class="bi bi-arrow-up-right me-1"></i><?= !empty($log['referred_to']) ? h($log['referred_to']) : 'Referred' ?>
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">&mdash;</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                    <td class="pe-3 text-end">
+                                                        <form action="<?= url('/pcb/service-log/' . $log['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this <?= h($log['service_type']) ?> encounter record?');">
+                                                            <?= csrf_field() ?>
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- ==============================================================
@@ -3476,8 +3937,127 @@ $isChild = ((int)$patient['age'] <= 5) || !empty($wellbabyRecord);
 </div>
 <?php endif; ?>
 
+<!-- ==========================================================================
+   RECORD DIAGNOSTIC / PCB SERVICE MODAL (PAGE 3)
+   ========================================================================== -->
+<div class="modal fade" id="recordPcbServiceModal" tabindex="-1" aria-labelledby="recordPcbServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="recordPcbServiceModalLabel">
+                    <i class="bi bi-journal-plus me-2"></i>Record Diagnostic / PCB Service
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="<?= url('/patients/' . $patient['id'] . '/pcb/service-log') ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4 bg-white">
+                    <div class="row g-3">
+                        <!-- Section Category -->
+                        <div class="col-12">
+                            <label for="modal_service_category" class="form-label fw-semibold text-secondary small">Service Section / Category <span class="text-danger">*</span></label>
+                            <select name="service_category" id="modal_service_category" class="form-select" required>
+                                <option value="Diagnostic">Diagnostic Examination Services</option>
+                                <option value="PCB1">Other PCB1 Services</option>
+                                <option value="Other">Other Services</option>
+                            </select>
+                        </div>
+
+                        <!-- Service Date -->
+                        <div class="col-12 col-md-6">
+                            <label for="modal_service_date" class="form-label fw-semibold text-secondary small">Encounter Date <span class="text-danger">*</span></label>
+                            <input type="date" name="service_date" id="modal_service_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                        </div>
+
+                        <!-- Diagnosis -->
+                        <div class="col-12 col-md-6">
+                            <label for="modal_diagnosis" class="form-label fw-semibold text-secondary small">Clinical Diagnosis / Indication</label>
+                            <input type="text" name="diagnosis" id="modal_diagnosis" class="form-control" placeholder="e.g. Hypertension, Routine PCB" maxlength="255">
+                        </div>
+
+                        <!-- Service / Diagnostic Test Name -->
+                        <div class="col-12">
+                            <label for="modal_service_type" class="form-label fw-semibold text-secondary small">Service / Test Type <span class="text-danger">*</span></label>
+                            <input type="text" name="service_type" id="modal_service_type" class="form-control" list="commonPcbServices" placeholder="e.g. Complete Blood Count (CBC)" required>
+                            <datalist id="commonPcbServices">
+                                <option value="Complete Blood Count (CBC)">
+                                <option value="Urinalysis">
+                                <option value="Fecalysis">
+                                <option value="Sputum Microscopy">
+                                <option value="Fasting Blood Sugar (FBS)">
+                                <option value="Lipid Profile">
+                                <option value="Chest X-Ray">
+                                <option value="Visual Inspection with Acetic Acid (VIA)">
+                                <option value="Clinical Breast Examination">
+                                <option value="Oral Rehydration & Counseling">
+                                <option value="Family Planning Counseling">
+                                <option value="Smoking Cessation Counseling">
+                            </datalist>
+                        </div>
+
+                        <!-- Given / Referred Checkboxes -->
+                        <div class="col-12 border-top pt-3">
+                            <div class="d-flex flex-wrap gap-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="status_given" id="modal_status_given" value="1" checked>
+                                    <label class="form-check-label fw-semibold text-dark small" for="modal_status_given">
+                                        <i class="bi bi-check-circle text-success me-1"></i> Given In-Clinic
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="status_referred" id="modal_status_referred" value="1" onchange="document.getElementById('referredToWrapper').classList.toggle('d-none', !this.checked)">
+                                    <label class="form-check-label fw-semibold text-dark small" for="modal_status_referred">
+                                        <i class="bi bi-arrow-up-right-circle text-warning me-1"></i> Referred
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Referred To Facility -->
+                        <div class="col-12 d-none" id="referredToWrapper">
+                            <label for="modal_referred_to" class="form-label fw-semibold text-secondary small">Referred Facility / Specialist</label>
+                            <input type="text" name="referred_to" id="modal_referred_to" class="form-control" placeholder="e.g. Santa Rosa Community Hospital, City Health Office">
+                        </div>
+
+                        <!-- Remarks -->
+                        <div class="col-12">
+                            <label for="modal_remarks" class="form-label fw-semibold text-secondary small">Remarks / Notes</label>
+                            <textarea name="remarks" id="modal_remarks" class="form-control" rows="2" placeholder="e.g. Normal laboratory findings, sample sent to CHO laboratory..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Service Encounter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Client-side Scripts -->
 <script>
+window.filterPcbRows = function(cat, btn) {
+    const rows = document.querySelectorAll('.pcb-log-row');
+    const filterBtns = document.querySelectorAll('#pcbCategoryFilters button');
+    filterBtns.forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    let visibleCount = 0;
+    rows.forEach(r => {
+        if (cat === 'all' || r.dataset.category === cat) {
+            r.style.display = '';
+            visibleCount++;
+        } else {
+            r.style.display = 'none';
+        }
+    });
+    const countEl = document.getElementById('pcbRowCount');
+    if (countEl) countEl.innerText = visibleCount;
+};
+
 // Global IHP Edit / View Mode Transition Functions
 let ihpFormInitialData = '';
 
@@ -3575,37 +4155,133 @@ document.addEventListener('DOMContentLoaded', function() {
         heightInput.addEventListener('input', calculateBMI);
     }
 
-    // 2. Tab switching based on URL hash (e.g. #tab-wellbaby, #appointments-tab, #consultations-tab)
-    if (window.location.hash) {
-        const hash = window.location.hash;
-        if (hash === '#ihp-history' || hash === '#tab-ihp' || hash === '#ihp-tab') {
-            const ihpBtn = document.getElementById('tab-ihp-btn');
-            if (ihpBtn) ihpBtn.click();
-        } else if (hash === '#edit-ihp') {
-            editIhpFromOverview();
-        } else if (hash === '#tab-consultations' || hash === '#consultations-tab') {
-            const btn = document.getElementById('tab-consultations-btn');
-            if (btn) btn.click();
-        } else if (hash === '#tab-vitals' || hash === '#vitals-tab') {
-            const btn = document.getElementById('tab-vitals-btn');
-            if (btn) btn.click();
-        } else if (hash === '#tab-prenatal' || hash === '#prenatal-tab') {
-            const btn = document.getElementById('tab-prenatal-btn');
-            if (btn) btn.click();
-        } else if (hash === '#tab-wellbaby' || hash === '#wellbaby-tab') {
-            const btn = document.getElementById('tab-wellbaby-btn');
-            if (btn) btn.click();
-        } else if (hash === '#tab-immunizations' || hash === '#immunizations-tab') {
-            const btn = document.getElementById('tab-immunizations-btn');
-            if (btn) btn.click();
-        } else if (hash === '#tab-appointments' || hash === '#appointments-tab' || hash === '#queue-tab') {
-            const btn = document.getElementById('tab-appointments-btn');
-            if (btn) btn.click();
-        } else if (hash === '#tab-overview' || hash === '#overview-tab') {
-            const btn = document.getElementById('tab-overview-btn');
-            if (btn) btn.click();
+    // 2. Tab URL Synchronization (Real-time dedicated URLs, History navigation & Persistence)
+    function activateTabFromHash(hash) {
+        if (!hash) return false;
+        const cleanHash = hash.replace(/^#/, '').trim().toLowerCase();
+        if (!cleanHash) return false;
+
+        if (cleanHash === 'edit-ihp') {
+            if (typeof editIhpFromOverview === 'function') {
+                editIhpFromOverview();
+                return true;
+            }
+        }
+
+        const aliasMap = {
+            'overview': 'tab-overview',
+            'ihp': 'tab-ihp',
+            'ihp-history': 'tab-ihp',
+            'pcb': 'tab-pcb',
+            'phic': 'tab-pcb',
+            'phic-pcb': 'tab-pcb',
+            'consultations': 'tab-consultations',
+            'soap': 'tab-consultations',
+            'vitals': 'tab-vitals',
+            'vitals-log': 'tab-vitals',
+            'immunizations': 'tab-immunizations',
+            'prenatal': 'tab-prenatal',
+            'wellbaby': 'tab-wellbaby',
+            'appointments': 'tab-appointments',
+            'queue': 'tab-appointments'
+        };
+
+        let targetTabId = aliasMap[cleanHash] || (cleanHash.startsWith('tab-') ? cleanHash : 'tab-' + cleanHash);
+        if (targetTabId.endsWith('-tab')) {
+            targetTabId = 'tab-' + targetTabId.replace(/-tab$/, '').replace(/^tab-/, '');
+        }
+
+        const tabBtn = document.querySelector(`button[data-bs-target="#${targetTabId}"]`) 
+            || document.getElementById(targetTabId + '-btn')
+            || document.querySelector(`button[data-bs-target="#${cleanHash}"]`);
+
+        if (tabBtn) {
+            const bsTab = bootstrap.Tab.getOrCreateInstance(tabBtn);
+            bsTab.show();
+            setTimeout(() => {
+                tabBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }, 60);
+            return true;
+        }
+        return false;
+    }
+
+    // Tab Scroll Buttons and Auto-Scroll Behavior
+    const workstationNav = document.getElementById('workstationTabs');
+    const tabScrollPrev = document.getElementById('tabScrollPrev');
+    const tabScrollNext = document.getElementById('tabScrollNext');
+
+    function updateTabScrollButtons() {
+        if (!workstationNav) return;
+        const scrollLeft = workstationNav.scrollLeft;
+        const maxScroll = workstationNav.scrollWidth - workstationNav.clientWidth;
+
+        if (tabScrollPrev) {
+            if (scrollLeft > 15) {
+                tabScrollPrev.classList.add('visible');
+            } else {
+                tabScrollPrev.classList.remove('visible');
+            }
+        }
+
+        if (tabScrollNext) {
+            if (maxScroll - scrollLeft > 15) {
+                tabScrollNext.classList.add('visible');
+            } else {
+                tabScrollNext.classList.remove('visible');
+            }
         }
     }
+
+    if (workstationNav) {
+        workstationNav.addEventListener('scroll', updateTabScrollButtons, { passive: true });
+        window.addEventListener('resize', updateTabScrollButtons, { passive: true });
+
+        if (tabScrollPrev) {
+            tabScrollPrev.addEventListener('click', function() {
+                workstationNav.scrollBy({ left: -260, behavior: 'smooth' });
+            });
+        }
+
+        if (tabScrollNext) {
+            tabScrollNext.addEventListener('click', function() {
+                workstationNav.scrollBy({ left: 260, behavior: 'smooth' });
+            });
+        }
+
+        // Sync address bar URL and scroll tab into view when clicked
+        workstationNav.addEventListener('shown.bs.tab', function(e) {
+            setTimeout(() => {
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }, 60);
+            const target = e.target.getAttribute('data-bs-target');
+            if (target && window.location.hash !== target) {
+                if (window.history && window.history.pushState) {
+                    window.history.pushState(null, '', target);
+                } else {
+                    window.location.hash = target;
+                }
+            }
+            updateTabScrollButtons();
+        });
+
+        setTimeout(updateTabScrollButtons, 120);
+    }
+
+    // Activate tab on page load if hash present in URL
+    if (window.location.hash) {
+        activateTabFromHash(window.location.hash);
+    }
+
+    // Support browser Back and Forward history buttons
+    window.addEventListener('popstate', function() {
+        if (window.location.hash) {
+            activateTabFromHash(window.location.hash);
+        } else {
+            activateTabFromHash('#tab-overview');
+        }
+        setTimeout(updateTabScrollButtons, 80);
+    });
 
     // 3. Consultation SOAP Modal AJAX Loader
     const viewConsultationModal = document.getElementById('viewConsultationModal');

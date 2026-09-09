@@ -12,6 +12,8 @@ USE `sinalhan_hc_system`;
 -- Disable Foreign Key Checks temporarily to prevent drop order conflicts
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS `pcb_service_logs`;
+DROP TABLE IF EXISTS `pcb_obligated_services`;
 DROP TABLE IF EXISTS `child_growth_logs`;
 DROP TABLE IF EXISTS `wellbaby_records`;
 DROP TABLE IF EXISTS `past_obstetric_histories`;

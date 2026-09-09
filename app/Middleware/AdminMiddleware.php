@@ -4,20 +4,22 @@ namespace App\Middleware;
 
 class AdminMiddleware {
     public function handle() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        // Delegate authentication, 15-minute inactivity timeout, and activity heartbeat update to AuthMiddleware
+        $auth = new AuthMiddleware();
+        $auth->handle();
 
-        // Ensure user is authenticated first
-        if (!isset($_SESSION['user_id'])) {
-            $scriptName = $_SERVER['SCRIPT_NAME'];
-            $basePath = str_replace('/index.php', '', $scriptName);
-            header("Location: " . rtrim($basePath, '/') . '/login');
-            exit;
-        }
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+            || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
 
         // Check if role is admin
-        if ($_SESSION['user_role'] !== 'admin') {
+        if (($_SESSION['user_role'] ?? '') !== 'admin') {
+            if ($isAjax) {
+                http_response_code(403);
+                header('Content-Type: application/json');
+                echo json_encode(['error' => 'Forbidden', 'message' => 'Admin access required.']);
+                exit;
+            }
+
             $scriptName = $_SERVER['SCRIPT_NAME'];
             $basePath = str_replace('/index.php', '', $scriptName);
             header("Location: " . rtrim($basePath, '/') . '/dashboard');

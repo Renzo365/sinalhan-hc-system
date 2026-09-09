@@ -135,13 +135,33 @@ An admin-only dashboard indexes chronological logs of important data modificatio
 
 Admin-only management panel to handle health center staff access credentials:
 * **Dedicated User Registration Page**: Dedicated, sectioned registration page at `/users/create` for creating new accounts with credentials, demographics, Employee ID / PRC License numbers, and Department unit assignments.
-* **Role Hierarchy & Abuse Prevention**:
+* **Role Hierarchy & Privilege Protection**:
   * **Main Administrator (User ID 1)** holds master permission over all administrator and staff accounts.
   * **Co-Administrators (User ID > 1 with role `admin`)** can manage `staff` accounts, but are strictly blocked from promoting staff to `admin`, creating admin accounts (overridden to `staff`), or editing peer administrators.
+* **Comprehensive CSRF Defense-in-Depth**:
+  * All 5 mutation endpoints (`store`, `update`, `resetPassword`, `toggleStatus`, and `resetLockout`) strictly enforce server-side CSRF validation via `hash_equals(csrf_token(), $token)`.
+  * Forged or omitted tokens trigger a `SECURITY_VIOLATION` audit log with IP, actor, and targeted entity details, halting execution with user feedback.
+* **15-Minute Session Inactivity Timeout Inheritance**:
+  * `AdminMiddleware` delegates session validation to `AuthMiddleware`, inheriting automatic 15-minute (900 seconds) inactivity session invalidation, session destruction, and `SESSION_TIMEOUT` audit logging.
+  * Handles both standard browser redirects (`/login?timeout=1`) and AJAX/JSON requests (HTTP 401 Unauthorized with descriptive JSON payloads).
+* **Strict Backend Input Validation**:
+  * **Username Validation**: Strict alphanumeric regex pattern with underscores (`/^[a-zA-Z0-9_]{3,20}$/`) alongside database uniqueness checks.
+  * **Email Validation**: RFC-compliant format verification via `filter_var(..., FILTER_VALIDATE_EMAIL)` paired with duplicate detection excluding the current subject user.
+  * **Philippine Mobile Format**: Enforces standard 11-digit mobile format (`/^09\d{9}$/`).
+* **MVC Architectural Clean-Up**:
+  * Pre-computes lockout state (`lockout_info`) inside `UserController::index` for each rendered user, eliminating direct `new \App\Models\User()` instantiations from the view template (`app/Views/users/index.php`).
+* **Form Input Retention on Validation Errors**:
+  * On update validation errors in `/users/{id}/edit`, submitted form data is preserved in `$_SESSION['old_input']` and flash errors in `$_SESSION['form_errors']`.
+  * The edit view repopulates fields from `old_input` before falling back to database records, preventing data loss upon typo corrections.
+* **Reset Password Modal "Generate Secure Password" Helper**:
+  * Integrated one-click password generator creates randomized 14-character alphanumeric passwords containing uppercase, lowercase, numbers, and special symbols (`!@#$%^&*()-_=+`).
+  * Automatically reveals the password, synchronizes the confirmation input, copies to system clipboard via the Clipboard API, and flashes a copy-confirmation banner.
+* **Touch Target & Accessibility Expansions**:
+  * Action buttons across the user accounts directory table (Edit, Clear Lockout, Reset Password, Activate/Deactivate) feature enlarged touch targets (minimum $34 \times 34\text{ px}$), border styling, and flex-centered icon placement for improved tablet and mobile usability.
 * **Status Lifecycle & Deactivation (No Account Deletion)**: Account deletion is permanently disabled to preserve audit and medical logs. Account status is managed via dedicated table action buttons (**Activate** `bi-person-check-fill` and **Deactivate** `bi-person-x-fill`).
 * **15-Minute Temporary Lockout Safeguard**: After 5 consecutive failed login attempts, an account is placed in a **15-minute temporary cooldown window**. Account status remains `active`, but authentication is blocked until the 15 minutes expire (displaying exact remaining time to the user).
 * **Admin Clear Lockout Button**: Administrators can instantly override a staff member's 15-minute lockout timer by clicking the **Clear Lockout** button (`bi-unlock-fill`) on the User Accounts directory table, writing a `USER_LOCKOUT_RESET` audit log.
-* **Security Password Reset**: Critical user resets require the logged-in administrator to enter their current password to authorize a custom temporary password. Validates that the new password is not identical to the user's existing password.
+* **Security Password Reset**: Critical user resets require the logged-in administrator to enter their current password to authorize a custom temporary password. Validates that the new password is not identical to the user's existing password and enforces `must_change_password` flag on subsequent login.
 * **CLI Account Unlocker**: Console utility (`php scripts/unlock_user.php [username]`) to clear lockouts and reset failed attempts directly from the server CLI.
 
 ---
@@ -185,4 +205,36 @@ An integrated safety engine that scans clinical histories and renders contextual
 * **Maternal Pre-Eclampsia High-Risk Banner**: Warns healthcare workers if an expectant mother has diagnosed hypertension, elevated BP, or pre-eclampsia history, advising immediate blood pressure checks and urine protein monitoring.
 * **Chronic NCD Warning Banners**: Contextual badges indicating active chronic conditions (Hypertension, Diabetes Mellitus, Bronchial Asthma) to encourage comprehensive chronic care management during routine visits.
 * **Vital Signs Quick Strip**: Displays latest recorded vitals directly within the SOAP consultation editor so clinicians don't need to switch between screens to review blood pressure, heart rate, or temperature.
+
+---
+
+## 11. User Profile & Account Self-Service
+
+Provides self-service account management and personalized profile controls for authenticated clinic staff and administrators, accessible from any screen via the topbar avatar dropdown:
+
+### 11.1 Topbar User Avatar Dropdown
+* **Persistent Access & Identity Display**: Embedded across all system views within the top navigation bar.
+* **Dynamic Circular Avatar**: Renders a 36px circular avatar featuring the user's capitalized first initial against a teal badge (`#0d9488`).
+* **Name & Role Subtitle**: Displays the authenticated user's full name alongside an accurate role subtitle (*Admin*, *Co-Admin*, or *Staff*).
+* **Self-Service Navigation**:
+  * **My Profile**: Direct link to `/profile` overview and personal contact details editor.
+  * **Password Settings**: Anchored shortcut to `/profile#password-settings`.
+  * **Secure Logout**: Form-driven `POST /logout` action with CSRF validation and SweetAlert2 confirmation dialogue to prevent accidental sign-outs.
+
+### 11.2 Self-Service Profile Overview (`GET /profile`)
+* **Role & Credential Verification**: Read-only display of administrative and organizational metadata, including Username, Assigned Role (System Administrator, Co-Administrator, Staff Member), Employee ID, Department, Job Title, Account Status, Date Joined, and Last Login Timestamp.
+* **Strict Privilege Separation**: Users cannot modify their assigned administrative role, account active/inactive status, or departmental assignment via self-service.
+
+### 11.3 Personal Contact Details Management (`POST /profile/update`)
+* **Editable Contact Fields**: Allows staff and admins to self-update First Name, Middle Name, Last Name, Work/Personal Email, and Mobile Contact Number.
+* **Integrity Validation**: Enforces non-empty First and Last Names, valid email format (`filter_var`), and database-wide email uniqueness checking (`isEmailUnique`) excluding the user's own record.
+* **Real-Time Session Synchronization**: Upon saving, updates `$_SESSION['user_fullname']` immediately so topbar navigation reflects name changes without requiring a re-login.
+* **Audit Trail**: Generates an immutable `PROFILE_UPDATED` record in `audit_logs` logging the timestamp, client IP, user ID, and update summary.
+
+### 11.4 Voluntary Password Modification (`POST /profile/password`)
+* **Current Password Confirmation**: Requires verification of the user's current password against the stored bcrypt hash via `password_verify()`.
+* **Complexity & Confirmation Enforcement**: Requires a new password of at least 8 characters and strict matching confirmation (`confirm_password`).
+* **Bcrypt Hashing & Cooldown Reset**: Hashes new passwords with standard PHP `PASSWORD_BCRYPT` cost factor, clears any failed login counter to 0, and resets the `must_change_password` flag.
+* **Session Fixation Defense**: Automatically regenerates the PHP session identifier (`session_regenerate_id(true)`) upon successful credential change to prevent session hijacking.
+* **Security Audit Logging**: Creates a `USER_PASSWORD_CHANGED` audit record tracking the self-service credential update.
 

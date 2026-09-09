@@ -23,10 +23,10 @@ class AuthController extends Controller {
         $error = $_SESSION['login_error'] ?? null;
         $username = $_SESSION['login_username'] ?? '';
         
-        // One-time session timeout notification via secure server session flash
+        // One-time session timeout notification via secure server session flash or query parameter
         $timeoutMessage = null;
-        if (!empty($_SESSION['session_timed_out'])) {
-            $timeoutMessage = "You've been logged out due to inactivity. Please sign in again.";
+        if (!empty($_SESSION['session_timed_out']) || isset($_GET['timeout'])) {
+            $timeoutMessage = "You have been logged out due to inactivity. Please sign in again to continue.";
             unset($_SESSION['session_timed_out']);
         }
         
@@ -81,7 +81,9 @@ class AuthController extends Controller {
                     session_start();
                 }
                 
-                session_regenerate_id(true);
+                if (!headers_sent()) {
+                    session_regenerate_id(true);
+                }
 
                 // Update database: reset attempts and update timestamp
                 $this->userModel->updateLoginTimestamp($user['id']);
@@ -154,10 +156,9 @@ class AuthController extends Controller {
             }
         }
 
-        // Clear session variables
+        // Clear session variables and destroy session
         $_SESSION = [];
 
-        // Destroy session cookie
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
@@ -166,17 +167,14 @@ class AuthController extends Controller {
             );
         }
 
-        // Destroy session
         session_destroy();
 
-        // If timed out, flash one-time notification flag into a clean new session
+        // Redirect to login with timeout parameter if timed out
         if ($isTimeout) {
-            session_start();
-            $_SESSION['session_timed_out'] = true;
+            $this->redirect('/login?timeout=1');
+        } else {
+            $this->redirect('/login');
         }
-
-        // Redirect to login cleanly without query parameters
-        $this->redirect('/login');
     }
 
     /**
@@ -240,17 +238,42 @@ class AuthController extends Controller {
             return;
         }
 
-        // Update password
+        // Update password in database and clear must_change_password flag
         $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
-        if ($this->userModel->updatePassword($user['id'], $newHash)) {
+        if ($this->userModel->updatePassword($user['id'], $newHash, 0)) {
+            // Regenerate session ID to prevent session fixation attacks
+            session_regenerate_id(true);
+
             $_SESSION['must_change_password'] = 0;
             
             AuditLog::log('PASSWORD_CHANGED', 'Auth', "User updated their password on first login.");
 
-            $_SESSION['success_message'] = 'Password changed successfully! Welcome to the system.';
+            $_SESSION['success_message'] = 'Password changed successfully! Welcome to the Sinalhan Health Center system.';
             $this->redirect('/dashboard');
         } else {
             $this->view('auth/change_password', ['errors' => ['Failed to update password. Please try again.'], 'disable_layout' => true]);
         }
+    }
+
+    /**
+     * Session heartbeat endpoint to refresh idle timer and keep session alive.
+     */
+    public function ping() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['user_id'])) {
+            http_response_code(401);
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'unauthenticated', 'message' => 'Session expired']);
+            exit;
+        }
+
+        $_SESSION['last_activity'] = time();
+
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'ok', 'last_activity' => $_SESSION['last_activity']]);
+        exit;
     }
 }

@@ -14,13 +14,18 @@ class AuditLog extends Model {
      * @param string|null $details Extra text description or JSON data
      * @return bool
      */
-    public static function log($action, $module, $details = null) {
+    public static function log($action, $module, $details = null, $extra = null) {
         if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
             session_start();
         }
 
         $userId = $_SESSION['user_id'] ?? null;
         $username = $_SESSION['username'] ?? null;
+
+        // Handle 4-parameter calls where 3rd is target/record ID and 4th is details text
+        if ($extra !== null) {
+            $details = is_string($extra) ? $extra : (string)$details;
+        }
         
         // Retrieve client details
         $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';

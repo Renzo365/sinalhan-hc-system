@@ -197,6 +197,12 @@ class PatientController extends Controller {
         // Compute Program Badge
         $programBadge = $this->patientModel->getProgramBadge($id, $patient['dob'], $patient['sex']);
 
+        // Fetch PhilHealth PCB Obligated Services & Service Encounter Logs (Page 3)
+        $pcbModel = new \App\Models\PcbLedger();
+        $pcbYear = !empty($_GET['pcb_year']) ? (int)$_GET['pcb_year'] : (int)date('Y');
+        $pcbObligated = $pcbModel->getObligatedServices($id, $pcbYear);
+        $pcbServiceLogs = $pcbModel->getServiceLogs($id);
+
         $this->view('patients/show', [
             'patient' => $patient,
             'vitalsHistory' => $vitalsHistory,
@@ -215,7 +221,10 @@ class PatientController extends Controller {
             'patientImmunizations' => $patientImmunizations,
             'vaccineMap' => $vaccineMap,
             'potentialMothers' => $potentialMothers,
-            'programBadge' => $programBadge
+            'programBadge' => $programBadge,
+            'pcbObligated' => $pcbObligated,
+            'pcbServiceLogs' => $pcbServiceLogs,
+            'pcbYear' => $pcbYear
         ]);
     }
 

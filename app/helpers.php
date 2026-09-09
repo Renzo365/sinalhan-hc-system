@@ -39,6 +39,9 @@ if (!function_exists('url')) {
 
 if (!function_exists('asset')) {
     function asset($path = '') {
-        return url('assets/' . ltrim($path, '/'));
+        $cleanPath = ltrim($path, '/');
+        $fullPath = dirname(__DIR__) . '/public/assets/' . $cleanPath;
+        $ver = file_exists($fullPath) ? '?v=' . filemtime($fullPath) : '';
+        return url('assets/' . $cleanPath) . $ver;
     }
 }

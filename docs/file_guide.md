@@ -79,7 +79,7 @@ Middleware runs **before** a controller is reached. It acts as a checkpoint.
 | File Name | Purpose (Simple Explanation) |
 |---|---|
 | **`AuthMiddleware.php`** | **Login Checker & Inactivity Timer.** Ensures only logged-in users can access protected pages. If a user is not logged in, it redirects them to `/login`. It also monitors user activity and automatically logs them out after 15 minutes of idle time. |
-| **`AdminMiddleware.php`** | **Admin Only Checkpoint.** Ensures only users with the `admin` role can access sensitive features (like User Management, System Audit Logs, and Database Backups). Regular staff are blocked with an unauthorized message. |
+| **`AdminMiddleware.php`** | **Admin Only Checkpoint & Inactivity Guard.** Delegates to `AuthMiddleware` to inherit session authentication and 15-minute inactivity timeout enforcement. Ensures only users with the `admin` role can access administrative features (User Management, Audit Logs, Backups). Issues HTTP 401/403 JSON responses for AJAX requests and redirects web requests. |
 | **`GuestMiddleware.php`** | **Guest Only Checkpoint.** Prevents already logged-in users from seeing the `/login` page again, redirecting them straight to their dashboard. |
 
 ---
@@ -97,13 +97,14 @@ Controllers receive user inputs from buttons or forms, perform necessary checks,
 | **`QueueController.php`** | **Daily Queue Flow Controller.** Manages the walk-in patient queue (*Waiting, In Consultation, Done, Cancelled*), moves patients between stages, and powers the live Public TV Queue Display screen. |
 | **`ConsultationController.php`** | **Doctor & Nurse Clinical Notes Controller.** Handles creating and viewing SOAP clinical consultation records (Subjective, Objective, Assessment, Plan) linked to patient histories. |
 | **`VitalSignsController.php`** | **Triage & Vital Signs Controller.** Handles recording blood pressure, heart rate, temperature, respiratory rate, weight, height, and BMI during triage before consultation. |
-| **`UserController.php`** | **Staff Accounts & Access Controller.** Admin-only panel for registering health center staff, assigning job titles/departments, toggling account active/inactive status, clearing failed login lockouts, and resetting passwords. Enforces Main Admin vs Co-Admin privilege boundaries. |
+| **`UserController.php`** | **Staff Accounts & Access Controller.** Admin-only panel for registering staff, managing credentials, enforcing full CSRF defense-in-depth on all mutation actions, strict backend validation (regex/email filter), pre-computing lockout status for pure MVC views, retaining old input on errors, and managing password resets. Enforces Main Admin vs Co-Admin privilege boundaries. |
 | **`ReportController.php`** | **Reports & Analytics Controller.** Generates administrative reports and DOH clinical registries (Maternal Health Registry, Child EPI Coverage, Chronic Morbidity Registry) with printable views and CSV data exports. |
 | **`AuditLogController.php`** | **Audit Trail Controller.** Admin-only panel to review system activity logs (who logged in, created a patient, edited a record, or changed a user status) with date and role filtering. |
 | **`BackupController.php`** | **Database Backup Controller.** Admin-only panel that creates full SQL database backup snapshots covering all clinical and system tables, allows downloading backups, and manages backup history. |
 | **`PatientMedicalHistoryController.php`** | **Annex A1 IHP Controller.** Handles saving and updating comprehensive PhilHealth Annex A1 Individual Health Profile histories, surgical logs, hereditary diseases, and habits. |
 | **`PrenatalController.php`** | **Maternal & Pre-Natal Controller.** Manages pregnancy episode enrollment, Naegele EDC and dynamic AOG calculations, serial trimester follow-up checkup visits, and past deliveries matrix. |
 | **`WellbabyController.php`** | **Well Baby & Pediatric Growth Controller.** Manages infant birth records, DOH Routine EPI Childhood Immunization checkoffs, Vitamin A/Deworming, and monthly pediatric growth monitoring logs. |
+| **`ProfileController.php`** | **User Profile & Self-Service Controller.** Handles displaying personal profile details, self-service contact updates, voluntary password changes with current password confirmation, session synchronization, and audit logging. |
 
 ---
 
@@ -136,6 +137,7 @@ Views contain the HTML and presentation markup that users see in their web brows
 
 ### General Layout (`app/Views/layout/`)
 * **`header.php`**: The top of every page (HTML head, CSS links, page title, breadcrumbs).
+* **`topbar.php`**: The top application bar displaying clinic branding, mobile sidebar toggle, and user profile dropdown with avatar initials, role indicator, and secure logout.
 * **`navbar.php`**: The main navigation menu with links to Patients, Queue, Appointments, Reports, and Admin tools.
 * **`footer.php`**: The bottom of every page (JavaScript scripts, SweetAlert popups, client-side 15-minute inactivity timer).
 
@@ -151,6 +153,7 @@ Views contain the HTML and presentation markup that users see in their web brows
 | **`queue/`** | `index.php`<br>`display.php` | Staff queue management workstation and the fullscreen TV display board for waiting patients. |
 | **`consultations/`** | `create.php`<br>`show.php` | SOAP clinical examination form and consultation details view. |
 | **`users/`** | `index.php`<br>`create.php`<br>`edit.php` | Staff accounts table with role badges and lockout reset buttons, user registration form, and account editor. |
+| **`profile/`** | `index.php` | Self-service user account profile page displaying read-only employment/role credentials, personal contact update form, and voluntary password change card. |
 | **`reports/`** | `index.php`<br>`export.php` | Statistical reporting filters and the clean printable/exportable report layout. |
 | **`audit-logs/`** | `index.php` | System audit trail table with filters for date, user, role, and action type. |
 | **`backup/`** | `index.php` | Database backup management table with one-click snapshot and download buttons. |
@@ -220,6 +223,8 @@ This is the only directory exposed to the web browser.
 | **`docs/features.md`** | Detailed functional feature specifications for all 10 core health center modules. |
 | **`docs/security.md`** | Deep-dive security guide covering CSRF, XSS escaping, SQL injection prevention, RBAC hierarchy, inactivity timeouts, and temporary lockout safeguards. |
 | **`docs/wireframes.md`** | UI/UX wireframes and layout blueprints for all screens and forms. |
+| **`docs/workflow/multi_agent_architecture.md`** | Complete specification for the 4-role AI multi-agent development workflow, execution tracks, human gates, and failure routing. |
+| **`docs/workflow/test_harness_template.php`** | Standardized CLI testing template for running automated model and query verification against MySQL. |
 | **`CODEX.md`** | The comprehensive master specification rulebook and source of truth for the entire system. |
 | **`README.md`** | Quick-start guide covering installation steps, default login credentials, and server prerequisites. |
 

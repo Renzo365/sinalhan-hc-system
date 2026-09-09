@@ -37,6 +37,12 @@ class UserController extends Controller {
 
         $users = $this->userModel->all($filters);
 
+        // Precompute and attach lockout information for each user
+        foreach ($users as &$u) {
+            $u['lockout_info'] = $this->userModel->isLockedOut($u);
+        }
+        unset($u);
+
         $this->view('users/index', [
             'users' => $users,
             'filters' => $filters
@@ -59,6 +65,16 @@ class UserController extends Controller {
             return;
         }
 
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', 'CSRF token verification failed during user account creation.');
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
+            $_SESSION['old_input'] = $_POST;
+            $this->redirect('/users/create');
+            return;
+        }
+
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? 'staff';
@@ -72,6 +88,7 @@ class UserController extends Controller {
         $firstName = trim($_POST['first_name'] ?? '');
         $lastName = trim($_POST['last_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
+        $contactNo = trim($_POST['contact_no'] ?? '');
         $employeeId = trim($_POST['employee_id'] ?? '');
         $department = trim($_POST['department'] ?? '');
         $status = $_POST['status'] ?? 'active';
@@ -82,18 +99,32 @@ class UserController extends Controller {
             $errors[] = 'Username, Password, First Name, and Last Name are required.';
         }
 
+        // Strict backend regex check for username
+        if (!empty($username) && !preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username)) {
+            $errors[] = 'Username must be 3 to 20 alphanumeric characters (underscores allowed).';
+        }
+
         if (strlen($password) < 8) {
             $errors[] = 'Password must be at least 8 characters long.';
         }
 
         // Validate username uniqueness
-        if (!$this->userModel->isUsernameUnique($username)) {
+        if (!empty($username) && !$this->userModel->isUsernameUnique($username)) {
             $errors[] = 'Username is already taken by another account.';
         }
 
-        // Validate email uniqueness
-        if (!empty($email) && !$this->userModel->isEmailUnique($email)) {
-            $errors[] = 'Email is already registered by another account.';
+        // Validate email format and uniqueness
+        if (!empty($email)) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Invalid email address format.';
+            } elseif (!$this->userModel->isEmailUnique($email)) {
+                $errors[] = 'Email is already registered by another account.';
+            }
+        }
+
+        // Validate contact number format (Philippine mobile: 09XXXXXXXXX)
+        if (!empty($contactNo) && !preg_match('/^09\d{9}$/', $contactNo)) {
+            $errors[] = 'Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).';
         }
 
         if (!empty($errors)) {
@@ -141,6 +172,16 @@ class UserController extends Controller {
             return;
         }
 
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during user account update for user ID {$id}.");
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
+            $_SESSION['old_input'] = $_POST;
+            $this->redirect("/users/{$id}/edit");
+            return;
+        }
+
         $user = $this->userModel->findById($id);
         if (!$user) {
             http_response_code(404);
@@ -159,6 +200,7 @@ class UserController extends Controller {
         $firstName = trim($_POST['first_name'] ?? '');
         $lastName = trim($_POST['last_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
+        $contactNo = trim($_POST['contact_no'] ?? '');
         $role = $_POST['role'] ?? $user['role'];
 
         // Role Modification Guard: Only the Primary Admin can change access privileges (roles)
@@ -175,9 +217,18 @@ class UserController extends Controller {
             $errors[] = 'First Name and Last Name are required.';
         }
 
-        // Validate email uniqueness excluding current user
-        if (!empty($email) && !$this->userModel->isEmailUnique($email, $id)) {
-            $errors[] = 'Email is already registered by another account.';
+        // Validate email format and uniqueness excluding current user
+        if (!empty($email)) {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Invalid email address format.';
+            } elseif (!$this->userModel->isEmailUnique($email, $id)) {
+                $errors[] = 'Email is already registered by another account.';
+            }
+        }
+
+        // Validate contact number format (Philippine mobile: 09XXXXXXXXX)
+        if (!empty($contactNo) && !preg_match('/^09\d{9}$/', $contactNo)) {
+            $errors[] = 'Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).';
         }
 
         // Prevent self-role change to maintain at least one active admin
@@ -189,6 +240,7 @@ class UserController extends Controller {
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
+            $_SESSION['old_input'] = $_POST;
             $this->redirect("/users/{$id}/edit");
             return;
         }
@@ -196,11 +248,17 @@ class UserController extends Controller {
         $data = $_POST;
 
         if ($this->userModel->update($id, $data)) {
+            // Synchronize session full name in real time if editing current user
+            if ($id == $_SESSION['user_id']) {
+                $_SESSION['user_fullname'] = trim($firstName . ' ' . $lastName);
+            }
+
             AuditLog::log('USER_UPDATED', 'Users', "Updated user account settings for: {$user['username']}. Name: {$firstName} {$lastName}, Role: {$role}");
             $_SESSION['success_message'] = 'User account updated successfully.';
             $this->redirect('/users');
         } else {
             $_SESSION['error_message'] = 'Failed to update user account. Please try again.';
+            $_SESSION['old_input'] = $_POST;
             $this->redirect("/users/{$id}/edit");
         }
     }
@@ -210,6 +268,15 @@ class UserController extends Controller {
      */
     public function resetPassword($id) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/users');
+            return;
+        }
+
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during password reset for user ID {$id}.");
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
             $this->redirect('/users');
             return;
         }
@@ -264,12 +331,12 @@ class UserController extends Controller {
             return;
         }
 
-        // Proceed to update password
+        // Proceed to update password and enforce password change on next login
         $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
 
-        if ($this->userModel->updatePassword($id, $hashedPassword)) {
+        if ($this->userModel->updatePassword($id, $hashedPassword, 1)) {
             AuditLog::log('USER_PASSWORD_RESET', 'Users', "Administrative password reset for account: {$user['username']}");
-            $_SESSION['success_message'] = "Password for user {$user['username']} has been successfully reset.";
+            $_SESSION['success_message'] = "Password for user {$user['username']} has been successfully reset. They will be prompted to set a new password on their next login.";
         } else {
             $_SESSION['error_message'] = 'Failed to reset password. Please try again.';
         }
@@ -282,6 +349,15 @@ class UserController extends Controller {
      */
     public function toggleStatus($id) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/users');
+            return;
+        }
+
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during status toggle for user ID {$id}.");
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
             $this->redirect('/users');
             return;
         }
@@ -336,6 +412,15 @@ class UserController extends Controller {
      */
     public function resetLockout($id) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/users');
+            return;
+        }
+
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during lockout reset for user ID {$id}.");
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
             $this->redirect('/users');
             return;
         }

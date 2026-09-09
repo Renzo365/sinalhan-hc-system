@@ -84,15 +84,14 @@ require dirname(__DIR__) . '/layout/header.php';
                         </tr>
                     <?php else: ?>
                         <?php 
-                        $userModel = new \App\Models\User();
                         foreach ($users as $u): 
                             $statusBadge = ($u['status'] === 'active') 
                                 ? 'bg-success-bg text-success border border-success-subtle' 
                                 : 'bg-secondary text-white';
                             
                             $roleBadge = $u['role'] === 'admin' ? 'bg-light text-primary border border-primary-subtle fw-bold' : 'bg-light text-dark border';
-                            $lockoutInfo = $userModel->isLockedOut($u);
-                            $isLocked = $lockoutInfo['is_locked'];
+                            $lockoutInfo = $u['lockout_info'] ?? ['is_locked' => false, 'remaining_seconds' => 0, 'remaining_formatted' => ''];
+                            $isLocked = !empty($lockoutInfo['is_locked']);
                         ?>
                             <tr>
                                 <td class="text-start ps-4 fw-bold font-monospace text-dark"><?= h($u['username']) ?></td>
@@ -131,7 +130,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                      <?= $u['last_login_at'] ? date('Y-m-d h:i A', strtotime($u['last_login_at'])) : '<span class="text-muted small">Never</span>' ?>
                                  </td>
                                  <td class="pe-4 text-end">
-                                     <div class="d-inline-flex gap-1 align-items-center">
+                                     <div class="d-inline-flex gap-2 align-items-center">
                                          <?php if ($u['role'] === 'admin' && $u['id'] != $_SESSION['user_id'] && $_SESSION['user_id'] != 1): ?>
                                              <!-- Protected Administrator Badge -->
                                              <span class="badge bg-light text-secondary border py-2 px-2.5" title="Administrator account is system-protected.">
@@ -143,7 +142,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                                  <form action="<?= url('/users/' . $u['id'] . '/reset-lockout') ?>" method="POST" class="d-inline">
                                                      <?= csrf_field() ?>
                                                      <button type="submit" 
-                                                             class="btn btn-sm btn-outline-warning border-0 px-2 text-dark" 
+                                                             class="btn btn-sm btn-outline-warning border text-dark d-inline-flex align-items-center justify-content-center" 
+                                                             style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
                                                              title="Clear 15-Minute Lockout" 
                                                              data-confirm="Are you sure you want to clear the 15-minute login lockout for user '<?= h($u['username']) ?>'? They will be able to log in immediately.">
                                                          <i class="bi bi-unlock-fill fs-6"></i>
@@ -152,13 +152,17 @@ require dirname(__DIR__) . '/layout/header.php';
                                              <?php endif; ?>
 
                                              <!-- Edit Profile -->
-                                             <a href="<?= url('/users/' . $u['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary border-0 px-2" title="Edit Profile Details">
+                                             <a href="<?= url('/users/' . $u['id'] . '/edit') ?>" 
+                                                class="btn btn-sm btn-outline-primary border d-inline-flex align-items-center justify-content-center" 
+                                                style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
+                                                title="Edit Profile Details">
                                                  <i class="bi bi-pencil-square fs-6"></i>
                                              </a>
                                              
                                              <!-- Password Reset Button Triggering Modal -->
                                              <button type="button" 
-                                                     class="btn btn-sm btn-outline-warning border-0 px-2" 
+                                                     class="btn btn-sm btn-outline-warning border d-inline-flex align-items-center justify-content-center" 
+                                                     style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
                                                      title="Reset User Password" 
                                                      data-bs-toggle="modal" 
                                                      data-bs-target="#resetPasswordModal" 
@@ -173,14 +177,16 @@ require dirname(__DIR__) . '/layout/header.php';
                                                      <?= csrf_field() ?>
                                                      <?php if ($u['status'] === 'active'): ?>
                                                          <button type="submit" 
-                                                                 class="btn btn-sm btn-outline-danger border-0 px-2" 
+                                                                 class="btn btn-sm btn-outline-danger border d-inline-flex align-items-center justify-content-center" 
+                                                                 style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
                                                                  title="Deactivate Account" 
                                                                  data-confirm="Are you sure you want to deactivate user account '<?= h($u['username']) ?>'? They will not be able to log in to the system until reactivated.">
                                                              <i class="bi bi-person-x-fill fs-6"></i>
                                                          </button>
                                                      <?php else: ?>
                                                          <button type="submit" 
-                                                                 class="btn btn-sm btn-outline-success border-0 px-2" 
+                                                                 class="btn btn-sm btn-outline-success border d-inline-flex align-items-center justify-content-center" 
+                                                                 style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
                                                                  title="Activate Account" 
                                                                  data-confirm="Are you sure you want to activate user account '<?= h($u['username']) ?>'? They will regain system access immediately.">
                                                              <i class="bi bi-person-check-fill fs-6"></i>
@@ -231,13 +237,21 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- New Password field -->
                     <div class="mb-3">
-                        <label for="new_password" class="form-label fw-semibold text-secondary small">New Temporary Password <span class="text-danger">*</span></label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="new_password" class="form-label fw-semibold text-secondary small mb-0">New Temporary Password <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" id="btnGeneratePassword" style="font-size: 0.78rem;">
+                                <i class="bi bi-magic me-1"></i>Generate Secure Password
+                            </button>
+                        </div>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
                             <input type="password" name="new_password" id="new_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Minimum 8 characters" minlength="8" required>
                             <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
                                 <i class="bi bi-eye"></i>
                             </button>
+                        </div>
+                        <div id="passwordCopiedNotice" class="text-success small mt-1 d-none">
+                            <i class="bi bi-check-circle-fill me-1"></i> Generated password copied to clipboard!
                         </div>
                     </div>
 
@@ -302,7 +316,11 @@ document.addEventListener('DOMContentLoaded', function() {
             targetUsername.textContent = '@' + username;
             form.action = '<?= url('/users/') ?>' + userId + '/reset-password';
             
-            // Clear inputs and reset visibility states
+            // Clear inputs, notice, and reset visibility states
+            const notice = document.getElementById('passwordCopiedNotice');
+            if (notice) {
+                notice.classList.add('d-none');
+            }
             ['admin_password', 'new_password', 'confirm_password'].forEach(function(id) {
                 const el = document.getElementById(id);
                 if (el) {
@@ -319,6 +337,75 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.setAttribute('title', 'Show password');
                 btn.setAttribute('aria-label', 'Show password');
             });
+        });
+    }
+
+    // Generate Secure Password Helper
+    const btnGenerate = document.getElementById('btnGeneratePassword');
+    if (btnGenerate) {
+        btnGenerate.addEventListener('click', function() {
+            const length = 14;
+            const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lower = 'abcdefghijklmnopqrstuvwxyz';
+            const digits = '0123456789';
+            const special = '!@#$%^&*()-_=+';
+            const allChars = upper + lower + digits + special;
+
+            // Ensure at least one from each character set
+            let password = '';
+            password += upper.charAt(Math.floor(Math.random() * upper.length));
+            password += lower.charAt(Math.floor(Math.random() * lower.length));
+            password += digits.charAt(Math.floor(Math.random() * digits.length));
+            password += special.charAt(Math.floor(Math.random() * special.length));
+
+            for (let i = password.length; i < length; i++) {
+                password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+            }
+
+            // Shuffle the characters
+            password = password.split('').sort(function() { return 0.5 - Math.random(); }).join('');
+
+            const newPassInput = document.getElementById('new_password');
+            const confirmPassInput = document.getElementById('confirm_password');
+
+            if (newPassInput && confirmPassInput) {
+                newPassInput.value = password;
+                confirmPassInput.value = password;
+
+                // Toggle type to text to reveal generated password
+                newPassInput.type = 'text';
+                confirmPassInput.type = 'text';
+
+                // Update eye icons for both password fields
+                [newPassInput, confirmPassInput].forEach(function(input) {
+                    const toggleBtn = input.closest('.input-group')?.querySelector('.btn-toggle-password');
+                    if (toggleBtn) {
+                        const icon = toggleBtn.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('bi-eye');
+                            icon.classList.add('bi-eye-slash');
+                        }
+                        toggleBtn.setAttribute('title', 'Hide password');
+                        toggleBtn.setAttribute('aria-label', 'Hide password');
+                    }
+                });
+
+                // Copy to clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(password).catch(function(err) {
+                        console.error('Clipboard copy failed: ', err);
+                    });
+                }
+
+                // Show confirmation notice
+                const notice = document.getElementById('passwordCopiedNotice');
+                if (notice) {
+                    notice.classList.remove('d-none');
+                    setTimeout(function() {
+                        notice.classList.add('d-none');
+                    }, 4000);
+                }
+            }
         });
     }
 });

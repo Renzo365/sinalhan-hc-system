@@ -8,8 +8,8 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="login-glow-1"></div>
     <div class="login-glow-2"></div>
 
-    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-        <div class="card login-card" style="max-width: 500px;">
+    <div class="container d-flex justify-content-center align-items-center min-vh-100 py-4 py-sm-5 position-relative" style="z-index: 2;">
+        <div class="card login-card" style="max-width: 480px; width: 100%;">
             <!-- Header Section -->
             <div class="login-header-section">
                 <i class="bi bi-shield-lock-fill text-warning fs-1 mb-2"></i>

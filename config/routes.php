@@ -17,9 +17,16 @@ return function (\App\Core\Router $router) {
     $router->get('/change-password', 'AuthController@showChangePassword', [AuthMiddleware::class]);
     $router->post('/change-password', 'AuthController@changePassword', [AuthMiddleware::class]);
     
-    // Logout Action
+    // Logout & Session Heartbeat Actions
     $router->get('/logout', 'AuthController@logout');
     $router->post('/logout', 'AuthController@logout');
+    $router->get('/api/session-ping', 'AuthController@ping', [AuthMiddleware::class]);
+    $router->post('/api/session-ping', 'AuthController@ping', [AuthMiddleware::class]);
+
+    // User Profile & Self-Service Account Routes
+    $router->get('/profile', 'ProfileController@index', [AuthMiddleware::class]);
+    $router->post('/profile/update', 'ProfileController@update', [AuthMiddleware::class]);
+    $router->post('/profile/password', 'ProfileController@updatePassword', [AuthMiddleware::class]);
 
     // Patient Management Routes
     $router->get('/patients', 'PatientController@index', [AuthMiddleware::class]);
@@ -36,6 +43,11 @@ return function (\App\Core\Router $router) {
     $router->post('/prenatal/{id}/update', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/visit', 'PrenatalController@storeVisit', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/conclude', 'PrenatalController@concludeEpisode', [AuthMiddleware::class]);
+
+    // PhilHealth PCB Patient Ledger Routes (Page 3)
+    $router->post('/patients/{id}/pcb/obligated', 'PcbLedgerController@saveObligated', [AuthMiddleware::class]);
+    $router->post('/patients/{id}/pcb/service-log', 'PcbLedgerController@storeLog', [AuthMiddleware::class]);
+    $router->post('/pcb/service-log/{id}/delete', 'PcbLedgerController@deleteLog', [AuthMiddleware::class]);
 
     // Well Baby & Pediatric Routes
     $router->post('/patients/{id}/wellbaby/birth-record', 'WellbabyController@storeBirthRecord', [AuthMiddleware::class]);

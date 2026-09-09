@@ -258,13 +258,24 @@ require dirname(__DIR__) . '/layout/header.php';
                         <label for="phic_type" class="form-label fw-semibold text-secondary small">PHIC Category / Type</label>
                         <select name="phic_type" id="phic_type" class="form-select">
                             <option value="">-- Select Category --</option>
-                            <?php 
-                            $phicTypes = ['Sponsored - NHTS', 'Sponsored - LGU', 'Employed - Private', 'Employed - Government', 'Indigent', 'Senior Citizen', 'Lifetime Member', 'Informal / Self-Earning', 'IPP - OFW', 'Others'];
-                            foreach ($phicTypes as $pt): ?>
-                                <option value="<?= $pt ?>" <?= ($patient['phic_type'] ?? '') === $pt ? 'selected' : '' ?>>
-                                    <?= $pt ?>
-                                </option>
-                            <?php endforeach; ?>
+                            <optgroup label="1. Sponsored">
+                                <option value="Sponsored - NHTS" <?= ($patient['phic_type'] ?? '') === 'Sponsored - NHTS' ? 'selected' : '' ?>>Sponsored - NHTS (National Household Targeting System)</option>
+                                <option value="Sponsored - NGS / NGA" <?= in_array(($patient['phic_type'] ?? ''), ['Sponsored - NGS / NGA', 'Sponsored - NGS', 'Sponsored - NGA'], true) ? 'selected' : '' ?>>Sponsored - NGS / NGA (National Government)</option>
+                                <option value="Sponsored - LGU" <?= ($patient['phic_type'] ?? '') === 'Sponsored - LGU' ? 'selected' : '' ?>>Sponsored - LGU (Local Government Unit)</option>
+                                <option value="Sponsored - Private" <?= ($patient['phic_type'] ?? '') === 'Sponsored - Private' ? 'selected' : '' ?>>Sponsored - Private</option>
+                            </optgroup>
+                            <optgroup label="2. Individually Paying Program (IPP)">
+                                <option value="IPP - Organized Group (OG)" <?= in_array(($patient['phic_type'] ?? ''), ['IPP - Organized Group (OG)', 'IPP - OG'], true) ? 'selected' : '' ?>>IPP - Organized Group (OG)</option>
+                                <option value="IPP - OFW" <?= ($patient['phic_type'] ?? '') === 'IPP - OFW' ? 'selected' : '' ?>>IPP - OFW (Overseas Filipino Worker)</option>
+                                <option value="IPP - Voluntary / Self-Employed" <?= in_array(($patient['phic_type'] ?? ''), ['IPP - Voluntary / Self-Employed', 'Informal / Self-Earning'], true) ? 'selected' : '' ?>>IPP - Voluntary / Self-Employed</option>
+                            </optgroup>
+                            <optgroup label="3. Employed">
+                                <option value="Employed - Government" <?= ($patient['phic_type'] ?? '') === 'Employed - Government' ? 'selected' : '' ?>>Employed - Government (Formal Sector)</option>
+                                <option value="Employed - Private" <?= ($patient['phic_type'] ?? '') === 'Employed - Private' ? 'selected' : '' ?>>Employed - Private (Formal Sector)</option>
+                            </optgroup>
+                            <optgroup label="4. Lifetime">
+                                <option value="Lifetime Member" <?= ($patient['phic_type'] ?? '') === 'Lifetime Member' ? 'selected' : '' ?>>Lifetime Member (Retirees / Pensioners)</option>
+                            </optgroup>
                         </select>
                     </div>
 

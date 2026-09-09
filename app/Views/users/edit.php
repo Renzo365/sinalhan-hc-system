@@ -5,6 +5,10 @@ $breadcrumbs = [
     'Edit User' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
+
+$old = $_SESSION['old_input'] ?? [];
+$errors = $_SESSION['form_errors'] ?? [];
+unset($_SESSION['old_input'], $_SESSION['form_errors']);
 ?>
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
@@ -19,6 +23,23 @@ require dirname(__DIR__) . '/layout/header.php';
         </a>
     </div>
 </div>
+
+<?php if (!empty($errors)): ?>
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+            <div>
+                <strong class="d-block">Please correct the following issues:</strong>
+                <ul class="mb-0 ps-3 small">
+                    <?php foreach ($errors as $err): ?>
+                        <li><?= h($err) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
 
 <!-- Account Status & Metadata Cards -->
 <div class="row g-3 mb-4">
@@ -78,16 +99,19 @@ require dirname(__DIR__) . '/layout/header.php';
                 
                 <div class="col-12 col-md-6">
                     <label for="role" class="form-label fw-semibold text-secondary small">Access Privilege <span class="text-danger">*</span></label>
-                    <?php if ($user['id'] == $_SESSION['user_id'] || $_SESSION['user_id'] != 1): ?>
+                    <?php 
+                    $currentRole = $old['role'] ?? $user['role'];
+                    if ($user['id'] == $_SESSION['user_id'] || $_SESSION['user_id'] != 1): 
+                    ?>
                         <select id="role" class="form-select bg-light text-muted" disabled>
-                            <option value="staff" <?= $user['role'] === 'staff' ? 'selected' : '' ?>>Staff Personnel</option>
-                            <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>><?= ($user['id'] == 1) ? 'Main Administrator' : 'Co-Administrator' ?></option>
+                            <option value="staff" <?= $currentRole === 'staff' ? 'selected' : '' ?>>Staff Personnel</option>
+                            <option value="admin" <?= $currentRole === 'admin' ? 'selected' : '' ?>><?= ($user['id'] == 1) ? 'Main Administrator' : 'Co-Administrator' ?></option>
                         </select>
-                        <input type="hidden" name="role" value="<?= h($user['role']) ?>">
+                        <input type="hidden" name="role" value="<?= h($currentRole) ?>">
                     <?php else: ?>
                         <select name="role" id="role" class="form-select bg-light" required>
-                            <option value="staff" <?= $user['role'] === 'staff' ? 'selected' : '' ?>>Staff Personnel</option>
-                            <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Co-Administrator</option>
+                            <option value="staff" <?= $currentRole === 'staff' ? 'selected' : '' ?>>Staff Personnel</option>
+                            <option value="admin" <?= $currentRole === 'admin' ? 'selected' : '' ?>>Co-Administrator</option>
                         </select>
                     <?php endif; ?>
                 </div>
@@ -106,27 +130,27 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="row g-3">
                 <div class="col-12 col-md-4">
                     <label for="first_name" class="form-label fw-semibold text-secondary small">First Name <span class="text-danger">*</span></label>
-                    <input type="text" name="first_name" id="first_name" class="form-control" value="<?= h($user['first_name']) ?>" required>
+                    <input type="text" name="first_name" id="first_name" class="form-control" value="<?= h($old['first_name'] ?? $user['first_name']) ?>" required>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <label for="middle_name" class="form-label fw-semibold text-secondary small">Middle Name <span class="text-muted fw-normal">(Optional)</span></label>
-                    <input type="text" name="middle_name" id="middle_name" class="form-control" value="<?= h($user['middle_name'] ?? '') ?>" placeholder="Optional">
+                    <input type="text" name="middle_name" id="middle_name" class="form-control" value="<?= h($old['middle_name'] ?? $user['middle_name'] ?? '') ?>" placeholder="Optional">
                 </div>
 
                 <div class="col-12 col-md-4">
                     <label for="last_name" class="form-label fw-semibold text-secondary small">Last Name <span class="text-danger">*</span></label>
-                    <input type="text" name="last_name" id="last_name" class="form-control" value="<?= h($user['last_name']) ?>" required>
+                    <input type="text" name="last_name" id="last_name" class="form-control" value="<?= h($old['last_name'] ?? $user['last_name']) ?>" required>
                 </div>
 
                 <div class="col-12 col-md-6">
                     <label for="email" class="form-label fw-semibold text-secondary small">Email Address <span class="text-muted fw-normal">(Optional)</span></label>
-                    <input type="email" name="email" id="email" class="form-control" value="<?= h($user['email'] ?? '') ?>" placeholder="e.g. email@example.com">
+                    <input type="email" name="email" id="email" class="form-control" value="<?= h($old['email'] ?? $user['email'] ?? '') ?>" placeholder="e.g. email@example.com">
                 </div>
 
                 <div class="col-12 col-md-6">
                     <label for="contact_no" class="form-label fw-semibold text-secondary small">Contact Number <span class="text-muted fw-normal">(Optional)</span></label>
-                    <input type="text" name="contact_no" id="contact_no" class="form-control" value="<?= h($user['contact_no'] ?? '') ?>" placeholder="e.g. 09171234567">
+                    <input type="text" name="contact_no" id="contact_no" class="form-control" value="<?= h($old['contact_no'] ?? $user['contact_no'] ?? '') ?>" placeholder="e.g. 09171234567">
                 </div>
             </div>
         </div>
@@ -143,23 +167,24 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="row g-3">
                 <div class="col-12 col-md-4">
                     <label for="job_title" class="form-label fw-semibold text-secondary small">Clinic Job Title</label>
-                    <input type="text" name="job_title" id="job_title" class="form-control" value="<?= h($user['job_title'] ?? '') ?>" placeholder="e.g. Nurse, BHW, Midwife">
+                    <input type="text" name="job_title" id="job_title" class="form-control" value="<?= h($old['job_title'] ?? $user['job_title'] ?? '') ?>" placeholder="e.g. Nurse, BHW, Midwife">
                 </div>
                 
                 <div class="col-12 col-md-4">
                     <label for="employee_id" class="form-label fw-semibold text-secondary small">Employee ID / PRC License No.</label>
-                    <input type="text" name="employee_id" id="employee_id" class="form-control" value="<?= h($user['employee_id'] ?? '') ?>" placeholder="e.g. EMP-2026-004 or PRC-09823">
+                    <input type="text" name="employee_id" id="employee_id" class="form-control" value="<?= h($old['employee_id'] ?? $user['employee_id'] ?? '') ?>" placeholder="e.g. EMP-2026-004 or PRC-09823">
                 </div>
                 
                 <div class="col-12 col-md-4">
                     <label for="department" class="form-label fw-semibold text-secondary small">Department / Clinic Unit</label>
+                    <?php $currentDept = $old['department'] ?? $user['department'] ?? ''; ?>
                     <select name="department" id="department" class="form-select bg-light">
                         <option value="">-- Select Clinic Unit --</option>
-                        <option value="General Consultation" <?= ($user['department'] ?? '') === 'General Consultation' ? 'selected' : '' ?>>General Consultation</option>
-                        <option value="Maternal & Child Health" <?= ($user['department'] ?? '') === 'Maternal & Child Health' ? 'selected' : '' ?>>Maternal & Child Health</option>
-                        <option value="Vaccination & Immunization" <?= ($user['department'] ?? '') === 'Vaccination & Immunization' ? 'selected' : '' ?>>Vaccination & Immunization</option>
-                        <option value="Records & Administrative Office" <?= ($user['department'] ?? '') === 'Records & Administrative Office' ? 'selected' : '' ?>>Records & Administrative Office</option>
-                        <option value="Laboratory & Diagnostics" <?= ($user['department'] ?? '') === 'Laboratory & Diagnostics' ? 'selected' : '' ?>>Laboratory & Diagnostics</option>
+                        <option value="General Consultation" <?= $currentDept === 'General Consultation' ? 'selected' : '' ?>>General Consultation</option>
+                        <option value="Maternal & Child Health" <?= $currentDept === 'Maternal & Child Health' ? 'selected' : '' ?>>Maternal & Child Health</option>
+                        <option value="Vaccination & Immunization" <?= $currentDept === 'Vaccination & Immunization' ? 'selected' : '' ?>>Vaccination & Immunization</option>
+                        <option value="Records & Administrative Office" <?= $currentDept === 'Records & Administrative Office' ? 'selected' : '' ?>>Records & Administrative Office</option>
+                        <option value="Laboratory & Diagnostics" <?= $currentDept === 'Laboratory & Diagnostics' ? 'selected' : '' ?>>Laboratory & Diagnostics</option>
                     </select>
                 </div>
             </div>
