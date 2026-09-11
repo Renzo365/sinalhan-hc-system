@@ -51,6 +51,7 @@ sinalhan-hc-system/
 │   └── index.php         # Front controller (Where every request starts)
 ├── scripts/              # Command-line maintenance tools (CLI utilities)
 ├── storage/              # File uploads, database backup archives, and error logs
+├── CHANGELOG.md          # Official Beta release notes and version history (maintained by multi-agent squad)
 ├── CODEX.md              # Complete project specification and master rules
 └── README.md             # Project overview and setup instructions
 ```

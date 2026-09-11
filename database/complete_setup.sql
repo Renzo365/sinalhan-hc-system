@@ -470,6 +470,57 @@ CREATE TABLE `audit_logs` (
   CONSTRAINT `fk_audit_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 19. PCB Obligated Services Table (PhilHealth Page 3 Annual Surveillance)
+CREATE TABLE `pcb_obligated_services` (
+  `id` INT AUTO_INCREMENT,
+  `patient_id` INT NOT NULL,
+  `service_year` INT NOT NULL,
+  `is_hypertensive` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0: Non-Hypertensive (Once a year), 1: Hypertensive (Once a month)',
+  `bp_q1` DATE NULL,
+  `bp_q2` DATE NULL,
+  `bp_q3` DATE NULL,
+  `bp_q4` DATE NULL,
+  `cbe_q1` DATE NULL,
+  `cbe_q2` DATE NULL,
+  `cbe_q3` DATE NULL,
+  `cbe_q4` DATE NULL,
+  `via_q1` DATE NULL,
+  `via_q2` DATE NULL,
+  `via_q3` DATE NULL,
+  `via_q4` DATE NULL,
+  `remarks` TEXT NULL,
+  `updated_by` INT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_pcb_patient_year` (`patient_id`, `service_year`),
+  INDEX `idx_pcb_year` (`service_year`),
+  CONSTRAINT `fk_pcb_obligated_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pcb_obligated_updater` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 20. PCB Service Logs Table (PhilHealth Page 3 Encounter Ledger)
+CREATE TABLE `pcb_service_logs` (
+  `id` INT AUTO_INCREMENT,
+  `patient_id` INT NOT NULL,
+  `service_category` ENUM('Diagnostic', 'PCB1', 'Other') NOT NULL DEFAULT 'Diagnostic',
+  `service_date` DATE NOT NULL,
+  `diagnosis` VARCHAR(255) NULL,
+  `service_type` VARCHAR(150) NOT NULL COMMENT 'Diagnostic test name or service type (e.g. CBC, Urinalysis, FBS, Chest X-ray, Counseling)',
+  `status_given` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1: Service given in clinic, 0: Not given',
+  `status_referred` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1: Referred, 0: Not referred',
+  `referred_to` VARCHAR(150) NULL COMMENT 'Facility or specialist referred to',
+  `remarks` TEXT NULL,
+  `recorded_by` INT NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_pcb_logs_patient` (`patient_id`, `service_category`),
+  INDEX `idx_pcb_logs_date` (`service_date`),
+  CONSTRAINT `fk_pcb_logs_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pcb_logs_recorder` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- -------------------------------------------------------------
 -- Secondary Indexing for Performance Optimization
 -- -------------------------------------------------------------
@@ -499,6 +550,9 @@ CREATE INDEX `idx_queue_status_date` ON `queue_entries` (`queue_date`, `status`)
 
 -- Immunization tracking index
 CREATE INDEX `idx_immunization_lookup` ON `immunizations` (`patient_id`, `vaccine_name`);
+
+-- PCB Ledger search indexes
+CREATE INDEX `idx_pcb_logs_category_date` ON `pcb_service_logs` (`service_category`, `service_date`);
 
 -- Audit logs search indexes
 CREATE INDEX `idx_audit_logs_search` ON `audit_logs` (`created_at`, `module`, `action`);

@@ -45,10 +45,10 @@ User Request ──► Orchestrator ──► [Fast / Standard / Deep Track]
 | Role Name | Subagent Identifier | Primary Responsibility | Model Tier | Reasoning Effort | Write Tools |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Orchestrator** | *Antigravity Main* | Triage, Task Dispatching, Human Gatekeeper, Failure Categorization | `pro` / `inherit` | `medium` | Enabled |
-| **System Architect** | `sinalhan_architect` | Requirements Analysis, Blast Radius Mapping, Database Schema Spec, Implementation Plan | `pro` | `high` | **Read-Only** |
-| **Full-Stack Coder** | `sinalhan_coder` | Precision PHP 8.2+ MVC implementation, PDO prepared statements, CSRF, UI layouts | `pro` / `flash` | `medium` | Enabled |
-| **QA & Security Auditor** | `sinalhan_qa` | Standalone CLI assertion tests (`scratch/test_*.php`), edge cases, SQLi/XSS/CSRF/RBAC audits | `pro` | `high` | Enabled |
-| **Documentor & Sync** | `sinalhan_documentor` | Updating `CODEX.md`, `docs/database.md`, `docs/features.md`, generating `walkthrough.md` | `flash` | `low` | Enabled |
+| **System Architect** | `sinalhan_architect` | Blast Radius Mapping, Helper Audit (Zero-Invention), Database Schema Spec, RBAC Boundary Verification | `pro` | `high` | **Read-Only** |
+| **Full-Stack Coder** | `sinalhan_coder` | Strict MVC (No Models in Views), PDO Prepared Statements, CSRF Defense, Session Sync, Form Input Retention (`old_input`), Touch Ergonomics | `pro` / `flash` | `medium` | Enabled |
+| **QA & Security Auditor** | `sinalhan_qa` | Adversarial CLI Assertions (`scratch/test_*.php`), Test Data Isolation & Teardown, Hostile Injections (CSRF/XSS/SQLi), Session Timeout Checks, Regression Verification | `pro` | `high` | Enabled |
+| **Documentor & Sync** | `sinalhan_documentor` | Prepending `CHANGELOG.md` (`[Beta X.Y]`), Synchronizing `CODEX.md`, `docs/database.md`, `docs/features.md`, and Compiling `walkthrough.md` | `flash` | `low` | Enabled |
 
 ---
 
@@ -106,7 +106,8 @@ When `sinalhan_qa` detects a test failure:
 
 ## 6. Context-Sharing & Working Memory Strategy
 
-- **Artifacts as Working Memory:**
+- **Artifacts & System Memory:**
+  - `CHANGELOG.md`: **Official System Beta Release Notes**. Maintained by `sinalhan_documentor` upon completion of every task or feature. Records additions, changes, bug fixes, and security patches with version stamps (e.g. `[Beta 1.2]`).
   - `implementation_plan.md`: Created by Architect; read by Coder and QA.
   - `walkthrough.md`: Created by Documentor; read by User.
   - `scratch/test_<feature>.php`: Created and run by QA.
