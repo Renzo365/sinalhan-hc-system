@@ -238,3 +238,45 @@ Provides self-service account management and personalized profile controls for a
 * **Session Fixation Defense**: Automatically regenerates the PHP session identifier (`session_regenerate_id(true)`) upon successful credential change to prevent session hijacking.
 * **Security Audit Logging**: Creates a `USER_PASSWORD_CHANGED` audit record tracking the self-service credential update.
 
+---
+
+## 12. Authentication Portal & First-Time Password Security Enclave
+
+The Authentication Portal provides a secure, audited gateway for health center staff and administrators accessing the system across the local clinic network.
+
+### 12.1 Split-Screen Institutional Design & Civic Branding
+* **Dual-Column Layout**: High-impact split-screen responsive layout separating civic authority branding (left) from credential authentication forms (right).
+* **Official Seals & Civic Emblems**: Features the Republic of the Philippines emblem and Barangay Sinalhan Health Services crest against an emerald/teal brand gradient with subtle ambient radial glow.
+* **Compliance & Governance Badges**: Prominently displays civic compliance status:
+  * **Republic Act 10173 (Data Privacy Act of 2012)**: Reaffirms strict patient confidentiality, data subject rights, and statutory health data protection.
+  * **Department of Health (DOH) Aligned**: Highlights compliance with standardized clinical charting, routine immunization registries, and Field Health Services Information System (FHSIS) reporting.
+  * **100% Offline LAN Operation**: Reinforces that the system operates strictly within the local clinic network without remote external dependencies.
+
+### 12.2 Dual-Identifier Authentication
+* **Flexible Identification**: Health center workers may sign in using either their standard system **Username** or their official **Employee ID** (e.g., `EMP-2026-001`, `MIDWIFE-01`).
+* **Optimized Database Lookup**: Handled securely in [`User.php`](file:///c:/xampp/htdocs/sinalhan-hc-system/app/Models/User.php) via `findByLoginIdentifier($identifier)` using PDO parameterized queries (`WHERE (username = :u_identifier OR employee_id = :e_identifier) AND deleted_at IS NULL LIMIT 1`).
+* **Brute-Force Lockout Defense**: Failed login attempts tracked seamlessly regardless of whether the user entered a username or Employee ID, incrementing the counter toward the 5-attempt threshold and triggering the 15-minute sliding lockout window.
+
+### 12.3 Architectural & Security Design Decisions
+* **Intentional Omission of "Forgot Password"**: In a strictly offline local area network (LAN) without outbound SMTP mail relay or SMS gateway infrastructure, self-service password reset links are impossible and present unnecessary attack surfaces. Password resets are intentionally centralized through authorized administrators via the User Accounts module (`/users`).
+* **Intentional Omission of "Remember Credentials"**: Health center workstations are shared among rotating doctors, nurses, midwives, and BHW shifts. Persistent client-side credential storage (cookies or browser autofill) creates severe cross-shift data leakage risks, violating Section 20 of RA 10173 (Security of Personal Information). Staff must explicitly authenticate for each clinic session.
+
+### 12.4 First-Time Password Update Enclave (`/change-password`)
+When an account is newly provisioned or reset by an administrator (`must_change_password = 1`), the user is immediately sequestered in an activation enclave:
+* **Enclave Gatekeeper**: `AuthMiddleware` and `AuthController` intercept requests to any other system route, redirecting the user back to `/change-password` until new credentials are established. Activated users (`must_change_password = 0`) attempting to access this view are redirected to `/dashboard`.
+* **Staff Identity Verification Card**: Displays the authenticated staff member's two-letter capitalized avatar initials, full name, employee ID, and assigned clinical role to confirm user identity prior to credential activation.
+* **4-Segment Dynamic Password Strength Meter**: Real-time visual progress bar evaluating password entropy across 4 discrete stages (*Weak*, *Fair*, *Good*, *Strong*) with dynamic color shifting (crimson $\to$ amber $\to$ sky $\to$ emerald).
+* **Live Interactive Criteria Checklist**: Real-time evaluation checklist with dynamic icon feedback (`bi-x-circle` / `bi-check-circle-fill`) for:
+  1. Minimum 8 characters in length
+  2. Uppercase and lowercase alphabetic characters (`[A-Z]` and `[a-z]`)
+  3. At least one numeric digit (`0-9`) and special symbol (`@$!%*?&`)
+  4. Distinct from the current temporary password
+* **Instant Confirmation Matcher**: Real-time matching indicator verifying that the confirmation password exactly mirrors the new password before submission.
+* **Safe Session Exit**: Includes a CSRF-protected "Cancel & Sign Out" button wrapped in a POST form that terminates the session and safely returns the workstation to the login portal.
+
+### 12.5 Offline Statutory Compliance Modals
+* **Privacy Policy Modal (Data Privacy Act of 2012 / RA 10173)**: Self-contained offline modal accessible from all authentication views detailing health data collection purposes, patient record retention, lawful processing, and health worker confidentiality duties.
+* **Terms of Use Modal (Staff Acceptable Use Policy)**: Offline modal detailing health center computer usage guidelines, audit logging disclosure, session lockout rules, and non-sharing of user credentials.
+* **Zero External Dependencies**: All modals, styles, SVGs, and scripts are served 100% locally with zero external CDNs, Google Fonts, or remote asset requests.
+
+

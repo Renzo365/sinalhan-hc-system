@@ -46,22 +46,34 @@ class AuthController extends Controller {
      * Handle the login request.
      */
     public function login() {
-        $username = trim($_POST['username'] ?? '');
-        $password = $_POST['password'] ?? '';
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-        if (empty($username) || empty($password)) {
-            $this->setLoginError('Username and password are required.', $username);
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Auth', 'CSRF token mismatch on login attempt.');
+            $this->setLoginError('Invalid session token. Please refresh and try again.', trim($_POST['username'] ?? ''));
             $this->redirect('/login');
             return;
         }
 
-        $user = $this->userModel->findByUsername($username);
+        $identifier = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if (empty($identifier) || empty($password)) {
+            $this->setLoginError('Username or Employee ID and password are required.', $identifier);
+            $this->redirect('/login');
+            return;
+        }
+
+        $user = $this->userModel->findByLoginIdentifier($identifier);
 
         if ($user) {
             // Check manual status deactivation
             if ($user['status'] === 'inactive') {
-                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$username})");
-                $this->setLoginError('This account is inactive. Please contact an administrator.', $username);
+                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$user['username']} / {$identifier})");
+                $this->setLoginError('This account is inactive. Please contact an administrator.', $identifier);
                 $this->redirect('/login');
                 return;
             }
@@ -69,18 +81,14 @@ class AuthController extends Controller {
             // Check temporary 15-minute lockout cooldown
             $lockoutStatus = $this->userModel->isLockedOut($user);
             if ($lockoutStatus['is_locked']) {
-                AuditLog::log('LOGIN_BLOCKED_LOCKOUT', 'Auth', "Blocked login attempt during temporary lockout for username: {$username}");
-                $this->setLoginError('Too many failed login attempts. Please try again later or contact your administrator.', $username);
+                AuditLog::log('LOGIN_BLOCKED_LOCKOUT', 'Auth', "Blocked login attempt during temporary lockout for: {$user['username']} ({$identifier})");
+                $this->setLoginError('Too many failed login attempts. Please try again later or contact your administrator.', $identifier);
                 $this->redirect('/login');
                 return;
             }
 
             if (password_verify($password, $user['password_hash'])) {
                 // Setup Session
-                if (session_status() === PHP_SESSION_NONE) {
-                    session_start();
-                }
-                
                 if (!headers_sent()) {
                     session_regenerate_id(true);
                 }
@@ -96,7 +104,7 @@ class AuthController extends Controller {
                 $_SESSION['last_activity'] = time();
 
                 // Log successful login
-                AuditLog::log('LOGIN_SUCCESS', 'Auth', "User successfully logged in.");
+                AuditLog::log('LOGIN_SUCCESS', 'Auth', "User successfully logged in ({$user['username']}).");
 
                 if ($_SESSION['must_change_password'] === 1) {
                     $this->redirect('/change-password');
@@ -106,23 +114,23 @@ class AuthController extends Controller {
                 }
             } else {
                 // Password incorrect - increment attempts
-                $attempts = $this->userModel->incrementFailedAttempts($username);
-                AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (password mismatch) for username: {$username}. Failed attempts count: {$attempts}/5");
+                $attempts = $this->userModel->incrementFailedAttempts($user['username']);
+                AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (password mismatch) for: {$user['username']} ({$identifier}). Failed attempts count: {$attempts}/5");
 
                 if ($attempts >= 5) {
-                    AuditLog::log('ACCOUNT_LOCKED', 'Auth', "Account temporarily locked for 15 minutes due to 5 consecutive failed attempts: {$username}");
+                    AuditLog::log('ACCOUNT_LOCKED', 'Auth', "Account temporarily locked for 15 minutes due to 5 consecutive failed attempts: {$user['username']}");
                     $error = 'Too many failed login attempts. Please try again later or contact your administrator.';
                 } else {
                     $error = 'Invalid username or password.';
                 }
                 
-                $this->setLoginError($error, $username);
+                $this->setLoginError($error, $identifier);
                 $this->redirect('/login');
             }
         } else {
             // User does not exist
-            AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (non-existent username) for: " . $username);
-            $this->setLoginError('Invalid username or password.', $username);
+            AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (non-existent account) for: " . $identifier);
+            $this->setLoginError('Invalid username or password.', $identifier);
             $this->redirect('/login');
         }
     }
@@ -144,6 +152,15 @@ class AuthController extends Controller {
     public function logout() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $token = $_POST['csrf_token'] ?? '';
+            if (empty($token) || !hash_equals(csrf_token(), $token)) {
+                AuditLog::log('SECURITY_VIOLATION', 'Auth', 'CSRF token mismatch on logout attempt.');
+                $this->redirect('/login');
+                return;
+            }
         }
 
         $isTimeout = isset($_GET['timeout']) || (isset($_GET['reason']) && $_GET['reason'] === 'timeout');
@@ -188,9 +205,19 @@ class AuthController extends Controller {
         // Only allow if they are flagged to change password
         if (!isset($_SESSION['must_change_password']) || $_SESSION['must_change_password'] !== 1) {
             $this->redirect('/dashboard');
+            return;
         }
 
-        $this->view('auth/change_password', ['disable_layout' => true]);
+        $user = $this->userModel->findById($_SESSION['user_id']);
+        if (!$user) {
+            $this->redirect('/login');
+            return;
+        }
+
+        $this->view('auth/change_password', [
+            'user' => $user,
+            'disable_layout' => true
+        ]);
     }
 
     /**
@@ -203,6 +230,25 @@ class AuthController extends Controller {
 
         if (!isset($_SESSION['must_change_password']) || $_SESSION['must_change_password'] !== 1) {
             $this->redirect('/dashboard');
+            return;
+        }
+
+        $user = $this->userModel->findById($_SESSION['user_id']);
+        if (!$user) {
+            $this->redirect('/login');
+            return;
+        }
+
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Auth', 'CSRF token mismatch on password change attempt.');
+            $this->view('auth/change_password', [
+                'user' => $user,
+                'errors' => ['Security validation failed (CSRF mismatch). Please try again.'],
+                'disable_layout' => true
+            ]);
+            return;
         }
 
         $currentPassword = $_POST['current_password'] ?? '';
@@ -213,28 +259,38 @@ class AuthController extends Controller {
 
         if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
             $errors[] = 'All fields are required.';
-        }
+        } else {
+            if (!password_verify($currentPassword, $user['password_hash'])) {
+                $errors[] = 'Incorrect current temporary password.';
+            }
 
-        $user = $this->userModel->findById($_SESSION['user_id']);
+            if (strlen($newPassword) < 8) {
+                $errors[] = 'New password must be at least 8 characters long.';
+            }
 
-        if (!$user || !password_verify($currentPassword, $user['password_hash'])) {
-            $errors[] = 'Incorrect current password.';
-        }
+            if (!preg_match('/[A-Z]/', $newPassword) || !preg_match('/[a-z]/', $newPassword)) {
+                $errors[] = 'New password must contain both uppercase and lowercase letters.';
+            }
 
-        if ($newPassword !== $confirmPassword) {
-            $errors[] = 'New password and confirmation password do not match.';
-        }
+            if (!preg_match('/[0-9]/', $newPassword) || !preg_match('/[^A-Za-z0-9]/', $newPassword)) {
+                $errors[] = 'New password must contain at least 1 digit and 1 special symbol (@$!%*?&).';
+            }
 
-        if (strlen($newPassword) < 8) {
-            $errors[] = 'New password must be at least 8 characters long.';
-        }
+            if ($newPassword === $currentPassword) {
+                $errors[] = 'New password must be different from your current temporary password.';
+            }
 
-        if ($newPassword === $currentPassword) {
-            $errors[] = 'New password cannot be the same as the current password.';
+            if ($newPassword !== $confirmPassword) {
+                $errors[] = 'New password and confirmation password do not match.';
+            }
         }
 
         if (!empty($errors)) {
-            $this->view('auth/change_password', ['errors' => $errors, 'disable_layout' => true]);
+            $this->view('auth/change_password', [
+                'user' => $user,
+                'errors' => $errors,
+                'disable_layout' => true
+            ]);
             return;
         }
 
@@ -242,16 +298,22 @@ class AuthController extends Controller {
         $newHash = password_hash($newPassword, PASSWORD_BCRYPT);
         if ($this->userModel->updatePassword($user['id'], $newHash, 0)) {
             // Regenerate session ID to prevent session fixation attacks
-            session_regenerate_id(true);
+            if (!headers_sent()) {
+                session_regenerate_id(true);
+            }
 
             $_SESSION['must_change_password'] = 0;
             
-            AuditLog::log('PASSWORD_CHANGED', 'Auth', "User updated their password on first login.");
+            AuditLog::log('PASSWORD_CHANGED', 'Auth', "User {$user['username']} updated their password on first login.");
 
             $_SESSION['success_message'] = 'Password changed successfully! Welcome to the Sinalhan Health Center system.';
             $this->redirect('/dashboard');
         } else {
-            $this->view('auth/change_password', ['errors' => ['Failed to update password. Please try again.'], 'disable_layout' => true]);
+            $this->view('auth/change_password', [
+                'user' => $user,
+                'errors' => ['Failed to update password. Please try again.'],
+                'disable_layout' => true
+            ]);
         }
     }
 

@@ -1,6 +1,7 @@
 # Patient Management System - Barangay Sinalhan Health Center
 
-> A capstone-oriented, LAN-based healthcare information system built with PHP 8+, MySQL 8, and XAMPP for Barangay Sinalhan Health Center.
+> A capstone-oriented, LAN-based healthcare information system built with PHP 8+, MySQL 8, and XAMPP for Barangay Sinalhan Health Center.  
+> **Current Version:** Beta 1.3 (Authentication Portal Redesign & First-Time Password Security Enclave)
 
 ---
 
@@ -226,6 +227,16 @@ patient-management-system/
 ### 6.1 Authentication and User Roles
 
 The system requires users to log in before accessing protected modules. Each user has a role (`admin` or `staff`) that determines what actions they can perform.
+
+#### Dual-Identifier Authentication & Redesigned Portal
+* **Dual-Identifier Sign-In**: Staff and administrators can authenticate using either their system `username` or their official `employee_id` via `User::findByLoginIdentifier()`, using parameterized PDO statements to prevent SQL injection.
+* **Brute-Force & Sliding Lockout**: The 5-attempt sliding window and 15-minute temporary lockout apply uniformly regardless of identifier used.
+* **Split-Screen Institutional Portal**: Civic authority presentation matching official prototypes with Republic of the Philippines emblem, DOH alignment, and RA 10173 compliance status.
+* **Architectural Decisions (LAN & RA 10173 Security)**:
+  * *Intentional Omission of "Forgot Password"*: Centralized admin resets only; no external SMTP/SMS dependencies on offline LAN.
+  * *Intentional Omission of "Remember Credentials"*: Eliminates persistent credential storage and cross-shift data leakage on shared clinic workstations (RA 10173 Section 20).
+* **First-Time Password Update Enclave (`/change-password`)**: Strict isolation enclave for accounts flagged with `must_change_password = 1`. Features staff identity banner, 4-segment dynamic strength meter, real-time validation checklist (8+ chars, mixed case, number & symbol, different from temp), instant confirmation matcher, and CSRF-protected cancellation logout.
+* **Offline Compliance Modals**: Self-contained modals for Data Privacy Act of 2012 (RA 10173) and Staff Acceptable Use Policy without external assets.
 
 #### Role Hierarchy & Privilege Protection
 * **Main Administrator (User ID 1)**: Primary System Administrator with master authority over all administrator and staff accounts.

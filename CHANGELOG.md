@@ -5,6 +5,20 @@ This document records the official beta release history and updates automaticall
 
 ---
 
+## [Beta 1.3] - 2026-09-12
+### Authentication Portal Redesign & First-Time Password Security Enclave
+* **Added**
+  * **Dual-Identifier Authentication**: Health center personnel can sign in using either their standard system **Username** or their official **Employee ID** (`findByLoginIdentifier`).
+  * **Redesigned Institutional Split-Screen Interface**: Upgraded `/login` and `/change-password` with split-column civic authority branding, Republic of the Philippines emblem, Barangay Sinalhan Health Services crest, and DOH / RA 10173 compliance status badges matching official design prototypes.
+  * **Live Password Strength & Interactive Checklist**: Integrated real-time 4-segment entropy meter (*Weak*, *Fair*, *Good*, *Strong*) and dynamic criteria checklist (length $\ge 8$, mixed case, digit & special symbol, different from temp) with instant confirmation matching on first-time activation.
+  * **Staff Identity Banner**: Prominently displays the authenticated staff member's avatar initials, full name, employee ID, and assigned role during initial account activation.
+  * **Offline Statutory Compliance Modals**: Integrated self-contained offline modals for Privacy Policy (Republic Act 10173 / Data Privacy Act of 2012) and Terms of Use (Staff Acceptable Use Policy) accessible from all auth views.
+* **Security**
+  * **68/68 Automated QA Assertions Passed**: Comprehensive test suite covering PDO parameterized SQLi neutralization, sliding 15-minute brute-force lockout, enclave route isolation (`must_change_password`), strict password complexity enforcement, CSRF protection on all forms (including sign-out exit), and HTML entity XSS escaping.
+  * **Zero Remote Asset Dependencies**: 100% offline LAN compliance with zero external CDNs, Google Fonts, or remote asset calls.
+
+---
+
 ## [Beta 1.4] - 2026-09-09
 ### Clinical Care Workstation Real-Time URL Routing & Multi-PC Database Consolidation Fix
 * **Workstation Navigation & Dedicated URLs**

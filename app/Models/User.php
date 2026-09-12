@@ -19,6 +19,26 @@ class User extends Model {
     }
 
     /**
+     * Find an active, non-deleted user by their username or employee ID.
+     * 
+     * @param string $identifier
+     * @return array|false
+     */
+    public function findByLoginIdentifier($identifier) {
+        $stmt = $this->db->prepare("
+            SELECT * FROM users 
+            WHERE (username = :u_identifier OR employee_id = :e_identifier) 
+              AND deleted_at IS NULL 
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'u_identifier' => $identifier,
+            'e_identifier' => $identifier
+        ]);
+        return $stmt->fetch();
+    }
+
+    /**
      * Find a user by their ID.
      * 
      * @param int $id
@@ -217,25 +237,27 @@ class User extends Model {
      * Increment failed attempts for a username.
      * 
      * @param string $username
-     * @return int New count of failed attempts
-     */
     /**
-     * Increment failed login attempts for a given username.
+     * Increment failed login attempts for a given username or employee ID.
      * 
-     * @param string $username
+     * @param string $identifier
      * @return int New count of failed attempts
      */
-    public function incrementFailedAttempts($username) {
+    public function incrementFailedAttempts($identifier) {
         $resetWindow = 900; // 15 minutes in seconds
 
         $stmt = $this->db->prepare("
             SELECT id, failed_attempts, status,
                    (last_failed_login_at IS NULL OR TIMESTAMPDIFF(SECOND, last_failed_login_at, NOW()) > :reset_window) as window_expired 
             FROM users 
-            WHERE username = :username 
+            WHERE (username = :u_identifier OR employee_id = :e_identifier) 
             LIMIT 1
         ");
-        $stmt->execute(['username' => $username, 'reset_window' => $resetWindow]);
+        $stmt->execute([
+            'u_identifier' => $identifier,
+            'e_identifier' => $identifier,
+            'reset_window' => $resetWindow
+        ]);
         $user = $stmt->fetch();
 
         if ($user) {

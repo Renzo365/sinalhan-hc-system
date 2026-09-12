@@ -148,7 +148,7 @@ Views contain the HTML and presentation markup that users see in their web brows
 ### Module Views
 | Folder | Files | Purpose (Simple Explanation) |
 |---|---|---|
-| **`auth/`** | `login.php`<br>`change-password.php` | The sign-in page with lockout warnings and the password update form. |
+| **`auth/`** | `login.php`<br>`change_password.php` | Institutional split-screen sign-in portal with dual-identifier support, lockout warnings, offline compliance modals, and the first-time password update enclave with real-time strength meter and criteria checklist. |
 | **`patients/`** | `index.php`<br>`create.php`<br>`edit.php`<br>`show.php` | Patient directory table with search, patient registration form with live validation, profile editing form, and the full medical profile timeline view. |
 | **`appointments/`** | `index.php`<br>`create.php`<br>`edit.php` | The appointment schedule list, booking form with conflict warning, and status updater. |
 | **`queue/`** | `index.php`<br>`display.php` | Staff queue management workstation and the fullscreen TV display board for waiting patients. |
@@ -190,7 +190,7 @@ This is the only directory exposed to the web browser.
 |---|---|
 | **`index.php`** | **The Front Controller.** The first file executed on every click. It boots the autoloader, starts secure sessions, checks CSRF tokens, registers the global error handler, and dispatches the router. |
 | **`.htaccess`** | Apache web server configuration that routes all website requests through `public/index.php`. |
-| **`assets/`** | Local copies of Bootstrap CSS, Bootstrap Icons, Flatpickr datepicker, SweetAlert2 alerts, and custom health center styling (guaranteeing 100% offline functionality). |
+| **`assets/`** | Local copies of Bootstrap CSS, Bootstrap Icons, Flatpickr datepicker, SweetAlert2 alerts, dedicated `css/auth-redesign.css` (split-screen branding, password strength meter, responsive layouts), and custom health center styling (guaranteeing 100% offline functionality). |
 
 ---
 
