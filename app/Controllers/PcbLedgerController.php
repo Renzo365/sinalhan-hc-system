@@ -33,6 +33,14 @@ class PcbLedgerController extends Controller {
             return;
         }
 
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            $_SESSION['form_errors'] = ['Security validation failed (CSRF token mismatch). Please refresh and try again.'];
+            $this->redirect("/patients/{$patientId}#tab-pcb");
+            return;
+        }
+
         $year = !empty($_POST['service_year']) ? (int)$_POST['service_year'] : (int)date('Y');
         
         // Helper to validate date or return null

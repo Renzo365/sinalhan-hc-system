@@ -1949,118 +1949,9 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             <?php endfor; ?>
                                         </select>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#obligatedEditCollapse" aria-expanded="false" aria-controls="obligatedEditCollapse">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#obligatedEditModal">
                                         <i class="bi bi-pencil-square me-1"></i> Update Dates
                                     </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Collapsible Form for Editing Obligated Services Dates -->
-                            <div class="collapse" id="obligatedEditCollapse">
-                                <div class="card-body bg-light border-bottom p-3">
-                                    <form action="<?= url('/patients/' . $patient['id'] . '/pcb/obligated') ?>" method="POST">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="service_year" value="<?= $pcbYear ?>">
-                                        
-                                        <div class="row g-3">
-                                            <div class="col-12">
-                                                <label class="form-label fw-semibold text-secondary small mb-1">Hypertension Classification for BP Frequency:</label>
-                                                <div class="d-flex gap-3">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="is_hypertensive" id="is_htn_no" value="0" <?= empty($pcbObligated['is_hypertensive']) ? 'checked' : '' ?>>
-                                                        <label class="form-check-label small" for="is_htn_no">
-                                                            <strong>Non-Hypertensive</strong> (Frequency: Once a year)
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="is_hypertensive" id="is_htn_yes" value="1" <?= !empty($pcbObligated['is_hypertensive']) ? 'checked' : '' ?>>
-                                                        <label class="form-check-label small text-danger" for="is_htn_yes">
-                                                            <strong>Hypertensive</strong> (Frequency: Once a month / quarterly review)
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Row 1: BP Measurements -->
-                                            <div class="col-12">
-                                                <h6 class="small fw-bold text-dark mb-1">1. BP Measurements (Dates Performed)</h6>
-                                                <div class="row g-2">
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">1st Qtr (Jan-Mar)</label>
-                                                        <input type="date" name="bp_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q1'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">2nd Qtr (Apr-Jun)</label>
-                                                        <input type="date" name="bp_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q2'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">3rd Qtr (Jul-Sep)</label>
-                                                        <input type="date" name="bp_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q3'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">4th Qtr (Oct-Dec)</label>
-                                                        <input type="date" name="bp_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q4'] ?? '') ?>">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Row 2: Periodic Clinical Breast Examination -->
-                                            <div class="col-12">
-                                                <h6 class="small fw-bold text-dark mb-1">2. Periodic Clinical Breast Examination (Dates Performed)</h6>
-                                                <div class="row g-2">
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">1st Qtr</label>
-                                                        <input type="date" name="cbe_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q1'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">2nd Qtr</label>
-                                                        <input type="date" name="cbe_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q2'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">3rd Qtr</label>
-                                                        <input type="date" name="cbe_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q3'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">4th Qtr</label>
-                                                        <input type="date" name="cbe_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q4'] ?? '') ?>">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Row 3: Visual Inspection with Acetic Acid -->
-                                            <div class="col-12">
-                                                <h6 class="small fw-bold text-dark mb-1">3. Visual Inspection with Acetic Acid / VIA (Dates Performed)</h6>
-                                                <div class="row g-2">
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">1st Qtr</label>
-                                                        <input type="date" name="via_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">2nd Qtr</label>
-                                                        <input type="date" name="via_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">3rd Qtr</label>
-                                                        <input type="date" name="via_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
-                                                    </div>
-                                                    <div class="col-6 col-md-3">
-                                                        <label class="form-label small text-muted mb-1">4th Qtr</label>
-                                                        <input type="date" name="via_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-12">
-                                                <label class="form-label small text-muted mb-1">Clinical Remarks / Compliance Notes</label>
-                                                <input type="text" name="remarks" class="form-control form-control-sm" placeholder="e.g. Regular compliance, hypertensive medications prescribed..." value="<?= h($pcbObligated['remarks'] ?? '') ?>">
-                                            </div>
-
-                                            <div class="col-12 text-end pt-2">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary me-2" data-bs-toggle="collapse" data-bs-target="#obligatedEditCollapse">Cancel</button>
-                                                <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">Save Obligated Dates (<?= $pcbYear ?>)</button>
-                                            </div>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
 
@@ -4031,6 +3922,128 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
                     <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Service Encounter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+   UPDATE OBLIGATED PREVENTIVE SERVICES MODAL (PAGE 3)
+   ========================================================================== -->
+<div class="modal fade" id="obligatedEditModal" tabindex="-1" aria-labelledby="obligatedEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="obligatedEditModalLabel">
+                    <i class="bi bi-calendar-check me-2"></i>Update Obligated Preventive Services (<?= $pcbYear ?>)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="<?= url('/patients/' . $patient['id'] . '/pcb/obligated') ?>" method="POST">
+                <?= csrf_field() ?>
+                <input type="hidden" name="service_year" value="<?= $pcbYear ?>">
+                
+                <div class="modal-body p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary small mb-1">Hypertension Classification for BP Frequency:</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_hypertensive" id="modal_is_htn_no" value="0" <?= empty($pcbObligated['is_hypertensive']) ? 'checked' : '' ?>>
+                                    <label class="form-check-label small" for="modal_is_htn_no">
+                                        <strong>Non-Hypertensive</strong> (Frequency: Once a year)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_hypertensive" id="modal_is_htn_yes" value="1" <?= !empty($pcbObligated['is_hypertensive']) ? 'checked' : '' ?>>
+                                    <label class="form-check-label small text-danger" for="modal_is_htn_yes">
+                                        <strong>Hypertensive</strong> (Frequency: Once a month / quarterly review)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 1: BP Measurements -->
+                        <div class="col-12">
+                            <h6 class="small fw-bold text-dark mb-1">1. BP Measurements (Dates Performed)</h6>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">1st Qtr (Jan-Mar)</label>
+                                    <input type="date" name="bp_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q1'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">2nd Qtr (Apr-Jun)</label>
+                                    <input type="date" name="bp_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q2'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">3rd Qtr (Jul-Sep)</label>
+                                    <input type="date" name="bp_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q3'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">4th Qtr (Oct-Dec)</label>
+                                    <input type="date" name="bp_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q4'] ?? '') ?>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Periodic Clinical Breast Examination -->
+                        <div class="col-12">
+                            <h6 class="small fw-bold text-dark mb-1">2. Periodic Clinical Breast Examination (Dates Performed)</h6>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">1st Qtr</label>
+                                    <input type="date" name="cbe_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q1'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">2nd Qtr</label>
+                                    <input type="date" name="cbe_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q2'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">3rd Qtr</label>
+                                    <input type="date" name="cbe_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q3'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">4th Qtr</label>
+                                    <input type="date" name="cbe_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q4'] ?? '') ?>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Visual Inspection with Acetic Acid -->
+                        <div class="col-12">
+                            <h6 class="small fw-bold text-dark mb-1">3. Visual Inspection with Acetic Acid / VIA (Dates Performed)</h6>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">1st Qtr</label>
+                                    <input type="date" name="via_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">2nd Qtr</label>
+                                    <input type="date" name="via_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">3rd Qtr</label>
+                                    <input type="date" name="via_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small text-muted mb-1">4th Qtr</label>
+                                    <input type="date" name="via_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small text-muted mb-1">Clinical Remarks / Compliance Notes</label>
+                            <input type="text" name="remarks" class="form-control form-control-sm" placeholder="e.g. Regular compliance, hypertensive medications prescribed..." value="<?= h($pcbObligated['remarks'] ?? '') ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Obligated Dates</button>
                 </div>
             </form>
         </div>
