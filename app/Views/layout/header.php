@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="<?= asset('vendor/bootstrap/css/bootstrap.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('vendor/bootstrap-icons/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= asset('vendor/sweetalert2/sweetalert2.min.css') ?>">
-    <link rel="stylesheet" href="<?= asset('vendor/flatpickr/flatpickr.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('vendor/datatables/css/dataTables.bootstrap5.min.css') ?>">
     <!-- Custom Style -->
     <link rel="stylesheet" href="<?= asset('css/index.css') ?>">

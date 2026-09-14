@@ -561,9 +561,19 @@ class PatientController extends Controller {
 
         $archivedPatients = $this->patientModel->allArchived($filters);
 
+        $consultationModel = new \App\Models\Consultation();
+        $archivedConsultations = $consultationModel->allArchived($filters);
+
+        $activeTab = trim($_GET['tab'] ?? 'patients');
+        if (!in_array($activeTab, ['patients', 'consultations'], true)) {
+            $activeTab = 'patients';
+        }
+
         $this->view('archive/patients', [
             'patients' => $archivedPatients,
-            'filters' => $filters
+            'consultations' => $archivedConsultations,
+            'filters' => $filters,
+            'activeTab' => $activeTab
         ]);
     }
 

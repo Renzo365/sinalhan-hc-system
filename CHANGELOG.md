@@ -5,6 +5,39 @@ This document records the official beta release history and updates automaticall
 
 ---
 
+## [Beta 1.4] - 2026-09-14
+### Clinical Care Workstation UI/UX Modernization & Archived Records Hub Overhaul
+* **Added**: Centralized **Archived Records Hub** (`GET /archive`, aliased with `/archive/patients`) strictly restricted to Administrators (`AdminMiddleware`), featuring a tabbed architecture: Tab 1 (Archived Patients) and Tab 2 (Archived Consultations) with live counter badges.
+* **Added**: Soft-delete (Archive) and Admin-only restoration lifecycle for Consultations with mandatory reason tracking via SweetAlert2, CSRF token validation, and immutable audit logging (`CONSULTATION_ARCHIVED`, `CONSULTATION_RESTORED`).
+* **Added**: Comprehensive `#viewVitalsModal` in the Clinical Care Workstation displaying complete physiological and anthropometric measurements (BP with triage coloring, Heart Rate, Respiration Rate, Temperature, Weight, Height, Asian BMI badge, $SpO_2$, Waist Circumference) and Clinical Notes / Symptoms with DOM XSS prevention (`.textContent`).
+* **Added**: Secure, role-restricted Delete actions for Vital Signs, Universal Immunizations, and Prenatal Serial Follow-Up Visits with SweetAlert2 confirmations and CSRF defense-in-depth.
+* **Changed**: Modernized Clinical Care Workstation action buttons across Consultations, Vitals, Immunizations, Prenatal Visits, and Appointments into unified Bootstrap 5 "More Actions" (`bi bi-three-dots-vertical`) dropdown menus, eliminating button crowding and visual clutter.
+* **Changed**: Streamlined Vital Signs Log table by hiding $SpO_2$ and Waist Circumference from direct table columns to prevent horizontal scrolling on 1366x768 clinic laptop displays.
+* **Security**: Enforced relational safety lock: vital signs linked to active consultations (`deleted_at IS NULL`) are protected against deletion until the parent consultation is soft-deleted, safeguarding SOAP objective audit integrity.
+* **Security**: Role-based deletion boundaries restricting standard staff to deleting only their own authored/administered records, while granting supervisory deletion override authority to Administrators.
+* **Quality & Assurance**: 116/116 automated assertions verified by `sinalhan_qa` across CSRF enforcement, consultation lifecycle, relational locks, role authorization, XSS escaping, boundary conditions, session inactivity timeouts, regression smoke checks, and pristine zero-collateral teardown.
+
+---
+
+## [Beta 1.6] - 2026-09-12
+### Authentication Portal Color Palette Alignment
+* **Improved**: Authentication portal styling aligned with the primary healthcare teal theme (`#0D7377`, `#0A3D40`, `#14A3A8`, `#095B5E`), harmonizing button states, left branding panel, and interactive elements with the core workstation.
+* **Improved**: Privacy Policy & Terms of Use modal headers standardized to solid healthcare teal (`#0D7377`) with crisp white typography and zero gradients.
+* **Fixed**: Removed legacy dark pine greens (`#0b3b32`, `#082d26`, `#06231e`) across buttons, brand backgrounds, input focus borders, and staff identity avatars.
+* **Quality & Assurance**: 110/110 automated tests passed across color assertions and auth regression suites with zero syntax or functional regressions.
+
+---
+
+## [Beta 1.5] - 2026-09-12
+### PhilHealth Annex A1 (IHP) Tab Layout & Baseline Vitals Polish
+* **Improved**: PhilHealth Annex A1 (IHP) layout with sequential 1-to-9 card ordering across read-only (`#ihp-view-mode`) and edit (`#ihp-edit-mode`) views.
+* **Added**: Baseline Vitals & Anthropometrics card (Card 6) in both read-only and edit modes of `#tab-ihp`, capturing Blood Pressure, Heart Rate, Respiratory Rate, Height, Weight, and Waist Circumference.
+* **Added**: Dynamic Asian WHO BMI calculation badge with real-time classification (<18.5 Underweight, 18.5–22.9 Normal, 23.0–27.4 Overweight, $\ge$27.5 Obese) and zero-division mathematical guardrails.
+* **Fixed**: Symmetrical 2-column desktop grid pairing (`col-12 col-md-6`) for Past Surgical History + Personal & Social History (Cards 3 & 4), and Lifetime Immunizations + Baseline Vitals & Anthropometrics (Cards 5 & 6), resolving unbalanced desktop whitespace gaps.
+* **Security**: Added controller-level CSRF token validation (`hash_equals(csrf_token(), $token)`) and non-positive physiological measurement sanitization in `PatientMedicalHistoryController`. 95/95 automated assertions passed.
+
+---
+
 ## [Beta 1.3] - 2026-09-12
 ### Authentication Portal Redesign & First-Time Password Security Enclave
 * **Added**

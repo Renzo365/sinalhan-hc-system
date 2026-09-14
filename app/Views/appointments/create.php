@@ -104,10 +104,10 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <label for="appointment_date" class="form-label fw-semibold text-secondary small">Appointment Date <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar-event"></i></span>
-                                    <input type="text" 
+                                    <input type="date" 
                                            name="appointment_date" 
                                            id="appointment_date" 
-                                           class="form-control bg-light border-start-0 flatpickr-date" 
+                                           class="form-control bg-light border-start-0" 
                                            placeholder="Select Date" 
                                            value="<?= h($input['appointment_date'] ?? '') ?>" 
                                            required>
@@ -119,10 +119,10 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <label for="appointment_time" class="form-label fw-semibold text-secondary small">Appointment Time <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-clock"></i></span>
-                                    <input type="text" 
+                                    <input type="time" 
                                            name="appointment_time" 
                                            id="appointment_time" 
-                                           class="form-control bg-light border-start-0 flatpickr-time-input" 
+                                           class="form-control bg-light border-start-0" 
                                            placeholder="Select Time" 
                                            value="<?= h($input['appointment_time'] ?? '') ?>" 
                                            required>
@@ -208,21 +208,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Initialize Datepicker (Date from today onwards)
-    flatpickr('.flatpickr-date', {
-        dateFormat: 'Y-m-d',
-        minDate: 'today',
-        allowInput: true
-    });
 
-    // 2. Initialize Timepicker (12-hour AM/PM format)
-    flatpickr('.flatpickr-time-input', {
-        enableTime: true,
-        noCalendar: true,
-        dateFormat: 'H:i',
-        time_24hr: true,
-        allowInput: true
-    });
 
     // 3. Conflict Detector AJAX
     const dateInput = document.getElementById('appointment_date');

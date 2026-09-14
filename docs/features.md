@@ -274,9 +274,157 @@ When an account is newly provisioned or reset by an administrator (`must_change_
 * **Instant Confirmation Matcher**: Real-time matching indicator verifying that the confirmation password exactly mirrors the new password before submission.
 * **Safe Session Exit**: Includes a CSRF-protected "Cancel & Sign Out" button wrapped in a POST form that terminates the session and safely returns the workstation to the login portal.
 
-### 12.5 Offline Statutory Compliance Modals
+### 12.5 Color Harmonization with Core System Architecture
+The authentication portal and security enclaves are visually harmonized with the primary healthcare teal theme used across the internal workstation:
+* **Button States (`.btn-auth-primary`)**:
+  * Base state: Solid `#0D7377` (Healthcare Teal) with matching 1px border and soft drop shadow (`rgba(13, 115, 119, 0.25)`).
+  * Hover state: Solid `#14A3A8` (Teal Light) with elevated hover shadow (`rgba(13, 115, 119, 0.35)`).
+  * Active / Pressed state: Solid `#095B5E` (Teal Dark) with matching dark border.
+* **Left Institutional Branding Panel (`.auth-brand-col`)**: Solid `#0A3D40` (aligned with the core system's `--color-sidebar` design token), providing an authoritative and cohesive civic backdrop.
+* **Compliance Modals (`.compliance-modal .modal-header`)**: Standardized to solid `#0D7377` with pure white header typography and crisp inverted close icons (`filter: brightness(0) invert(1)`), enforcing zero linear or radial gradients.
+* **Staff Identity Avatar (`.staff-initials-avatar`)**: Standardized to solid `#0D7377` with subtle depth shadow (`rgba(13, 115, 119, 0.3)`), eliminating inconsistent purple/blue gradients and harmonizing with the clinical workstation identity badges.
+* **Focus & Interaction States**: Input groups (`.auth-input-group:focus-within`) feature borders in `var(--auth-teal-primary)` (`#0D7377`) and an ambient focus ring (`rgba(13, 115, 119, 0.18)`), eliminating legacy dark pine tones (`#0b3b32`, `#082d26`, `#06231e`).
+
+### 12.6 Offline Statutory Compliance Modals
 * **Privacy Policy Modal (Data Privacy Act of 2012 / RA 10173)**: Self-contained offline modal accessible from all authentication views detailing health data collection purposes, patient record retention, lawful processing, and health worker confidentiality duties.
 * **Terms of Use Modal (Staff Acceptable Use Policy)**: Offline modal detailing health center computer usage guidelines, audit logging disclosure, session lockout rules, and non-sharing of user credentials.
 * **Zero External Dependencies**: All modals, styles, SVGs, and scripts are served 100% locally with zero external CDNs, Google Fonts, or remote asset requests.
+
+---
+
+## 13. Clinical Records: PhilHealth Annex A1 (IHP) Medical History Architecture
+
+The Clinical Care Workstation features a comprehensive electronic implementation of the mandatory PhilHealth Annex A1 Individual Health Profile (IHP) within the `#tab-ihp` pane. It captures holistic baseline clinical histories across 9 numbered sequential cards in both read-only (`#ihp-view-mode`) and edit (`#ihp-edit-mode`) views.
+
+### 13.1 Sequential 1-to-9 Card Structure
+The IHP interface organizes clinical documentation into a standardized, intuitive 1-through-9 numbered hierarchy matching DOH and PhilHealth regulatory guidelines:
+1. **Past Medical History**: Chronic condition checklists (Hypertension, Diabetes, Bronchial Asthma, Tuberculosis/PTB, Allergies, Cancer, Hepatitis, etc.) with contextual text expanders for specific organs, highest recorded BP, and allergy triggers.
+2. **Family Medical History**: Hereditary condition checklists with organ, hepatitis type, and highest recorded family BP annotations.
+3. **Past Surgical History**: Major and minor operative records, procedure dates, and admitting hospital facilities (up to 2 operations).
+4. **Personal & Social History**: Substance exposure metrics including smoking status & cumulative pack years, alcohol status & bottles per day, and illicit drug exposure flags.
+5. **Lifetime Immunization Record**: Comprehensive immunization checklists categorized across lifecycle cohorts (Childhood, Young Women/HPV, Pregnancy/Tetanus Toxoid, Elderly/Pneumococcal & Flu, plus custom specifications).
+6. **Baseline Vitals & Anthropometrics**: Core physiological and biometric measurements recorded upon enrollment, including BP, Heart Rate, Respiratory Rate, Height, Weight, Waist Circumference, and dynamic BMI.
+7. **Physical Examination**: Comprehensive head-to-toe organ system evaluation checklists (Skin, HEENT, Chest & Lungs, Heart, Abdomen, Extremities) alongside clinical remarks.
+8. **Female Menstrual & Reproductive History**: Menarche age, sexual debut age, LMP, cycle duration/interval, pads per day, menopausal status, and family planning methods. *(Conditionally rendered for female patients only; omitted for male records).*
+9. **Pregnancy & Obstetric History**: Full GTPAL index (Gravida, Para, Term, Preterm, Abortions, Living Children), delivery types, pre-eclampsia history, and family planning counseling. *(Conditionally rendered for female patients only; omitted for male records).*
+
+### 13.2 Symmetrical 2-Column Desktop Grid Pairing
+To optimize clinical reading ergonomics and eliminate large empty whitespace gaps on desktop clinic monitors, the layout enforces a balanced 2-column Bootstrap grid (`col-12 col-md-6`):
+* **Surgical + Social History Pairing**: *Card 3 (Past Surgical History)* is placed side-by-side with *Card 4 (Personal & Social History)* (`col-12 col-md-6`).
+* **Lifetime Immunizations + Baseline Vitals Pairing**: *Card 5 (Lifetime Immunization Record)* is placed side-by-side with *Card 6 (Baseline Vitals & Anthropometrics)* (`col-12 col-md-6`).
+
+This symmetrical pairing resolves previous desktop whitespace gaps where Section 5 spanned an entire desktop row leaving excessive empty space, ensuring that vitals, immunizations, and social histories align cleanly on 1080p and widescreen clinic displays.
+
+### 13.3 Integrated Baseline Vitals & Anthropometrics Card
+Card 6 is integrated directly into both the read-only overview (`#ihp-view-mode`) and the editing form (`#ihp-edit-mode`), establishing the patient's enrollment physiological baseline:
+* **Blood Pressure**: Systolic and Diastolic BP (mmHg).
+* **Heart Rate**: Pulse rate (bpm).
+* **Respiratory Rate**: Breaths per minute (cpm).
+* **Height & Weight**: Height (cm) and Body Weight (kg).
+* **Waist Circumference**: Abdominal measurement in cm for central adiposity and metabolic syndrome risk assessment.
+
+### 13.4 WHO Asian Body Mass Index (BMI) Classification
+Body Mass Index is automatically computed in real-time on the client-side (`keyup` / `input`) and verified on the server:
+$$\text{BMI} = \frac{\text{Weight (kg)}}{\left(\frac{\text{Height (cm)}}{100}\right)^2}$$
+
+In compliance with the **World Health Organization (WHO) Expert Consultation for Asian Populations**, the system applies ethnicity-specific cutoffs:
+* **Underweight**: $\text{BMI} < 18.5$ (Warning badge: `bg-info text-dark`)
+* **Normal**: $18.5 \le \text{BMI} \le 22.9$ (Success badge: `bg-success`)
+* **Overweight**: $23.0 \le \text{BMI} \le 27.4$ (Warning badge: `bg-warning text-dark`)
+* **Obese**: $\text{BMI} \ge 27.5$ (Danger badge: `bg-danger`)
+
+The system implements rigorous mathematical guardrails: zero, negative, or empty heights and weights yield `null` without throwing `DivisionByZeroError` exceptions or rendering broken badges.
+
+### 13.5 Defense-in-Depth CSRF Protection & Input Sanitization
+* **Controller-Level CSRF Token Validation**: In addition to application-level front-controller CSRF routing, `PatientMedicalHistoryController::save()` enforces strict defense-in-depth CSRF verification (`hash_equals(csrf_token(), $_POST['csrf_token'])`). Expired or forged tokens trigger an immediate safe redirect with user feedback.
+* **Non-Positive Measurement Sanitization**: All numeric vitals fields (`baseline_bp_systolic`, `baseline_bp_diastolic`, `baseline_heart_rate`, `baseline_respiratory_rate`, `baseline_height`, `baseline_weight`, `baseline_waist_circumference`) strictly reject non-positive values ($\le 0$) or malicious input strings, converting invalid inputs to `null` before database persistence.
+* **XSS Output Escaping**: All baseline vitals attributes rendered in both view and edit modes are escaped through `htmlspecialchars()` via the `h()` view helper.
+* **Comprehensive Audit Trail**: Successful updates generate an immutable `PATIENT_IHP_UPDATED` entry in `audit_logs` capturing the patient number, staff ID, and timestamp.
+
+---
+
+## 14. Clinical Care Workstation Action Modernization
+
+The Clinical Care Workstation (`/patients/{id}`) provides an integrated, multi-tabbed master folder for managing a patient's complete clinical encounters. To optimize screen ergonomics and maintain clinical data integrity, the interface features unified action controls, decluttered tables, and relational safety locks.
+
+### 14.1 Unified "More Actions" Dropdown Architecture
+Across all active clinical tables, legacy inline buttons have been consolidated into standardized Bootstrap 5 dropdown menus triggered by a vertical ellipsis icon (`bi bi-three-dots-vertical`). This prevents button crowding, eliminates accidental clicks, and provides a uniform interaction pattern across all tabs:
+* **Consultations (`#tab-consultations`)**:
+  * **View SOAP Details**: Launches `#viewConsultationModal` via AJAX to review Subjective, Objective, Assessment, and Plan notes alongside linked vitals.
+  * **Edit Consultation**: Navigates to `/consultations/{id}/edit` for clinician corrections.
+  * **Archive (Soft-Delete) Consultation**: Prompts for a mandatory archive reason via SweetAlert2, soft-deleting the consultation with CSRF protection and moving it to the Archived Records Hub.
+* **Vital Signs Log (`#tab-vitals`)**:
+  * **View All Metrics & Notes**: Opens the comprehensive `#viewVitalsModal` showcasing complete anthropometric and physiological data.
+  * **Delete Vitals**: Prompts for confirmation and executes role-restricted soft-deletion with relational lock verification.
+* **Universal Immunizations (`#tab-immunizations`)**:
+  * **Delete Immunization Record**: Prompts for confirmation detailing the vaccine name and dose number, executing role-restricted deletion with CSRF protection.
+* **Prenatal Serial Visits (`#tab-prenatal`)**:
+  * **Delete Checkup Visit**: Prompts for confirmation specifying the visit date, executing role-restricted deletion with CSRF protection.
+* **Appointments (`#tab-appointments`)**:
+  * **Edit Appointment**: Navigates to `/appointments/{id}/edit`.
+  * **Cancel Appointment**: Executes status transition to `Cancelled` with SweetAlert2 confirmation.
+
+### 14.2 Decluttered Vital Signs Log & Comprehensive View Modal
+To guarantee optimal viewing on 1366x768 and smaller clinic workstation laptops without horizontal table scrolling, the Vital Signs Log table has been streamlined:
+* **Table Columns**: Date/Time, Blood Pressure (with abnormal systolic/diastolic color alerts), Heart Rate, Respiratory Rate, Temperature, Weight & Height, BMI (with Asian WHO classification badge), Recorded By, and Actions.
+* **Responsive Decluttering**: Oxygen Saturation ($SpO_2$) and Adult Waist Circumference columns are hidden from the primary table view to preserve horizontal real estate.
+* **Comprehensive `#viewVitalsModal`**:
+  * Clicking **View All Metrics & Notes** launches a dedicated modal displaying all recorded metrics: Blood Pressure, Pulse, Temperature, Respiratory Rate, Oxygen Saturation ($SpO_2$), Waist Circumference, Weight, Height, and computed BMI badge.
+  * Displays the full text of **Clinical Notes & Patient Symptoms** recorded during triage.
+  * Displays the recording staff member's name and exact timestamp.
+* **DOM XSS Prevention**: All modal values are embedded via `data-*` HTML attributes escaped with `h()` and dynamically populated into DOM nodes using `.textContent` instead of `.innerHTML`, neutralizing cross-site scripting risks.
+
+### 14.3 Secure Role & Ownership Restricted Deletion
+To prevent unauthorized deletion of clinical data, strict authorization checks are enforced on all deletion endpoints:
+* **Ownership Boundary**: Standard staff members can only delete records that they personally recorded or administered. Attempts by staff members to delete records authored by a peer are blocked and logged.
+* **Administrator Authority**: Primary Administrators and Co-Administrators possess supervisory privileges to delete records regardless of author/recorder.
+* **Defense-in-Depth CSRF**: Endpoints (`/vital-signs/{id}/delete`, `/immunizations/{id}/delete`, `/prenatal/visit/{id}/delete`) strictly enforce `hash_equals(csrf_token(), $_POST['csrf_token'])`. Missing or forged tokens trigger immediate `SECURITY_VIOLATION` audit log entries.
+
+### 14.4 Relational Safety Lock (Active Consultation Linkage)
+To protect clinical audit trails and ensure consultation SOAP notes do not lose their objective physiological basis:
+* Vital signs linked to an **active consultation** cannot be deleted (`VitalSigns::isLinkedToActiveConsultation($id)`).
+* If a staff member or administrator attempts to delete a vital signs record referenced by an active consultation (`deleted_at IS NULL`), the deletion is blocked with a descriptive error message: *"This vital signs record is linked to an active consultation. Please archive or remove the consultation first."*
+* Once the linked consultation is soft-deleted (archived), the vital signs record may be deleted.
+* Unlinked vital signs records delete cleanly without restriction.
+
+---
+
+## 15. Archived Records Hub & Clinical Data Retention
+
+The system implements a centralized **Archived Records Hub** accessible exclusively to Administrators at `/archive` (aliased with `/archive/patients`) to manage soft-deleted records and uphold statutory healthcare data retention compliance.
+
+### 15.1 Unified Tabbed Hub Architecture
+The Archived Records Hub organizes soft-deleted healthcare records into dedicated category tabs with real-time numeric badges:
+* **Tab 1: Archived Patients (`#tab-patients`)**:
+  * Lists all soft-deleted patient master profiles.
+  * Shows archive timestamp, patient name, patient number, archive reason, and archiver identity badge.
+  * Features live badge counter showing the exact number of archived patients.
+  * Search and date-range filter form targeting patient archive records.
+  * Dedicated DataTables initialization with responsive pagination and sorting.
+* **Tab 2: Archived Consultations (`#tab-consultations`)**:
+  * Lists all soft-deleted consultation encounters.
+  * Shows archive timestamp, patient full name & ID, attending clinician, diagnosis assessment preview (truncated with full hover tooltip), archive reason, and archiver name badge.
+  * Features live badge counter showing the exact number of archived consultations.
+  * Search and date-range filter form targeting consultation records.
+  * Dedicated DataTables initialization with descending sort on archive timestamp.
+* **Persistent Tab URL Synchronization**:
+  * Switching tabs updates the browser URL (`/archive?tab=patients` or `/archive?tab=consultations`) via HTML5 `history.replaceState`.
+  * Refreshing the page (`F5`) or navigating via direct bookmark persists the active tab seamlessly.
+
+### 15.2 Consultation Soft-Delete & Restore Lifecycle
+* **Soft-Delete (Archive) Workflow**:
+  * Consultations can be soft-deleted by the consulting clinician, original author, or an Administrator via `POST /consultations/{id}/archive`.
+  * Requires a mandatory archive reason entered via a SweetAlert2 prompt (defaulting to *"Archived by staff"* if empty).
+  * Sets `deleted_at = CURRENT_TIMESTAMP`, `deleted_by = user_id`, and `archive_reason = :reason`.
+  * Soft-deleted consultations are excluded from active patient views (`Consultation::findByPatientId`) while preserving historical database references.
+  * Generates an immutable `CONSULTATION_ARCHIVED` audit log.
+* **Administrator-Only Restore Workflow**:
+  * Restoration is strictly restricted to Administrators (`AdminMiddleware`) via `POST /archive/consultations/{id}/restore`. Non-admin restore attempts are rejected with HTTP 403 / unauthorized redirects.
+  * Clicking the Restore button (`bi-arrow-counterclockwise`) prompts a SweetAlert2 confirmation dialog.
+  * Upon confirmation, the controller clears `deleted_at = NULL`, `deleted_by = NULL`, and `archive_reason = NULL`.
+  * The consultation immediately reappears in the patient's active workstation folder and disappears from the Archived Records Hub.
+  * Generates an immutable `CONSULTATION_RESTORED` audit log.
+* **Statutory Compliance**: Permanent physical deletion of patient profiles and clinical consultations is permanently disabled, ensuring full compliance with Republic Act 10173 (Data Privacy Act of 2012) and Department of Health medical record retention mandates.
+
 
 

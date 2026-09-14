@@ -114,7 +114,7 @@ body.auth-redesign-body {
 .brand-status-wrapper {
   display: block;
   width: 100%;
-  margin-bottom: 1.15rem;
+  margin-bottom: 0.75rem;
 }
 
 .brand-status-pill {
@@ -356,7 +356,7 @@ body.auth-redesign-body {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0b3b32 0%, #0d7377 100%);
+  background-color: #0b3b32;
   color: #ffffff;
   font-weight: 700;
   font-size: 1rem;
@@ -364,7 +364,7 @@ body.auth-redesign-body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(13, 115, 119, 0.3);
+  box-shadow: 0 2px 6px rgba(11, 59, 50, 0.3);
 }
 
 .staff-info-title {
@@ -681,7 +681,7 @@ body.auth-redesign-body {
 
 /* Compliance Modals Styling */
 .compliance-modal .modal-header {
-  background: linear-gradient(135deg, #0b3b32 0%, #0d7377 100%);
+  background-color: #0b3b32;
   color: #ffffff;
   border-bottom: none;
   padding: 1.25rem 1.5rem;

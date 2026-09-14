@@ -55,9 +55,12 @@ return function (\App\Core\Router $router) {
     $router->post('/wellbaby/growth-log/{id}/delete', 'WellbabyController@deleteGrowthLog', [AuthMiddleware::class]);
     $router->post('/patients/{id}/wellbaby/epi-schedule', 'WellbabyController@batchSaveEPI', [AuthMiddleware::class]);
     $router->post('/patients/{id}/immunizations/record', 'WellbabyController@recordImmunization', [AuthMiddleware::class]);
+    $router->post('/immunizations/{id}/delete', 'WellbabyController@deleteImmunization', [AuthMiddleware::class]);
+    $router->post('/prenatal/visit/{id}/delete', 'PrenatalController@deleteVisit', [AuthMiddleware::class]);
 
     // Vital Signs Routes
     $router->post('/vital-signs', 'VitalSignsController@store', [AuthMiddleware::class]);
+    $router->post('/vital-signs/{id}/delete', 'VitalSignsController@delete', [AuthMiddleware::class]);
 
     // Consultation Routes
     $router->get('/patients/{id}/consultations/create', 'ConsultationController@create', [AuthMiddleware::class]);
@@ -66,6 +69,8 @@ return function (\App\Core\Router $router) {
     $router->get('/consultations/{id}/edit', 'ConsultationController@edit', [AuthMiddleware::class]);
     $router->post('/consultations/{id}', 'ConsultationController@update', [AuthMiddleware::class]);
     $router->post('/consultations/{id}/cancel', 'ConsultationController@cancel', [AuthMiddleware::class]);
+    $router->post('/consultations/{id}/archive', 'ConsultationController@archive', [AuthMiddleware::class]);
+    $router->post('/archive/consultations/{id}/restore', 'ConsultationController@restore', [AdminMiddleware::class]);
 
     // Appointment Routes
     $router->get('/appointments', 'AppointmentController@index', [AuthMiddleware::class]);
@@ -96,7 +101,8 @@ return function (\App\Core\Router $router) {
     $router->get('/backup/download', 'BackupController@download', [AdminMiddleware::class]);
     $router->post('/backup/delete', 'BackupController@delete', [AdminMiddleware::class]);
 
-    // Patient Archiving Routes
+    // Archived Records Hub Routes (Admin Only)
+    $router->get('/archive', 'PatientController@archivedIndex', [AdminMiddleware::class]);
     $router->post('/patients/{id}/archive', 'PatientController@archive', [AdminMiddleware::class]);
     $router->get('/archive/patients', 'PatientController@archivedIndex', [AdminMiddleware::class]);
     $router->post('/archive/patients/{id}/restore', 'PatientController@restore', [AdminMiddleware::class]);

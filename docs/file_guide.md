@@ -93,16 +93,16 @@ Controllers receive user inputs from buttons or forms, perform necessary checks,
 |---|---|
 | **`AuthController.php`** | **Authentication & Security Controller.** Handles logging in, logging out, password resets, enforcing the 15-minute temporary lockout after 5 failed password attempts, and managing session security. |
 | **`DashboardController.php`** | **Dashboard Overview Controller.** Gathers summary numbers for the main dashboard (total patients, today's queue count, upcoming appointments, low inventory alerts, and quick actions). |
-| **`PatientController.php`** | **Patient Records Controller.** Handles patient registration, searching, viewing full profiles, editing demographic info (including blood type, occupation, PhilHealth number), and archiving/restoring patient records. |
+| **`PatientController.php`** | **Patient Records & Archive Hub Controller.** Handles patient registration, searching, viewing full profiles, editing demographic info (including blood type, occupation, PhilHealth number), and managing the centralized tabbed Archived Records Hub (`/archive`) for patients and consultations. |
 | **`AppointmentController.php`** | **Appointment Scheduling Controller.** Handles booking patient appointments, editing schedules, preventing time-slot conflicts, updating statuses (*Scheduled, Completed, Cancelled, Missed*), and listing upcoming appointments. |
 | **`QueueController.php`** | **Daily Queue Flow Controller.** Manages the walk-in patient queue (*Waiting, In Consultation, Done, Cancelled*), moves patients between stages, and powers the live Public TV Queue Display screen. |
-| **`ConsultationController.php`** | **Doctor & Nurse Clinical Notes Controller.** Handles creating and viewing SOAP clinical consultation records (Subjective, Objective, Assessment, Plan) linked to patient histories. |
-| **`VitalSignsController.php`** | **Triage & Vital Signs Controller.** Handles recording blood pressure, heart rate, temperature, respiratory rate, weight, height, and BMI during triage before consultation. |
+| **`ConsultationController.php`** | **Doctor & Nurse Clinical Notes Controller.** Handles creating, viewing, editing, and soft-deleting (archiving) SOAP clinical consultation records with mandatory reasons and admin restoration. |
+| **`VitalSignsController.php`** | **Triage & Vital Signs Controller.** Handles recording vital signs during triage and role-restricted deletion with relational safety locks against active consultations. |
 | **`UserController.php`** | **Staff Accounts & Access Controller.** Admin-only panel for registering staff, managing credentials, enforcing full CSRF defense-in-depth on all mutation actions, strict backend validation (regex/email filter), pre-computing lockout status for pure MVC views, retaining old input on errors, and managing password resets. Enforces Main Admin vs Co-Admin privilege boundaries. |
 | **`ReportController.php`** | **Reports & Analytics Controller.** Generates administrative reports and DOH clinical registries (Maternal Health Registry, Child EPI Coverage, Chronic Morbidity Registry) with printable views and CSV data exports. |
 | **`AuditLogController.php`** | **Audit Trail Controller.** Admin-only panel to review system activity logs (who logged in, created a patient, edited a record, or changed a user status) with date and role filtering. |
 | **`BackupController.php`** | **Database Backup Controller.** Admin-only panel that creates full SQL database backup snapshots covering all clinical and system tables, allows downloading backups, and manages backup history. |
-| **`PatientMedicalHistoryController.php`** | **Annex A1 IHP Controller.** Handles saving and updating comprehensive PhilHealth Annex A1 Individual Health Profile histories, surgical logs, hereditary diseases, and habits. |
+| **`PatientMedicalHistoryController.php`** | **Annex A1 IHP Controller.** Handles saving and updating comprehensive PhilHealth Annex A1 Individual Health Profile histories across the 1-to-9 sequential card structure, baseline vitals & anthropometrics, surgical logs, hereditary conditions, and lifestyle habits with CSRF defense-in-depth and non-positive vital measurement sanitization. |
 | **`PrenatalController.php`** | **Maternal & Pre-Natal Controller.** Manages pregnancy episode enrollment, Naegele EDC and dynamic AOG calculations, serial trimester follow-up checkup visits, and past deliveries matrix. |
 | **`WellbabyController.php`** | **Well Baby & Pediatric Growth Controller.** Manages infant birth records, DOH Routine EPI Childhood Immunization checkoffs, Vitamin A/Deworming, and monthly pediatric growth monitoring logs. |
 | **`ProfileController.php`** | **User Profile & Self-Service Controller.** Handles displaying personal profile details, self-service contact updates, voluntary password changes with current password confirmation, session synchronization, and audit logging. |
@@ -126,8 +126,8 @@ Models interact directly with MySQL database tables using secure prepared statem
 | **`Immunization.php`** | `immunizations` | Manages universal childhood (EPI) and adult immunization records, vaccine doses, and administration timestamps. |
 | **`Appointment.php`** | `appointments` | Manages appointment records with Program Type tagging, date/time conflict validation, status updates, and calendar listings. |
 | **`QueueEntry.php`** | `queue_entries` | Manages daily queue ticket numbering (e.g. `001`), Service Type tagging, queue status updates, and live display board data feeds. |
-| **`Consultation.php`** | `consultations` | Saves and retrieves clinical diagnosis notes, chief complaints, physical findings, and prescription plans. |
-| **`VitalSigns.php`** | `vital_signs` | Saves patient triage measurements (BP, Pulse, Temperature, Height, Weight, BMI) linked to patients or consultations. |
+| **`Consultation.php`** | `consultations` | Saves, updates, soft-deletes (archives), and restores clinical diagnosis notes, chief complaints, and SOAP plans (`archive()`, `restore()`, `allArchived()`). |
+| **`VitalSigns.php`** | `vital_signs` | Saves patient triage measurements and enforces relational safety checking against active consultations before deletion (`isLinkedToActiveConsultation()`). |
 | **`AuditLog.php`** | `audit_logs` | Writes and queries immutable security audit logs (user, action name, IP address, timestamp, details) for accountability. |
 
 ---
@@ -158,7 +158,7 @@ Views contain the HTML and presentation markup that users see in their web brows
 | **`reports/`** | `index.php`<br>`export.php` | Statistical reporting filters and the clean printable/exportable report layout. |
 | **`audit-logs/`** | `index.php` | System audit trail table with filters for date, user, role, and action type. |
 | **`backup/`** | `index.php` | Database backup management table with one-click snapshot and download buttons. |
-| **`archive/`** | `patients.php` | Admin-only archive vault where soft-deleted patient records can be viewed and restored. |
+| **`archive/`** | `patients.php` | Admin-only Archived Records Hub featuring a unified tabbed interface for soft-deleted patients and consultations with live badges, search/date filters, and SweetAlert restore workflows. |
 | **`errors/`** | `404.php`<br>`500.php` | Clean, branded error pages for "Page Not Found" (404) and "Internal Server Error" (500). |
 
 ---

@@ -374,4 +374,87 @@ class ConsultationController extends Controller {
 
         $this->json($consultation);
     }
+
+    /**
+     * Archive (soft-delete) an existing consultation record.
+     * 
+     * @param int $id
+     */
+    public function archive($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Consultations', "CSRF mismatch while attempting to archive consultation #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $consultation = $this->consultationModel->findById($id);
+        if (!$consultation) {
+            http_response_code(404);
+            $this->view('errors/404');
+            return;
+        }
+
+        $patientId = (int)$consultation['patient_id'];
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        $canArchive = ($userRole === 'admin' || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
+
+        if (!$canArchive) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to archive this consultation.';
+            $this->redirect("/patients/{$patientId}#tab-consultations");
+            return;
+        }
+
+        $reason = trim($_POST['reason'] ?? '') ?: 'Archived by staff';
+        $this->consultationModel->archive($id, $currentUserId, $reason);
+
+        AuditLog::log('CONSULTATION_ARCHIVED', 'Consultations', "Archived consultation ID #{$id} for patient: {$consultation['pat_first']} {$consultation['pat_last']}");
+
+        $_SESSION['success_message'] = 'Consultation record archived successfully.';
+        $this->redirect("/patients/{$patientId}#tab-consultations");
+    }
+
+    /**
+     * Restore an archived consultation record.
+     * 
+     * @param int $id
+     */
+    public function restore($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Enforce Admin role
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if ($userRole !== 'admin') {
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can restore archived consultations.';
+            $this->redirect('/archive/patients?tab=consultations');
+            return;
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Consultations', "CSRF mismatch while attempting to restore consultation #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/archive/patients?tab=consultations');
+            return;
+        }
+
+        if ($this->consultationModel->restore($id)) {
+            AuditLog::log('CONSULTATION_RESTORED', 'Consultations', "Restored consultation ID #{$id}");
+            $_SESSION['success_message'] = 'Consultation record restored successfully.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to restore consultation. Please try again.';
+        }
+
+        $this->redirect('/archive/patients?tab=consultations');
+    }
 }

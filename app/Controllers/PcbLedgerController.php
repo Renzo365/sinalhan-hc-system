@@ -83,7 +83,7 @@ class PcbLedgerController extends Controller {
             $_SESSION['form_errors'] = ['Failed to update PhilHealth PCB Obligated Services. Please try again.'];
         }
 
-        $this->redirect("/patients/{$patientId}#tab-pcb");
+        $this->redirect("/patients/{$patientId}?pcb_year={$year}#tab-pcb");
     }
 
     /**

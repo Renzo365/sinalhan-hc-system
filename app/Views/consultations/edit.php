@@ -297,12 +297,13 @@ require dirname(__DIR__) . '/layout/header.php';
                     <label for="consulted_at" class="form-label fw-semibold text-secondary small">Consultation Date & Time <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text bg-light text-muted"><i class="bi bi-clock"></i></span>
-                        <input type="text" 
-                               name="consulted_at" 
-                               id="consulted_at" 
-                               class="form-control bg-white" 
-                               value="<?= h($input['consulted_at'] ?? $consultation['consulted_at'] ?? '') ?>" 
-                               required>
+                                    <input type="datetime-local" 
+                                           name="consulted_at" 
+                                           id="consulted_at" 
+                                           class="form-control bg-light border-start-0" 
+                                           value="<?= date('Y-m-d\TH:i', strtotime($input['consulted_at'] ?? $consultation['consulted_at'] ?? 'now')) ?>" 
+                                           max="<?= date('Y-m-d\TH:i') ?>"
+                                           required>
                     </div>
                 </div>
             </div>
@@ -441,14 +442,6 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Initialize flatpickr on consulted_at with date/time support
-    flatpickr("#consulted_at", {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i:S",
-        defaultDate: <?= json_encode($input['consulted_at'] ?? $consultation['consulted_at'] ?? date('Y-m-d H:i:s')) ?>,
-        maxDate: new Date(),
-        allowInput: true
-    });
 
     // 2. Dynamic Vital Signs Preview Handler
     const vitalsSelect = document.getElementById('vital_signs_id');

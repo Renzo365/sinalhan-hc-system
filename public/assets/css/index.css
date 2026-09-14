@@ -490,18 +490,7 @@ a:hover {
   }
 }
 
-/* --- Flatpickr input-group fixes --- */
-.input-group .flatpickr-wrapper {
-  flex: 1 1 auto;
-  width: 1%;
-  display: flex !important;
-}
 
-.input-group .flatpickr-wrapper input {
-  border-top-right-radius: 0.375rem !important;
-  border-bottom-right-radius: 0.375rem !important;
-  width: 100%;
-}
 
 /* --- DataTables Spacing & UI Polish --- */
 .dataTables_wrapper .row:first-child {

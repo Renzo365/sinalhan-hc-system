@@ -97,12 +97,12 @@ require dirname(__DIR__) . '/layout/header.php';
                         <label for="dob" class="form-label fw-semibold text-secondary small">Date of Birth <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-date"></i></span>
-                            <input type="text" 
+                            <input type="date" 
                                    name="dob" 
                                    id="dob" 
-                                   class="form-control bg-white dob-picker" 
-                                   placeholder="YYYY-MM-DD" 
+                                   class="form-control bg-white" 
                                    value="<?= h($patient['dob']) ?>" 
+                                   max="<?= date('Y-m-d') ?>"
                                    required>
                         </div>
                     </div>
@@ -145,7 +145,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                id="religion" 
                                class="form-control" 
                                placeholder="e.g. Roman Catholic, INC, Islam" 
-                               maxlength="100"
+                               maxlength="100" 
                                value="<?= h($patient['religion'] ?? '') ?>">
                     </div>
                     <div class="col-12 col-md-6">
@@ -344,11 +344,11 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                     <div class="col-12 col-md-5">
                         <label for="father_dob" class="form-label fw-semibold text-secondary small">Father's Date of Birth</label>
-                        <input type="text" 
+                        <input type="date" 
                                name="father_dob" 
                                id="father_dob" 
-                               class="form-control dob-picker" 
-                               placeholder="YYYY-MM-DD" 
+                               class="form-control" 
+                               max="<?= date('Y-m-d') ?>"
                                value="<?= h($patient['father_dob'] ?? '') ?>">
                     </div>
 
@@ -365,11 +365,11 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                     <div class="col-12 col-md-5">
                         <label for="mother_dob" class="form-label fw-semibold text-secondary small">Mother's Date of Birth</label>
-                        <input type="text" 
+                        <input type="date" 
                                name="mother_dob" 
                                id="mother_dob" 
-                               class="form-control dob-picker" 
-                               placeholder="YYYY-MM-DD" 
+                               class="form-control" 
+                               max="<?= date('Y-m-d') ?>"
                                value="<?= h($patient['mother_dob'] ?? '') ?>">
                     </div>
 
@@ -386,11 +386,11 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                     <div class="col-12 col-md-5">
                         <label for="spouse_dob" class="form-label fw-semibold text-secondary small">Spouse's Date of Birth</label>
-                        <input type="text" 
+                        <input type="date" 
                                name="spouse_dob" 
                                id="spouse_dob" 
-                               class="form-control dob-picker" 
-                               placeholder="YYYY-MM-DD" 
+                               class="form-control" 
+                               max="<?= date('Y-m-d') ?>"
                                value="<?= h($patient['spouse_dob'] ?? '') ?>">
                     </div>
 
@@ -452,14 +452,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Initialize Flatpickr for Date Inputs
-    if (typeof flatpickr !== 'undefined') {
-        flatpickr(".dob-picker", {
-            dateFormat: "Y-m-d",
-            maxDate: "today",
-            allowInput: true
-        });
-    }
+    
 
     // 2. Real-time Name Masking (Letters, spaces, hyphens, apostrophes, dots, ñ/Ñ only)
     const nameInputs = document.querySelectorAll('.name-input');

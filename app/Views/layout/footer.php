@@ -8,7 +8,6 @@
 <script src="<?= asset('vendor/jquery/jquery.min.js') ?>"></script>
 <script src="<?= asset('vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
 <script src="<?= asset('vendor/sweetalert2/sweetalert2.all.min.js') ?>"></script>
-<script src="<?= asset('vendor/flatpickr/flatpickr.min.js') ?>"></script>
 <script src="<?= asset('vendor/chartjs/chart.umd.js') ?>"></script>
 <script src="<?= asset('vendor/datatables/js/jquery.dataTables.min.js') ?>"></script>
 <script src="<?= asset('vendor/datatables/js/dataTables.bootstrap5.min.js') ?>"></script>

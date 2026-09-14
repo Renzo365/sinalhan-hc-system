@@ -90,4 +90,34 @@ class VitalSigns extends Model {
 
         return $result ? (int)$this->db->lastInsertId() : false;
     }
+
+    /**
+     * Find a single vital signs record by ID with recorder name.
+     * 
+     * @param int $id
+     * @return array|false
+     */
+    public function findById($id) {
+        $sql = "SELECT vs.*, 
+                       CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
+                FROM vital_signs vs
+                LEFT JOIN users u ON vs.recorded_by = u.id
+                WHERE vs.id = :id
+                LIMIT 1";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => (int)$id]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Delete a vital signs record by ID.
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM vital_signs WHERE id = :id");
+        return $stmt->execute(['id' => (int)$id]);
+    }
 }

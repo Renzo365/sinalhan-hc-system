@@ -285,4 +285,50 @@ class PrenatalController extends Controller {
 
         $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
     }
+
+    /**
+     * Delete a prenatal visit record.
+     * 
+     * @param int $id
+     */
+    public function deleteVisit($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Maternal Care', "CSRF mismatch while attempting to delete prenatal visit #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $visit = $this->visitModel->findById($id);
+        if (!$visit) {
+            $_SESSION['error_message'] = 'Prenatal visit record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $episode = $this->prenatalModel->findById($visit['prenatal_id']);
+        $patientId = $episode ? (int)$episode['patient_id'] : (int)($_POST['patient_id'] ?? 0);
+
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        $canDelete = ($userRole === 'admin' || $currentUserId === (int)$visit['attended_by']);
+
+        if (!$canDelete) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this prenatal visit.';
+            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            return;
+        }
+
+        $this->visitModel->deleteVisit($id);
+        AuditLog::log('PRENATAL_VISIT_DELETED', 'Maternal Care', "Deleted prenatal visit ID #{$id} dated {$visit['visit_date']} for patient ID #{$patientId}");
+
+        $_SESSION['success_message'] = 'Prenatal checkup visit record removed successfully.';
+        $this->redirect("/patients/{$patientId}#tab-prenatal");
+    }
 }

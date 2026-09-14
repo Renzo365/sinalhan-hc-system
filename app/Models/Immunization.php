@@ -99,6 +99,24 @@ class Immunization extends Model {
     }
 
     /**
+     * Find an immunization record by ID.
+     * 
+     * @param int $id
+     * @return array|false
+     */
+    public function findById($id) {
+        $sql = "SELECT imm.*, 
+                       CONCAT(u.first_name, ' ', u.last_name) AS vaccinator_name
+                FROM immunizations imm
+                LEFT JOIN users u ON imm.administered_by = u.id
+                WHERE imm.id = :id
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => (int)$id]);
+        return $stmt->fetch();
+    }
+
+    /**
      * Delete an immunization record.
      * 
      * @param int $id
@@ -106,6 +124,6 @@ class Immunization extends Model {
      */
     public function deleteDose($id) {
         $stmt = $this->db->prepare("DELETE FROM immunizations WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+        return $stmt->execute(['id' => (int)$id]);
     }
 }

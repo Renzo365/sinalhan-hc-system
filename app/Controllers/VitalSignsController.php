@@ -79,4 +79,58 @@ class VitalSignsController extends Controller {
 
         $this->redirect("/patients/{$patientId}");
     }
+
+    /**
+     * Delete a vital signs record.
+     * 
+     * @param int $id
+     */
+    public function delete($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to delete vital signs #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $vital = $this->vitalsModel->findById($id);
+        if (!$vital) {
+            $_SESSION['error_message'] = 'Vital signs record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$vital['patient_id'];
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        $canDelete = ($userRole === 'admin' || $currentUserId === (int)$vital['recorded_by']);
+
+        if (!$canDelete) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this vital signs record.';
+            $this->redirect("/patients/{$patientId}#tab-vitals");
+            return;
+        }
+
+        // Safety Check: Ensure vital sign is NOT linked to an active consultation
+        $db = \App\Core\Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT id FROM consultations WHERE vital_signs_id = :id AND deleted_at IS NULL LIMIT 1");
+        $stmt->execute(['id' => $id]);
+        if ($stmt->fetch()) {
+            $_SESSION['error_message'] = 'Cannot delete vital signs linked to an active consultation record.';
+            $this->redirect("/patients/{$patientId}#tab-vitals");
+            return;
+        }
+
+        $this->vitalsModel->delete($id);
+        AuditLog::log('VITAL_SIGNS_DELETED', 'Patients', "Deleted vital signs ID #{$id}");
+
+        $_SESSION['success_message'] = 'Vital signs record deleted successfully.';
+        $this->redirect("/patients/{$patientId}#tab-vitals");
+    }
 }

@@ -255,4 +255,48 @@ class WellbabyController extends Controller {
 
         $this->redirect($patientId ? "/patients/{$patientId}#tab-wellbaby" : "/patients");
     }
+
+    /**
+     * Delete an immunization dose record.
+     * 
+     * @param int $id
+     */
+    public function deleteImmunization($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Immunization', "CSRF mismatch while attempting to delete immunization #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $imm = $this->immModel->findById($id);
+        if (!$imm) {
+            $_SESSION['error_message'] = 'Immunization record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$imm['patient_id'];
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        $canDelete = ($userRole === 'admin' || $currentUserId === (int)$imm['administered_by']);
+
+        if (!$canDelete) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this immunization record.';
+            $this->redirect("/patients/{$patientId}#tab-immunizations");
+            return;
+        }
+
+        $this->immModel->deleteDose($id);
+        AuditLog::log('IMMUNIZATION_DELETED', 'Immunization', "Deleted immunization ID #{$id} ({$imm['vaccine_name']} Dose #{$imm['dose_number']}) for patient ID #{$patientId}");
+
+        $_SESSION['success_message'] = 'Immunization record removed successfully.';
+        $this->redirect("/patients/{$patientId}#tab-immunizations");
+    }
 }

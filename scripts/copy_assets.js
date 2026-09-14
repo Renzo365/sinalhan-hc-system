@@ -13,8 +13,6 @@ const srcDestPairs = [
   { src: 'node_modules/sweetalert2/dist/sweetalert2.min.css', dest: 'public/assets/vendor/sweetalert2/sweetalert2.min.css' },
   { src: 'node_modules/sweetalert2/dist/sweetalert2.all.min.js', dest: 'public/assets/vendor/sweetalert2/sweetalert2.all.min.js' },
   { src: 'node_modules/chart.js/dist/chart.umd.js', dest: 'public/assets/vendor/chartjs/chart.umd.js' },
-  { src: 'node_modules/flatpickr/dist/flatpickr.min.css', dest: 'public/assets/vendor/flatpickr/flatpickr.min.css' },
-  { src: 'node_modules/flatpickr/dist/flatpickr.min.js', dest: 'public/assets/vendor/flatpickr/flatpickr.min.js' }
 ];
 
 function copyRecursiveSync(src, dest) {

@@ -30,6 +30,7 @@ erDiagram
     users ||--o{ patients : "archives (deleted_by)"
     users ||--o{ vital_signs : "records (recorded_by)"
     users ||--o{ consultations : "examines (consulted_by)"
+    users ||--o{ consultations : "archives (deleted_by)"
     users ||--o{ appointments : "schedules (created_by)"
     users ||--o{ queue_entries : "creates (created_by)"
     users ||--o{ prescriptions : "prescribes (prescribed_by)"

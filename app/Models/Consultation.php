@@ -150,4 +150,99 @@ class Consultation extends Model {
             'archive_reason' => trim($reason) ?: 'Cancelled by user'
         ]);
     }
+
+    /**
+     * Archive (soft-delete) an existing consultation record.
+     * 
+     * @param int $id Consultation ID
+     * @param int $userId ID of user archiving the record
+     * @param string $reason Reason for archiving
+     * @return bool True on success, false on failure
+     */
+    public function archive($id, $userId, $reason = '') {
+        $sql = "UPDATE consultations SET
+                    deleted_at = CURRENT_TIMESTAMP,
+                    deleted_by = :userId,
+                    archive_reason = :reason
+                WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => (int)$id,
+            'userId' => (int)$userId,
+            'reason' => trim($reason) ?: 'Archived by staff'
+        ]);
+    }
+
+    /**
+     * Restore an archived consultation record.
+     * 
+     * @param int $id Consultation ID
+     * @return bool True on success, false on failure
+     */
+    public function restore($id) {
+        $sql = "UPDATE consultations SET
+                    deleted_at = NULL,
+                    deleted_by = NULL,
+                    archive_reason = NULL
+                WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => (int)$id
+        ]);
+    }
+
+    /**
+     * Retrieve all archived consultations with patient and user details.
+     * 
+     * @param array $filters Search and date range filters
+     * @return array List of archived consultations
+     */
+    public function allArchived($filters = []) {
+        $sql = "SELECT c.*, p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last,
+                       CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                       CONCAT(archiver.first_name, ' ', archiver.last_name) AS archiver_name
+                FROM consultations c
+                JOIN patients p ON c.patient_id = p.id
+                LEFT JOIN users u ON c.consulted_by = u.id
+                LEFT JOIN users archiver ON c.deleted_by = archiver.id
+                WHERE c.deleted_at IS NOT NULL";
+        $params = [];
+        if (!empty($filters['search'])) {
+            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR c.assessment LIKE :s4)";
+            $term = '%' . $filters['search'] . '%';
+            $params['s1'] = $term; $params['s2'] = $term; $params['s3'] = $term; $params['s4'] = $term;
+        }
+        if (!empty($filters['date_from'])) {
+            $sql .= " AND DATE(c.deleted_at) >= :date_from";
+            $params['date_from'] = $filters['date_from'];
+        }
+        if (!empty($filters['date_to'])) {
+            $sql .= " AND DATE(c.deleted_at) <= :date_to";
+            $params['date_to'] = $filters['date_to'];
+        }
+        $sql .= " ORDER BY c.deleted_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Find consultation record regardless of soft-delete status.
+     * 
+     * @param int $id
+     * @return array|false
+     */
+    public function findWithArchivedById($id) {
+        $sql = "SELECT c.*, 
+                       CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                       p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last
+                FROM consultations c
+                LEFT JOIN users u ON c.consulted_by = u.id
+                LEFT JOIN patients p ON c.patient_id = p.id
+                WHERE c.id = :id 
+                LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => (int)$id]);
+        return $stmt->fetch();
+    }
 }

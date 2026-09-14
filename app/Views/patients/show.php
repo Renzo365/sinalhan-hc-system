@@ -808,8 +808,35 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                             !empty($medicalHistory['baseline_bp_systolic']) ||
                             !empty($medicalHistory['baseline_heart_rate']) ||
                             !empty($medicalHistory['baseline_height']) ||
-                            !empty($medicalHistory['baseline_weight'])
+                            !empty($medicalHistory['baseline_weight']) ||
+                            !empty($medicalHistory['baseline_respiratory_rate']) ||
+                            !empty($medicalHistory['baseline_waist_circumference'])
                         );
+
+                        // Baseline Vitals BMI computation
+                        $baselineHeight = !empty($medicalHistory['baseline_height']) ? (float)$medicalHistory['baseline_height'] : null;
+                        $baselineWeight = !empty($medicalHistory['baseline_weight']) ? (float)$medicalHistory['baseline_weight'] : null;
+                        $baselineBmi = null;
+                        $baselineBmiClass = '';
+                        $baselineBmiLabel = '';
+
+                        if ($baselineHeight && $baselineWeight && $baselineHeight > 0 && $baselineWeight > 0) {
+                            $heightInM = $baselineHeight / 100;
+                            $baselineBmi = round($baselineWeight / ($heightInM * $heightInM), 1);
+                            if ($baselineBmi < 18.5) {
+                                $baselineBmiLabel = 'Underweight';
+                                $baselineBmiClass = 'badge bg-info-subtle text-info border border-info-subtle';
+                            } elseif ($baselineBmi >= 18.5 && $baselineBmi <= 22.9) {
+                                $baselineBmiLabel = 'Normal';
+                                $baselineBmiClass = 'badge bg-success-subtle text-success border border-success-subtle';
+                            } elseif ($baselineBmi >= 23.0 && $baselineBmi <= 27.4) {
+                                $baselineBmiLabel = 'Overweight';
+                                $baselineBmiClass = 'badge bg-warning-subtle text-dark border border-warning-subtle';
+                            } else {
+                                $baselineBmiLabel = 'Obese';
+                                $baselineBmiClass = 'badge bg-danger-subtle text-danger border border-danger-subtle';
+                            }
+                        }
 
                         $hasAnyIhpRecord = !empty($medicalHistory) && (
                             $hasPmhData ||
@@ -892,11 +919,55 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 2. Past Surgical History Card -->
+                                    <!-- 2. Family History (Hereditary Diseases) Card (Full Width with Color-Coded Badges) -->
+                                    <div class="col-12">
+                                        <div class="card border rounded-3 p-3 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                2. Family History (Hereditary Diseases)
+                                            </h5>
+                                            <?php if ($hasFamilyData): ?>
+                                                <div class="d-flex flex-wrap gap-2 pt-1">
+                                                    <?php foreach ($familyDisplay as $item): ?>
+                                                        <?php 
+                                                        $cond = $item['condition'];
+                                                        $det = $item['detail'];
+                                                        ?>
+                                                        <?php if (stripos($cond, 'Allergy') !== false || stripos($det, 'Allergy') !== false): ?>
+                                                            <span class="badge bg-danger text-white px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'Hypertension') !== false): ?>
+                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'Cancer') !== false): ?>
+                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false): ?>
+                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            </span>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
+                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            </span>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-1">
+                                                    No family hereditary conditions declared.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Past Surgical History & Hospitalization Card -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 shadow-xs h-100">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                2. Past Surgical History & Hospitalization
+                                                3. Past Surgical History & Hospitalization
                                             </h5>
                                             <?php if ($hasSurgicalData): ?>
                                                 <ul class="list-group list-group-flush small">
@@ -920,7 +991,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 4. Personal & Social Lifestyle Card -->
+                                    <!-- 4. Personal & Social History Card -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 shadow-xs h-100">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
@@ -978,51 +1049,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 3. Family Hereditary Diseases Card (Full Width with Color-Coded Badges) -->
-                                    <div class="col-12">
-                                        <div class="card border rounded-3 p-3 shadow-xs">
-                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                3. Family History (Hereditary Diseases)
-                                            </h5>
-                                            <?php if ($hasFamilyData): ?>
-                                                <div class="d-flex flex-wrap gap-2 pt-1">
-                                                    <?php foreach ($familyDisplay as $item): ?>
-                                                        <?php 
-                                                        $cond = $item['condition'];
-                                                        $det = $item['detail'];
-                                                        ?>
-                                                        <?php if (stripos($cond, 'Allergy') !== false || stripos($det, 'Allergy') !== false): ?>
-                                                            <span class="badge bg-danger text-white px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
-                                                            </span>
-                                                        <?php elseif (stripos($cond, 'Hypertension') !== false): ?>
-                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
-                                                            </span>
-                                                        <?php elseif (stripos($cond, 'Cancer') !== false): ?>
-                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
-                                                            </span>
-                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false): ?>
-                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
-                                                            </span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
-                                                            </span>
-                                                        <?php endif; ?>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-1">
-                                                    No family hereditary conditions declared.
-                                                </p>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-
-                                    <!-- 5. Lifetime Immunizations Card -->
+                                    <!-- 5. Lifetime Immunization Record (Annex A1) Card -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 shadow-xs h-100">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
@@ -1089,11 +1116,103 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 6. Physical Examination Findings (6-System Checklist) -->
+                                    <!-- 6. Baseline Vitals & Anthropometrics (Annex A1) Card -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 shadow-xs h-100">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                6. Baseline Vitals & Anthropometrics (Annex A1)
+                                            </h5>
+                                            <?php if ($hasBaselineVitals): ?>
+                                                <div class="row g-2 small pt-1">
+                                                    <div class="col-6">
+                                                        <div class="p-2 rounded bg-light border h-100">
+                                                            <span class="text-muted d-block small mb-1">Blood Pressure:</span>
+                                                            <?php if (!empty($medicalHistory['baseline_bp_systolic']) || !empty($medicalHistory['baseline_bp_diastolic'])): ?>
+                                                                <span class="fw-bold text-dark fs-7">
+                                                                    <?= h($medicalHistory['baseline_bp_systolic'] ?? '—') ?>/<?= h($medicalHistory['baseline_bp_diastolic'] ?? '—') ?>
+                                                                    <span class="text-muted fw-normal fs-8">mmHg</span>
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">—</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="p-2 rounded bg-light border h-100">
+                                                            <span class="text-muted d-block small mb-1">Heart Rate:</span>
+                                                            <?php if (!empty($medicalHistory['baseline_heart_rate'])): ?>
+                                                                <span class="fw-bold text-dark fs-7">
+                                                                    <?= h($medicalHistory['baseline_heart_rate']) ?>
+                                                                    <span class="text-muted fw-normal fs-8">bpm</span>
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">—</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="p-2 rounded bg-light border h-100">
+                                                            <span class="text-muted d-block small mb-1">Respiratory Rate:</span>
+                                                            <?php if (!empty($medicalHistory['baseline_respiratory_rate'])): ?>
+                                                                <span class="fw-bold text-dark fs-7">
+                                                                    <?= h($medicalHistory['baseline_respiratory_rate']) ?>
+                                                                    <span class="text-muted fw-normal fs-8">cpm</span>
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">—</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="p-2 rounded bg-light border h-100">
+                                                            <span class="text-muted d-block small mb-1">Waist Circumference:</span>
+                                                            <?php if (!empty($medicalHistory['baseline_waist_circumference'])): ?>
+                                                                <span class="fw-bold text-dark fs-7">
+                                                                    <?= h($medicalHistory['baseline_waist_circumference']) ?>
+                                                                    <span class="text-muted fw-normal fs-8">cm</span>
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">—</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="p-2 rounded bg-light border h-100">
+                                                            <span class="text-muted d-block small mb-1">Height & Weight:</span>
+                                                            <div class="fw-semibold text-dark">
+                                                                <span><?= !empty($medicalHistory['baseline_height']) ? h($medicalHistory['baseline_height']) . ' cm' : '—' ?></span>
+                                                                <span class="text-muted mx-1">&bull;</span>
+                                                                <span><?= !empty($medicalHistory['baseline_weight']) ? h($medicalHistory['baseline_weight']) . ' kg' : '—' ?></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="p-2 rounded bg-light border h-100">
+                                                            <span class="text-muted d-block small mb-1">Body Mass Index (BMI):</span>
+                                                            <?php if ($baselineBmi !== null): ?>
+                                                                <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                                                    <span class="fw-bold text-dark fs-7"><?= number_format($baselineBmi, 1) ?></span>
+                                                                    <span class="<?= $baselineBmiClass ?>"><?= $baselineBmiLabel ?></span>
+                                                                </div>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">None recorded</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <p class="text-muted small fst-italic mb-0 py-2">
+                                                    No baseline vitals or anthropometrics recorded.
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7. Pertinent Physical Examination Findings (Annex A1) -->
                                     <div class="col-12">
                                         <div class="card border rounded-3 p-3 shadow-xs">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                6. Pertinent Physical Examination Findings (Annex A1)
+                                                7. Pertinent Physical Examination Findings (Annex A1)
                                             </h5>
                                             <?php if ($hasPeFindings): ?>
                                                 <div class="row g-2 small pt-1">
@@ -1128,12 +1247,12 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 7. Female Menstrual & Reproductive History (if Female) -->
+                                    <!-- 8. Female Menstrual & Reproductive History (if Female) -->
                                     <?php if ($isFemale): ?>
                                         <div class="col-12 col-md-6">
                                             <div class="card border rounded-3 p-3 shadow-xs h-100">
                                                 <h5 class="h6 fw-bold text-pink mb-2">
-                                                    7. Female Menstrual & Reproductive History
+                                                    8. Female Menstrual & Reproductive History
                                                 </h5>
                                                 <div class="row g-2 small pt-1">
                                                     <div class="col-6">
@@ -1176,11 +1295,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             </div>
                                         </div>
 
-                                        <!-- 8. Pregnancy History Card (if Female) -->
+                                        <!-- 9. Pregnancy & Obstetric History (if Female) -->
                                         <div class="col-12 col-md-6">
                                             <div class="card border rounded-3 p-3 shadow-xs h-100">
                                                 <h5 class="h6 fw-bold text-pink mb-2">
-                                                    8. Pregnancy & Obstetric History
+                                                    9. Pregnancy & Obstetric History
                                                 </h5>
                                                 <div class="row g-2 small pt-1">
                                                     <div class="col-6">
@@ -1368,88 +1487,17 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 2. Past Surgical History -->
-                                    <div class="col-12 col-md-6">
-                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                2. Past Surgical History & Hospitalization
-                                            </h5>
-                                            <div class="row g-2 small">
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Name</label>
-                                                    <input type="text" name="operation_1_name" class="form-control form-control-sm" placeholder="e.g. Appendectomy" value="<?= h($surgicalSaved[0]['operation'] ?? '') ?>">
-                                                </div>
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Date</label>
-                                                    <input type="text" name="operation_1_date" class="form-control form-control-sm" placeholder="YYYY or YYYY-MM-DD" value="<?= h($surgicalSaved[0]['date'] ?? '') ?>">
-                                                </div>
-
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Name</label>
-                                                    <input type="text" name="operation_2_name" class="form-control form-control-sm" placeholder="e.g. CS Delivery" value="<?= h($surgicalSaved[1]['operation'] ?? '') ?>">
-                                                </div>
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Date</label>
-                                                    <input type="text" name="operation_2_date" class="form-control form-control-sm" placeholder="YYYY or YYYY-MM-DD" value="<?= h($surgicalSaved[1]['date'] ?? '') ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 4. Personal & Social History -->
-                                    <div class="col-12 col-md-6">
-                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
-                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                4. Personal / Social History
-                                            </h5>
-                                            <div class="row g-2 small">
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Smoking Status</label>
-                                                    <select name="smoking_status" class="form-select form-select-sm">
-                                                        <option value="Never" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never (No)</option>
-                                                        <option value="Yes" <?= ($medicalHistory['smoking_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Active)</option>
-                                                        <option value="Quit" <?= ($medicalHistory['smoking_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">No. of Pack Years</label>
-                                                    <input type="number" step="0.1" name="smoking_pack_years" class="form-control form-control-sm" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>">
-                                                </div>
-
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Drinking</label>
-                                                    <select name="alcohol_status" class="form-select form-select-sm">
-                                                        <option value="Never" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never (No)</option>
-                                                        <option value="Yes" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Regular/Occasional)</option>
-                                                        <option value="Quit" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-12 col-sm-6">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">No. of Bottles / Day</label>
-                                                    <input type="number" step="0.1" name="alcohol_bottles_per_day" class="form-control form-control-sm" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>">
-                                                </div>
-
-                                                <div class="col-12">
-                                                    <div class="form-check mt-1">
-                                                        <input class="form-check-input" type="checkbox" name="illicit_drugs" value="1" id="illicit_drugs" <?= !empty($medicalHistory['illicit_drugs']) ? 'checked' : '' ?>>
-                                                        <label class="form-check-label text-secondary fw-semibold small" for="illicit_drugs">History of Illicit Drug Use</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 3. Family History (Hereditary Diseases) Checklist (Matching Section 1 Layout) -->
+                                    <!-- 2. Family History (Hereditary Diseases) Checklist (Matching Section 1 Layout) -->
                                     <div class="col-12">
                                         <div class="card border rounded-3 p-3 shadow-xs">
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <h5 class="h6 fw-bold text-primary-dark mb-0">
-                                                    3. Family History (Hereditary Diseases)
+                                                    2. Family History (Hereditary Diseases)
                                                 </h5>
                                                 <span class="text-muted small">Check hereditary condition and provide details where applicable</span>
                                             </div>
 
-                                            <!-- Group 3A: Hereditary Conditions with Specific Details (2 Columns) -->
+                                            <!-- Group 2A: Hereditary Conditions with Specific Details (2 Columns) -->
                                             <div class="row g-3 small mb-3">
                                                 <!-- Allergy -->
                                                 <div class="col-12 col-md-6">
@@ -1525,7 +1573,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 </div>
                                             </div>
 
-                                            <!-- Group 3B: Hereditary Illnesses Checklist (4 Columns) -->
+                                            <!-- Group 2B: Hereditary Illnesses Checklist (4 Columns) -->
                                             <div class="border-top pt-2">
                                                 <span class="text-secondary fw-semibold small d-block mb-2">Other Hereditary & Familial Conditions:</span>
                                                 <div class="row g-2 small">
@@ -1561,7 +1609,78 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 5. Lifetime Immunization Matrix (Annex A1 Standard) -->
+                                    <!-- 3. Past Surgical History & Hospitalization -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                3. Past Surgical History & Hospitalization
+                                            </h5>
+                                            <div class="row g-2 small">
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Name</label>
+                                                    <input type="text" name="operation_1_name" class="form-control form-control-sm" placeholder="e.g. Appendectomy" value="<?= h($surgicalSaved[0]['operation'] ?? '') ?>">
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 1 Date</label>
+                                                    <input type="text" name="operation_1_date" class="form-control form-control-sm" placeholder="YYYY or YYYY-MM-DD" value="<?= h($surgicalSaved[0]['date'] ?? '') ?>">
+                                                </div>
+
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Name</label>
+                                                    <input type="text" name="operation_2_name" class="form-control form-control-sm" placeholder="e.g. CS Delivery" value="<?= h($surgicalSaved[1]['operation'] ?? '') ?>">
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation 2 Date</label>
+                                                    <input type="text" name="operation_2_date" class="form-control form-control-sm" placeholder="YYYY or YYYY-MM-DD" value="<?= h($surgicalSaved[1]['date'] ?? '') ?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Personal / Social History -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                4. Personal / Social History
+                                            </h5>
+                                            <div class="row g-2 small">
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Smoking Status</label>
+                                                    <select name="smoking_status" class="form-select form-select-sm">
+                                                        <option value="Never" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never (No)</option>
+                                                        <option value="Yes" <?= ($medicalHistory['smoking_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Active)</option>
+                                                        <option value="Quit" <?= ($medicalHistory['smoking_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">No. of Pack Years</label>
+                                                    <input type="number" step="0.1" name="smoking_pack_years" class="form-control form-control-sm" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>">
+                                                </div>
+
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Alcohol Drinking</label>
+                                                    <select name="alcohol_status" class="form-select form-select-sm">
+                                                        <option value="Never" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'selected' : '' ?>>Never (No)</option>
+                                                        <option value="Yes" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes (Regular/Occasional)</option>
+                                                        <option value="Quit" <?= ($medicalHistory['alcohol_status'] ?? '') === 'Quit' ? 'selected' : '' ?>>Quit</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">No. of Bottles / Day</label>
+                                                    <input type="number" step="0.1" name="alcohol_bottles_per_day" class="form-control form-control-sm" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>">
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="form-check mt-1">
+                                                        <input class="form-check-input" type="checkbox" name="illicit_drugs" value="1" id="illicit_drugs" <?= !empty($medicalHistory['illicit_drugs']) ? 'checked' : '' ?>>
+                                                        <label class="form-check-label text-secondary fw-semibold small" for="illicit_drugs">History of Illicit Drug Use</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5. Lifetime Immunizations (Annex A1) -->
                                     <div class="col-12 col-md-6">
                                         <div class="card border rounded-3 p-3 h-100 shadow-xs">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
@@ -1645,11 +1764,69 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 6. Pertinent Physical Examination Checklist (Annex A1 6 Systems) -->
+                                    <!-- 6. Baseline Vitals & Anthropometrics (Annex A1) -->
+                                    <div class="col-12 col-md-6">
+                                        <div class="card border rounded-3 p-3 h-100 shadow-xs">
+                                            <h5 class="h6 fw-bold text-primary-dark mb-2">
+                                                6. Baseline Vitals & Anthropometrics (Annex A1)
+                                            </h5>
+                                            <div class="row g-2 small">
+                                                <div class="col-12">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Baseline Blood Pressure</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" name="baseline_bp_systolic" class="form-control" placeholder="Systolic (e.g. 120)" min="50" max="300" value="<?= h($medicalHistory['baseline_bp_systolic'] ?? '') ?>">
+                                                        <span class="input-group-text">/</span>
+                                                        <input type="number" name="baseline_bp_diastolic" class="form-control" placeholder="Diastolic (e.g. 80)" min="30" max="200" value="<?= h($medicalHistory['baseline_bp_diastolic'] ?? '') ?>">
+                                                        <span class="input-group-text">mmHg</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Heart Rate</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" name="baseline_heart_rate" class="form-control" placeholder="e.g. 72" min="30" max="250" value="<?= h($medicalHistory['baseline_heart_rate'] ?? '') ?>">
+                                                        <span class="input-group-text">bpm</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Respiratory Rate</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" name="baseline_respiratory_rate" class="form-control" placeholder="e.g. 18" min="8" max="60" value="<?= h($medicalHistory['baseline_respiratory_rate'] ?? '') ?>">
+                                                        <span class="input-group-text">cpm</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Height</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.1" name="baseline_height" class="form-control" placeholder="e.g. 165" min="30" max="250" value="<?= h($medicalHistory['baseline_height'] ?? '') ?>">
+                                                        <span class="input-group-text">cm</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 col-sm-6">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Weight</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.1" name="baseline_weight" class="form-control" placeholder="e.g. 60" min="1" max="300" value="<?= h($medicalHistory['baseline_weight'] ?? '') ?>">
+                                                        <span class="input-group-text">kg</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1">Waist Circumference</label>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" step="0.1" name="baseline_waist_circumference" class="form-control" placeholder="e.g. 78" min="20" max="200" value="<?= h($medicalHistory['baseline_waist_circumference'] ?? '') ?>">
+                                                        <span class="input-group-text">cm</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7. Pertinent Physical Examination Findings Checklist (Annex A1) -->
                                     <div class="col-12">
                                         <div class="card border rounded-3 p-3 shadow-xs">
                                             <h5 class="h6 fw-bold text-primary-dark mb-2">
-                                                6. Pertinent Physical Examination Findings Checklist (Annex A1)
+                                                7. Pertinent Physical Examination Findings Checklist (Annex A1)
                                             </h5>
                                             <div class="row g-3 small">
                                                 <!-- Skin -->
@@ -1761,12 +1938,12 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         </div>
                                     </div>
 
-                                    <!-- 7. Female Menstrual & Reproductive History (if Female) -->
+                                    <!-- 8. Female Menstrual & Reproductive History (if Female) -->
                                     <?php if ($isFemale): ?>
                                         <div class="col-12 col-md-6">
                                             <div class="card border rounded-3 p-3 h-100 shadow-xs">
                                                 <h5 class="h6 fw-bold text-pink mb-2">
-                                                    7. Female Menstrual & Reproductive History
+                                                    8. Female Menstrual & Reproductive History
                                                 </h5>
                                                 <div class="row g-2 small">
                                                     <div class="col-6 col-sm-4">
@@ -1779,7 +1956,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     </div>
                                                     <div class="col-12 col-sm-4">
                                                         <label class="form-label fw-semibold text-secondary small mb-1">LMP Date</label>
-                                                        <input type="text" name="lmp" class="form-control form-control-sm dob-picker" placeholder="YYYY-MM-DD" value="<?= h($medicalHistory['lmp'] ?? '') ?>">
+                                                        <input type="date" name="lmp" class="form-control form-control-sm " placeholder="YYYY-MM-DD" value="<?= h($medicalHistory['lmp'] ?? '') ?>">
                                                     </div>
 
                                                     <div class="col-6 col-sm-4">
@@ -1813,11 +1990,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             </div>
                                         </div>
 
-                                        <!-- 8. Pregnancy History Card (if Female) -->
+                                        <!-- 9. Pregnancy History Card (if Female) -->
                                         <div class="col-12 col-md-6">
                                             <div class="card border rounded-3 p-3 h-100 shadow-xs">
                                                 <h5 class="h6 fw-bold text-pink mb-2">
-                                                    8. Pregnancy & Obstetric History (Annex A1)
+                                                    9. Pregnancy & Obstetric History (Annex A1)
                                                 </h5>
                                                 <div class="row g-2 small">
                                                     <div class="col-6 col-sm-3">
@@ -1939,12 +2116,13 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                     <span class="text-muted small">Annual and quarterly monitoring matrix for mandated preventive care services.</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="d-inline-flex align-items-center gap-1">
-                                        <label for="pcb_year_select" class="form-label mb-0 small text-muted text-nowrap">Year:</label>
-                                        <select name="pcb_year" id="pcb_year_select" class="form-select form-select-sm" onchange="window.location.href='<?= url('/patients/' . $patient['id']) ?>?pcb_year=' + this.value + '#tab-pcb'">
+                                    <div class="input-group input-group-sm" style="width: auto;">
+                                        <span class="input-group-text bg-light text-muted border-secondary-subtle">Year</span>
+                                        <select name="pcb_year" id="pcb_year_select" class="form-select border-secondary-subtle fw-medium text-primary" style="min-width: 90px;" onchange="window.location.href='<?= url('/patients/' . $patient['id']) ?>?pcb_year=' + this.value + '#tab-pcb'">
                                             <?php 
                                             $currYr = (int)date('Y');
-                                            for ($yr = $currYr + 1; $yr >= $currYr - 3; $yr--): ?>
+                                            // Show next year, current year, and up to 10 past years
+                                            for ($yr = $currYr + 1; $yr >= $currYr - 10; $yr--): ?>
                                                 <option value="<?= $yr ?>" <?= $pcbYear === $yr ? 'selected' : '' ?>><?= $yr ?></option>
                                             <?php endfor; ?>
                                         </select>
@@ -2185,14 +2363,31 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <td class="text-start"><?= h(mb_strimwidth($c['assessment'], 0, 50, '...')) ?></td>
                                                 <td><span class="badge <?= $badgeClass ?>"><?= h($c['status']) ?></span></td>
                                                 <td class="pe-3 text-end">
-                                                    <?php if ($canEditRow): ?>
-                                                        <a href="<?= url('/consultations/' . $c['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary py-1 px-2 me-1" title="Edit Consultation">
-                                                            <i class="bi bi-pencil-square me-1"></i>Edit
-                                                        </a>
-                                                    <?php endif; ?>
-                                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 view-consultation-btn" data-consultation-id="<?= $c['id'] ?>">
-                                                        <i class="bi bi-eye me-1"></i> View SOAP
-                                                    </button>
+                                                    <div class="dropdown text-end">
+                                                        <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i> Actions
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                                                            <li>
+                                                                <button type="button" class="dropdown-item py-1 view-consultation-btn" data-consultation-id="<?= $c['id'] ?>">
+                                                                    <i class="bi bi-eye text-primary me-2"></i> View Full SOAP
+                                                                </button>
+                                                            </li>
+                                                            <?php if ($canEditRow): ?>
+                                                                <li>
+                                                                    <a class="dropdown-item py-1" href="<?= url('/consultations/' . $c['id'] . '/edit') ?>">
+                                                                        <i class="bi bi-pencil-square text-secondary me-2"></i> Edit Consultation
+                                                                    </a>
+                                                                </li>
+                                                            <?php endif; ?>
+                                                            <li><hr class="dropdown-divider my-1"></li>
+                                                            <li>
+                                                                <button type="button" class="dropdown-item py-1 text-danger btn-archive-consultation" data-id="<?= $c['id'] ?>" data-patient-id="<?= $patient['id'] ?>">
+                                                                    <i class="bi bi-archive text-danger me-2"></i> Archive Consultation
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -2221,34 +2416,70 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         <th>Pulse (bpm)</th>
                                         <th>Temp (°C)</th>
                                         <th>Resp (cpm)</th>
-                                        <th>SpO2</th>
-                                        <th>Wt / Ht</th>
                                         <th>BMI</th>
-                                        <th>Waist (cm)</th>
-                                        <th class="pe-3">Recorded By</th>
+                                        <th>Recorded By</th>
+                                        <th class="pe-3 text-end">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($vitalsHistory)): ?>
                                         <tr>
-                                            <td colspan="10" class="text-center py-5 text-muted">
+                                            <td colspan="8" class="text-center py-5 text-muted">
                                                 <i class="bi bi-activity fs-3 d-block mb-2 text-secondary"></i>
                                                 No vital signs records exist for this patient.
                                             </td>
                                         </tr>
                                     <?php else: ?>
-                                        <?php foreach ($vitalsHistory as $v): ?>
+                                        <?php 
+                                            $curUserId = (int)($_SESSION['user_id'] ?? 0);
+                                            $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+                                        ?>
+                                        <?php foreach ($vitalsHistory as $v): 
+                                            $canDeleteVital = ($curRole === 'admin' || $curUserId === (int)($v['recorded_by'] ?? 0));
+                                        ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?></td>
                                                 <td class="fw-bold font-monospace"><?= h($v['bp_systolic'] ?? '--') ?>/<?= h($v['bp_diastolic'] ?? '--') ?></td>
                                                 <td><?= h($v['heart_rate'] ?? '--') ?></td>
                                                 <td><?= h($v['temperature'] ?? '--') ?></td>
                                                 <td><?= h($v['respiratory_rate'] ?? '--') ?></td>
-                                                <td><?= h($v['oxygen_saturation'] ?? '--') ?>%</td>
-                                                <td><?= h($v['weight'] ?? '--') ?>kg / <?= h($v['height'] ?? '--') ?>cm</td>
                                                 <td><span class="badge bg-light text-dark border"><?= h($v['bmi'] ?? '--') ?></span></td>
-                                                <td><?= h($v['waist_circumference'] ?? '--') ?></td>
-                                                <td class="pe-3 text-muted"><?= h($v['recorder_name'] ?? 'Clinician') ?></td>
+                                                <td class="text-muted"><?= h($v['recorder_name'] ?? 'Clinician') ?></td>
+                                                <td class="pe-3 text-end">
+                                                    <div class="dropdown text-end">
+                                                        <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="bi bi-three-dots-vertical"></i> Actions
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                                                            <li>
+                                                                <button type="button" class="dropdown-item py-1 btn-view-vitals" 
+                                                                    data-id="<?= $v['id'] ?>"
+                                                                    data-date="<?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?>"
+                                                                    data-bp="<?= h(($v['bp_systolic'] ?? '--') . '/' . ($v['bp_diastolic'] ?? '--')) ?>"
+                                                                    data-pulse="<?= h($v['heart_rate'] ?? '--') ?>"
+                                                                    data-temp="<?= h($v['temperature'] ?? '--') ?>"
+                                                                    data-resp="<?= h($v['respiratory_rate'] ?? '--') ?>"
+                                                                    data-spo2="<?= h($v['oxygen_saturation'] ?? '--') ?>"
+                                                                    data-weight="<?= h($v['weight'] ?? '--') ?>"
+                                                                    data-height="<?= h($v['height'] ?? '--') ?>"
+                                                                    data-bmi="<?= h($v['bmi'] ?? '--') ?>"
+                                                                    data-waist="<?= h($v['waist_circumference'] ?? '--') ?>"
+                                                                    data-notes="<?= h($v['notes'] ?? '') ?>"
+                                                                    data-recorder="<?= h($v['recorder_name'] ?? 'Clinician') ?>">
+                                                                    <i class="bi bi-eye text-primary me-2"></i> View Details
+                                                                </button>
+                                                            </li>
+                                                            <?php if ($canDeleteVital): ?>
+                                                                <li><hr class="dropdown-divider my-1"></li>
+                                                                <li>
+                                                                    <button type="button" class="dropdown-item py-1 text-danger btn-delete-vital" data-id="<?= $v['id'] ?>">
+                                                                        <i class="bi bi-trash text-danger me-2"></i> Delete
+                                                                    </button>
+                                                                </li>
+                                                            <?php endif; ?>
+                                                        </ul>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
@@ -2279,19 +2510,26 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         <th>Dose #</th>
                                         <th>Administered Date</th>
                                         <th>Remarks / Program</th>
-                                        <th class="pe-3">Vaccinator</th>
+                                        <th>Vaccinator</th>
+                                        <th class="pe-3 text-end">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($patientImmunizations)): ?>
                                         <tr>
-                                            <td colspan="5" class="text-center py-5 text-muted">
+                                            <td colspan="6" class="text-center py-5 text-muted">
                                                 <i class="bi bi-shield-slash fs-3 d-block mb-2 text-secondary"></i>
                                                 No immunization records recorded for this patient.
                                             </td>
                                         </tr>
                                     <?php else: ?>
-                                        <?php foreach ($patientImmunizations as $imm): ?>
+                                        <?php 
+                                            $curUserId = (int)($_SESSION['user_id'] ?? 0);
+                                            $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+                                        ?>
+                                        <?php foreach ($patientImmunizations as $imm): 
+                                            $canDeleteImm = ($curRole === 'admin' || $curUserId === (int)($imm['administered_by'] ?? 0));
+                                        ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-bold text-primary">
                                                     <i class="bi bi-shield-check me-1 text-success"></i><?= h($imm['vaccine_name']) ?>
@@ -2299,7 +2537,28 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <td><span class="badge bg-light text-dark border">Dose <?= h($imm['dose_number']) ?></span></td>
                                                 <td class="fw-medium text-dark"><?= date('M d, Y', strtotime($imm['administered_date'])) ?></td>
                                                 <td class="text-muted small"><?= h($imm['remarks'] ?? 'Routine') ?></td>
-                                                <td class="pe-3 text-muted"><?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?></td>
+                                                <td class="text-muted"><?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?></td>
+                                                <td class="pe-3 text-end">
+                                                    <?php if ($canDeleteImm): ?>
+                                                        <div class="dropdown text-end">
+                                                            <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="bi bi-three-dots-vertical"></i> Actions
+                                                            </button>
+                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                                                                <li>
+                                                                    <button type="button" class="dropdown-item py-1 text-danger btn-delete-immunization" 
+                                                                        data-id="<?= $imm['id'] ?>" 
+                                                                        data-vaccine="<?= h($imm['vaccine_name']) ?>" 
+                                                                        data-dose="<?= h($imm['dose_number']) ?>">
+                                                                        <i class="bi bi-trash text-danger me-2"></i> Delete Record
+                                                                    </button>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted small">&mdash;</span>
+                                                    <?php endif; ?>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
@@ -2417,18 +2676,23 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <th>Presentation</th>
                                                     <th>TCB / Tetanus</th>
                                                     <th>Remarks</th>
-                                                    <th class="pe-3">Attendant</th>
+                                                    <th>Attendant</th>
+                                                    <th class="pe-3 text-end">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php if (empty($prenatalVisits)): ?>
                                                     <tr>
-                                                        <td colspan="10" class="text-center py-4 text-muted">
+                                                        <td colspan="11" class="text-center py-4 text-muted">
                                                             <i class="bi bi-heartbreak fs-4 d-block mb-1 text-secondary"></i>
                                                             No follow-up prenatal visits logged yet for this pregnancy.
                                                         </td>
                                                     </tr>
                                                 <?php else: ?>
+                                                    <?php 
+                                                        $curUserId = (int)($_SESSION['user_id'] ?? 0);
+                                                        $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+                                                    ?>
                                                     <?php foreach ($prenatalVisits as $pv): 
                                                         $fht = (int)($pv['fetal_heart_tone'] ?? 0);
                                                         $fhtBadge = 'badge bg-light text-dark border';
@@ -2439,6 +2703,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                                 $fhtBadge = 'badge bg-danger-subtle text-danger border border-danger-subtle fw-bold';
                                                             }
                                                         }
+                                                        $canDeleteVisit = ($curRole === 'admin' || $curUserId === (int)($pv['attended_by'] ?? 0));
                                                     ?>
                                                         <tr>
                                                             <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y', strtotime($pv['visit_date'])) ?></td>
@@ -2450,7 +2715,27 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                             <td><span class="badge bg-light text-dark border"><?= h($pv['fetal_presentation'] ?? 'Cephalic') ?></span></td>
                                                             <td class="text-muted"><?= h($pv['tcb'] ?? '--') ?></td>
                                                             <td class="text-start small"><?= h($pv['remarks'] ?? '--') ?></td>
-                                                            <td class="pe-3 text-muted"><?= h($pv['attendant_name'] ?? 'Midwife') ?></td>
+                                                            <td class="text-muted"><?= h($pv['attendant_name'] ?? 'Midwife') ?></td>
+                                                            <td class="pe-3 text-end">
+                                                                <?php if ($canDeleteVisit): ?>
+                                                                    <div class="dropdown text-end">
+                                                                        <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                            <i class="bi bi-three-dots-vertical"></i> Actions
+                                                                        </button>
+                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                                                                            <li>
+                                                                                <button type="button" class="dropdown-item py-1 text-danger btn-delete-prenatal-visit" 
+                                                                                    data-id="<?= $pv['id'] ?>" 
+                                                                                    data-date="<?= date('M d, Y', strtotime($pv['visit_date'])) ?>">
+                                                                                    <i class="bi bi-trash text-danger me-2"></i> Delete Visit
+                                                                                </button>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted small">&mdash;</span>
+                                                                <?php endif; ?>
+                                                            </td>
                                                         </tr>
                                                     <?php endforeach; ?>
                                                 <?php endif; ?>
@@ -2706,7 +2991,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                                     </div>
                                                                     <div class="input-group input-group-sm mt-1">
                                                                         <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
-                                                                        <input type="text" name="epi[<?= $v['key'] ?>]" class="form-control dob-picker bg-white" placeholder="Administered Date" value="<?= h($administeredDate) ?>">
+                                                                        <input type="date" name="epi[<?= $v['key'] ?>]" class="form-control  bg-white" placeholder="Administered Date" value="<?= h($administeredDate) ?>">
                                                                     </div>
                                                                 </div>
                                                             <?php endforeach; ?>
@@ -2836,7 +3121,31 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                         <strong><?= date('M d, Y', strtotime($a['appointment_date'])) ?></strong> at <?= date('h:i A', strtotime($a['appointment_time'])) ?>
                                                         <span class="text-muted d-block" style="font-size: 0.75rem;"><?= h($a['purpose']) ?></span>
                                                     </div>
-                                                    <span class="badge bg-light text-dark border"><?= h($a['status']) ?></span>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="badge bg-light text-dark border"><?= h($a['status']) ?></span>
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-light border dropdown-toggle py-0 px-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Appointment Actions">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
+                                                                <li>
+                                                                    <a class="dropdown-item py-1" href="<?= url('/appointments/' . $a['id'] . '/edit') ?>">
+                                                                        <i class="bi bi-calendar2-range text-primary me-2"></i> Reschedule / Edit
+                                                                    </a>
+                                                                </li>
+                                                                <?php if ($a['status'] !== 'Cancelled'): ?>
+                                                                    <li><hr class="dropdown-divider my-1"></li>
+                                                                    <li>
+                                                                        <button type="button" class="dropdown-item py-1 text-danger btn-cancel-appointment" 
+                                                                            data-id="<?= $a['id'] ?>" 
+                                                                            data-date="<?= date('M d, Y', strtotime($a['appointment_date'])) ?>">
+                                                                            <i class="bi bi-x-circle text-danger me-2"></i> Cancel Appointment
+                                                                        </button>
+                                                                    </li>
+                                                                <?php endif; ?>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
@@ -2982,7 +3291,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
 
                             <div class="col-12 col-sm-4">
                                 <label for="newborn_screening_date" class="form-label fw-semibold text-secondary">NBS Date Screened</label>
-                                <input type="text" name="newborn_screening_date" class="form-control dob-picker bg-white" placeholder="YYYY-MM-DD" value="<?= h($wellbabyRecord['newborn_screening_date'] ?? '') ?>">
+                                <input type="date" name="newborn_screening_date" class="form-control  bg-white" placeholder="YYYY-MM-DD" value="<?= h($wellbabyRecord['newborn_screening_date'] ?? '') ?>">
                             </div>
 
                             <div class="col-12 col-sm-4">
@@ -3031,7 +3340,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <!-- Checkup Date -->
                                 <div class="col-12 col-sm-6">
                                     <label for="log_date" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
-                                    <input type="text" name="log_date" class="form-control dob-picker bg-white" value="<?= date('Y-m-d') ?>" required>
+                                    <input type="date" name="log_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
                                 </div>
 
                                 <!-- Age in Months -->
@@ -3169,7 +3478,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                         </div>
                         <div class="col-6">
                             <label for="administered_date" class="form-label fw-semibold text-secondary">Administered Date <span class="text-danger">*</span></label>
-                            <input type="text" name="administered_date" class="form-control dob-picker bg-white" value="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="administered_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 
@@ -3219,7 +3528,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <label for="lmp" class="form-label fw-semibold text-secondary">Last Menstrual Period (LMP) <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
-                                    <input type="text" name="lmp" id="prenatal_lmp_input" class="form-control dob-picker bg-white" placeholder="YYYY-MM-DD" required>
+                                    <input type="date" name="lmp" id="prenatal_lmp_input" class="form-control  bg-white" placeholder="YYYY-MM-DD" required>
                                 </div>
                             </div>
 
@@ -3325,7 +3634,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <!-- Visit Date -->
                                 <div class="col-12 col-sm-6">
                                     <label for="visit_date" class="form-label fw-semibold text-secondary">Visit Date <span class="text-danger">*</span></label>
-                                    <input type="text" name="visit_date" class="form-control dob-picker bg-white" value="<?= date('Y-m-d') ?>" required>
+                                    <input type="date" name="visit_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
                                 </div>
 
                                 <!-- AOG in Weeks -->
@@ -3427,7 +3736,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                             <div class="row g-3">
                                 <div class="col-12 col-sm-6">
                                     <label class="form-label fw-semibold text-secondary">LMP Date</label>
-                                    <input type="text" name="lmp" class="form-control dob-picker bg-white" value="<?= h($activePrenatal['lmp']) ?>" required>
+                                    <input type="date" name="lmp" class="form-control  bg-white" value="<?= h($activePrenatal['lmp']) ?>" required>
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <label class="form-label fw-semibold text-secondary">Husband / Partner Name</label>
@@ -3509,7 +3818,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
 
                             <div class="mb-3">
                                 <label for="delivery_date" class="form-label fw-semibold text-secondary">Delivery / Outcome Date <span class="text-danger">*</span></label>
-                                <input type="text" name="delivery_date" class="form-control dob-picker bg-white" value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" name="delivery_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
                             </div>
 
                             <div class="mb-3">
@@ -3790,6 +4099,125 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
         </div>
     </div>
 </div>
+
+<!-- ==========================================================================
+   VIEW VITAL SIGNS MODAL
+   ========================================================================== -->
+<div class="modal fade" id="viewVitalsModal" tabindex="-1" aria-labelledby="viewVitalsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="viewVitalsModalLabel">
+                    <i class="bi bi-activity me-2"></i>Vital Signs Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white" id="vitalsModalContent">
+                <!-- Recorded Meta -->
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                    <div>
+                        <span class="text-muted small d-block">Recorded At</span>
+                        <strong class="text-dark" id="modalVitalDate">--</strong>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Recorded By</span>
+                        <strong class="text-primary" id="modalVitalRecorder">--</strong>
+                    </div>
+                </div>
+
+                <!-- Grid of Vitals Cards -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Blood Pressure</span>
+                            <span class="fs-6 fw-bold font-monospace text-dark" id="modalVitalBP">--</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Heart / Pulse Rate</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalVitalPulse">--</span> <small class="text-muted fw-normal">bpm</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Temperature</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalVitalTemp">--</span> <small class="text-muted fw-normal">°C</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Respiratory Rate</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalVitalResp">--</span> <small class="text-muted fw-normal">cpm</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Oxygen Saturation (SpO2)</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalVitalSpo2">--</span><small class="text-muted fw-normal">%</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Waist Circumference</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalVitalWaist">--</span> <small class="text-muted fw-normal">cm</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Weight & Height</span>
+                            <span class="fs-7 fw-bold text-dark"><span id="modalVitalWeight">--</span> kg / <span id="modalVitalHeight">--</span> cm</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">BMI & Category</span>
+                            <span class="fs-7 fw-bold" id="modalVitalBmi">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clinical Notes / Symptoms -->
+                <div class="card border rounded bg-white">
+                    <div class="card-header bg-light py-1.5 px-3 small fw-bold text-secondary">
+                        <i class="bi bi-journal-text me-1 text-primary"></i> Clinical Notes / Symptoms
+                    </div>
+                    <div class="card-body p-3 small text-dark" id="modalVitalNotes" style="white-space: pre-line; min-height: 50px;">
+                        No symptoms or notes recorded.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+   HIDDEN WORKSTATION ACTION FORMS (CSRF-Protected)
+   ========================================================================== -->
+<form id="archiveConsultationForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+    <input type="hidden" name="reason" id="archiveConsultationReasonInput">
+</form>
+
+<form id="deleteVitalForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+</form>
+
+<form id="deleteImmunizationForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+</form>
+
+<form id="deletePrenatalVisitForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+</form>
+
+<form id="cancelAppointmentForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+    <input type="hidden" name="status" value="Cancelled">
+</form>
 
 <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
 <!-- ==========================================================================
@@ -4115,9 +4543,6 @@ window.cancelIhpEditMode = function() {
                 if (result.isConfirmed) {
                     form.reset();
                     const lmpInput = form.querySelector('input[name="lmp"]');
-                    if (lmpInput && lmpInput._flatpickr) {
-                        lmpInput._flatpickr.setDate(lmpInput.defaultValue || '', false);
-                    }
                     editMode.classList.add('d-none');
                     viewMode.classList.remove('d-none');
                 }
@@ -4493,14 +4918,248 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 4. Flatpickr initialization
-    if (typeof flatpickr !== 'undefined') {
-        flatpickr(".dob-picker", {
-            dateFormat: "Y-m-d",
-            maxDate: "today",
-            allowInput: true
+       // 6. Modernized Workstation Action Handlers
+
+    // A. Archive Consultation
+    document.querySelectorAll('.btn-archive-consultation').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const patientId = this.getAttribute('data-patient-id');
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Archive Consultation?',
+                    text: 'Archiving hides this consultation note from the active history. Please provide a reason:',
+                    input: 'textarea',
+                    inputPlaceholder: 'e.g. Inadvertent duplication, erroneous entry...',
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return 'Archive reason is required!';
+                        }
+                    },
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Archive Consultation',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.getElementById('archiveConsultationForm');
+                        form.action = `<?= url('/consultations/') ?>${id}/archive`;
+                        document.getElementById('archiveConsultationReasonInput').value = result.value.trim();
+                        form.submit();
+                    }
+                });
+            } else {
+                const reason = prompt('Please enter the reason for archiving this consultation:');
+                if (reason && reason.trim()) {
+                    const form = document.getElementById('archiveConsultationForm');
+                    form.action = `<?= url('/consultations/') ?>${id}/archive`;
+                    document.getElementById('archiveConsultationReasonInput').value = reason.trim();
+                    form.submit();
+                }
+            }
         });
-    }
+    });
+
+    // B. View Vital Signs Details Modal
+    const viewVitalsModalEl = document.getElementById('viewVitalsModal');
+    const viewVitalsModal = viewVitalsModalEl ? new bootstrap.Modal(viewVitalsModalEl) : null;
+
+    document.querySelectorAll('.btn-view-vitals').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const date = this.getAttribute('data-date') || '--';
+            const recorder = this.getAttribute('data-recorder') || 'Clinician';
+            const bp = this.getAttribute('data-bp') || '--';
+            const pulse = this.getAttribute('data-pulse') || '--';
+            const temp = this.getAttribute('data-temp') || '--';
+            const resp = this.getAttribute('data-resp') || '--';
+            const spo2 = this.getAttribute('data-spo2') || '--';
+            const weight = this.getAttribute('data-weight') || '--';
+            const height = this.getAttribute('data-height') || '--';
+            const bmi = this.getAttribute('data-bmi') || '--';
+            const waist = this.getAttribute('data-waist') || '--';
+            const notes = this.getAttribute('data-notes') || '';
+
+            document.getElementById('modalVitalDate').textContent = date;
+            document.getElementById('modalVitalRecorder').textContent = recorder;
+            document.getElementById('modalVitalBP').textContent = bp;
+            document.getElementById('modalVitalPulse').textContent = pulse;
+            document.getElementById('modalVitalTemp').textContent = temp;
+            document.getElementById('modalVitalResp').textContent = resp;
+            document.getElementById('modalVitalSpo2').textContent = spo2;
+            document.getElementById('modalVitalWeight').textContent = weight;
+            document.getElementById('modalVitalHeight').textContent = height;
+            document.getElementById('modalVitalWaist').textContent = waist;
+
+            // BMI category determination
+            let bmiDisplay = bmi;
+            if (bmi !== '--' && !isNaN(parseFloat(bmi))) {
+                const bmiVal = parseFloat(bmi);
+                let cat = '';
+                let badgeClass = 'bg-secondary-subtle text-secondary';
+                if (bmiVal < 18.5) {
+                    cat = 'Underweight';
+                    badgeClass = 'bg-warning-subtle text-dark';
+                } else if (bmiVal < 25) {
+                    cat = 'Normal';
+                    badgeClass = 'bg-success-subtle text-success';
+                } else if (bmiVal < 30) {
+                    cat = 'Overweight';
+                    badgeClass = 'bg-warning-subtle text-dark';
+                } else {
+                    cat = 'Obese';
+                    badgeClass = 'bg-danger-subtle text-danger';
+                }
+                bmiDisplay = `${bmi} <span class="badge ${badgeClass} ms-1">${cat}</span>`;
+            }
+            document.getElementById('modalVitalBmi').innerHTML = bmiDisplay;
+
+            const notesEl = document.getElementById('modalVitalNotes');
+            if (notes && notes.trim()) {
+                notesEl.textContent = notes.trim();
+            } else {
+                notesEl.innerHTML = '<span class="text-muted fst-italic">No symptoms or notes recorded.</span>';
+            }
+
+            if (viewVitalsModal) {
+                viewVitalsModal.show();
+            }
+        });
+    });
+
+    // C. Delete Vital Signs Record
+    document.querySelectorAll('.btn-delete-vital').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Delete Vital Signs?',
+                    text: 'Are you sure you want to delete this vital signs record? This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.getElementById('deleteVitalForm');
+                        form.action = `<?= url('/vital-signs/') ?>${id}/delete`;
+                        form.submit();
+                    }
+                });
+            } else if (confirm('Delete this vital signs record?')) {
+                const form = document.getElementById('deleteVitalForm');
+                form.action = `<?= url('/vital-signs/') ?>${id}/delete`;
+                form.submit();
+            }
+        });
+    });
+
+    // D. Delete Universal Immunization Record
+    document.querySelectorAll('.btn-delete-immunization').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const vaccine = this.getAttribute('data-vaccine') || 'Vaccine';
+            const dose = this.getAttribute('data-dose') || '1';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Delete Immunization Record?',
+                    text: `Are you sure you want to delete Dose #${dose} of ${vaccine}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete record',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.getElementById('deleteImmunizationForm');
+                        form.action = `<?= url('/immunizations/') ?>${id}/delete`;
+                        form.submit();
+                    }
+                });
+            } else if (confirm(`Are you sure you want to delete Dose #${dose} of ${vaccine}?`)) {
+                const form = document.getElementById('deleteImmunizationForm');
+                form.action = `<?= url('/immunizations/') ?>${id}/delete`;
+                form.submit();
+            }
+        });
+    });
+
+    // E. Delete Prenatal Visit
+    document.querySelectorAll('.btn-delete-prenatal-visit').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const date = this.getAttribute('data-date') || '';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Delete Prenatal Visit?',
+                    text: `Are you sure you want to remove the prenatal checkup visit dated ${date}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete visit',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.getElementById('deletePrenatalVisitForm');
+                        form.action = `<?= url('/prenatal/visit/') ?>${id}/delete`;
+                        form.submit();
+                    }
+                });
+            } else if (confirm(`Remove prenatal checkup visit dated ${date}?`)) {
+                const form = document.getElementById('deletePrenatalVisitForm');
+                form.action = `<?= url('/prenatal/visit/') ?>${id}/delete`;
+                form.submit();
+            }
+        });
+    });
+
+    // F. Cancel Appointment
+    document.querySelectorAll('.btn-cancel-appointment').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const date = this.getAttribute('data-date') || '';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Cancel Appointment?',
+                    text: `Are you sure you want to cancel the appointment scheduled for ${date}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, cancel appointment',
+                    cancelButtonText: 'Keep'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.getElementById('cancelAppointmentForm');
+                        form.action = `<?= url('/appointments/') ?>${id}/status`;
+                        form.submit();
+                    }
+                });
+            } else if (confirm(`Cancel appointment scheduled for ${date}?`)) {
+                const form = document.getElementById('cancelAppointmentForm');
+                form.action = `<?= url('/appointments/') ?>${id}/status`;
+                form.submit();
+            }
+        });
+    });
+
+    
 
     // 5. Live Naegele Rule EDC Calculator Preview
     const prenatalLmpInput = document.getElementById('prenatal_lmp_input');

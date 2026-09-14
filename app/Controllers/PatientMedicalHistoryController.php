@@ -33,6 +33,14 @@ class PatientMedicalHistoryController extends Controller {
             return;
         }
 
+        // Verify CSRF token (Defense-in-Depth)
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            $_SESSION['error_message'] = 'Invalid or expired session token. Please try again.';
+            $this->redirect("/patients/{$patientId}#tab-ihp");
+            return;
+        }
+
         // Process Checklists and Structured Text - build associative map [Condition => Detail]
         $rawPastMedical = $_POST['past_medical_history'] ?? [];
         if (!is_array($rawPastMedical)) {
@@ -173,13 +181,13 @@ class PatientMedicalHistoryController extends Controller {
             'is_menopausal' => !empty($_POST['is_menopausal']) ? 1 : 0,
             'menopause_age' => !empty($_POST['menopause_age']) ? (int)$_POST['menopause_age'] : null,
             'birth_control_method' => !empty($_POST['birth_control_method']) ? trim($_POST['birth_control_method']) : null,
-            'baseline_bp_systolic' => !empty($_POST['baseline_bp_systolic']) ? (int)$_POST['baseline_bp_systolic'] : null,
-            'baseline_bp_diastolic' => !empty($_POST['baseline_bp_diastolic']) ? (int)$_POST['baseline_bp_diastolic'] : null,
-            'baseline_heart_rate' => !empty($_POST['baseline_heart_rate']) ? (int)$_POST['baseline_heart_rate'] : null,
-            'baseline_respiratory_rate' => !empty($_POST['baseline_respiratory_rate']) ? (int)$_POST['baseline_respiratory_rate'] : null,
-            'baseline_height' => !empty($_POST['baseline_height']) ? (float)$_POST['baseline_height'] : null,
-            'baseline_weight' => !empty($_POST['baseline_weight']) ? (float)$_POST['baseline_weight'] : null,
-            'baseline_waist_circumference' => !empty($_POST['baseline_waist_circumference']) ? (float)$_POST['baseline_waist_circumference'] : null,
+            'baseline_bp_systolic' => (!empty($_POST['baseline_bp_systolic']) && (int)$_POST['baseline_bp_systolic'] > 0) ? (int)$_POST['baseline_bp_systolic'] : null,
+            'baseline_bp_diastolic' => (!empty($_POST['baseline_bp_diastolic']) && (int)$_POST['baseline_bp_diastolic'] > 0) ? (int)$_POST['baseline_bp_diastolic'] : null,
+            'baseline_heart_rate' => (!empty($_POST['baseline_heart_rate']) && (int)$_POST['baseline_heart_rate'] > 0) ? (int)$_POST['baseline_heart_rate'] : null,
+            'baseline_respiratory_rate' => (!empty($_POST['baseline_respiratory_rate']) && (int)$_POST['baseline_respiratory_rate'] > 0) ? (int)$_POST['baseline_respiratory_rate'] : null,
+            'baseline_height' => (!empty($_POST['baseline_height']) && (float)$_POST['baseline_height'] > 0) ? (float)$_POST['baseline_height'] : null,
+            'baseline_weight' => (!empty($_POST['baseline_weight']) && (float)$_POST['baseline_weight'] > 0) ? (float)$_POST['baseline_weight'] : null,
+            'baseline_waist_circumference' => (!empty($_POST['baseline_waist_circumference']) && (float)$_POST['baseline_waist_circumference'] > 0) ? (float)$_POST['baseline_waist_circumference'] : null,
             'gravida' => isset($_POST['gravida']) && $_POST['gravida'] !== '' ? (int)$_POST['gravida'] : null,
             'para' => isset($_POST['para']) && $_POST['para'] !== '' ? (int)$_POST['para'] : null,
             'delivery_type' => !empty($_POST['delivery_type']) ? trim($_POST['delivery_type']) : null,

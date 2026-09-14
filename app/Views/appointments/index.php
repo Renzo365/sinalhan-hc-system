@@ -37,10 +37,10 @@ require dirname(__DIR__) . '/layout/header.php';
                 <label for="date_from" class="form-label fw-semibold text-secondary small">Scheduled Date From</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar3"></i></span>
-                    <input type="text" 
+                    <input type="date" 
                            name="date_from" 
                            id="date_from" 
-                           class="form-control bg-light border-start-0 flatpickr" 
+                           class="form-control bg-light border-start-0" 
                            placeholder="YYYY-MM-DD" 
                            value="<?= h($filters['date_from']) ?>">
                 </div>
@@ -51,10 +51,10 @@ require dirname(__DIR__) . '/layout/header.php';
                 <label for="date_to" class="form-label fw-semibold text-secondary small">Scheduled Date To</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar3"></i></span>
-                    <input type="text" 
+                    <input type="date" 
                            name="date_to" 
                            id="date_to" 
-                           class="form-control bg-light border-start-0 flatpickr" 
+                           class="form-control bg-light border-start-0" 
                            placeholder="YYYY-MM-DD" 
                            value="<?= h($filters['date_to']) ?>">
                 </div>
@@ -197,11 +197,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Initialize Flatpickr for date filters
-    flatpickr('.flatpickr', {
-        dateFormat: 'Y-m-d',
-        allowInput: true
-    });
+
 
     // 2. Initialize DataTable
     <?php if (!empty($appointments)): ?>

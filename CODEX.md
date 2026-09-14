@@ -1,7 +1,7 @@
 # Patient Management System - Barangay Sinalhan Health Center
 
 > A capstone-oriented, LAN-based healthcare information system built with PHP 8+, MySQL 8, and XAMPP for Barangay Sinalhan Health Center.  
-> **Current Version:** Beta 1.3 (Authentication Portal Redesign & First-Time Password Security Enclave)
+> **Current Version:** Beta 1.4 (Clinical Care Workstation UI/UX Modernization & Archived Records Hub Overhaul)
 
 ---
 
@@ -44,7 +44,7 @@ These features are required for the system to be considered complete for capston
 1. Authentication and session management (with role privilege boundaries and 15-minute lockout safeguard)
 2. Role-based access control (Admin vs Staff)
 3. Patient registration, search, update, archive/restore, and master profile workstation
-4. PhilHealth Annex A1 Individual Health Profile (IHP) medical history, surgical logs, and habits
+4. PhilHealth Annex A1 Individual Health Profile (IHP) medical history across 1-to-9 sequential cards, baseline vitals & anthropometrics with Asian WHO BMI calculation, surgical logs, and lifestyle habits
 5. Vital signs recording with automated BMI calculation and color triage
 6. Consultation records using SOAP-style notes with clinical decision support banners
 7. Maternal & Pre-Natal Care tracking (Naegele EDC, dynamic AOG, GTPAL, serial follow-ups, and past deliveries matrix)
@@ -284,27 +284,32 @@ Core features:
 - **Directory Search & Program Tagging**: Search by patient name, patient ID, family number, PhilHealth PIN, or phone number. Filter by Age Group (*Well Baby 0-5, Children 6-15, Reproductive 15-49, Adults 25-59, Senior 60+*), Program Category (*General OPD, Prenatal, Well Baby, Senior*), or Barangay.
 - **Archiving & Restoration**: Soft-deletes inactive/deceased records (`deleted_at`, `deleted_by`, `archive_reason`) to protect historical clinical integrity while keeping active lists clean.
 
-### 6.3 Vital Signs
+### 6.3 Vital Signs & Clinical Care Workstation Modernization
 
-Health staff can record basic patient vital signs.
+Health staff can record basic patient vital signs and manage patient care through a modernized, responsive Clinical Care Workstation interface (`/patients/{id}`).
 
-Fields may include:
+#### Vital Signs Fields & Ergonomics
+- Blood pressure (Systolic / Diastolic in mmHg with color-coded triage thresholds)
+- Heart rate / Pulse rate (bpm)
+- Respiratory rate (cpm)
+- Body Temperature (°C)
+- Weight (kg) & Height (cm)
+- Asian WHO Body Mass Index (BMI) auto-calculated with classification badge
+- Oxygen Saturation ($SpO_2$ %)
+- Waist Circumference (cm)
+- Clinical Notes and Symptoms
+- Recorded by staff and timestamp
 
-- Blood pressure
-- Heart rate
-- Respiratory rate
-- Temperature
-- Weight
-- Height
-- BMI
-- Oxygen saturation
-- Notes
-- Recorded by
-- Date and time recorded
+#### Workstation Action Modernization
+- **Unified Action Dropdowns**: Replaced button sprawl across all clinical tables (Consultations, Vitals, Immunizations, Prenatal Visits, Appointments) with standardized Bootstrap 5 `bi bi-three-dots-vertical` dropdown menus.
+- **Decluttered Vitals Log Table**: Streamlined the active table by hiding $SpO_2$ and Waist Circumference from direct columns to prevent horizontal scrolling on 1366x768 screens, moving full metrics into `#viewVitalsModal`.
+- **Comprehensive View Modal (`#viewVitalsModal`)**: Displays complete physiological metrics, WHO Asian BMI badges, and full Clinical Notes/Symptoms with safe DOM text injection (`.textContent`) to prevent XSS.
+- **Role-Restricted Deletion**: Enforces ownership checks where staff can only delete records they personally recorded, while Administrators hold master deletion privileges. Deletion endpoints (`/vital-signs/{id}/delete`, `/immunizations/{id}/delete`, `/prenatal/visit/{id}/delete`) strictly validate CSRF tokens.
+- **Relational Safety Lock**: Vital signs records linked to an active consultation (`deleted_at IS NULL`) are locked from deletion until the parent consultation is soft-deleted, preserving clinical SOAP audit integrity.
 
-### 6.4 Consultation Records
+### 6.4 Consultation Records & Soft-Delete Lifecycle
 
-Consultation records will use a SOAP-style format:
+Consultation records use a SOAP-style format and support full soft-deletion and administrative restoration:
 
 | Section | Meaning |
 |---|---|
@@ -313,7 +318,11 @@ Consultation records will use a SOAP-style format:
 | Assessment | Diagnosis or clinical impression |
 | Plan | Treatment, advice, prescription, or follow-up |
 
-This makes the system easier to explain because SOAP notes are a recognizable clinical documentation format.
+#### Soft-Delete & Archive Lifecycle
+- **Consultation Archiving (`POST /consultations/{id}/archive`)**: Staff or Admins can soft-delete a consultation by providing a mandatory archive reason via SweetAlert2 prompt. Soft-deleted consultations set `deleted_at`, `deleted_by`, and `archive_reason`, disappearing from the active patient workstation while remaining preserved for audit and reporting.
+- **Administrative Restoration (`POST /archive/consultations/{id}/restore`)**: Exclusively available to Administrators within the Archived Records Hub, restoring the consultation back into the active patient history.
+- **Audit Logging**: All archiving and restoration events record immutable entries in `audit_logs` (`CONSULTATION_ARCHIVED` and `CONSULTATION_RESTORED`).
+
 
 ### 6.5 Appointment Scheduling
 
@@ -393,18 +402,24 @@ Audit logs should track important system actions such as:
 
 Audit logs help demonstrate accountability and data protection during capstone defense.
 
-### 6.10 Archived Records
+### 6.10 Archived Records Hub & Data Retention
 
-Archiving is the user-facing workflow for soft-deleted records. Instead of permanently deleting patient records, the system marks them as archived and hides them from normal active lists.
+Archiving is the clinical and administrative workflow for soft-deleted health records. In compliance with Republic Act 10173 (Data Privacy Act of 2012) and Department of Health record retention mandates, permanent physical deletion of patient profiles and clinical documentation is permanently disabled.
 
-Recommended behavior:
+#### Archived Records Hub (`GET /archive`)
+- **Centralized Route & Access**: Standardized admin-only route at `/archive` (aliased with `/archive/patients`), protected by `AdminMiddleware`.
+- **Tabbed Interface with Live Counter Badges**:
+  - **Tab 1: Archived Patients (`#tab-patients`)**: Displays soft-deleted patient master records with archive timestamp, patient identity, reason, and archiver name, accompanied by a dynamic numeric counter badge.
+  - **Tab 2: Archived Consultations (`#tab-consultations`)**: Displays soft-deleted clinical consultations with archive timestamp, patient ID & name, clinician, assessment diagnosis snippet, reason, and archiver name, accompanied by a dynamic numeric counter badge.
+- **Tab State Persistence**: Switching tabs synchronizes query parameter `?tab=patients` or `?tab=consultations` via HTML5 `history.replaceState`, preserving active tabs across page refreshes and direct URLs.
+- **Soft-Delete Lifecycle**:
+  - Records store `deleted_at` timestamp, `deleted_by` user ID, and a mandatory `archive_reason` collected via modal prompt.
+  - Soft-deleted records are automatically filtered out from active patient directories and clinical workstation views.
+- **Administrative Restoration**:
+  - Administrators can restore archived patients (`POST /archive/patients/{id}/restore`) or archived consultations (`POST /archive/consultations/{id}/restore`).
+  - Restoration resets `deleted_at`, `deleted_by`, and `archive_reason` to `NULL`, immediately returning the record to active status.
+- **CSRF Defense & Audit Trail**: All archive and restore actions require CSRF validation (`hash_equals()`). Every archiving and restoration event is permanently logged in `audit_logs` (`PATIENT_ARCHIVED`, `PATIENT_RESTORED`, `CONSULTATION_ARCHIVED`, `CONSULTATION_RESTORED`).
 
-- Normal patient lists should show active records only.
-- Archived records should be visible from a separate admin-focused page.
-- Archiving should store `deleted_at`, `deleted_by`, and an optional `archive_reason`.
-- Admin users should be able to view and restore archived records when appropriate.
-- Staff users should not restore archived records unless explicitly allowed.
-- Permanent deletion should not be included in the initial capstone scope.
 
 ### 6.11 System Reliability & Global Error Handling
 
@@ -577,16 +592,24 @@ GET       /patients/{id}/edit
 POST      /patients/{id}
 POST      /patients/{id}/delete
 GET       /patients/search
+GET       /archive
 GET       /archive/patients
-GET       /archive/patients/{id}
 POST      /archive/patients/{id}/restore
 
 POST      /vital-signs
+POST      /vital-signs/{id}/delete
 GET       /patients/{id}/vital-signs
 
 GET       /consultations
 POST      /consultations
+GET       /consultations/{id}/edit
+POST      /consultations/{id}
+POST      /consultations/{id}/archive
+POST      /archive/consultations/{id}/restore
 GET       /patients/{id}/consultations
+
+POST      /immunizations/{id}/delete
+POST      /prenatal/visit/{id}/delete
 
 GET       /queue
 POST      /queue
