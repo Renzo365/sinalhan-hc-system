@@ -95,16 +95,13 @@ require dirname(__DIR__) . '/layout/header.php';
                     <!-- Row 3: Date of Birth, Biological Sex, Civil Status, Blood Type -->
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="dob" class="form-label fw-semibold text-secondary small">Date of Birth <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-date"></i></span>
-                            <input type="date" 
-                                   name="dob" 
-                                   id="dob" 
-                                   class="form-control bg-white" 
-                                   value="<?= h($patient['dob']) ?>" 
-                                   max="<?= date('Y-m-d') ?>"
-                                   required>
-                        </div>
+                        <input type="date" 
+                               name="dob" 
+                               id="dob" 
+                               class="form-control bg-white" 
+                               value="<?= h($patient['dob']) ?>" 
+                               max="<?= date('Y-m-d') ?>"
+                               required>
                     </div>
 
                     <div class="col-12 col-sm-6 col-md-3">

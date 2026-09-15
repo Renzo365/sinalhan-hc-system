@@ -53,6 +53,9 @@ class Controller {
      * @param int $statusCode HTTP status code
      */
     protected function json($data, $statusCode = 200) {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
         header('Content-Type: application/json');
         http_response_code($statusCode);
         echo json_encode($data);

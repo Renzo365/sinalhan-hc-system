@@ -194,7 +194,7 @@ A dedicated pediatric care and growth tracking module for infants and young chil
   * *6, 10, 14 Weeks*: Pentavalent 1–3, OPV 1–3, Rotavirus 1–2, IPV
   * *9 & 12 Months*: MCV1 (Measles), MCV2 (MMR)
 * **National Supplementation Programs**: Tracks Vitamin A capsules and Deworming doses every 6 months.
-* **Pediatric Anthropometrics & Growth Monitoring**: Serial checkup logs for exact age in months, weight, height, **Head Circumference**, **Chest Circumference**, body temperature, and infant feeding practices (*Exclusive Breastfeeding / LAM, Bottle Feeding, Mixed Feeding*).
+* **Pediatric Anthropometrics & Growth Monitoring**: Serial checkup logs for exact age in months, weight, height, **Head Circumference**, **Chest Circumference**, body temperature, and infant feeding practices (*Exclusive Breastfeeding / LAM, Bottle Feeding, Mixed Feeding*). The growth monitoring table is streamlined to 7 essential columns on desktop, with full measurements, micronutrients, and TCB milestones accessible through the dedicated `#viewGrowthLogModal` viewer.
 
 ---
 
@@ -347,32 +347,39 @@ The system implements rigorous mathematical guardrails: zero, negative, or empty
 
 The Clinical Care Workstation (`/patients/{id}`) provides an integrated, multi-tabbed master folder for managing a patient's complete clinical encounters. To optimize screen ergonomics and maintain clinical data integrity, the interface features unified action controls, decluttered tables, and relational safety locks.
 
-### 14.1 Unified "More Actions" Dropdown Architecture
-Across all active clinical tables, legacy inline buttons have been consolidated into standardized Bootstrap 5 dropdown menus triggered by a vertical ellipsis icon (`bi bi-three-dots-vertical`). This prevents button crowding, eliminates accidental clicks, and provides a uniform interaction pattern across all tabs:
+### 14.1 Direct Inline Action Buttons Architecture
+Across all active clinical tables, actions are rendered as direct, high-contrast inline icon buttons rather than nested dropdowns. This permanently resolves `.table-responsive` overflow clipping and container scrollbar jumpiness, which previously caused menus to be cropped when tables contained fewer than 3 records:
 * **Consultations (`#tab-consultations`)**:
-  * **View SOAP Details**: Launches `#viewConsultationModal` via AJAX to review Subjective, Objective, Assessment, and Plan notes alongside linked vitals.
-  * **Edit Consultation**: Navigates to `/consultations/{id}/edit` for clinician corrections.
-  * **Archive (Soft-Delete) Consultation**: Prompts for a mandatory archive reason via SweetAlert2, soft-deleting the consultation with CSRF protection and moving it to the Archived Records Hub.
+  * **View SOAP Details** (`.view-consultation-btn`, `bi bi-eye`): Launches `#viewConsultationModal` via AJAX to review Subjective, Objective, Assessment, and Plan notes alongside linked vitals.
+  * **Archive (Soft-Delete) Consultation** (`.btn-archive-consultation`, `bi bi-archive`): Prompts for a mandatory archive reason via SweetAlert2, soft-deleting the consultation with CSRF protection and moving it to the Archived Records Hub.
 * **Vital Signs Log (`#tab-vitals`)**:
-  * **View All Metrics & Notes**: Opens the comprehensive `#viewVitalsModal` showcasing complete anthropometric and physiological data.
-  * **Delete Vitals**: Prompts for confirmation and executes role-restricted soft-deletion with relational lock verification.
+  * **View All Metrics & Notes** (`.btn-view-vitals`, `bi bi-eye`): Opens the comprehensive `#viewVitalsModal` showcasing complete anthropometric and physiological data.
+  * **Delete Vitals** (`.btn-delete-vital`, `bi bi-trash`): Prompts for confirmation and executes role-restricted soft-deletion with relational lock verification.
 * **Universal Immunizations (`#tab-immunizations`)**:
-  * **Delete Immunization Record**: Prompts for confirmation detailing the vaccine name and dose number, executing role-restricted deletion with CSRF protection.
+  * **Delete Immunization Record** (`.btn-delete-immunization`, `bi bi-trash`): Prompts for confirmation detailing the vaccine name and dose number, executing role-restricted deletion with CSRF protection.
 * **Prenatal Serial Visits (`#tab-prenatal`)**:
-  * **Delete Checkup Visit**: Prompts for confirmation specifying the visit date, executing role-restricted deletion with CSRF protection.
+  * **Delete Checkup Visit** (`.btn-delete-prenatal-visit`, `bi bi-trash`): Prompts for confirmation specifying the visit date, executing role-restricted deletion with CSRF protection.
 * **Appointments (`#tab-appointments`)**:
-  * **Edit Appointment**: Navigates to `/appointments/{id}/edit`.
-  * **Cancel Appointment**: Executes status transition to `Cancelled` with SweetAlert2 confirmation.
+  * **Reschedule / Edit Appointment** (`bi bi-pencil-square`): Navigates directly to `/appointments/{id}/edit`.
+  * **Cancel Appointment** (`.btn-cancel-appointment`, `bi bi-x-circle`): Executes status transition to `Cancelled` with SweetAlert2 confirmation.
+* **Well Baby Growth Monitoring (`#tab-wellbaby`)**:
+  * **View Growth Details** (`.btn-view-growth-log`, `bi bi-eye`): Opens the `#viewGrowthLogModal` modal detailing complete anthropometric metrics, micronutrients, and developmental milestones.
+  * **Delete Growth Record** (`bi bi-trash`): Form-driven deletion with CSRF verification and confirmation prompt.
 
-### 14.2 Decluttered Vital Signs Log & Comprehensive View Modal
-To guarantee optimal viewing on 1366x768 and smaller clinic workstation laptops without horizontal table scrolling, the Vital Signs Log table has been streamlined:
-* **Table Columns**: Date/Time, Blood Pressure (with abnormal systolic/diastolic color alerts), Heart Rate, Respiratory Rate, Temperature, Weight & Height, BMI (with Asian WHO classification badge), Recorded By, and Actions.
-* **Responsive Decluttering**: Oxygen Saturation ($SpO_2$) and Adult Waist Circumference columns are hidden from the primary table view to preserve horizontal real estate.
-* **Comprehensive `#viewVitalsModal`**:
-  * Clicking **View All Metrics & Notes** launches a dedicated modal displaying all recorded metrics: Blood Pressure, Pulse, Temperature, Respiratory Rate, Oxygen Saturation ($SpO_2$), Waist Circumference, Weight, Height, and computed BMI badge.
-  * Displays the full text of **Clinical Notes & Patient Symptoms** recorded during triage.
-  * Displays the recording staff member's name and exact timestamp.
-* **DOM XSS Prevention**: All modal values are embedded via `data-*` HTML attributes escaped with `h()` and dynamically populated into DOM nodes using `.textContent` instead of `.innerHTML`, neutralizing cross-site scripting risks.
+### 14.2 Compacted Clinical Tables & Comprehensive Detail Modals
+To guarantee optimal viewing on 1366x768 and smaller clinic workstation laptops without horizontal table scrolling or visual crowding, secondary clinical metrics are encapsulated inside lightweight client-side modals:
+* **Compacted Vital Signs Log (6 Columns)**:
+  * Columns: Date/Time, Blood Pressure (with abnormal systolic/diastolic color alerts), Heart Rate, Respiratory Rate, Temperature, and Actions.
+  * Empty state colspan synchronized to 6.
+  * Extended metrics (Oxygen Saturation $SpO_2$, Adult Waist Circumference, Weight, Height, Asian WHO BMI classification badge, and full triage clinical notes) are displayed on-demand in `#viewVitalsModal`.
+* **Compacted Child Growth Monitoring Table (7 Columns)**:
+  * Columns: Visit Date, Age, Weight, Height, Feeding Method, Recorded By, and Actions.
+  * Empty state colspan synchronized to 7.
+  * Extended pediatric measurements (Head Circumference, Chest Circumference, Temperature, Micronutrient Supplements, and TCB / Developmental Milestones & Remarks) are displayed on-demand in `#viewGrowthLogModal`.
+* **Child Growth Visit Details Modal (`#viewGrowthLogModal`)**:
+  * Responsive Bootstrap 5 modal rendering 6 anthropometric metric cards and a dedicated developmental milestones / clinical remarks callout.
+  * Built-in `hidden.bs.modal` lifecycle event listener that forcefully removes lingering `.modal-backdrop` elements and restores standard document body scrolling.
+* **DOM XSS Prevention**: All modal values across `#viewVitalsModal` and `#viewGrowthLogModal` are embedded via `data-*` HTML attributes sanitized with `h()` and dynamically injected into DOM nodes using `.textContent` instead of `.innerHTML`, neutralizing cross-site scripting risks.
 
 ### 14.3 Secure Role & Ownership Restricted Deletion
 To prevent unauthorized deletion of clinical data, strict authorization checks are enforced on all deletion endpoints:

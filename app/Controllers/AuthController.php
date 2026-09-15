@@ -326,6 +326,9 @@ class AuthController extends Controller {
         }
 
         if (!isset($_SESSION['user_id'])) {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
             http_response_code(401);
             header('Content-Type: application/json');
             echo json_encode(['status' => 'unauthenticated', 'message' => 'Session expired']);
@@ -333,9 +336,11 @@ class AuthController extends Controller {
         }
 
         $_SESSION['last_activity'] = time();
+        $lastActivity = $_SESSION['last_activity'];
+        session_write_close();
 
         header('Content-Type: application/json');
-        echo json_encode(['status' => 'ok', 'last_activity' => $_SESSION['last_activity']]);
+        echo json_encode(['status' => 'ok', 'last_activity' => $lastActivity]);
         exit;
     }
 }

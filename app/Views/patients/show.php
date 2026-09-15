@@ -2362,31 +2362,19 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <td><?= h($c['clinician_name']) ?></td>
                                                 <td class="text-start"><?= h(mb_strimwidth($c['assessment'], 0, 50, '...')) ?></td>
                                                 <td><span class="badge <?= $badgeClass ?>"><?= h($c['status']) ?></span></td>
-                                                <td class="pe-3 text-end">
-                                                    <div class="dropdown text-end">
-                                                        <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <i class="bi bi-three-dots-vertical"></i> Actions
+                                                <td class="pe-3 text-end text-nowrap">
+                                                    <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 view-consultation-btn" data-consultation-id="<?= $c['id'] ?>" title="View Full SOAP">
+                                                            <i class="bi bi-eye fs-6"></i>
                                                         </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
-                                                            <li>
-                                                                <button type="button" class="dropdown-item py-1 view-consultation-btn" data-consultation-id="<?= $c['id'] ?>">
-                                                                    <i class="bi bi-eye text-primary me-2"></i> View Full SOAP
-                                                                </button>
-                                                            </li>
-                                                            <?php if ($canEditRow): ?>
-                                                                <li>
-                                                                    <a class="dropdown-item py-1" href="<?= url('/consultations/' . $c['id'] . '/edit') ?>">
-                                                                        <i class="bi bi-pencil-square text-secondary me-2"></i> Edit Consultation
-                                                                    </a>
-                                                                </li>
-                                                            <?php endif; ?>
-                                                            <li><hr class="dropdown-divider my-1"></li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item py-1 text-danger btn-archive-consultation" data-id="<?= $c['id'] ?>" data-patient-id="<?= $patient['id'] ?>">
-                                                                    <i class="bi bi-archive text-danger me-2"></i> Archive Consultation
-                                                                </button>
-                                                            </li>
-                                                        </ul>
+                                                        <?php if ($canEditRow): ?>
+                                                            <a href="<?= url('/consultations/' . $c['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary border-0 p-1" title="Edit Consultation">
+                                                                <i class="bi bi-pencil-square fs-6"></i>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-archive-consultation" data-id="<?= $c['id'] ?>" data-patient-id="<?= $patient['id'] ?>" title="Archive Consultation">
+                                                            <i class="bi bi-archive fs-6"></i>
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -2415,8 +2403,6 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         <th>BP (mmHg)</th>
                                         <th>Pulse (bpm)</th>
                                         <th>Temp (°C)</th>
-                                        <th>Resp (cpm)</th>
-                                        <th>BMI</th>
                                         <th>Recorded By</th>
                                         <th class="pe-3 text-end">Action</th>
                                     </tr>
@@ -2424,7 +2410,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <tbody>
                                     <?php if (empty($vitalsHistory)): ?>
                                         <tr>
-                                            <td colspan="8" class="text-center py-5 text-muted">
+                                            <td colspan="6" class="text-center py-5 text-muted">
                                                 <i class="bi bi-activity fs-3 d-block mb-2 text-secondary"></i>
                                                 No vital signs records exist for this patient.
                                             </td>
@@ -2442,42 +2428,31 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <td class="fw-bold font-monospace"><?= h($v['bp_systolic'] ?? '--') ?>/<?= h($v['bp_diastolic'] ?? '--') ?></td>
                                                 <td><?= h($v['heart_rate'] ?? '--') ?></td>
                                                 <td><?= h($v['temperature'] ?? '--') ?></td>
-                                                <td><?= h($v['respiratory_rate'] ?? '--') ?></td>
-                                                <td><span class="badge bg-light text-dark border"><?= h($v['bmi'] ?? '--') ?></span></td>
                                                 <td class="text-muted"><?= h($v['recorder_name'] ?? 'Clinician') ?></td>
-                                                <td class="pe-3 text-end">
-                                                    <div class="dropdown text-end">
-                                                        <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <i class="bi bi-three-dots-vertical"></i> Actions
+                                                <td class="pe-3 text-end text-nowrap">
+                                                    <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-vitals" 
+                                                            data-id="<?= $v['id'] ?>"
+                                                            data-date="<?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?>"
+                                                            data-bp="<?= h(($v['bp_systolic'] ?? '--') . '/' . ($v['bp_diastolic'] ?? '--')) ?>"
+                                                            data-pulse="<?= h($v['heart_rate'] ?? '--') ?>"
+                                                            data-temp="<?= h($v['temperature'] ?? '--') ?>"
+                                                            data-resp="<?= h($v['respiratory_rate'] ?? '--') ?>"
+                                                            data-spo2="<?= h($v['oxygen_saturation'] ?? '--') ?>"
+                                                            data-weight="<?= h($v['weight'] ?? '--') ?>"
+                                                            data-height="<?= h($v['height'] ?? '--') ?>"
+                                                            data-bmi="<?= h($v['bmi'] ?? '--') ?>"
+                                                            data-waist="<?= h($v['waist_circumference'] ?? '--') ?>"
+                                                            data-notes="<?= h($v['notes'] ?? '') ?>"
+                                                            data-recorder="<?= h($v['recorder_name'] ?? 'Clinician') ?>"
+                                                            title="View Details">
+                                                            <i class="bi bi-eye fs-6"></i>
                                                         </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
-                                                            <li>
-                                                                <button type="button" class="dropdown-item py-1 btn-view-vitals" 
-                                                                    data-id="<?= $v['id'] ?>"
-                                                                    data-date="<?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?>"
-                                                                    data-bp="<?= h(($v['bp_systolic'] ?? '--') . '/' . ($v['bp_diastolic'] ?? '--')) ?>"
-                                                                    data-pulse="<?= h($v['heart_rate'] ?? '--') ?>"
-                                                                    data-temp="<?= h($v['temperature'] ?? '--') ?>"
-                                                                    data-resp="<?= h($v['respiratory_rate'] ?? '--') ?>"
-                                                                    data-spo2="<?= h($v['oxygen_saturation'] ?? '--') ?>"
-                                                                    data-weight="<?= h($v['weight'] ?? '--') ?>"
-                                                                    data-height="<?= h($v['height'] ?? '--') ?>"
-                                                                    data-bmi="<?= h($v['bmi'] ?? '--') ?>"
-                                                                    data-waist="<?= h($v['waist_circumference'] ?? '--') ?>"
-                                                                    data-notes="<?= h($v['notes'] ?? '') ?>"
-                                                                    data-recorder="<?= h($v['recorder_name'] ?? 'Clinician') ?>">
-                                                                    <i class="bi bi-eye text-primary me-2"></i> View Details
-                                                                </button>
-                                                            </li>
-                                                            <?php if ($canDeleteVital): ?>
-                                                                <li><hr class="dropdown-divider my-1"></li>
-                                                                <li>
-                                                                    <button type="button" class="dropdown-item py-1 text-danger btn-delete-vital" data-id="<?= $v['id'] ?>">
-                                                                        <i class="bi bi-trash text-danger me-2"></i> Delete
-                                                                    </button>
-                                                                </li>
-                                                            <?php endif; ?>
-                                                        </ul>
+                                                        <?php if ($canDeleteVital): ?>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-vital" data-id="<?= $v['id'] ?>" title="Delete Vital Signs">
+                                                                <i class="bi bi-trash fs-6"></i>
+                                                            </button>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -2538,23 +2513,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <td class="fw-medium text-dark"><?= date('M d, Y', strtotime($imm['administered_date'])) ?></td>
                                                 <td class="text-muted small"><?= h($imm['remarks'] ?? 'Routine') ?></td>
                                                 <td class="text-muted"><?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?></td>
-                                                <td class="pe-3 text-end">
+                                                <td class="pe-3 text-end text-nowrap">
                                                     <?php if ($canDeleteImm): ?>
-                                                        <div class="dropdown text-end">
-                                                            <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                <i class="bi bi-three-dots-vertical"></i> Actions
-                                                            </button>
-                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
-                                                                <li>
-                                                                    <button type="button" class="dropdown-item py-1 text-danger btn-delete-immunization" 
-                                                                        data-id="<?= $imm['id'] ?>" 
-                                                                        data-vaccine="<?= h($imm['vaccine_name']) ?>" 
-                                                                        data-dose="<?= h($imm['dose_number']) ?>">
-                                                                        <i class="bi bi-trash text-danger me-2"></i> Delete Record
-                                                                    </button>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-immunization" data-id="<?= $imm['id'] ?>" data-vaccine="<?= h($imm['vaccine_name']) ?>" data-dose="<?= h($imm['dose_number']) ?>" title="Delete Record">
+                                                            <i class="bi bi-trash fs-6"></i>
+                                                        </button>
                                                     <?php else: ?>
                                                         <span class="text-muted small">&mdash;</span>
                                                     <?php endif; ?>
@@ -2716,22 +2679,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                             <td class="text-muted"><?= h($pv['tcb'] ?? '--') ?></td>
                                                             <td class="text-start small"><?= h($pv['remarks'] ?? '--') ?></td>
                                                             <td class="text-muted"><?= h($pv['attendant_name'] ?? 'Midwife') ?></td>
-                                                            <td class="pe-3 text-end">
+                                                            <td class="pe-3 text-end text-nowrap">
                                                                 <?php if ($canDeleteVisit): ?>
-                                                                    <div class="dropdown text-end">
-                                                                        <button class="btn btn-sm btn-light border dropdown-toggle py-1 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                            <i class="bi bi-three-dots-vertical"></i> Actions
-                                                                        </button>
-                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
-                                                                            <li>
-                                                                                <button type="button" class="dropdown-item py-1 text-danger btn-delete-prenatal-visit" 
-                                                                                    data-id="<?= $pv['id'] ?>" 
-                                                                                    data-date="<?= date('M d, Y', strtotime($pv['visit_date'])) ?>">
-                                                                                    <i class="bi bi-trash text-danger me-2"></i> Delete Visit
-                                                                                </button>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-prenatal-visit" data-id="<?= $pv['id'] ?>" data-date="<?= date('M d, Y', strtotime($pv['visit_date'])) ?>" title="Delete Visit">
+                                                                        <i class="bi bi-trash fs-6"></i>
+                                                                    </button>
                                                                 <?php else: ?>
                                                                     <span class="text-muted small">&mdash;</span>
                                                                 <?php endif; ?>
@@ -3025,19 +2977,15 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <th>Age (Mos)</th>
                                                     <th>Weight (kg)</th>
                                                     <th>Height (cm)</th>
-                                                    <th>Head Circ (cm)</th>
-                                                    <th>Chest Circ (cm)</th>
-                                                    <th>Temp (°C)</th>
                                                     <th>Feeding Method</th>
                                                     <th>Supplements</th>
-                                                    <th>TCB / Milestones</th>
                                                     <th class="pe-3 text-end">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php if (empty($growthLogs)): ?>
                                                     <tr>
-                                                        <td colspan="11" class="text-center py-4 text-muted">
+                                                        <td colspan="7" class="text-center py-4 text-muted">
                                                             No periodic growth checkups logged yet for this infant.
                                                         </td>
                                                     </tr>
@@ -3048,9 +2996,6 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                             <td class="font-monospace fw-bold text-primary"><?= h($gl['age_months']) ?> mos</td>
                                                             <td class="fw-bold text-dark"><?= h($gl['weight_kg']) ?> kg</td>
                                                             <td><?= h($gl['height_cm']) ?> cm</td>
-                                                            <td><?= h($gl['head_circumference_cm'] ?? '--') ?></td>
-                                                            <td><?= h($gl['chest_circumference_cm'] ?? '--') ?></td>
-                                                            <td><?= h($gl['temperature'] ?? '--') ?></td>
                                                             <td><span class="badge bg-light text-dark border"><?= h($gl['feeding_method']) ?></span></td>
                                                             <td>
                                                                 <?php if (!empty($gl['vitamin_a_dose'])): ?>
@@ -3063,15 +3008,30 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                                     <span class="text-muted">--</span>
                                                                 <?php endif; ?>
                                                             </td>
-                                                            <td class="text-start small"><?= h($gl['tcb_notes'] ?? '--') ?></td>
-                                                            <td class="pe-3 text-end">
-                                                                <form action="<?= url('/wellbaby/growth-log/' . $gl['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Delete this growth visit entry?');">
-                                                                    <?= csrf_field() ?>
-                                                                    <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                                                    <button type="submit" class="btn btn-xs btn-outline-danger border-0 py-1 px-2" title="Delete Entry">
-                                                                        <i class="bi bi-trash"></i>
+                                                            <td class="pe-3 text-end text-nowrap">
+                                                                <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                                                    <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-growth-log" 
+                                                                        data-date="<?= date('M d, Y', strtotime($gl['log_date'])) ?>" 
+                                                                        data-age="<?= h($gl['age_months']) ?> mos" 
+                                                                        data-weight="<?= h($gl['weight_kg']) ?> kg" 
+                                                                        data-height="<?= h($gl['height_cm']) ?> cm" 
+                                                                        data-head="<?= h($gl['head_circumference_cm'] ?? '--') ?>" 
+                                                                        data-chest="<?= h($gl['chest_circumference_cm'] ?? '--') ?>" 
+                                                                        data-temp="<?= h($gl['temperature'] ?? '--') ?>" 
+                                                                        data-feeding="<?= h($gl['feeding_method']) ?>" 
+                                                                        data-supplements="<?= (!empty($gl['vitamin_a_dose']) ? 'Vitamin A' : '') . (!empty($gl['deworming_dose']) ? ' Deworming' : '') ?: 'None' ?>" 
+                                                                        data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>" 
+                                                                        title="View Growth Details">
+                                                                        <i class="bi bi-eye fs-6"></i>
                                                                     </button>
-                                                                </form>
+                                                                    <form action="<?= url('/wellbaby/growth-log/' . $gl['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Delete this growth visit entry?');">
+                                                                        <?= csrf_field() ?>
+                                                                        <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+                                                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry">
+                                                                            <i class="bi bi-trash fs-6"></i>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     <?php endforeach; ?>
@@ -3123,27 +3083,15 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     </div>
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="badge bg-light text-dark border"><?= h($a['status']) ?></span>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-light border dropdown-toggle py-0 px-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Appointment Actions">
-                                                                <i class="bi bi-three-dots-vertical"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm small">
-                                                                <li>
-                                                                    <a class="dropdown-item py-1" href="<?= url('/appointments/' . $a['id'] . '/edit') ?>">
-                                                                        <i class="bi bi-calendar2-range text-primary me-2"></i> Reschedule / Edit
-                                                                    </a>
-                                                                </li>
-                                                                <?php if ($a['status'] !== 'Cancelled'): ?>
-                                                                    <li><hr class="dropdown-divider my-1"></li>
-                                                                    <li>
-                                                                        <button type="button" class="dropdown-item py-1 text-danger btn-cancel-appointment" 
-                                                                            data-id="<?= $a['id'] ?>" 
-                                                                            data-date="<?= date('M d, Y', strtotime($a['appointment_date'])) ?>">
-                                                                            <i class="bi bi-x-circle text-danger me-2"></i> Cancel Appointment
-                                                                        </button>
-                                                                    </li>
-                                                                <?php endif; ?>
-                                                            </ul>
+                                                        <div class="d-inline-flex gap-1 align-items-center">
+                                                            <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary border-0 p-1" title="Reschedule / Edit">
+                                                                <i class="bi bi-pencil-square fs-6"></i>
+                                                            </a>
+                                                            <?php if ($a['status'] !== 'Cancelled'): ?>
+                                                                <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-cancel-appointment" data-id="<?= $a['id'] ?>" data-date="<?= date('M d, Y', strtotime($a['appointment_date'])) ?>" title="Cancel Appointment">
+                                                                    <i class="bi bi-x-circle fs-6"></i>
+                                                                </button>
+                                                            <?php endif; ?>
                                                         </div>
                                                     </div>
                                                 </li>
@@ -4195,6 +4143,88 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
 </div>
 
 <!-- ==========================================================================
+   VIEW CHILD GROWTH VISIT DETAILS MODAL
+   ========================================================================== -->
+<div class="modal fade" id="viewGrowthLogModal" tabindex="-1" aria-labelledby="viewGrowthLogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="viewGrowthLogModalLabel">
+                    <i class="bi bi-activity me-2"></i>Child Growth Visit Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white" id="growthLogModalContent">
+                <!-- Recorded Meta -->
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                    <div>
+                        <span class="text-muted small d-block">Visit Date</span>
+                        <strong class="text-dark" id="modalGrowthDate">--</strong>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Age</span>
+                        <strong class="text-success" id="modalGrowthAge">--</strong>
+                    </div>
+                </div>
+
+                <!-- Grid of Anthropometric Cards -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Weight &amp; Height</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthWeight">--</span> / <span id="modalGrowthHeight">--</span></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Head Circumference</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthHead">--</span> <small class="text-muted fw-normal">cm</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Chest Circumference</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthChest">--</span> <small class="text-muted fw-normal">cm</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Temperature</span>
+                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthTemp">--</span> <small class="text-muted fw-normal">°C</small></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Feeding Method</span>
+                            <span class="fs-6 fw-bold text-dark" id="modalGrowthFeeding">--</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Supplements</span>
+                            <span class="fs-6 fw-bold text-dark" id="modalGrowthSupplements">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TCB / Developmental Milestones & Remarks -->
+                <div class="card border rounded bg-white">
+                    <div class="card-header bg-light py-1.5 px-3 small fw-bold text-secondary">
+                        <i class="bi bi-journal-text me-1 text-success"></i> TCB / Developmental Milestones &amp; Remarks
+                    </div>
+                    <div class="card-body p-3 small text-dark" id="modalGrowthTcb" style="white-space: pre-line; min-height: 50px;">
+                        No developmental milestones or remarks recorded.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
    HIDDEN WORKSTATION ACTION FORMS (CSRF-Protected)
    ========================================================================== -->
 <form id="archiveConsultationForm" method="POST" class="d-none">
@@ -4725,6 +4755,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const viewConsultationModal = document.getElementById('viewConsultationModal');
     const consultationDetailsContent = document.getElementById('consultationDetailsContent');
 
+    if (viewConsultationModal) {
+        viewConsultationModal.addEventListener('hidden.bs.modal', function () {
+            if (!document.querySelector('.modal.show')) {
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('overflow');
+                document.body.style.removeProperty('padding-right');
+            }
+        });
+    }
+
     function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -4738,7 +4779,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.view-consultation-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const consultationId = this.getAttribute('data-consultation-id');
-            const modal = new bootstrap.Modal(viewConsultationModal);
+            const modal = bootstrap.Modal.getOrCreateInstance(viewConsultationModal);
             modal.show();
 
             const footerRight = document.getElementById('consultationModalFooterRight');
@@ -4966,7 +5007,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // B. View Vital Signs Details Modal
     const viewVitalsModalEl = document.getElementById('viewVitalsModal');
-    const viewVitalsModal = viewVitalsModalEl ? new bootstrap.Modal(viewVitalsModalEl) : null;
+    const viewVitalsModal = viewVitalsModalEl ? bootstrap.Modal.getOrCreateInstance(viewVitalsModalEl) : null;
+
+    if (viewVitalsModalEl) {
+        viewVitalsModalEl.addEventListener('hidden.bs.modal', function () {
+            if (!document.querySelector('.modal.show')) {
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('overflow');
+                document.body.style.removeProperty('padding-right');
+            }
+        });
+    }
 
     document.querySelectorAll('.btn-view-vitals').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -5027,6 +5079,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (viewVitalsModal) {
                 viewVitalsModal.show();
+            }
+        });
+    });
+
+    // View Child Growth Visit Details Modal
+    const viewGrowthLogModalEl = document.getElementById('viewGrowthLogModal');
+    const viewGrowthLogModal = viewGrowthLogModalEl ? bootstrap.Modal.getOrCreateInstance(viewGrowthLogModalEl) : null;
+
+    if (viewGrowthLogModalEl) {
+        viewGrowthLogModalEl.addEventListener('hidden.bs.modal', function () {
+            if (!document.querySelector('.modal.show')) {
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('overflow');
+                document.body.style.removeProperty('padding-right');
+            }
+        });
+    }
+
+    document.querySelectorAll('.btn-view-growth-log').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const date = this.getAttribute('data-date') || '--';
+            const age = this.getAttribute('data-age') || '--';
+            const weight = this.getAttribute('data-weight') || '--';
+            const height = this.getAttribute('data-height') || '--';
+            const head = this.getAttribute('data-head') || '--';
+            const chest = this.getAttribute('data-chest') || '--';
+            const temp = this.getAttribute('data-temp') || '--';
+            const feeding = this.getAttribute('data-feeding') || '--';
+            const supplements = this.getAttribute('data-supplements') || 'None';
+            const tcb = this.getAttribute('data-tcb') || '';
+
+            const elDate = document.getElementById('modalGrowthDate');
+            const elAge = document.getElementById('modalGrowthAge');
+            const elWeight = document.getElementById('modalGrowthWeight');
+            const elHeight = document.getElementById('modalGrowthHeight');
+            const elHead = document.getElementById('modalGrowthHead');
+            const elChest = document.getElementById('modalGrowthChest');
+            const elTemp = document.getElementById('modalGrowthTemp');
+            const elFeeding = document.getElementById('modalGrowthFeeding');
+            const elSupplements = document.getElementById('modalGrowthSupplements');
+            const elTcb = document.getElementById('modalGrowthTcb');
+
+            if (elDate) elDate.textContent = date;
+            if (elAge) elAge.textContent = age;
+            if (elWeight) elWeight.textContent = weight;
+            if (elHeight) elHeight.textContent = height;
+            if (elHead) elHead.textContent = head;
+            if (elChest) elChest.textContent = chest;
+            if (elTemp) elTemp.textContent = temp;
+            if (elFeeding) elFeeding.textContent = feeding;
+            if (elSupplements) elSupplements.textContent = supplements;
+
+            if (elTcb) {
+                if (tcb && tcb.trim()) {
+                    elTcb.textContent = tcb.trim();
+                } else {
+                    elTcb.innerHTML = '<span class="text-muted fst-italic">No developmental milestones or remarks recorded.</span>';
+                }
+            }
+
+            if (viewGrowthLogModalEl) {
+                bootstrap.Modal.getOrCreateInstance(viewGrowthLogModalEl).show();
             }
         });
     });

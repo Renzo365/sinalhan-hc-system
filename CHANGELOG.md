@@ -5,7 +5,18 @@ This document records the official beta release history and updates automaticall
 
 ---
 
-## [Beta 1.4] - 2026-09-14
+## [Beta 1.8] - 2026-09-14
+### Clinical Care Workstation Table Actions Refactoring & Child Growth Modal
+* **Added**: Child Growth Visit Details Modal (`#viewGrowthLogModal`) displaying comprehensive anthropometric metrics (Weight, Height, Head Circumference, Chest Circumference, Temperature), infant feeding practices, micronutrient supplementation, and TCB developmental milestones / clinical remarks with DOM XSS prevention (`.textContent`) and automatic backdrop cleanup (`hidden.bs.modal`).
+* **Changed**: Workstation Table Actions flattened from nested kebab dropdowns (`bi bi-three-dots-vertical`) to direct inline icon action buttons across Consultations, Vital Signs, Universal Immunizations, Prenatal Serial Follow-Up Visits, Appointments, and Child Growth tables, permanently bypassing `.table-responsive` overflow clipping.
+* **Changed**: Compacted Vital Signs Log (streamlined to 6 columns: Date/Time, Blood Pressure, Heart Rate, Respiration Rate, Temperature, Actions) and Well Baby Growth Monitoring table (streamlined to 7 columns: Date, Age, Weight, Height, Feeding, Recorded By, Actions) for optimal visibility on 1366x768 clinic laptop displays.
+* **Fixed**: Table kebab menu clipping and vertical scrollbar jumpiness when consultation, vital signs, or growth history contains fewer than 3 records inside `.table-responsive` card bodies.
+* **Security**: Enforced CSRF defense-in-depth across all inline action and deletion forms (`archiveConsultationForm`, `deleteVitalForm`, `deleteImmunizationForm`, `deletePrenatalVisitForm`, `cancelAppointmentForm`, and child growth deletion) alongside role-restricted authorization verification.
+* **Quality & Assurance**: 91/91 automated assertions passed via `scratch/test_table_actions_refactor.php` verifying zero kebab dropdowns, correct inline icon presence, table header and empty-state colspan synchronization, modal DOM structure, data attribute hydration, and CSRF token integrity.
+
+---
+
+## [Beta 1.7] - 2026-09-14
 ### Clinical Care Workstation UI/UX Modernization & Archived Records Hub Overhaul
 * **Added**: Centralized **Archived Records Hub** (`GET /archive`, aliased with `/archive/patients`) strictly restricted to Administrators (`AdminMiddleware`), featuring a tabbed architecture: Tab 1 (Archived Patients) and Tab 2 (Archived Consultations) with live counter badges.
 * **Added**: Soft-delete (Archive) and Admin-only restoration lifecycle for Consultations with mandatory reason tracking via SweetAlert2, CSRF token validation, and immutable audit logging (`CONSULTATION_ARCHIVED`, `CONSULTATION_RESTORED`).
@@ -28,7 +39,7 @@ This document records the official beta release history and updates automaticall
 
 ---
 
-## [Beta 1.5] - 2026-09-12
+## [Beta 1.5.5] - 2026-09-12
 ### PhilHealth Annex A1 (IHP) Tab Layout & Baseline Vitals Polish
 * **Improved**: PhilHealth Annex A1 (IHP) layout with sequential 1-to-9 card ordering across read-only (`#ihp-view-mode`) and edit (`#ihp-edit-mode`) views.
 * **Added**: Baseline Vitals & Anthropometrics card (Card 6) in both read-only and edit modes of `#tab-ihp`, capturing Blood Pressure, Heart Rate, Respiratory Rate, Height, Weight, and Waist Circumference.
@@ -38,7 +49,7 @@ This document records the official beta release history and updates automaticall
 
 ---
 
-## [Beta 1.3] - 2026-09-12
+## [Beta 1.5] - 2026-09-12
 ### Authentication Portal Redesign & First-Time Password Security Enclave
 * **Added**
   * **Dual-Identifier Authentication**: Health center personnel can sign in using either their standard system **Username** or their official **Employee ID** (`findByLoginIdentifier`).
@@ -67,7 +78,7 @@ This document records the official beta release history and updates automaticall
 
 ---
 
-## [Beta 1.3] - 2026-09-07
+## [Beta 1.3] - 2026-09-09
 ### PhilHealth PCB Patient Ledger (Page 3), Category Realignment & Patient Directory DataTables
 * **PhilHealth Annex A1 & PCB Compliance (Page 3)**
   * Implemented dedicated **PHIC / PCB Ledger** tab (`#tab-pcb`) in the Clinical Care Workstation between *IHP History* (Pages 1–2) and *Consultations* (Page 4).

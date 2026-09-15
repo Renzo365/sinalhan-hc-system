@@ -109,16 +109,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Global Bootstrap 5 Modal Backdrop & Scroll Trap Safeguard
+    document.addEventListener('hidden.bs.modal', function () {
+        if (!document.querySelector('.modal.show')) {
+            document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+                el.remove();
+            });
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        }
+    });
+
     // Inactivity Auto-Logout Monitor with Pre-Warning Modal (15 Minutes total, warning at 13 Minutes)
     <?php if (isset($_SESSION['user_id'])): ?>
     (function() {
-        const TOTAL_TIMEOUT_MS = 15 * 60 * 1000;   // 15 minutes total
-        const WARNING_THRESHOLD_MS = 13 * 60 * 1000; // 13 minutes (2 minutes before logout)
-        const CHECK_INTERVAL_MS = 5 * 1000;         // Check wall-clock every 5 seconds
+        const TOTAL_TIMEOUT_MS = 15 * 60 * 1000;       // 15 minutes total
+        const WARNING_THRESHOLD_MS = 13 * 60 * 1000;     // 13 minutes (2 minutes before logout)
+        const CHECK_INTERVAL_MS = 5 * 1000;             // Check wall-clock every 5 seconds
+        const SERVER_SYNC_INTERVAL_MS = 4 * 60 * 1000;  // Sync server session every 4 minutes while user is active
         const PING_URL = <?= json_encode(url('/api/session-ping')) ?>;
         const TIMEOUT_URL = <?= json_encode(url('/logout?timeout=1')) ?>;
 
         let lastActivity = Date.now();
+        let lastServerSyncTime = Date.now();
         let isWarningVisible = false;
         let warningCountdownInterval = null;
 
@@ -139,12 +153,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(eventType) {
+        ['mousedown', 'keydown', 'touchstart', 'click'].forEach(function(eventType) {
             window.addEventListener(eventType, throttledActivity, { passive: true });
         });
 
         // Ping the server to refresh PHP session activity
-        function keepSessionAlive() {
+        function keepSessionAlive(isBackground = false) {
             fetch(PING_URL, {
                 method: 'POST',
                 headers: {
@@ -154,14 +168,17 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (response.ok) {
-                    lastActivity = Date.now();
-                    isWarningVisible = false;
-                    if (warningCountdownInterval) {
-                        clearInterval(warningCountdownInterval);
-                        warningCountdownInterval = null;
-                    }
-                    if (typeof Swal !== 'undefined' && Swal.isVisible()) {
-                        Swal.close();
+                    lastServerSyncTime = Date.now();
+                    if (!isBackground) {
+                        lastActivity = Date.now();
+                        isWarningVisible = false;
+                        if (warningCountdownInterval) {
+                            clearInterval(warningCountdownInterval);
+                            warningCountdownInterval = null;
+                        }
+                        if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                            Swal.close();
+                        }
                     }
                 } else if (response.status === 401) {
                     // Session already expired on server
@@ -169,9 +186,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(() => {
-                // If network fails, still reset local activity once
-                lastActivity = Date.now();
-                isWarningVisible = false;
+                if (!isBackground) {
+                    // If manual keep-alive network fails, still reset local activity once
+                    lastActivity = Date.now();
+                    isWarningVisible = false;
+                }
             });
         }
 
@@ -194,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    keepSessionAlive();
+                    keepSessionAlive(false);
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
                     window.location.href = <?= json_encode(url('/logout')) ?>;
                 }
@@ -218,7 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Active Wall-Clock Heartbeat Check
         setInterval(function() {
-            const idleTime = Date.now() - lastActivity;
+            const now = Date.now();
+            const idleTime = now - lastActivity;
 
             if (idleTime >= TOTAL_TIMEOUT_MS) {
                 // Time is up -> smoothly redirect to logout
@@ -227,6 +247,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Within 2-minute warning window
                 const remaining = TOTAL_TIMEOUT_MS - idleTime;
                 showPreTimeoutWarning(remaining);
+            } else if (idleTime < (2 * 60 * 1000) && (now - lastServerSyncTime >= SERVER_SYNC_INTERVAL_MS)) {
+                // User has interacted recently; refresh server-side PHP session in background so it never expires during active use
+                lastServerSyncTime = now;
+                keepSessionAlive(true);
             }
         }, CHECK_INTERVAL_MS);
     })();

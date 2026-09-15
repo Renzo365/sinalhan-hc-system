@@ -111,7 +111,11 @@ $_POST = [
 $controller->update(1);
 it("update() rejects invalid CSRF", strpos($_SESSION['error_message'] ?? '', 'CSRF') !== false);
 
-// Test update() session full name sync
+// Test update() session full name sync (with teardown to avoid DB mutation)
+$userModel = new \App\Models\User();
+$origUser = $userModel->findById(1);
+$origSessionName = $_SESSION['user_fullname'] ?? null;
+
 $_POST = [
     'csrf_token' => 'valid_token_1234567890',
     'first_name' => 'Renzo Updated',
@@ -121,8 +125,26 @@ $_POST = [
     'contact_no' => '09171234567'
 ];
 $_SESSION['user_fullname'] = 'Renzo Admin';
-$controller->update(1);
-it("update() syncs \$_SESSION['user_fullname'] in real time for logged-in user", $_SESSION['user_fullname'] === 'Renzo Updated Admin');
+try {
+    $controller->update(1);
+    it("update() syncs \$_SESSION['user_fullname'] in real time for logged-in user", $_SESSION['user_fullname'] === 'Renzo Updated Admin');
+} finally {
+    if ($origUser) {
+        $userModel->update(1, [
+            'first_name' => $origUser['first_name'],
+            'last_name' => $origUser['last_name'],
+            'role' => $origUser['role'],
+            'email' => $origUser['email'],
+            'contact_no' => $origUser['contact_no'],
+            'employee_id' => $origUser['employee_id'] ?? null,
+            'job_title' => $origUser['job_title'] ?? null,
+            'department' => $origUser['department'] ?? null
+        ]);
+    }
+    if ($origSessionName !== null) {
+        $_SESSION['user_fullname'] = $origSessionName;
+    }
+}
 
 // Test resetPassword() CSRF guard
 $_POST = ['csrf_token' => 'bad_token'];
