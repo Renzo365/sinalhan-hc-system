@@ -12,8 +12,11 @@ class BackupController extends Controller {
     public function __construct() {
         $this->backupDir = dirname(dirname(__DIR__)) . '/storage/backups';
         if (!file_exists($this->backupDir)) {
-            mkdir($this->backupDir, 0777, true);
+            if (!mkdir($this->backupDir, 0750, true) && !is_dir($this->backupDir)) {
+                throw new \RuntimeException('Unable to create the database backup directory.');
+            }
         }
+        @chmod($this->backupDir, 0750);
     }
 
     /**
@@ -119,10 +122,18 @@ class BackupController extends Controller {
             $filename = 'backup-' . date('Y-m-d_H-i-s') . '.sql';
             $filePath = $this->backupDir . '/' . $filename;
             
-            if (file_put_contents($filePath, $sqlDump) !== false) {
+            $temporaryPath = tempnam($this->backupDir, 'backup-');
+            if ($temporaryPath === false) {
+                throw new \RuntimeException('Unable to create a temporary backup file.');
+            }
+
+            if (file_put_contents($temporaryPath, $sqlDump, LOCK_EX) !== false &&
+                chmod($temporaryPath, 0640) &&
+                rename($temporaryPath, $filePath)) {
                 AuditLog::log('BACKUP_CREATED', 'Backup', "Created database backup: {$filename}");
                 return $filePath;
             } else {
+                @unlink($temporaryPath);
                 return false;
             }
         } catch (\Exception $e) {

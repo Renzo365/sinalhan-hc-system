@@ -51,6 +51,7 @@ class VitalSignsController extends Controller {
         if (!$hasMetric) {
             $_SESSION['error_message'] = 'At least one vital sign value must be filled.';
             $this->redirect("/patients/{$patientId}");
+            return;
         }
 
         // Server-Side BMI Calculation

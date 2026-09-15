@@ -11,7 +11,7 @@ The system is built on a custom, lightweight **Model-View-Controller (MVC)** fra
 ### Key Architectural Constraints
 * **Framework-Free**: Avoids complex external frameworks (like Laravel or Symfony) to prevent deployment and compilation overhead on LAN workstations, making it easier to audit and defend during the capstone review.
 * **Zero CDN Dependency**: All styling, script assets, and libraries are stored locally in the public folder to ensure uninterrupted operation during internet outages.
-* **Thin Controllers / Thick Models**: Business and database validations, auto-number generation, and direct SQL parameter binding are placed in Models, keeping Controllers focused on request routing and output delegation.
+* **Layered MVC boundaries**: Controllers handle HTTP/session concerns and workflow validation, while Models own SQL, persistence, and record-level integrity checks. The current codebase is not a strict thin-controller/thick-model architecture; complex form normalization remains in a few controllers and is tracked for future extraction.
 
 ---
 
@@ -120,7 +120,7 @@ The application runs inside a local area network to prevent internet dependency:
                                   +---------------------------------------+
                                   |         Windows Local Server          |
                                   |               (XAMPP)                 |
-                                  |  [Apache 2.4]  <--->  [MySQL 8.0]     |
+                                  |  [Apache 2.4]  <--->  [MySQL/MariaDB]  |
                                   |  IP: 192.168.1.100                    |
                                   +-------------------+-------------------+
                                                       |
@@ -198,4 +198,3 @@ Clinical program tagging (`General OPD`, `Prenatal Care`, `Well Baby Immunizatio
 * **Appointments**: Program-tagged scheduling with clinical purpose selection.
 * **Reporting Engine**: DOH-compliant Maternal Health Registry, Child EPI Coverage Report, and Morbidity Registry.
 * **Database Backup Engine**: Complete `.sql` snapshots including all 18 clinical, demographic, and administrative tables.
-

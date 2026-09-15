@@ -90,30 +90,7 @@ class ConsultationController extends Controller {
             return;
         }
 
-        $errors = [];
-
-        // Validate SOAP required fields
-        $requiredFields = [
-            'subjective' => 'Subjective Notes (Chief Complaint)',
-            'objective' => 'Objective Notes (Physical Findings)',
-            'assessment' => 'Assessment (Diagnosis)',
-            'plan' => 'Plan (Treatment/Prescriptions)',
-            'consulted_by' => 'Consulting Provider',
-            'consulted_at' => 'Date & Time of Consultation'
-        ];
-
-        foreach ($requiredFields as $field => $label) {
-            if (empty($_POST[$field]) || trim($_POST[$field]) === '') {
-                $errors[] = "{$label} is required.";
-            }
-        }
-
-        // Validate consulted_at is not in the future
-        if (!empty($_POST['consulted_at'])) {
-            if (strtotime($_POST['consulted_at']) > time()) {
-                $errors[] = 'Consultation date/time cannot be in the future.';
-            }
-        }
+        $errors = $this->validateConsultationInput($_POST);
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
@@ -256,27 +233,7 @@ class ConsultationController extends Controller {
             return;
         }
 
-        $errors = [];
-        $requiredFields = [
-            'subjective' => 'Subjective Notes (Chief Complaint)',
-            'objective' => 'Objective Notes (Physical Findings)',
-            'assessment' => 'Assessment (Diagnosis)',
-            'plan' => 'Plan (Treatment/Prescriptions)',
-            'consulted_by' => 'Consulting Provider',
-            'consulted_at' => 'Date & Time of Consultation'
-        ];
-
-        foreach ($requiredFields as $field => $label) {
-            if (empty($_POST[$field]) || trim($_POST[$field]) === '') {
-                $errors[] = "{$label} is required.";
-            }
-        }
-
-        if (!empty($_POST['consulted_at'])) {
-            if (strtotime($_POST['consulted_at']) > time()) {
-                $errors[] = 'Consultation date/time cannot be in the future.';
-            }
-        }
+        $errors = $this->validateConsultationInput($_POST);
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
@@ -302,6 +259,46 @@ class ConsultationController extends Controller {
             $_SESSION['form_input'] = $_POST;
             $this->redirect("/consultations/{$id}/edit");
         }
+    }
+
+    /**
+     * Keep consultation create and update validation consistent.
+     *
+     * @param array $input
+     * @return array
+     */
+    private function validateConsultationInput($input) {
+        $errors = [];
+        $requiredFields = [
+            'subjective' => 'Subjective Notes (Chief Complaint)',
+            'objective' => 'Objective Notes (Physical Findings)',
+            'assessment' => 'Assessment (Diagnosis)',
+            'plan' => 'Plan (Treatment/Prescriptions)',
+            'consulted_by' => 'Consulting Provider',
+            'consulted_at' => 'Date & Time of Consultation'
+        ];
+
+        foreach ($requiredFields as $field => $label) {
+            if (empty($input[$field]) || trim((string)$input[$field]) === '') {
+                $errors[] = "{$label} is required.";
+            }
+        }
+
+        $status = $input['status'] ?? 'Completed';
+        if (!in_array($status, ['Open', 'Completed', 'Cancelled'], true)) {
+            $errors[] = 'Invalid consultation status.';
+        }
+
+        if (!empty($input['consulted_at'])) {
+            $date = \DateTime::createFromFormat('Y-m-d\TH:i', $input['consulted_at'])
+                ?: \DateTime::createFromFormat('Y-m-d H:i:s', $input['consulted_at']);
+            if (!$date || $date->format('Y-m-d') > date('Y-m-d') ||
+                ($date->format('Y-m-d') === date('Y-m-d') && $date->getTimestamp() > time())) {
+                $errors[] = 'Consultation date/time must be valid and cannot be in the future.';
+            }
+        }
+
+        return $errors;
     }
 
     /**

@@ -169,6 +169,14 @@ class PcbLedgerController extends Controller {
             session_start();
         }
 
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to delete PCB service log #{$id}");
+            $_SESSION['form_errors'] = ['Security validation failed (invalid token). Please try again.'];
+            $this->redirect('/patients');
+            return;
+        }
+
         $log = $this->pcbModel->findLogById($id);
         if (!$log) {
             $_SESSION['form_errors'] = ['Service log entry not found.'];
@@ -177,6 +185,14 @@ class PcbLedgerController extends Controller {
         }
 
         $patientId = (int)$log['patient_id'];
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? 'staff';
+        if ($userRole !== 'admin' && $currentUserId !== (int)$log['recorded_by']) {
+            $_SESSION['form_errors'] = ['Unauthorized: you may only remove PCB service entries you recorded.'];
+            $this->redirect("/patients/{$patientId}#tab-pcb");
+            return;
+        }
+
         $deleted = $this->pcbModel->deleteServiceLog($id, $patientId);
 
         if ($deleted) {

@@ -33,6 +33,48 @@ class PatientMedicalHistoryController extends Controller {
             return;
         }
 
+        $numericRanges = [
+            'menarche_age' => [1, 60],
+            'sexual_onset_age' => [1, 100],
+            'period_duration_days' => [1, 31],
+            'cycle_interval_days' => [1, 120],
+            'pads_per_day' => [1, 50],
+            'menopause_age' => [1, 100],
+            'gravida' => [0, 50],
+            'para' => [0, 50],
+            'term_births' => [0, 50],
+            'preterm_births' => [0, 50],
+            'abortions' => [0, 50],
+            'living_children' => [0, 50]
+        ];
+        foreach ($numericRanges as $field => $range) {
+            if (isset($_POST[$field]) && $_POST[$field] !== '') {
+                $value = (int)$_POST[$field];
+                if ($value < $range[0] || $value > $range[1]) {
+                    $_SESSION['error_message'] = ucfirst(str_replace('_', ' ', $field)) . ' is outside the allowed range.';
+                    $this->redirect("/patients/{$patientId}#tab-ihp");
+                    return;
+                }
+            }
+        }
+
+        if (!empty($_POST['lmp'])) {
+            $lmpDate = \DateTime::createFromFormat('Y-m-d', $_POST['lmp']);
+            if (!$lmpDate || $lmpDate->format('Y-m-d') !== $_POST['lmp'] || $_POST['lmp'] > date('Y-m-d')) {
+                $_SESSION['error_message'] = 'Last Menstrual Period must be a valid date that is not in the future.';
+                $this->redirect("/patients/{$patientId}#tab-ihp");
+                return;
+            }
+        }
+
+        $smokingStatus = $_POST['smoking_status'] ?? 'Never';
+        $alcoholStatus = $_POST['alcohol_status'] ?? 'Never';
+        if (!in_array($smokingStatus, ['Never', 'Yes', 'Quit'], true) || !in_array($alcoholStatus, ['Never', 'Yes', 'Quit'], true)) {
+            $_SESSION['error_message'] = 'Invalid smoking or alcohol history status.';
+            $this->redirect("/patients/{$patientId}#tab-ihp");
+            return;
+        }
+
         // Verify CSRF token (Defense-in-Depth)
         $token = $_POST['csrf_token'] ?? '';
         if (empty($token) || !hash_equals(csrf_token(), $token)) {
@@ -167,9 +209,9 @@ class PatientMedicalHistoryController extends Controller {
             'past_medical_history' => $pastMedical,
             'surgical_history' => $surgical,
             'family_history' => $family,
-            'smoking_status' => $_POST['smoking_status'] ?? 'Never',
+            'smoking_status' => $smokingStatus,
             'smoking_pack_years' => !empty($_POST['smoking_pack_years']) ? (float)$_POST['smoking_pack_years'] : null,
-            'alcohol_status' => $_POST['alcohol_status'] ?? 'Never',
+            'alcohol_status' => $alcoholStatus,
             'alcohol_bottles_per_day' => !empty($_POST['alcohol_bottles_per_day']) ? (float)$_POST['alcohol_bottles_per_day'] : null,
             'illicit_drugs' => !empty($_POST['illicit_drugs']) ? 1 : 0,
             'menarche_age' => !empty($_POST['menarche_age']) ? (int)$_POST['menarche_age'] : null,

@@ -2410,7 +2410,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <tbody>
                                     <?php if (empty($vitalsHistory)): ?>
                                         <tr>
-                                            <td colspan="6" class="text-center py-5 text-muted">
+                                            <td colspan="7" class="text-center py-5 text-muted">
                                                 <i class="bi bi-activity fs-3 d-block mb-2 text-secondary"></i>
                                                 No vital signs records exist for this patient.
                                             </td>
@@ -2484,6 +2484,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                         <th class="text-start ps-3">Vaccine Name</th>
                                         <th>Dose #</th>
                                         <th>Administered Date</th>
+                                        <th>Source / Status</th>
                                         <th>Remarks / Program</th>
                                         <th>Vaccinator</th>
                                         <th class="pe-3 text-end">Action</th>
@@ -2492,7 +2493,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <tbody>
                                     <?php if (empty($patientImmunizations)): ?>
                                         <tr>
-                                            <td colspan="6" class="text-center py-5 text-muted">
+                                            <td colspan="7" class="text-center py-5 text-muted">
                                                 <i class="bi bi-shield-slash fs-3 d-block mb-2 text-secondary"></i>
                                                 No immunization records recorded for this patient.
                                             </td>
@@ -2511,6 +2512,10 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 </td>
                                                 <td><span class="badge bg-light text-dark border">Dose <?= h($imm['dose_number']) ?></span></td>
                                                 <td class="fw-medium text-dark"><?= date('M d, Y', strtotime($imm['administered_date'])) ?></td>
+                                                <td class="text-muted small">
+                                                    <?= h($imm['source'] ?? 'Health Center') ?>
+                                                    <span class="badge bg-light text-dark border"><?= h($imm['documentation_status'] ?? 'Administered') ?></span>
+                                                </td>
                                                 <td class="text-muted small"><?= h($imm['remarks'] ?? 'Routine') ?></td>
                                                 <td class="text-muted"><?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?></td>
                                                 <td class="pe-3 text-end text-nowrap">
@@ -3341,8 +3346,8 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
 
                                 <!-- Vaccines Administered Today -->
                                 <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">Vaccines Administered Today</label>
-                                    <input type="text" name="vaccines_administered" class="form-control" placeholder="e.g. Pentavalent 1, OPV 1, Rota 1">
+                                    <label class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
+                                    <input type="text" name="vaccines_administered" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization History">
                                 </div>
 
                                 <!-- Supplementation Toggles -->
@@ -3431,6 +3436,25 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                     </div>
 
                     <div class="mb-3">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label for="source" class="form-label fw-semibold text-secondary">Source</label>
+                                <select name="source" class="form-select">
+                                    <option value="Health Center">Health Center</option>
+                                    <option value="External">External facility</option>
+                                    <option value="Patient Reported">Patient/parent reported</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label for="documentation_status" class="form-label fw-semibold text-secondary">Documentation status</label>
+                                <select name="documentation_status" class="form-select">
+                                    <option value="Administered">Administered</option>
+                                    <option value="Reported">Reported</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                            </div>
+                        </div>
                         <label for="remarks" class="form-label fw-semibold text-secondary">Remarks / Lot No. / Site</label>
                         <input type="text" name="remarks" class="form-control" placeholder="e.g. Lot #ABC-123, Left Deltoid, Bakuna Eskwela">
                     </div>
@@ -3824,7 +3848,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <select name="delivery_type" class="form-select" required>
                                     <option value="NSD" selected>NSD (Normal Spontaneous)</option>
                                     <option value="CS">CS (Caesarean Section)</option>
-                                    <option value="Vacuum/Forceps">Vacuum / Forceps</option>
+                                    <option value="Other">Vacuum / Forceps / Other</option>
                                     <option value="Abortion">Abortion / Miscarriage</option>
                                 </select>
                             </div>
@@ -3862,7 +3886,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 <label for="status" class="form-label fw-semibold text-secondary">Child Status</label>
                                 <select name="status" class="form-select">
                                     <option value="Alive" selected>Alive</option>
-                                    <option value="Deceased">Deceased</option>
+                                    <option value="Not Alive">Not Alive</option>
                                 </select>
                             </div>
 

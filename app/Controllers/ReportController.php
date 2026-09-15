@@ -22,6 +22,7 @@ class ReportController extends Controller {
         $type = $_GET['type'] ?? '';
         $dateFrom = $_GET['date_from'] ?? $defaultFrom;
         $dateTo = $_GET['date_to'] ?? $defaultTo;
+        [$dateFrom, $dateTo] = $this->normalizeDateRange($dateFrom, $dateTo);
 
         $results = [];
         if (!empty($type)) {
@@ -48,6 +49,7 @@ class ReportController extends Controller {
         $type = $_GET['type'] ?? '';
         $dateFrom = $_GET['date_from'] ?? date('Y-m-01');
         $dateTo = $_GET['date_to'] ?? date('Y-m-d');
+        [$dateFrom, $dateTo] = $this->normalizeDateRange($dateFrom, $dateTo);
 
         if (empty($type)) {
             $_SESSION['error_message'] = 'Report type is required for CSV export.';
@@ -233,6 +235,7 @@ class ReportController extends Controller {
     private function queryReportData($type, $dateFrom, $dateTo) {
         try {
             $db = \App\Core\Database::getInstance()->getConnection();
+            $dateToExclusive = date('Y-m-d', strtotime($dateTo . ' +1 day'));
             
             switch ($type) {
                 case 'daily_visits':
@@ -250,17 +253,17 @@ class ReportController extends Controller {
                             FROM consultations c
                             JOIN patients p ON c.patient_id = p.id
                             JOIN users u ON c.consulted_by = u.id
-                            WHERE DATE(c.consulted_at) BETWEEN :date_from AND :date_to
+                            WHERE c.consulted_at >= :date_from AND c.consulted_at < :date_to_exclusive
                             ORDER BY c.consulted_at DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
                     
                 case 'registrations':
                     $sql = "SELECT *, TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) AS age 
                             FROM patients 
-                            WHERE deleted_at IS NULL AND DATE(created_at) BETWEEN :date_from AND :date_to
+                            WHERE deleted_at IS NULL AND created_at >= :date_from AND created_at < :date_to_exclusive
                             ORDER BY created_at DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
                     
                 case 'queue_summary':
@@ -283,9 +286,9 @@ class ReportController extends Controller {
                             FROM vital_signs v
                             JOIN patients p ON v.patient_id = p.id
                             JOIN users u ON v.recorded_by = u.id
-                            WHERE DATE(v.recorded_at) BETWEEN :date_from AND :date_to
+                            WHERE v.recorded_at >= :date_from AND v.recorded_at < :date_to_exclusive
                             ORDER BY v.recorded_at DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
 
                 case 'maternal_health':
@@ -348,5 +351,22 @@ class ReportController extends Controller {
             error_log("Report query failure: " . $e->getMessage());
             return [];
         }
+    }
+
+    private function normalizeDateRange($dateFrom, $dateTo) {
+        $from = \DateTimeImmutable::createFromFormat('!Y-m-d', (string)$dateFrom);
+        $to = \DateTimeImmutable::createFromFormat('!Y-m-d', (string)$dateTo);
+        $validFrom = $from && $from->format('Y-m-d') === $dateFrom;
+        $validTo = $to && $to->format('Y-m-d') === $dateTo;
+
+        if (!$validFrom || !$validTo) {
+            return [date('Y-m-01'), date('Y-m-d')];
+        }
+
+        if ($from > $to) {
+            return [$to->format('Y-m-d'), $from->format('Y-m-d')];
+        }
+
+        return [$from->format('Y-m-d'), $to->format('Y-m-d')];
     }
 }

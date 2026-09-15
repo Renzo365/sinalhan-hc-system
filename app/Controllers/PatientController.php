@@ -88,6 +88,7 @@ class PatientController extends Controller {
             $_SESSION['form_errors'] = $errors;
             $_SESSION['form_input'] = $_POST;
             $this->redirect('/patients/create');
+            return;
         }
 
         // Save
@@ -274,6 +275,7 @@ class PatientController extends Controller {
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
             $this->redirect("/patients/{$id}/edit");
+            return;
         }
 
         $data = $_POST;

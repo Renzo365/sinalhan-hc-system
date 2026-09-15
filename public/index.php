@@ -15,6 +15,7 @@ date_default_timezone_set($appConfig['timezone'] ?? 'Asia/Manila');
 
 // Configure Session Security
 $sessionConfig = $appConfig['session'] ?? [];
+ini_set('session.use_strict_mode', '1');
 session_name($sessionConfig['name'] ?? 'SINALHAN_HC_SESSION');
 session_set_cookie_params([
     'lifetime' => $sessionConfig['lifetime'] ?? 7200,

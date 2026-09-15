@@ -41,26 +41,51 @@ class WellbabyController extends Controller {
 
         $birthWeight = !empty($_POST['birth_weight_kg']) ? (float)$_POST['birth_weight_kg'] : 0;
         $birthLength = !empty($_POST['birth_length_cm']) ? (float)$_POST['birth_length_cm'] : 0;
+        $screeningDone = !empty($_POST['newborn_screening_done']) ? 1 : 0;
+        $screeningDate = !empty($_POST['newborn_screening_date']) ? $_POST['newborn_screening_date'] : null;
 
         if ($birthWeight <= 0 || $birthLength <= 0) {
             $_SESSION['error_message'] = 'Valid birth weight (kg) and birth length (cm) are required.';
             $this->redirect("/patients/{$patientId}#tab-wellbaby");
             return;
         }
+        if ($screeningDone && !$screeningDate) {
+            $_SESSION['error_message'] = 'A newborn screening date is required when screening is marked done.';
+            $this->redirect("/patients/{$patientId}#tab-wellbaby");
+            return;
+        }
+        if ($screeningDate) {
+            $screeningDateObject = \DateTime::createFromFormat('Y-m-d', $screeningDate);
+            if (!$screeningDateObject || $screeningDateObject->format('Y-m-d') !== $screeningDate || $screeningDate > date('Y-m-d')) {
+                $_SESSION['error_message'] = 'Newborn screening date must be a valid date that is not in the future.';
+                $this->redirect("/patients/{$patientId}#tab-wellbaby");
+                return;
+            }
+        }
+
+        $motherPatientId = !empty($_POST['mother_patient_id']) ? (int)$_POST['mother_patient_id'] : null;
+        if ($motherPatientId !== null) {
+            $mother = $this->patientModel->findById($motherPatientId);
+            if (!$mother || strtolower($mother['sex']) !== 'female' || $motherPatientId === (int)$patientId) {
+                $_SESSION['error_message'] = 'The selected mother must be an existing female patient different from the child.';
+                $this->redirect("/patients/{$patientId}#tab-wellbaby");
+                return;
+            }
+        }
 
         $userId = $_SESSION['user_id'] ?? 1;
 
         $data = [
             'patient_id' => $patientId,
-            'mother_patient_id' => !empty($_POST['mother_patient_id']) ? (int)$_POST['mother_patient_id'] : null,
+            'mother_patient_id' => $motherPatientId,
             'birth_time' => !empty($_POST['birth_time']) ? $_POST['birth_time'] : null,
             'birth_weight_kg' => $birthWeight,
             'birth_length_cm' => $birthLength,
             'place_of_delivery' => $_POST['place_of_delivery'] ?? 'Lying-in',
             'delivery_type' => $_POST['delivery_type'] ?? 'Normal Spontaneous Delivery (NSD)',
             'attended_by' => trim($_POST['attended_by'] ?? 'Midwife'),
-            'newborn_screening_done' => !empty($_POST['newborn_screening_done']) ? 1 : 0,
-            'newborn_screening_date' => !empty($_POST['newborn_screening_date']) ? $_POST['newborn_screening_date'] : null,
+            'newborn_screening_done' => $screeningDone,
+            'newborn_screening_date' => $screeningDate,
             'newborn_screening_result' => trim($_POST['newborn_screening_result'] ?? ''),
             'mother_cpab_tt' => trim($_POST['mother_cpab_tt'] ?? ''),
             'feeding_method' => $_POST['feeding_method'] ?? 'LAM / Exclusive Breastfeeding',
@@ -101,8 +126,14 @@ class WellbabyController extends Controller {
         $height = !empty($_POST['height_cm']) ? (float)$_POST['height_cm'] : 0;
         $ageMonths = isset($_POST['age_months']) ? (float)$_POST['age_months'] : 0;
 
-        if ($weight <= 0 || $height <= 0) {
-            $_SESSION['error_message'] = 'Valid weight (kg) and height (cm) are required.';
+        $logDateObject = \DateTime::createFromFormat('Y-m-d', $logDate);
+        if (!$logDateObject || $logDateObject->format('Y-m-d') !== $logDate || $logDate > date('Y-m-d')) {
+            $_SESSION['error_message'] = 'Growth visit date must be a valid date that is not in the future.';
+            $this->redirect("/patients/{$wbRecord['patient_id']}#tab-wellbaby");
+            return;
+        }
+        if ($weight <= 0 || $height <= 0 || $ageMonths < 0 || $ageMonths > 60) {
+            $_SESSION['error_message'] = 'Valid weight, height, and age in months (0 to 60) are required.';
             $this->redirect("/patients/{$wbRecord['patient_id']}#tab-wellbaby");
             return;
         }
@@ -159,12 +190,27 @@ class WellbabyController extends Controller {
         $doseNumber = !empty($_POST['dose_number']) ? (int)$_POST['dose_number'] : 1;
         $adminDate = !empty($_POST['administered_date']) ? $_POST['administered_date'] : date('Y-m-d');
         $remarks = trim($_POST['remarks'] ?? '');
+        $source = $_POST['source'] ?? 'Health Center';
+        $documentationStatus = $_POST['documentation_status'] ?? 'Administered';
         $userId = $_SESSION['user_id'] ?? 1;
 
-        if (empty($vaccineName)) {
-            $_SESSION['error_message'] = 'Vaccine name is required.';
+        $date = \DateTime::createFromFormat('Y-m-d', $adminDate);
+        if (empty($vaccineName) || $doseNumber < 1 || !$date || $date->format('Y-m-d') !== $adminDate) {
+            $_SESSION['error_message'] = 'A valid vaccine name, dose number, and administration date are required.';
             $this->redirect("/patients/{$patientId}#tab-wellbaby");
             return;
+        }
+        if ($adminDate > date('Y-m-d')) {
+            $_SESSION['error_message'] = 'Immunization date cannot be in the future.';
+            $this->redirect("/patients/{$patientId}#tab-wellbaby");
+            return;
+        }
+
+        if (!in_array($source, ['Health Center', 'External', 'Patient Reported', 'Unknown'], true)) {
+            $source = 'Unknown';
+        }
+        if (!in_array($documentationStatus, ['Administered', 'Reported', 'Unknown'], true)) {
+            $documentationStatus = 'Unknown';
         }
 
         $savedId = $this->immModel->recordDose([
@@ -172,6 +218,8 @@ class WellbabyController extends Controller {
             'vaccine_name' => $vaccineName,
             'dose_number' => $doseNumber,
             'administered_date' => $adminDate,
+            'source' => $source,
+            'documentation_status' => $documentationStatus,
             'remarks' => $remarks,
             'administered_by' => $userId
         ]);
@@ -211,6 +259,10 @@ class WellbabyController extends Controller {
             foreach ($epiDates as $vacKey => $dateVal) {
                 $dateVal = trim($dateVal);
                 if (!empty($dateVal)) {
+                    $date = \DateTime::createFromFormat('Y-m-d', $dateVal);
+                    if (!$date || $date->format('Y-m-d') !== $dateVal || $dateVal > date('Y-m-d')) {
+                        continue;
+                    }
                     // vacKey format: "VACCINE_NAME__DOSE" e.g. "BCG__1", "PENTAVALENT__2"
                     $parts = explode('__', $vacKey);
                     $vacName = str_replace('_', ' ', $parts[0]);
@@ -221,6 +273,8 @@ class WellbabyController extends Controller {
                         'vaccine_name' => $vacName,
                         'dose_number' => $doseNo,
                         'administered_date' => $dateVal,
+                        'source' => 'Health Center',
+                        'documentation_status' => 'Administered',
                         'remarks' => 'EPI Routine Infant Program',
                         'administered_by' => $userId
                     ]);
@@ -249,8 +303,32 @@ class WellbabyController extends Controller {
             session_start();
         }
 
-        $patientId = $_POST['patient_id'] ?? null;
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $log = $this->growthModel->findById($id);
+        if (!$log) {
+            $_SESSION['error_message'] = 'Growth log entry not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $wellbaby = $this->wbModel->findById($log['wellbaby_id']);
+        $patientId = $wellbaby ? (int)$wellbaby['patient_id'] : (int)($_POST['patient_id'] ?? 0);
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? 'staff';
+        if ($userRole !== 'admin' && $currentUserId !== (int)$log['recorded_by']) {
+            $_SESSION['error_message'] = 'Unauthorized: you may only remove growth records you recorded.';
+            $this->redirect("/patients/{$patientId}#tab-wellbaby");
+            return;
+        }
+
         $this->growthModel->deleteLog($id);
+        AuditLog::log('CHILD_GROWTH_LOG_DELETED', 'Pediatric Care', "Deleted growth log #{$id} for patient ID #{$patientId}");
         $_SESSION['success_message'] = 'Growth log entry removed.';
 
         $this->redirect($patientId ? "/patients/{$patientId}#tab-wellbaby" : "/patients");

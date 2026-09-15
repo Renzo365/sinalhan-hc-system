@@ -231,6 +231,8 @@ CREATE TABLE `immunizations` (
   `vaccine_name` VARCHAR(100) NOT NULL,
   `dose_number` INT NOT NULL DEFAULT 1,
   `administered_date` DATE NOT NULL,
+  `source` ENUM('Health Center', 'External', 'Patient Reported', 'Unknown') NOT NULL DEFAULT 'Health Center',
+  `documentation_status` ENUM('Administered', 'Reported', 'Unknown') NOT NULL DEFAULT 'Administered',
   `remarks` TEXT DEFAULT NULL,
   `administered_by` INT NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -314,7 +316,8 @@ CREATE TABLE `prenatal_records` (
   CONSTRAINT `fk_pr_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_pr_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
   INDEX `idx_pr_patient` (`patient_id`),
-  INDEX `idx_pr_active` (`is_active`)
+  INDEX `idx_pr_active` (`is_active`),
+  INDEX `idx_pr_patient_active` (`patient_id`, `is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 11. Prenatal Visits (Serial Trimester Checkup Logs)
@@ -400,7 +403,7 @@ CREATE TABLE `child_growth_logs` (
   `chest_circumference_cm` DECIMAL(4,1) NULL,
   `temperature` DECIMAL(4,2) NULL,
   `feeding_method` ENUM('LAM / Exclusive Breastfeeding', 'Bottle Feed', 'Mixed') NOT NULL DEFAULT 'LAM / Exclusive Breastfeeding',
-  `vaccines_administered` VARCHAR(255) NULL,
+  `vaccines_administered` VARCHAR(255) NULL COMMENT 'Encounter note only; authoritative vaccine events are stored in immunizations',
   `vitamin_a_dose` TINYINT(1) NULL DEFAULT 0,
   `deworming_dose` TINYINT(1) NULL DEFAULT 0,
   `tcb_notes` TEXT NULL,

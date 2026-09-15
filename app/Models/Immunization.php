@@ -47,6 +47,15 @@ class Immunization extends Model {
      * @return int|false
      */
     public function recordDose($data) {
+        $source = $data['source'] ?? 'Health Center';
+        $documentationStatus = $data['documentation_status'] ?? 'Administered';
+        if (!in_array($source, ['Health Center', 'External', 'Patient Reported', 'Unknown'], true)) {
+            $source = 'Unknown';
+        }
+        if (!in_array($documentationStatus, ['Administered', 'Reported', 'Unknown'], true)) {
+            $documentationStatus = 'Unknown';
+        }
+
         // Check if dose already recorded
         $sqlCheck = "SELECT id FROM immunizations 
                      WHERE patient_id = :patient_id 
@@ -65,6 +74,8 @@ class Immunization extends Model {
             // Update existing dose
             $sqlUpdate = "UPDATE immunizations SET
                             administered_date = :administered_date,
+                            source = :source,
+                            documentation_status = :documentation_status,
                             remarks = :remarks,
                             administered_by = :administered_by
                           WHERE id = :id";
@@ -72,6 +83,8 @@ class Immunization extends Model {
             $result = $stmtUpdate->execute([
                 'id' => $existing['id'],
                 'administered_date' => $data['administered_date'],
+                'source' => $source,
+                'documentation_status' => $documentationStatus,
                 'remarks' => !empty($data['remarks']) ? trim($data['remarks']) : null,
                 'administered_by' => $data['administered_by']
             ]);
@@ -80,10 +93,10 @@ class Immunization extends Model {
             // Insert new dose
             $sqlInsert = "INSERT INTO immunizations (
                             patient_id, vaccine_name, dose_number, 
-                            administered_date, remarks, administered_by
+                            administered_date, source, documentation_status, remarks, administered_by
                           ) VALUES (
                             :patient_id, :vaccine_name, :dose_number,
-                            :administered_date, :remarks, :administered_by
+                            :administered_date, :source, :documentation_status, :remarks, :administered_by
                           )";
             $stmtInsert = $this->db->prepare($sqlInsert);
             $result = $stmtInsert->execute([
@@ -91,6 +104,8 @@ class Immunization extends Model {
                 'vaccine_name' => trim($data['vaccine_name']),
                 'dose_number' => (int)($data['dose_number'] ?? 1),
                 'administered_date' => $data['administered_date'],
+                'source' => $source,
+                'documentation_status' => $documentationStatus,
                 'remarks' => !empty($data['remarks']) ? trim($data['remarks']) : null,
                 'administered_by' => $data['administered_by']
             ]);

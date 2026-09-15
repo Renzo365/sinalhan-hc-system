@@ -150,9 +150,9 @@ class QueueController extends Controller {
             }
         } else {
             if ($this->isAjax()) {
-                $this->json(['error' => 'Database update failed.'], 500);
+                $this->json(['error' => 'The queue status transition is no longer valid. Refresh the board and try again.'], 409);
             } else {
-                $_SESSION['error_message'] = 'Failed to update queue status.';
+                $_SESSION['error_message'] = 'The queue status transition is no longer valid. Refresh the board and try again.';
                 $this->redirect('/queue');
             }
         }

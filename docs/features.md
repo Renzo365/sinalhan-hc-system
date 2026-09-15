@@ -77,15 +77,15 @@ A consultation history log is displayed on the patient's profile. Clicking **Vie
 Manages patient scheduling, service programs, and clinic provider resources.
 
 ### 4.1 Program-Tagged Booking & Conflict Prevention
-* **Clinical Program Categorization**: Bookings are organized by program type: **General OPD**, **Prenatal Care**, **Well Baby Immunization**, or **Senior Care**.
-* **Overlap Prevention**: When selecting an appointment date and time, an AJAX conflict check queries the database for existing active bookings. If a clinician or time slot overlaps, a red alert box appears warning the staff to coordinate a reschedule.
+* **Clinical Program Categorization**: Bookings are organized by program type, including **General OPD**, **Prenatal Care**, **Well Baby Immunization**, **Senior Care**, **Family Planning**, **Dental Care**, and **NCD / Hypertension**.
+* **Overlap Prevention**: When selecting an appointment date and time, an AJAX conflict check queries the database for another scheduled appointment at the same date and time. Appointments do not currently store a clinician or resource assignment, so this is a global slot check rather than a clinician-specific check.
 
 ### 4.2 Status Tracking & Quick Actions
 Appointments can be filtered by date range, program type, or status:
 * **Scheduled**: Initial booking state.
 * **Completed**: Linked to a patient's consultation.
 * **Cancelled**: Cancelled by staff or patient.
-* **Missed**: Automatically flagged if the patient fails to show up on the date.
+* **Missed**: Available as a staff-applied status; the current system does not automatically flag missed appointments.
 
 ---
 
@@ -99,6 +99,9 @@ Enqueuing a patient generates an auto-incrementing queue number that resets dail
 * `Prenatal Care`
 * `Well Baby Immunization`
 * `Senior Care`
+* `Family Planning`
+* `Dental Care`
+* `NCD / Hypertension`
 
 ### 5.2 Waiting Monitor Board
 Provides a dedicated, public-facing, full-screen monitor display at `/queue/display` designed to run on a TV or tablet in the lobby:
@@ -254,7 +257,7 @@ The Authentication Portal provides a secure, audited gateway for health center s
 
 ### 12.2 Dual-Identifier Authentication
 * **Flexible Identification**: Health center workers may sign in using either their standard system **Username** or their official **Employee ID** (e.g., `EMP-2026-001`, `MIDWIFE-01`).
-* **Optimized Database Lookup**: Handled securely in [`User.php`](file:///c:/xampp/htdocs/sinalhan-hc-system/app/Models/User.php) via `findByLoginIdentifier($identifier)` using PDO parameterized queries (`WHERE (username = :u_identifier OR employee_id = :e_identifier) AND deleted_at IS NULL LIMIT 1`).
+* **Optimized Database Lookup**: Handled securely in [`User.php`](../app/Models/User.php) via `findByLoginIdentifier($identifier)` using PDO parameterized queries (`WHERE (username = :u_identifier OR employee_id = :e_identifier) AND deleted_at IS NULL LIMIT 1`).
 * **Brute-Force Lockout Defense**: Failed login attempts tracked seamlessly regardless of whether the user entered a username or Employee ID, incrementing the counter toward the 5-attempt threshold and triggering the 15-minute sliding lockout window.
 
 ### 12.3 Architectural & Security Design Decisions
@@ -432,6 +435,4 @@ The Archived Records Hub organizes soft-deleted healthcare records into dedicate
   * The consultation immediately reappears in the patient's active workstation folder and disappears from the Archived Records Hub.
   * Generates an immutable `CONSULTATION_RESTORED` audit log.
 * **Statutory Compliance**: Permanent physical deletion of patient profiles and clinical consultations is permanently disabled, ensuring full compliance with Republic Act 10173 (Data Privacy Act of 2012) and Department of Health medical record retention mandates.
-
-
 

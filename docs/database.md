@@ -2,7 +2,7 @@
 
 This document outlines the database design and schema specifications for the **Patient Management System** of the Barangay Sinalhan Health Center.
 
-The database is built on **MySQL 8.0** using the **InnoDB storage engine** to support referential integrity, transaction safety, and crash recovery. It is designed to run locally under XAMPP.
+The database is built for **MySQL 8.0 or compatible MariaDB** using the **InnoDB storage engine** to support referential integrity, transaction safety, and crash recovery. It is designed to run locally under XAMPP.
 
 ---
 
@@ -10,7 +10,7 @@ The database is built on **MySQL 8.0** using the **InnoDB storage engine** to su
 
 To ensure data integrity, speed, and security in a multi-user local area network (LAN) environment, the database follows these design principles:
 
-1. **Referential Integrity**: To prevent accidental deletion of critical clinical logs, all patient-related foreign keys use `ON DELETE RESTRICT`. Patient records are archived rather than physically deleted.
+1. **Referential Integrity**: Patient and operational relationships use a deliberate mix of `ON DELETE RESTRICT`, `ON DELETE SET NULL`, and controlled cascade behavior. Patient records are archived rather than physically deleted; cascade is reserved for dependent records whose lifecycle is owned by a parent record.
 2. **Indexing Strategy**: Secondary indexes are added to columns frequently used in `WHERE`, `JOIN`, `ORDER BY`, or search clauses (e.g., patient numbers, names, dates, and status fields).
 3. **Audit Trail**: Tracking fields (`created_at`, `updated_at`, `created_by`, `updated_by`) are implemented on operational records. An independent `audit_logs` table records sensitive actions.
 4. **Soft Deletes (Archiving)**: Patient and clinical records are never permanently deleted from the active interface. Instead, archiving is handled via soft-delete columns (`deleted_at`, `deleted_by`, `archive_reason`).
@@ -62,6 +62,10 @@ erDiagram
     lab_requests ||--o| lab_results : "produces"
 ```
 
+For the authoritative source of each clinical data category and the relationships between
+appointments, queue entries, consultations, and program records, see
+[`data_ownership.md`](data_ownership.md).
+
 ---
 
 ## 3. Data Dictionary
@@ -110,11 +114,11 @@ Stores master demographics and core profile data. Every citizen (including pregn
 | `suffix` | VARCHAR(20) | | NULL | Name extension (e.g., 'Jr.', 'Sr.', 'III'). |
 | `dob` | DATE | NOT NULL | | Patient's date of birth. |
 | `sex` | ENUM('Male', 'Female') | NOT NULL | | Patient's biological sex. |
-| `civil_status` | ENUM('Single', 'Married', 'Widowed', 'Divorced', 'Separated', 'Annulled', 'Others') | NOT NULL | | Patient's marital status. |
+| `civil_status` | ENUM('Single', 'Married', 'Annulled', 'Widow/Widower', 'Separated', 'Others') | NOT NULL | | Patient's civil status. |
 | `blood_type` | ENUM('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown') | NOT NULL | 'Unknown' | Patient's ABO blood type classification. |
 | `religion` | VARCHAR(100) | | NULL | Religious affiliation. |
 | `occupation` | VARCHAR(100) | | NULL | Patient's occupation or employment status. |
-| `education_attainment` | ENUM('No Schooling', 'Elementary', 'High School', 'Vocational', 'College / Post-Graduate') | | NULL | Highest completed educational level. |
+| `education_attainment` | ENUM('No Schooling', 'Elementary', 'High School', 'Vocational', 'College degree, post graduate') | | NULL | Highest completed educational level. |
 | `contact_no` | VARCHAR(20) | | NULL | Patient's primary phone number (11-digit 09XXXXXXXXX format). |
 | `barangay` | VARCHAR(100) | NOT NULL | 'Sinalhan' | Resident barangay. |
 | `address` | TEXT | NOT NULL | | Complete street address. |
@@ -215,7 +219,7 @@ Tracks patient routing, status, and processing times for the day's clinic queue.
 | :--- | :--- | :--- | :--- | :--- |
 | `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique queue entry identifier. |
 | `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Patient currently in queue. |
-| `service_type`| ENUM('General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care') | NOT NULL | 'General OPD' | Specialized service track for queue display and room routing. |
+| `service_type`| VARCHAR(50) | DEFAULT 'General OPD' | 'General OPD' | Specialized service track for queue display and room routing. Current values include General OPD, Prenatal Care, Well Baby Immunization, Senior Care, Family Planning, Dental Care, and NCD / Hypertension. |
 | `queue_date` | DATE | NOT NULL | | Date of queue allocation. |
 | `queue_no` | INT | NOT NULL | | Daily queue number (resets daily from 1). |
 | `status` | ENUM('Waiting', 'Called', 'Serving', 'Completed', 'Cancelled') | NOT NULL | 'Waiting' | Current location in queue process. |
@@ -728,7 +732,7 @@ CREATE TABLE `appointments` (
 CREATE TABLE `queue_entries` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
-  `service_type` ENUM('General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care') NOT NULL DEFAULT 'General OPD',
+  `service_type` VARCHAR(50) DEFAULT 'General OPD',
   `queue_date` DATE NOT NULL,
   `queue_no` INT NOT NULL,
   `status` ENUM('Waiting', 'Called', 'Serving', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Waiting',
@@ -1165,8 +1169,11 @@ VALUES
 
 To assist database engine performance and simplify reporting queries, use these pre-optimized SQL templates:
 
-### 6.1 Patient Daily Queue Generation (Atomic Increment)
-To calculate the daily queue number reliably during concurrent operations:
+### 6.1 Patient Daily Queue Generation
+The application calculates the next number from the current daily maximum and relies on the unique
+`(queue_date, queue_no)` constraint. Concurrent duplicate-number attempts are retried by the model;
+this protects numbering integrity, but a high-volume deployment would be better served by a dedicated
+daily sequence table or database-side allocator.
 ```sql
 -- Calculate next sequence number for the current day
 SELECT IFNULL(MAX(queue_no), 0) + 1 AS next_queue_no 

@@ -45,6 +45,12 @@ class PrenatalController extends Controller {
             return;
         }
 
+        if ($this->prenatalModel->hasActiveEpisode($patientId)) {
+            $_SESSION['error_message'] = 'This patient already has an active pregnancy episode. Conclude it before starting another episode.';
+            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            return;
+        }
+
         $lmp = $_POST['lmp'] ?? '';
         if (empty($lmp) || !strtotime($lmp)) {
             $_SESSION['error_message'] = 'Valid Last Menstrual Period (LMP) is required.';
@@ -63,12 +69,12 @@ class PrenatalController extends Controller {
         $data = [
             'patient_id' => $patientId,
             'husband_name' => trim($_POST['husband_name'] ?? ''),
-            'gravida' => !empty($_POST['gravida']) ? (int)$_POST['gravida'] : 1,
-            'para' => !empty($_POST['para']) ? (int)$_POST['para'] : 0,
-            'term_births' => !empty($_POST['term_births']) ? (int)$_POST['term_births'] : 0,
-            'preterm_births' => !empty($_POST['preterm_births']) ? (int)$_POST['preterm_births'] : 0,
-            'abortions' => !empty($_POST['abortions']) ? (int)$_POST['abortions'] : 0,
-            'living_children' => !empty($_POST['living_children']) ? (int)$_POST['living_children'] : 0,
+            'gravida' => max(1, (int)($_POST['gravida'] ?? 1)),
+            'para' => max(0, (int)($_POST['para'] ?? 0)),
+            'term_births' => max(0, (int)($_POST['term_births'] ?? 0)),
+            'preterm_births' => max(0, (int)($_POST['preterm_births'] ?? 0)),
+            'abortions' => max(0, (int)($_POST['abortions'] ?? 0)),
+            'living_children' => max(0, (int)($_POST['living_children'] ?? 0)),
             'lmp' => $lmp,
             'edc' => $this->prenatalModel->calculateEDC($lmp),
             'is_active' => 1,
@@ -108,6 +114,20 @@ class PrenatalController extends Controller {
         }
 
         $lmp = $_POST['lmp'] ?? $episode['lmp'];
+        $lmpDate = \DateTime::createFromFormat('Y-m-d', $lmp);
+        if (!$lmpDate || $lmpDate->format('Y-m-d') !== $lmp || $lmp > date('Y-m-d')) {
+            $_SESSION['error_message'] = 'Last Menstrual Period must be a valid date that is not in the future.';
+            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            return;
+        }
+        $counts = ['gravida', 'para', 'term_births', 'preterm_births', 'abortions', 'living_children'];
+        foreach ($counts as $count) {
+            if (isset($_POST[$count]) && (int)$_POST[$count] < 0) {
+                $_SESSION['error_message'] = 'Pregnancy and delivery counts cannot be negative.';
+                $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+                return;
+            }
+        }
         $data = [
             'husband_name' => trim($_POST['husband_name'] ?? $episode['husband_name']),
             'gravida' => isset($_POST['gravida']) ? (int)$_POST['gravida'] : $episode['gravida'],
@@ -157,9 +177,20 @@ class PrenatalController extends Controller {
 
         $visitDate = $_POST['visit_date'] ?? date('Y-m-d');
         $userId = $_SESSION['user_id'] ?? 1;
+        $visitDateObject = \DateTime::createFromFormat('Y-m-d', $visitDate);
+        if (!$visitDateObject || $visitDateObject->format('Y-m-d') !== $visitDate || $visitDate > date('Y-m-d')) {
+            $_SESSION['error_message'] = 'Prenatal visit date must be a valid date that is not in the future.';
+            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            return;
+        }
 
         // Calculate dynamic AOG in weeks if not explicitly provided
         $aogWeeks = !empty($_POST['aog_weeks']) ? (float)$_POST['aog_weeks'] : ($episode['calculated_aog']['weeks'] ?? 0);
+        if ($aogWeeks < 0 || $aogWeeks > 45) {
+            $_SESSION['error_message'] = 'Age of gestation must be between 0 and 45 weeks.';
+            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            return;
+        }
 
         $data = [
             'prenatal_id' => $prenatalId,
@@ -242,11 +273,31 @@ class PrenatalController extends Controller {
             session_start();
         }
 
-        $patientId = $_POST['patient_id'] ?? null;
-        $this->pohModel->deleteRecord($id);
-        $_SESSION['success_message'] = 'Past obstetric record removed.';
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
 
-        $this->redirect($patientId ? "/patients/{$patientId}#tab-prenatal" : "/patients");
+        $record = $this->pohModel->findById($id);
+        if (!$record) {
+            $_SESSION['error_message'] = 'Past obstetric record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$record['patient_id'];
+        if (($_SESSION['user_role'] ?? 'staff') !== 'admin') {
+            $_SESSION['error_message'] = 'Only an administrator may remove past obstetric history.';
+            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            return;
+        }
+
+        $this->pohModel->deleteRecord($id);
+        AuditLog::log('PAST_OBSTETRIC_DELETED', 'Maternal Care', "Deleted past obstetric record #{$id} for patient ID #{$patientId}");
+        $_SESSION['success_message'] = 'Past obstetric record removed.';
+        $this->redirect("/patients/{$patientId}#tab-prenatal");
     }
 
     /**
@@ -269,6 +320,18 @@ class PrenatalController extends Controller {
         $deliveryDate = $_POST['delivery_date'] ?? date('Y-m-d');
         $deliveryOutcome = $_POST['delivery_outcome'] ?? 'Live Birth';
         $notes = trim($_POST['notes'] ?? '');
+        $deliveryDateObject = \DateTime::createFromFormat('Y-m-d', $deliveryDate);
+        $allowedOutcomes = ['Live Birth', 'Stillbirth', 'Miscarriage', 'Ectopic', 'Other'];
+        if (!$deliveryDateObject || $deliveryDateObject->format('Y-m-d') !== $deliveryDate || $deliveryDate > date('Y-m-d')) {
+            $_SESSION['error_message'] = 'Pregnancy outcome date must be a valid date that is not in the future.';
+            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            return;
+        }
+        if (!in_array($deliveryOutcome, $allowedOutcomes, true)) {
+            $_SESSION['error_message'] = 'Invalid pregnancy outcome selected.';
+            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            return;
+        }
 
         $concluded = $this->prenatalModel->concludeEpisode($id, [
             'delivery_date' => $deliveryDate,

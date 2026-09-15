@@ -7,7 +7,7 @@
 
 A capstone-oriented, local area network (LAN) patient record and clinic management system built specifically for the **Barangay Sinalhan Health Center**. 
 
-This system replaces traditional paper-based workflows with a secure, offline-first digital database that handles patient intake, vital signs logging, SOAP-format clinical consultations, appointment booking, waiting-room queue management, and daily operational reporting.
+This system replaces traditional paper-based workflows with a secure, LAN-first digital database that handles patient intake, vital signs logging, SOAP-format clinical consultations, appointment booking, waiting-room queue management, maternal and child-health records, PhilHealth PCB tracking, and operational reporting.
 
 ---
 
@@ -38,17 +38,17 @@ This system replaces traditional paper-based workflows with a secure, offline-fi
 * **Admin-only Controls**: Administrative accounts manage user credentials, review audit logs, and trigger database backups.
 * **Brute-force Lockouts**: Accounts automatically suspend after 5 failed login attempts.
 * **Operational Reports**: View, filter, and print (via clean `@media print` print-layouts) or export logs as CSV spreadsheets.
-* **Data Recovery**: Archive (soft-delete) and restore patient records.
+* **Data Recovery**: Administrators can archive and restore patient records and archived consultation records.
 
 ---
 
 ## 🛠️ Technology Stack
 
 * **Backend Engine**: PHP 8.2+ (Framework-free custom MVC architecture).
-* **Database Layer**: MySQL 8.0 (InnoDB engine, strict constraints, and parameter indexing).
+* **Database Layer**: MySQL 8.0 or compatible MariaDB (InnoDB engine, foreign-key constraints, and indexed queries).
 * **Frontend UI**: Bootstrap 5, Bootstrap Icons, custom CSS.
 * **Local Plugins**: DataTables, SweetAlert2, Flatpickr, Chart.js, jQuery.
-* **Asset Model**: 100% self-hosted, offline-ready assets (zero CDN calls) to ensure uninterrupted operations on LAN.
+* **Asset Model**: Self-hosted, offline-ready assets (no runtime CDN dependency) to ensure uninterrupted operations on LAN.
 
 ---
 
@@ -136,13 +136,12 @@ return [
 
 For in-depth technical analysis and system flows, review the documents inside the [`docs/`](docs) folder:
 
-* **[IHP Implementation Roadmap](IHP_phases.md)**: Phased, incremental roadmap for digitizing IHP, Maternal, and Well Baby patient records.
-* **[Clinical Records Analysis & Design](docs/records/analysis_and_design_of_hc_records.md)**: Architectural analysis of the three health center paper records.
+* **[Original health-center records](docs/records/)**: Source records for the Individual Health Profile, Prenatal, and Well Baby workflows.
 * **[UI Wireframes](docs/wireframes.md)**: Comprehensive low-fidelity wireframes including the modular Patient Profile Workstation.
 * **[File & Codebase Guide](docs/file_guide.md)**: Plain-English guide explaining the purpose of every file and directory.
 * **[Architecture Guide](docs/architecture.md)**: Details the MVC core engine, request lifecycles, and local network setups.
 * **[Database Design](docs/database.md)**: Tables schema, relationships, indexes, ERD diagram, and data dictionary.
-* **[Features Specifications](docs/features.md)**: Details clinical tools, calculated metrics, and operation dashboards.
+* **[Data Ownership and Workflow Boundaries](docs/data_ownership.md)**: Authoritative record sources and relationships between operational and clinical modules.
+* **[Features Specifications](docs/features.md)**: Details clinical tools, calculated metrics, maternal/child-health workflows, and operation dashboards.
 * **[Security Architecture](docs/security.md)**: Explains hashing protocols, CSRF/XSS defenses, and account lockouts.
-
-
+* **[Database migration history](database/migrations/README.md)**: Documents schema changes and upgrade expectations for existing installations.

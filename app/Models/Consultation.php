@@ -6,6 +6,7 @@ use App\Core\Model;
 use PDO;
 
 class Consultation extends Model {
+    private const STATUSES = ['Open', 'Completed', 'Cancelled'];
     /**
      * Get the consultation history list for a patient.
      * 
@@ -57,6 +58,11 @@ class Consultation extends Model {
      * @return int|false New consultation ID, or false on failure
      */
     public function create($data) {
+        $status = !empty($data['status']) ? $data['status'] : 'Completed';
+        if (!in_array($status, self::STATUSES, true) || !$this->vitalBelongsToPatient($data['vital_signs_id'] ?? null, $data['patient_id'])) {
+            return false;
+        }
+
         $sql = "INSERT INTO consultations (
                     patient_id, vital_signs_id, subjective, objective, 
                     assessment, plan, status, consulted_by, 
@@ -79,7 +85,7 @@ class Consultation extends Model {
             'objective' => trim($data['objective']),
             'assessment' => trim($data['assessment']),
             'plan' => trim($data['plan']),
-            'status' => !empty($data['status']) ? $data['status'] : 'Completed',
+            'status' => $status,
             'consulted_by' => $data['consulted_by'],
             'consulted_at' => $consultedAt,
             'created_by' => $data['created_by']
@@ -96,6 +102,16 @@ class Consultation extends Model {
      * @return bool True on success, false on failure
      */
     public function update($id, $data) {
+        $status = !empty($data['status']) ? $data['status'] : 'Completed';
+        if (!in_array($status, self::STATUSES, true)) {
+            return false;
+        }
+
+        $current = $this->findById($id);
+        if (!$current || !$this->vitalBelongsToPatient($data['vital_signs_id'] ?? null, $current['patient_id'])) {
+            return false;
+        }
+
         $sql = "UPDATE consultations SET
                     vital_signs_id = :vital_signs_id,
                     subjective = :subjective,
@@ -120,11 +136,26 @@ class Consultation extends Model {
             'objective' => trim($data['objective']),
             'assessment' => trim($data['assessment']),
             'plan' => trim($data['plan']),
-            'status' => !empty($data['status']) ? $data['status'] : 'Completed',
+            'status' => $status,
             'consulted_by' => (int)$data['consulted_by'],
             'consulted_at' => $consultedAt,
             'updated_by' => (int)$data['updated_by']
         ]);
+    }
+
+    private function vitalBelongsToPatient($vitalId, $patientId) {
+        if (empty($vitalId)) {
+            return true;
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT id FROM vital_signs WHERE id = :vital_id AND patient_id = :patient_id LIMIT 1'
+        );
+        $stmt->execute([
+            'vital_id' => (int)$vitalId,
+            'patient_id' => (int)$patientId
+        ]);
+        return (bool)$stmt->fetchColumn();
     }
 
     /**

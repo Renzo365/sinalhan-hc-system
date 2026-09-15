@@ -33,6 +33,22 @@ class PrenatalRecord extends Model {
     }
 
     /**
+     * Check whether a patient already has an active pregnancy episode.
+     *
+     * @param int $patientId
+     * @return bool
+     */
+    public function hasActiveEpisode($patientId) {
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM prenatal_records
+             WHERE patient_id = :patient_id AND is_active = 1
+             LIMIT 1"
+        );
+        $stmt->execute(['patient_id' => (int)$patientId]);
+        return (bool)$stmt->fetchColumn();
+    }
+
+    /**
      * Find all pregnancy episodes (active and past) for a patient.
      * 
      * @param int $patientId

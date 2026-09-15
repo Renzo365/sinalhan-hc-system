@@ -12,7 +12,7 @@ Password credentials are never stored in plain text.
 * Validations during login are verified strictly using `password_verify()`.
 
 ### 1.2 Session Protection
-User sessions are configured in [`public/index.php`](file:///c:/xampp/htdocs/sinalhan-hc-system/public/index.php) and [`config/app.php`](file:///c:/xampp/htdocs/sinalhan-hc-system/config/app.php) with strong parameters to prevent session hijacking and session fixation attacks:
+User sessions are configured in [`public/index.php`](../public/index.php) and [`config/app.php`](../config/app.php) with strong parameters to prevent session hijacking and session fixation attacks:
 * **Session Cookie Lifetime**: 2 hours (7200 seconds) of inactivity before auto-timeout.
 * **HttpOnly**: Session cookies are configured as `httponly => true` to block JavaScript access and prevent Cross-Site Scripting (XSS) cookie extraction.
 * **Secure Cookie Flags**: Session cookies utilize `samesite => 'Lax'` configuration to mitigate Cross-Site Request Forgery (CSRF).
@@ -41,7 +41,7 @@ System access is divided into two distinct levels to enforce the **Principle of 
 | Database Backup Tool | Access allowed | **Access Blocked** (Redirects to Dashboard) |
 | Archive Registry & Restore | Access allowed | **Access Blocked** (Redirects to Dashboard) |
 
-Route guards are validated at the controller constructor level. If a staff user manually types the URL path of an administrator route (such as `/users` or `/backup`), they are blocked and redirected back to `/dashboard` with an authorization warning message.
+Route guards are applied by the router before controller actions run. If a staff user manually types the URL path of an administrator route (such as `/users` or `/backup`), they are blocked and redirected back to `/dashboard` with an authorization warning message.
 
 ### 2.1 Administrative Privilege Isolation
 To prevent privilege escalation and account takeover vulnerabilities:
@@ -107,6 +107,6 @@ To prevent brute force dictionary attacks on login credentials without creating 
 
 ## 5. File, Storage & Error Log Isolation
 
-* **Database Backups**: Database backups are exported directly to `storage/backups/` under the project directory. Access to the backup downloads endpoint is restricted strictly to logged-in administrator accounts with date-stamped naming conventions.
+* **Database Backups**: Database backups are exported to `storage/backups/` under the project directory. The directory denies direct web access, generated files use restrictive permissions where supported, and the backup downloads endpoint is restricted strictly to logged-in administrator accounts with date-stamped naming conventions. Administrators must still copy verified backups to a separate device or location; a project-local backup does not protect against disk failure or loss of the host.
 * **Error Log Storage (`storage/logs/error.log`)**: All uncaught PHP exceptions and fatal runtime errors are intercepted by `App\Core\ErrorHandler` and appended to `storage/logs/error.log`.
 * **Stack Trace Information Masking**: In LAN production mode (`'debug' => false` in `config/app.php`), technical stack traces are hidden from users and replaced with a reassuring 500 error page. Detailed traces remain safely stored in `storage/logs/error.log` for administrator inspection.

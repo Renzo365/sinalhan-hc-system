@@ -6,6 +6,13 @@ use App\Core\Model;
 use PDO;
 
 class QueueEntry extends Model {
+    private const STATUS_TRANSITIONS = [
+        'Waiting' => ['Called', 'Cancelled'],
+        'Called' => ['Serving', 'Cancelled'],
+        'Serving' => ['Completed', 'Cancelled'],
+        'Completed' => [],
+        'Cancelled' => []
+    ];
     /**
      * Retrieve all queue entries for today, joining patient details.
      * 
@@ -97,28 +104,43 @@ class QueueEntry extends Model {
      */
     public function create($data) {
         $date = date('Y-m-d');
-        $queueNo = $this->getNextQueueNo($date);
         $serviceType = !empty($data['service_type']) ? trim($data['service_type']) : 'General OPD';
-        
         $sql = "INSERT INTO queue_entries (
-                    patient_id, queue_date, queue_no, 
+                    patient_id, queue_date, queue_no,
                     service_type, status, time_in, created_by
                 ) VALUES (
-                    :patient_id, :queue_date, :queue_no, 
+                    :patient_id, :queue_date, :queue_no,
                     :service_type, 'Waiting', CURRENT_TIME(), :created_by
                 )";
-        
-        $stmt = $this->db->prepare($sql);
-        
-        $result = $stmt->execute([
-            'patient_id' => (int)$data['patient_id'],
-            'queue_date' => $date,
-            'queue_no' => $queueNo,
-            'service_type' => $serviceType,
-            'created_by' => (int)$data['created_by']
-        ]);
 
-        return $result ? $this->db->lastInsertId() : false;
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            try {
+                $this->db->beginTransaction();
+                $queueNo = $this->getNextQueueNo($date);
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([
+                    'patient_id' => (int)$data['patient_id'],
+                    'queue_date' => $date,
+                    'queue_no' => $queueNo,
+                    'service_type' => $serviceType,
+                    'created_by' => (int)$data['created_by']
+                ]);
+                $newId = $this->db->lastInsertId();
+                $this->db->commit();
+                return $newId;
+            } catch (\PDOException $e) {
+                if ($this->db->inTransaction()) {
+                    $this->db->rollBack();
+                }
+
+                if ($attempt === 2 || (int)$e->errorInfo[1] !== 1062) {
+                    error_log('Queue entry creation failed: ' . $e->getMessage());
+                    return false;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -130,6 +152,32 @@ class QueueEntry extends Model {
      * @return bool
      */
     public function updateStatus($id, $status, $userId) {
+        $currentStmt = $this->db->prepare(
+            "SELECT queue_date, status FROM queue_entries WHERE id = :id LIMIT 1"
+        );
+        $currentStmt->execute(['id' => (int)$id]);
+        $current = $currentStmt->fetch();
+
+        if (!$current || !isset(self::STATUS_TRANSITIONS[$current['status']]) ||
+            !in_array($status, self::STATUS_TRANSITIONS[$current['status']], true)) {
+            return false;
+        }
+
+        if ($status === 'Serving') {
+            $servingStmt = $this->db->prepare(
+                "SELECT id FROM queue_entries
+                 WHERE queue_date = :queue_date AND status = 'Serving' AND id <> :id
+                 LIMIT 1"
+            );
+            $servingStmt->execute([
+                'queue_date' => $current['queue_date'],
+                'id' => (int)$id
+            ]);
+            if ($servingStmt->fetch()) {
+                return false;
+            }
+        }
+
         $fields = "status = :status, updated_by = :updated_by";
         $params = ['id' => $id, 'status' => $status, 'updated_by' => $userId];
         

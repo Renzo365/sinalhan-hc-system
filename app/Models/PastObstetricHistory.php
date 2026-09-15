@@ -23,6 +23,20 @@ class PastObstetricHistory extends Model {
     }
 
     /**
+     * Find one past obstetric history entry.
+     *
+     * @param int $id
+     * @return array|false
+     */
+    public function findById($id) {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM past_obstetric_histories WHERE id = :id LIMIT 1"
+        );
+        $stmt->execute(['id' => (int)$id]);
+        return $stmt->fetch();
+    }
+
+    /**
      * Insert a past obstetric delivery history entry.
      * 
      * @param array $data
