@@ -15,8 +15,8 @@ class Patient extends Model {
     public function allActive($filters = []) {
         $sql = "SELECT p.*, 
                        TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age,
-                       (SELECT COUNT(*) FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1) AS active_prenatal_count,
-                       (SELECT COUNT(*) FROM wellbaby_records wb WHERE wb.patient_id = p.id) AS has_wellbaby_record
+                        (SELECT COUNT(*) FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL) AS active_prenatal_count,
+                        (SELECT COUNT(*) FROM wellbaby_records wb WHERE wb.patient_id = p.id AND wb.deleted_at IS NULL) AS has_wellbaby_record
                 FROM patients p
                 WHERE p.deleted_at IS NULL";
         $params = [];
@@ -80,17 +80,17 @@ class Patient extends Model {
         if (!empty($filters['program_type'])) {
             switch ($filters['program_type']) {
                 case 'wellbaby':
-                    $sql .= " AND (TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5 OR EXISTS (SELECT 1 FROM wellbaby_records wb WHERE wb.patient_id = p.id))";
+                    $sql .= " AND (TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5 OR EXISTS (SELECT 1 FROM wellbaby_records wb WHERE wb.patient_id = p.id AND wb.deleted_at IS NULL))";
                     break;
                 case 'prenatal':
-                    $sql .= " AND p.sex = 'Female' AND EXISTS (SELECT 1 FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1)";
+                    $sql .= " AND p.sex = 'Female' AND EXISTS (SELECT 1 FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL)";
                     break;
                 case 'senior':
                     $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) >= 60";
                     break;
                 case 'opd':
                     $sql .= " AND (TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 6 AND 59)
-                              AND NOT (p.sex = 'Female' AND EXISTS (SELECT 1 FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1))";
+                              AND NOT (p.sex = 'Female' AND EXISTS (SELECT 1 FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL))";
                     break;
             }
         }
@@ -561,7 +561,7 @@ class Patient extends Model {
 
         // Check active pregnancy for reproductive females
         if (strtolower($sex) === 'female') {
-            $stmt = $this->db->prepare("SELECT COUNT(*) FROM prenatal_records WHERE patient_id = :id AND is_active = 1");
+            $stmt = $this->db->prepare("SELECT COUNT(*) FROM prenatal_records WHERE patient_id = :id AND is_active = 1 AND deleted_at IS NULL");
             $stmt->execute(['id' => $patientId]);
             if ($stmt->fetchColumn() > 0) {
                 return [

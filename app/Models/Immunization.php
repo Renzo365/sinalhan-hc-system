@@ -16,7 +16,7 @@ class Immunization extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS vaccinator_name
                 FROM immunizations imm
                 LEFT JOIN users u ON imm.administered_by = u.id
-                WHERE imm.patient_id = :patient_id
+                WHERE imm.patient_id = :patient_id AND imm.deleted_at IS NULL
                 ORDER BY imm.administered_date ASC, imm.id ASC";
         
         $stmt = $this->db->prepare($sql);
@@ -61,6 +61,7 @@ class Immunization extends Model {
                      WHERE patient_id = :patient_id 
                        AND UPPER(TRIM(vaccine_name)) = UPPER(TRIM(:vaccine_name))
                        AND dose_number = :dose_number
+                       AND deleted_at IS NULL
                      LIMIT 1";
         $stmtCheck = $this->db->prepare($sqlCheck);
         $stmtCheck->execute([
@@ -124,7 +125,7 @@ class Immunization extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS vaccinator_name
                 FROM immunizations imm
                 LEFT JOIN users u ON imm.administered_by = u.id
-                WHERE imm.id = :id
+                WHERE imm.id = :id AND imm.deleted_at IS NULL
                 LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => (int)$id]);
@@ -132,13 +133,25 @@ class Immunization extends Model {
     }
 
     /**
-     * Delete an immunization record.
+     * Soft delete an immunization record.
      * 
      * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
      * @return bool
      */
-    public function deleteDose($id) {
-        $stmt = $this->db->prepare("DELETE FROM immunizations WHERE id = :id");
-        return $stmt->execute(['id' => (int)$id]);
+    public function deleteDose($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE immunizations 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
+        ]);
     }
 }

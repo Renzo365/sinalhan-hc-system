@@ -21,7 +21,7 @@ class WellbabyRecord extends Model {
                 INNER JOIN patients p ON wb.patient_id = p.id
                 LEFT JOIN patients m ON wb.mother_patient_id = m.id
                 LEFT JOIN users u ON wb.created_by = u.id
-                WHERE wb.patient_id = :patient_id
+                WHERE wb.patient_id = :patient_id AND wb.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -42,7 +42,7 @@ class WellbabyRecord extends Model {
                 FROM wellbaby_records wb
                 INNER JOIN patients p ON wb.patient_id = p.id
                 LEFT JOIN users u ON wb.created_by = u.id
-                WHERE wb.id = :id
+                WHERE wb.id = :id AND wb.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -83,6 +83,9 @@ class WellbabyRecord extends Model {
                     newborn_screening_result = VALUES(newborn_screening_result),
                     mother_cpab_tt = VALUES(mother_cpab_tt),
                     feeding_method = VALUES(feeding_method),
+                    deleted_at = NULL,
+                    deleted_by = NULL,
+                    archive_reason = NULL,
                     updated_at = CURRENT_TIMESTAMP";
 
         $stmt = $this->db->prepare($sql);
@@ -144,6 +147,29 @@ class WellbabyRecord extends Model {
             'newborn_screening_result' => !empty($data['newborn_screening_result']) ? trim($data['newborn_screening_result']) : null,
             'mother_cpab_tt' => !empty($data['mother_cpab_tt']) ? trim($data['mother_cpab_tt']) : null,
             'feeding_method' => $data['feeding_method'] ?? 'LAM / Exclusive Breastfeeding'
+        ]);
+    }
+
+    /**
+     * Soft delete a Well Baby record.
+     * 
+     * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
+     * @return bool
+     */
+    public function deleteRecord($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE wellbaby_records 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
         ]);
     }
 }

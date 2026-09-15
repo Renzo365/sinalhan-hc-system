@@ -151,6 +151,17 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                     <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary">
                         <?= implode('<span class="text-muted">&bull;</span>', $demographicsItems) ?>
                     </div>
+
+                    <?php if (!empty($cdsAlerts['has_alerts'])): ?>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-2 pt-2 border-top small">
+                            <span class="text-muted small fw-semibold me-1"><i class="bi bi-shield-exclamation text-danger me-1"></i>Clinical Alerts:</span>
+                            <?php foreach ($cdsAlerts['flags'] as $flag): ?>
+                                <span class="badge <?= $flag['class'] ?> px-2 py-1">
+                                    <i class="bi <?= $flag['icon'] ?> me-1"></i><?= h($flag['label']) ?>
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -558,25 +569,8 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <?php 
                                                 $overviewPmhList = [];
                                                 if (!empty($medicalHistory['past_medical_history']) && is_array($medicalHistory['past_medical_history'])) {
-                                                    $seenPmh = [];
-                                                    foreach ($medicalHistory['past_medical_history'] as $k => $v) {
-                                                        $c = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
-                                                        $d = (is_string($k) && !is_numeric($k) && is_string($v)) ? trim($v) : '';
-                                                        if (in_array($c, ['PTB', 'Tuberculosis', 'Pulmonary Tuberculosis'], true)) {
-                                                            $c = 'Pulmonary Tuberculosis (PTB)';
-                                                        } elseif ($c === 'Allergies') {
-                                                            $c = 'Allergy';
-                                                        }
-                                                        if ($c === '' || $c === '[]' || $c === '{}') continue;
-                                                        if (isset($seenPmh[$c])) {
-                                                            if (!empty($d) && empty($seenPmh[$c])) {
-                                                                $seenPmh[$c] = $d;
-                                                            }
-                                                            continue;
-                                                        }
-                                                        $seenPmh[$c] = $d;
-                                                    }
-                                                    foreach ($seenPmh as $cond => $det) {
+                                                    foreach ($medicalHistory['past_medical_history'] as $cond => $det) {
+                                                        if (empty($cond)) continue;
                                                         $overviewPmhList[] = !empty($det) ? "{$cond} ({$det})" : $cond;
                                                     }
                                                 }
@@ -596,20 +590,8 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <?php 
                                                 $overviewFamList = [];
                                                 if (!empty($medicalHistory['family_history']) && is_array($medicalHistory['family_history'])) {
-                                                    $seenFam = [];
-                                                    foreach ($medicalHistory['family_history'] as $k => $v) {
-                                                        $c = (is_string($k) && !is_numeric($k)) ? trim($k) : trim((string)$v);
-                                                        $d = (is_string($k) && !is_numeric($k) && is_string($v) && $v !== 'Yes' && $v !== $k) ? trim($v) : '';
-                                                        if ($c === '' || $c === '[]' || $c === '{}' || $c === 'Yes') continue;
-                                                        if (isset($seenFam[$c])) {
-                                                            if (!empty($d) && empty($seenFam[$c])) {
-                                                                $seenFam[$c] = $d;
-                                                            }
-                                                            continue;
-                                                        }
-                                                        $seenFam[$c] = $d;
-                                                    }
-                                                    foreach ($seenFam as $cond => $det) {
+                                                    foreach ($medicalHistory['family_history'] as $cond => $det) {
+                                                        if (empty($cond)) continue;
                                                         $overviewFamList[] = !empty($det) ? "{$cond}: {$det}" : $cond;
                                                     }
                                                 }
@@ -799,8 +781,8 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                             !empty($medicalHistory['birth_control_method'])
                         );
                         $hasObstetricData = $isFemale && !empty($medicalHistory) && (
-                            isset($medicalHistory['gravida']) ||
-                            isset($medicalHistory['para']) ||
+                            (!empty($medicalHistory['gravida']) && (int)$medicalHistory['gravida'] > 0) ||
+                            (!empty($medicalHistory['para']) && (int)$medicalHistory['para'] > 0) ||
                             !empty($medicalHistory['delivery_type']) ||
                             !empty($medicalHistory['pre_eclampsia'])
                         );
@@ -912,9 +894,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <?php endforeach; ?>
                                                 </div>
                                             <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-1">
-                                                    No chronic illnesses or allergies recorded.
-                                                </p>
+                                                <div class="pt-1">
+                                                    <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                        <i class="bi bi-check-circle text-success me-1"></i>No chronic illnesses or allergies recorded
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -956,9 +940,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <?php endforeach; ?>
                                                 </div>
                                             <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-1">
-                                                    No family hereditary conditions declared.
-                                                </p>
+                                                <div class="pt-1">
+                                                    <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                        <i class="bi bi-check-circle text-success me-1"></i>No hereditary family diseases declared
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -984,9 +970,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <?php endforeach; ?>
                                                 </ul>
                                             <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-2">
-                                                    No prior surgeries or hospitalizations declared.
-                                                </p>
+                                                <div class="pt-1">
+                                                    <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                        <i class="bi bi-check-circle text-success me-1"></i>No prior surgeries or hospitalizations declared
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -1109,9 +1097,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <?php endif; ?>
                                                 </div>
                                             <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-2">
-                                                    No lifetime immunization history recorded.
-                                                </p>
+                                                <div class="pt-1">
+                                                    <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                        <i class="bi bi-shield-slash text-muted me-1"></i>No lifetime immunization history recorded
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -1201,9 +1191,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     </div>
                                                 </div>
                                             <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-2">
-                                                    No baseline vitals or anthropometrics recorded.
-                                                </p>
+                                                <div class="pt-1">
+                                                    <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                        <i class="bi bi-activity text-muted me-1"></i>No baseline vitals or anthropometrics recorded
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -1240,9 +1232,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <?php endif; ?>
                                                 </div>
                                             <?php else: ?>
-                                                <p class="text-muted small fst-italic mb-0 py-2">
-                                                    No physical examination findings on record.
-                                                </p>
+                                                <div class="pt-1">
+                                                    <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                        <i class="bi bi-clipboard2-check text-muted me-1"></i>No physical examination findings on record
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -1254,44 +1248,52 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <h5 class="h6 fw-bold text-pink mb-2">
                                                     8. Female Menstrual & Reproductive History
                                                 </h5>
-                                                <div class="row g-2 small pt-1">
-                                                    <div class="col-6">
-                                                        <span class="text-muted d-block">Menarche Age:</span>
-                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['menarche_age']) ? h($medicalHistory['menarche_age']) . ' yrs old' : '<span class="text-muted">Unspecified</span>' ?></span>
+                                                <?php if ($hasReproductiveData): ?>
+                                                    <div class="row g-2 small pt-1">
+                                                        <div class="col-6">
+                                                            <span class="text-muted d-block">Menarche Age:</span>
+                                                            <span class="fw-semibold text-dark"><?= !empty($medicalHistory['menarche_age']) ? h($medicalHistory['menarche_age']) . ' yrs old' : '<span class="text-muted">Unspecified</span>' ?></span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="text-muted d-block">Sexual Onset Age:</span>
+                                                            <span class="fw-semibold text-dark"><?= !empty($medicalHistory['sexual_onset_age']) ? h($medicalHistory['sexual_onset_age']) . ' yrs old' : '<span class="text-muted">Unspecified</span>' ?></span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="text-muted d-block">Last Menstrual Period (LMP):</span>
+                                                            <span class="fw-bold text-primary"><?= !empty($medicalHistory['lmp']) ? date('M d, Y', strtotime($medicalHistory['lmp'])) : '<span class="text-muted fw-normal">None recorded</span>' ?></span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="text-muted d-block">Menopausal:</span>
+                                                            <?php if (!empty($medicalHistory['is_menopausal'])): ?>
+                                                                <span class="badge bg-warning-subtle text-dark border">Yes <?= !empty($medicalHistory['menopause_age']) ? '(Age ' . h($medicalHistory['menopause_age']) . ')' : '' ?></span>
+                                                            <?php else: ?>
+                                                                <span class="badge bg-light text-muted border">No</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <span class="text-muted d-block">Duration:</span>
+                                                            <span class="fw-medium text-dark"><?= !empty($medicalHistory['period_duration_days']) ? h($medicalHistory['period_duration_days']) . ' days' : '—' ?></span>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <span class="text-muted d-block">Cycle:</span>
+                                                            <span class="fw-medium text-dark"><?= !empty($medicalHistory['cycle_interval_days']) ? h($medicalHistory['cycle_interval_days']) . ' days' : '—' ?></span>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <span class="text-muted d-block">Pads/Day:</span>
+                                                            <span class="fw-medium text-dark"><?= !empty($medicalHistory['pads_per_day']) ? h($medicalHistory['pads_per_day']) : '—' ?></span>
+                                                        </div>
+                                                        <div class="col-12 border-top pt-2 mt-1">
+                                                            <span class="text-muted d-block">Family Planning Method:</span>
+                                                            <span class="fw-semibold text-dark"><?= !empty($medicalHistory['birth_control_method']) ? h($medicalHistory['birth_control_method']) : '<span class="text-muted fw-normal">None declared</span>' ?></span>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <span class="text-muted d-block">Sexual Onset Age:</span>
-                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['sexual_onset_age']) ? h($medicalHistory['sexual_onset_age']) . ' yrs old' : '<span class="text-muted">Unspecified</span>' ?></span>
+                                                <?php else: ?>
+                                                    <div class="pt-1">
+                                                        <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                            <i class="bi bi-person text-pink me-1"></i>No menstrual or reproductive history recorded
+                                                        </span>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <span class="text-muted d-block">Last Menstrual Period (LMP):</span>
-                                                        <span class="fw-bold text-primary"><?= !empty($medicalHistory['lmp']) ? date('M d, Y', strtotime($medicalHistory['lmp'])) : '<span class="text-muted fw-normal">None recorded</span>' ?></span>
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <span class="text-muted d-block">Menopausal:</span>
-                                                        <?php if (!empty($medicalHistory['is_menopausal'])): ?>
-                                                            <span class="badge bg-warning-subtle text-dark border">Yes <?= !empty($medicalHistory['menopause_age']) ? '(Age ' . h($medicalHistory['menopause_age']) . ')' : '' ?></span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-light text-muted border">No</span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <span class="text-muted d-block">Duration:</span>
-                                                        <span class="fw-medium text-dark"><?= !empty($medicalHistory['period_duration_days']) ? h($medicalHistory['period_duration_days']) . ' days' : '—' ?></span>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <span class="text-muted d-block">Cycle:</span>
-                                                        <span class="fw-medium text-dark"><?= !empty($medicalHistory['cycle_interval_days']) ? h($medicalHistory['cycle_interval_days']) . ' days' : '—' ?></span>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <span class="text-muted d-block">Pads/Day:</span>
-                                                        <span class="fw-medium text-dark"><?= !empty($medicalHistory['pads_per_day']) ? h($medicalHistory['pads_per_day']) : '—' ?></span>
-                                                    </div>
-                                                    <div class="col-12 border-top pt-2 mt-1">
-                                                        <span class="text-muted d-block">Family Planning Method:</span>
-                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['birth_control_method']) ? h($medicalHistory['birth_control_method']) : '<span class="text-muted fw-normal">None declared</span>' ?></span>
-                                                    </div>
-                                                </div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
 
@@ -1301,28 +1303,36 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <h5 class="h6 fw-bold text-pink mb-2">
                                                     9. Pregnancy & Obstetric History
                                                 </h5>
-                                                <div class="row g-2 small pt-1">
-                                                    <div class="col-6">
-                                                        <span class="text-muted d-block">Gravida / Para (G/P):</span>
-                                                        <span class="fw-bold text-dark">G<?= h($medicalHistory['gravida'] ?? '0') ?> P<?= h($medicalHistory['para'] ?? '0') ?> (F:<?= h($medicalHistory['term_births'] ?? '0') ?> P:<?= h($medicalHistory['preterm_births'] ?? '0') ?> A:<?= h($medicalHistory['abortions'] ?? '0') ?> L:<?= h($medicalHistory['living_children'] ?? '0') ?>)</span>
+                                                <?php if ($hasObstetricData): ?>
+                                                    <div class="row g-2 small pt-1">
+                                                        <div class="col-6">
+                                                            <span class="text-muted d-block">Gravida / Para (G/P):</span>
+                                                            <span class="fw-bold text-dark">G<?= h($medicalHistory['gravida'] ?? '0') ?> P<?= h($medicalHistory['para'] ?? '0') ?> (F:<?= h($medicalHistory['term_births'] ?? '0') ?> P:<?= h($medicalHistory['preterm_births'] ?? '0') ?> A:<?= h($medicalHistory['abortions'] ?? '0') ?> L:<?= h($medicalHistory['living_children'] ?? '0') ?>)</span>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <span class="text-muted d-block">Type of Delivery:</span>
+                                                            <span class="fw-semibold text-dark"><?= !empty($medicalHistory['delivery_type']) ? h($medicalHistory['delivery_type']) : 'Unspecified' ?></span>
+                                                        </div>
+                                                        <div class="col-6 border-top pt-2 mt-1">
+                                                            <span class="text-muted d-block">Pre-eclampsia / PIH History:</span>
+                                                            <?php if (!empty($medicalHistory['pre_eclampsia'])): ?>
+                                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Yes (Reported)</span>
+                                                            <?php else: ?>
+                                                                <span class="badge bg-light text-muted border">No</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <div class="col-6 border-top pt-2 mt-1">
+                                                            <span class="text-muted d-block">Access to FP Counselling:</span>
+                                                            <span class="badge bg-light text-dark border"><?= (!empty($medicalHistory['fp_counselling']) && (int)$medicalHistory['fp_counselling'] === 1) ? 'Yes' : 'No' ?></span>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <span class="text-muted d-block">Type of Delivery:</span>
-                                                        <span class="fw-semibold text-dark"><?= !empty($medicalHistory['delivery_type']) ? h($medicalHistory['delivery_type']) : 'Unspecified' ?></span>
+                                                <?php else: ?>
+                                                    <div class="pt-1">
+                                                        <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
+                                                            <i class="bi bi-person text-pink me-1"></i>Nulliparous / No obstetric history recorded
+                                                        </span>
                                                     </div>
-                                                    <div class="col-6 border-top pt-2 mt-1">
-                                                        <span class="text-muted d-block">Pre-eclampsia / PIH History:</span>
-                                                        <?php if (!empty($medicalHistory['pre_eclampsia'])): ?>
-                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Yes (Reported)</span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-light text-muted border">No</span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <div class="col-6 border-top pt-2 mt-1">
-                                                        <span class="text-muted d-block">Access to FP Counselling:</span>
-                                                        <span class="badge bg-light text-dark border"><?= (!empty($medicalHistory['fp_counselling']) && (int)$medicalHistory['fp_counselling'] === 1) ? 'Yes' : 'No' ?></span>
-                                                    </div>
-                                                </div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php endif; ?>
@@ -2176,15 +2186,17 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             <td class="pe-3"><?= !empty($pcbObligated['cbe_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
                                         </tr>
 
-                                        <!-- Service 3: Visual Inspection with Acetic Acid -->
-                                        <tr>
-                                            <td class="text-start ps-3 fw-bold text-dark">3. Visual Inspection with Acetic Acid (VIA)</td>
-                                            <td class="text-muted">Once a year</td>
-                                            <td><?= !empty($pcbObligated['via_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td><?= !empty($pcbObligated['via_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td><?= !empty($pcbObligated['via_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td class="pe-3"><?= !empty($pcbObligated['via_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                        </tr>
+                                        <!-- Service 3: Visual Inspection with Acetic Acid (Applicable to Females) -->
+                                        <?php if ($isFemale): ?>
+                                            <tr>
+                                                <td class="text-start ps-3 fw-bold text-dark">3. Visual Inspection with Acetic Acid (VIA)</td>
+                                                <td class="text-muted">Once a year</td>
+                                                <td><?= !empty($pcbObligated['via_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                                <td><?= !empty($pcbObligated['via_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                                <td><?= !empty($pcbObligated['via_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                                <td class="pe-3"><?= !empty($pcbObligated['via_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            </tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -2733,29 +2745,29 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                     </button>
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle mb-0 text-center small" id="pastObstetricTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th class="text-start ps-3">Gravida #</th>
-                                                <th>Delivery Type</th>
-                                                <th>Infant Sex</th>
-                                                <th>Place of Delivery</th>
-                                                <th>Year</th>
-                                                <th>Attendant</th>
-                                                <th>Status</th>
-                                                <th>Maternal TT</th>
-                                                <th class="pe-3 text-end">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if (empty($pastDeliveries)): ?>
+                                <?php if (empty($pastDeliveries)): ?>
+                                    <div class="text-center py-4 text-muted bg-light rounded-3 border border-dashed my-2">
+                                        <i class="bi bi-clock-history fs-3 d-block mb-1 text-secondary opacity-50"></i>
+                                        <p class="mb-1 text-secondary fw-medium small">No previous delivery records logged for this patient.</p>
+                                        <span class="text-muted" style="font-size: 0.75rem;">Click "+ Add Past Delivery" above if the patient has previous child deliveries.</span>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0 text-center small" id="pastObstetricTable">
+                                            <thead class="table-light">
                                                 <tr>
-                                                    <td colspan="9" class="text-center py-4 text-muted">
-                                                        No previous delivery records logged for this patient.
-                                                    </td>
+                                                    <th class="text-start ps-3">Gravida #</th>
+                                                    <th>Delivery Type</th>
+                                                    <th>Infant Sex</th>
+                                                    <th>Place of Delivery</th>
+                                                    <th>Year</th>
+                                                    <th>Attendant</th>
+                                                    <th>Status</th>
+                                                    <th>Maternal TT</th>
+                                                    <th class="pe-3 text-end">Action</th>
                                                 </tr>
-                                            <?php else: ?>
+                                            </thead>
+                                            <tbody>
                                                 <?php foreach ($pastDeliveries as $poh): ?>
                                                     <tr>
                                                         <td class="text-start ps-3 fw-bold text-primary font-monospace">Gravida <?= h($poh['gravida_no']) ?></td>
@@ -2781,10 +2793,10 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
-                                            <?php endif; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                         </div>
@@ -4493,28 +4505,30 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                             </div>
                         </div>
 
-                        <!-- Row 3: Visual Inspection with Acetic Acid -->
-                        <div class="col-12">
-                            <h6 class="small fw-bold text-dark mb-1">3. Visual Inspection with Acetic Acid / VIA (Dates Performed)</h6>
-                            <div class="row g-2">
-                                <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">1st Qtr</label>
-                                    <input type="date" name="via_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">2nd Qtr</label>
-                                    <input type="date" name="via_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">3rd Qtr</label>
-                                    <input type="date" name="via_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
-                                </div>
-                                <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">4th Qtr</label>
-                                    <input type="date" name="via_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
+                        <!-- Row 3: Visual Inspection with Acetic Acid (Females Only) -->
+                        <?php if ($isFemale): ?>
+                            <div class="col-12">
+                                <h6 class="small fw-bold text-dark mb-1">3. Visual Inspection with Acetic Acid / VIA (Dates Performed)</h6>
+                                <div class="row g-2">
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small text-muted mb-1">1st Qtr</label>
+                                        <input type="date" name="via_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small text-muted mb-1">2nd Qtr</label>
+                                        <input type="date" name="via_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small text-muted mb-1">3rd Qtr</label>
+                                        <input type="date" name="via_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <label class="form-label small text-muted mb-1">4th Qtr</label>
+                                        <input type="date" name="via_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        <?php endif; ?>
 
                         <div class="col-12">
                             <label class="form-label small text-muted mb-1">Clinical Remarks / Compliance Notes</label>

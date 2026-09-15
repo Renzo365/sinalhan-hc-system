@@ -17,7 +17,7 @@ class PrenatalRecord extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS creator_name
                 FROM prenatal_records pr
                 LEFT JOIN users u ON pr.created_by = u.id
-                WHERE pr.patient_id = :patient_id AND pr.is_active = 1
+                WHERE pr.patient_id = :patient_id AND pr.is_active = 1 AND pr.deleted_at IS NULL
                 ORDER BY pr.created_at DESC
                 LIMIT 1";
         
@@ -41,7 +41,7 @@ class PrenatalRecord extends Model {
     public function hasActiveEpisode($patientId) {
         $stmt = $this->db->prepare(
             "SELECT 1 FROM prenatal_records
-             WHERE patient_id = :patient_id AND is_active = 1
+             WHERE patient_id = :patient_id AND is_active = 1 AND deleted_at IS NULL
              LIMIT 1"
         );
         $stmt->execute(['patient_id' => (int)$patientId]);
@@ -57,10 +57,10 @@ class PrenatalRecord extends Model {
     public function findAllByPatientId($patientId) {
         $sql = "SELECT pr.*, 
                        CONCAT(u.first_name, ' ', u.last_name) AS creator_name,
-                       (SELECT COUNT(*) FROM prenatal_visits pv WHERE pv.prenatal_id = pr.id) AS visit_count
+                       (SELECT COUNT(*) FROM prenatal_visits pv WHERE pv.prenatal_id = pr.id AND pv.deleted_at IS NULL) AS visit_count
                 FROM prenatal_records pr
                 LEFT JOIN users u ON pr.created_by = u.id
-                WHERE pr.patient_id = :patient_id
+                WHERE pr.patient_id = :patient_id AND pr.deleted_at IS NULL
                 ORDER BY pr.is_active DESC, pr.created_at DESC";
         
         $stmt = $this->db->prepare($sql);
@@ -82,7 +82,7 @@ class PrenatalRecord extends Model {
                 FROM prenatal_records pr
                 INNER JOIN patients p ON pr.patient_id = p.id
                 LEFT JOIN users u ON pr.created_by = u.id
-                WHERE pr.id = :id
+                WHERE pr.id = :id AND pr.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -289,5 +289,29 @@ class PrenatalRecord extends Model {
         } catch (\Exception $e) {
             return ['weeks' => 0, 'days' => 0, 'formatted' => '0 weeks', 'decimal' => 0.0];
         }
+    }
+
+    /**
+     * Soft delete a prenatal pregnancy episode.
+     * 
+     * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
+     * @return bool
+     */
+    public function deleteEpisode($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE prenatal_records 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason,
+                is_active = 0 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
+        ]);
     }
 }

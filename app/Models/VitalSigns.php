@@ -16,7 +16,7 @@ class VitalSigns extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
                 FROM vital_signs vs
                 LEFT JOIN users u ON vs.recorded_by = u.id
-                WHERE vs.patient_id = :patient_id
+                WHERE vs.patient_id = :patient_id AND vs.deleted_at IS NULL
                 ORDER BY vs.recorded_at DESC";
         
         $stmt = $this->db->prepare($sql);
@@ -35,7 +35,7 @@ class VitalSigns extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
                 FROM vital_signs vs
                 LEFT JOIN users u ON vs.recorded_by = u.id
-                WHERE vs.patient_id = :patient_id
+                WHERE vs.patient_id = :patient_id AND vs.deleted_at IS NULL
                 ORDER BY vs.recorded_at DESC
                 LIMIT 1";
         
@@ -102,7 +102,7 @@ class VitalSigns extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
                 FROM vital_signs vs
                 LEFT JOIN users u ON vs.recorded_by = u.id
-                WHERE vs.id = :id
+                WHERE vs.id = :id AND vs.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -111,13 +111,25 @@ class VitalSigns extends Model {
     }
 
     /**
-     * Delete a vital signs record by ID.
+     * Soft delete a vital signs record by ID.
      * 
      * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
      * @return bool
      */
-    public function delete($id) {
-        $stmt = $this->db->prepare("DELETE FROM vital_signs WHERE id = :id");
-        return $stmt->execute(['id' => (int)$id]);
+    public function delete($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE vital_signs 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
+        ]);
     }
 }

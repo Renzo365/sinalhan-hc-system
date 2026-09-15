@@ -44,6 +44,7 @@ class ConsultationController extends Controller {
         // Get IHP Medical History & Active Prenatal Episode for Clinical Decision Support
         $medicalHistory = (new \App\Models\PatientMedicalHistory())->findByPatientId($patientId);
         $activePrenatal = (new \App\Models\PrenatalRecord())->findActiveByPatientId($patientId);
+        $cdsAlerts = \App\Services\ClinicalDecisionService::getAlertsForPatient($patientId);
 
         // Get active clinicians/staff list
         try {
@@ -67,6 +68,7 @@ class ConsultationController extends Controller {
             'latestVitals' => $latestVitals,
             'medicalHistory' => $medicalHistory,
             'activePrenatal' => $activePrenatal,
+            'cdsAlerts' => $cdsAlerts,
             'clinicians' => $clinicians,
             'errors' => $errors,
             'input' => $input
@@ -167,6 +169,7 @@ class ConsultationController extends Controller {
         // Get IHP Medical History & Active Prenatal Episode
         $medicalHistory = (new \App\Models\PatientMedicalHistory())->findByPatientId($patientId);
         $activePrenatal = (new \App\Models\PrenatalRecord())->findActiveByPatientId($patientId);
+        $cdsAlerts = \App\Services\ClinicalDecisionService::getAlertsForPatient($patientId);
 
         // Get clinicians
         try {
@@ -190,6 +193,7 @@ class ConsultationController extends Controller {
             'latestVitals' => $latestVitals,
             'medicalHistory' => $medicalHistory,
             'activePrenatal' => $activePrenatal,
+            'cdsAlerts' => $cdsAlerts,
             'clinicians' => $clinicians,
             'errors' => $errors,
             'input' => $input
@@ -268,37 +272,8 @@ class ConsultationController extends Controller {
      * @return array
      */
     private function validateConsultationInput($input) {
-        $errors = [];
-        $requiredFields = [
-            'subjective' => 'Subjective Notes (Chief Complaint)',
-            'objective' => 'Objective Notes (Physical Findings)',
-            'assessment' => 'Assessment (Diagnosis)',
-            'plan' => 'Plan (Treatment/Prescriptions)',
-            'consulted_by' => 'Consulting Provider',
-            'consulted_at' => 'Date & Time of Consultation'
-        ];
-
-        foreach ($requiredFields as $field => $label) {
-            if (empty($input[$field]) || trim((string)$input[$field]) === '') {
-                $errors[] = "{$label} is required.";
-            }
-        }
-
-        $status = $input['status'] ?? 'Completed';
-        if (!in_array($status, ['Open', 'Completed', 'Cancelled'], true)) {
-            $errors[] = 'Invalid consultation status.';
-        }
-
-        if (!empty($input['consulted_at'])) {
-            $date = \DateTime::createFromFormat('Y-m-d\TH:i', $input['consulted_at'])
-                ?: \DateTime::createFromFormat('Y-m-d H:i:s', $input['consulted_at']);
-            if (!$date || $date->format('Y-m-d') > date('Y-m-d') ||
-                ($date->format('Y-m-d') === date('Y-m-d') && $date->getTimestamp() > time())) {
-                $errors[] = 'Consultation date/time must be valid and cannot be in the future.';
-            }
-        }
-
-        return $errors;
+        $validator = new \App\Validators\ConsultationValidator();
+        return $validator->validate($input);
     }
 
     /**
@@ -382,15 +357,6 @@ class ConsultationController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Consultations', "CSRF mismatch while attempting to archive consultation #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
-
         $consultation = $this->consultationModel->findById($id);
         if (!$consultation) {
             http_response_code(404);
@@ -432,15 +398,6 @@ class ConsultationController extends Controller {
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
         if ($userRole !== 'admin') {
             $_SESSION['error_message'] = 'Unauthorized: Only administrators can restore archived consultations.';
-            $this->redirect('/archive/patients?tab=consultations');
-            return;
-        }
-
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Consultations', "CSRF mismatch while attempting to restore consultation #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
             $this->redirect('/archive/patients?tab=consultations');
             return;
         }

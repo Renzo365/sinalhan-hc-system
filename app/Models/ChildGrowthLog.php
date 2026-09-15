@@ -16,7 +16,7 @@ class ChildGrowthLog extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
                 FROM child_growth_logs cgl
                 LEFT JOIN users u ON cgl.recorded_by = u.id
-                WHERE cgl.wellbaby_id = :wellbaby_id
+                WHERE cgl.wellbaby_id = :wellbaby_id AND cgl.deleted_at IS NULL
                 ORDER BY cgl.log_date ASC, cgl.created_at ASC";
         
         $stmt = $this->db->prepare($sql);
@@ -35,7 +35,7 @@ class ChildGrowthLog extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
                 FROM child_growth_logs cgl
                 LEFT JOIN users u ON cgl.recorded_by = u.id
-                WHERE cgl.id = :id
+                WHERE cgl.id = :id AND cgl.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -84,13 +84,25 @@ class ChildGrowthLog extends Model {
     }
 
     /**
-     * Delete a growth log entry.
+     * Soft delete a growth log entry.
      * 
      * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
      * @return bool
      */
-    public function deleteLog($id) {
-        $stmt = $this->db->prepare("DELETE FROM child_growth_logs WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+    public function deleteLog($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE child_growth_logs 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
+        ]);
     }
 }

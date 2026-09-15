@@ -93,39 +93,8 @@ class UserController extends Controller {
         $department = trim($_POST['department'] ?? '');
         $status = $_POST['status'] ?? 'active';
 
-        $errors = [];
-
-        if (empty($username) || empty($password) || empty($firstName) || empty($lastName)) {
-            $errors[] = 'Username, Password, First Name, and Last Name are required.';
-        }
-
-        // Strict backend regex check for username
-        if (!empty($username) && !preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username)) {
-            $errors[] = 'Username must be 3 to 20 alphanumeric characters (underscores allowed).';
-        }
-
-        if (strlen($password) < 8) {
-            $errors[] = 'Password must be at least 8 characters long.';
-        }
-
-        // Validate username uniqueness
-        if (!empty($username) && !$this->userModel->isUsernameUnique($username)) {
-            $errors[] = 'Username is already taken by another account.';
-        }
-
-        // Validate email format and uniqueness
-        if (!empty($email)) {
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'Invalid email address format.';
-            } elseif (!$this->userModel->isEmailUnique($email)) {
-                $errors[] = 'Email is already registered by another account.';
-            }
-        }
-
-        // Validate contact number format (Philippine mobile: 09XXXXXXXXX)
-        if (!empty($contactNo) && !preg_match('/^09\d{9}$/', $contactNo)) {
-            $errors[] = 'Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).';
-        }
+        $validator = new \App\Validators\UserValidator($this->userModel);
+        $errors = $validator->validateCreate($_POST);
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
@@ -211,32 +180,8 @@ class UserController extends Controller {
             return;
         }
 
-        $errors = [];
-
-        if (empty($firstName) || empty($lastName)) {
-            $errors[] = 'First Name and Last Name are required.';
-        }
-
-        // Validate email format and uniqueness excluding current user
-        if (!empty($email)) {
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'Invalid email address format.';
-            } elseif (!$this->userModel->isEmailUnique($email, $id)) {
-                $errors[] = 'Email is already registered by another account.';
-            }
-        }
-
-        // Validate contact number format (Philippine mobile: 09XXXXXXXXX)
-        if (!empty($contactNo) && !preg_match('/^09\d{9}$/', $contactNo)) {
-            $errors[] = 'Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).';
-        }
-
-        // Prevent self-role change to maintain at least one active admin
-        if ($id == $_SESSION['user_id']) {
-            if ($role !== 'admin') {
-                $errors[] = 'You cannot revoke your own administrator privilege.';
-            }
-        }
+        $validator = new \App\Validators\UserValidator($this->userModel);
+        $errors = $validator->validateUpdate($id, $_POST, (int)$_SESSION['user_id']);
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
@@ -300,30 +245,8 @@ class UserController extends Controller {
         $newPassword = $_POST['new_password'] ?? '';
         $confirmPassword = $_POST['confirm_password'] ?? '';
 
-        $errors = [];
-
-        if (empty($adminPassword) || empty($newPassword) || empty($confirmPassword)) {
-            $errors[] = 'All fields are required.';
-        }
-
-        if ($newPassword !== $confirmPassword) {
-            $errors[] = 'New password and confirmation password do not match.';
-        }
-
-        if (strlen($newPassword) < 8) {
-            $errors[] = 'New temporary password must be at least 8 characters long.';
-        }
-
-        // Prevent setting temporary password to the user's current password
-        if (password_verify($newPassword, $user['password_hash'])) {
-            $errors[] = 'The new temporary password cannot be the same as the user\'s current password.';
-        }
-
-        // Verify administrator's password
-        $admin = $this->userModel->findById($_SESSION['user_id']);
-        if (!$admin || !password_verify($adminPassword, $admin['password_hash'])) {
-            $errors[] = 'Incorrect administrator authorization password.';
-        }
+        $validator = new \App\Validators\UserValidator($this->userModel);
+        $errors = $validator->validatePasswordReset($user, $_POST, (int)$_SESSION['user_id']);
 
         if (!empty($errors)) {
             $_SESSION['error_message'] = implode(' ', $errors);

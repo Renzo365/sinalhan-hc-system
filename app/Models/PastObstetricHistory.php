@@ -14,7 +14,7 @@ class PastObstetricHistory extends Model {
     public function findByPatientId($patientId) {
         $sql = "SELECT poh.* 
                 FROM past_obstetric_histories poh
-                WHERE poh.patient_id = :patient_id
+                WHERE poh.patient_id = :patient_id AND poh.deleted_at IS NULL
                 ORDER BY poh.gravida_no ASC";
         
         $stmt = $this->db->prepare($sql);
@@ -30,7 +30,7 @@ class PastObstetricHistory extends Model {
      */
     public function findById($id) {
         $stmt = $this->db->prepare(
-            "SELECT * FROM past_obstetric_histories WHERE id = :id LIMIT 1"
+            "SELECT * FROM past_obstetric_histories WHERE id = :id AND deleted_at IS NULL LIMIT 1"
         );
         $stmt->execute(['id' => (int)$id]);
         return $stmt->fetch();
@@ -71,13 +71,25 @@ class PastObstetricHistory extends Model {
     }
 
     /**
-     * Delete a past obstetric history entry.
+     * Soft delete a past obstetric history entry.
      * 
      * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
      * @return bool
      */
-    public function deleteRecord($id) {
-        $stmt = $this->db->prepare("DELETE FROM past_obstetric_histories WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+    public function deleteRecord($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE past_obstetric_histories 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
+        ]);
     }
 }

@@ -19,6 +19,9 @@ DROP TABLE IF EXISTS `wellbaby_records`;
 DROP TABLE IF EXISTS `past_obstetric_histories`;
 DROP TABLE IF EXISTS `prenatal_visits`;
 DROP TABLE IF EXISTS `prenatal_records`;
+DROP TABLE IF EXISTS `patient_external_immunizations`;
+DROP TABLE IF EXISTS `patient_surgeries`;
+DROP TABLE IF EXISTS `patient_conditions`;
 DROP TABLE IF EXISTS `patient_medical_histories`;
 DROP TABLE IF EXISTS `child_health_records`;
 DROP TABLE IF EXISTS `maternal_records`;
@@ -242,13 +245,10 @@ CREATE TABLE `immunizations` (
   CONSTRAINT `fk_immunization_administered_by` FOREIGN KEY (`administered_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 9. Patient Medical Histories (Annex A1 IHP Checklist)
+-- 9. Patient Medical Histories (Annex A1 IHP Baseline & Demographics)
 CREATE TABLE `patient_medical_histories` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL UNIQUE,
-  `past_medical_history` TEXT NULL COMMENT 'JSON/Text structured checklist of chronic illnesses',
-  `surgical_history` TEXT NULL COMMENT 'JSON/Text structured past operations and dates',
-  `family_history` TEXT NULL COMMENT 'JSON/Text structured family hereditary illnesses',
   `smoking_status` ENUM('Never', 'Yes', 'Quit') NULL DEFAULT 'Never',
   `smoking_pack_years` DECIMAL(4,1) NULL,
   `alcohol_status` ENUM('Never', 'Yes', 'Quit') NULL DEFAULT 'Never',
@@ -280,7 +280,6 @@ CREATE TABLE `patient_medical_histories` (
   `pre_eclampsia` TINYINT(1) NULL,
   `fp_counselling` TINYINT(1) NULL,
   `physical_examination` LONGTEXT NULL COMMENT 'JSON structured 6-system physical examination findings',
-  `external_immunizations` LONGTEXT NULL COMMENT 'JSON structured Annex A1 lifetime immunization checklist',
   `updated_by` INT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -288,6 +287,50 @@ CREATE TABLE `patient_medical_histories` (
   CONSTRAINT `fk_pmh_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pmh_updater` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   INDEX `idx_pmh_patient` (`patient_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9a. Patient Conditions (Past Medical and Family Hereditary Illnesses)
+CREATE TABLE `patient_conditions` (
+  `id` INT AUTO_INCREMENT,
+  `patient_id` INT NOT NULL,
+  `condition_type` ENUM('Past', 'Family') NOT NULL DEFAULT 'Past',
+  `condition_name` VARCHAR(150) NOT NULL,
+  `remarks` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_patient_conditions_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX `idx_patient_conditions_patient_type` (`patient_id`, `condition_type`),
+  INDEX `idx_patient_conditions_name` (`condition_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9b. Patient Surgeries (Surgical History)
+CREATE TABLE `patient_surgeries` (
+  `id` INT AUTO_INCREMENT,
+  `patient_id` INT NOT NULL,
+  `procedure_name` VARCHAR(255) NOT NULL,
+  `surgery_date` VARCHAR(50) DEFAULT NULL,
+  `hospital` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_patient_surgeries_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX `idx_patient_surgeries_patient` (`patient_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9c. Patient External Immunizations (IHP Annex A1 Lifetime Immunization Checklist)
+CREATE TABLE `patient_external_immunizations` (
+  `id` INT AUTO_INCREMENT,
+  `patient_id` INT NOT NULL,
+  `category` VARCHAR(50) NOT NULL DEFAULT 'general',
+  `vaccine_name` VARCHAR(150) NOT NULL,
+  `administered_date` DATE DEFAULT NULL,
+  `remarks` TEXT DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_patient_ext_imm_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  INDEX `idx_patient_ext_imm_patient` (`patient_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 10. Prenatal Records (Maternal Pregnancy Episodes)

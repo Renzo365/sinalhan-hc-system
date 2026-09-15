@@ -156,8 +156,9 @@ class PatientController extends Controller {
         // Get queue history
         $queueHistory = (new \App\Models\QueueEntry())->findByPatientId($id);
 
-        // Get IHP Medical History
+        // Get IHP Medical History & Clinical Decision Support Alerts
         $medicalHistory = (new \App\Models\PatientMedicalHistory())->findByPatientId($id);
+        $cdsAlerts = \App\Services\ClinicalDecisionService::getAlertsForPatient($id);
 
         // Get Household Family Members sharing the same family_no
         $familyMembers = !empty($patient['family_no']) 
@@ -212,6 +213,7 @@ class PatientController extends Controller {
             'appointmentsHistory' => $appointmentsHistory,
             'queueHistory' => $queueHistory,
             'medicalHistory' => $medicalHistory,
+            'cdsAlerts' => $cdsAlerts,
             'familyMembers' => $familyMembers,
             'activePrenatal' => $activePrenatal,
             'prenatalVisits' => $prenatalVisits,
@@ -300,210 +302,8 @@ class PatientController extends Controller {
      * @return array Array of validation error messages
      */
     protected function validatePatientData(array $input, $excludePatientId = null) {
-        $errors = [];
-
-        // 1. Required fields presence check
-        $requiredFields = [
-            'first_name' => 'First Name',
-            'last_name' => 'Last Name',
-            'dob' => 'Date of Birth',
-            'sex' => 'Biological Sex',
-            'civil_status' => 'Civil Status',
-            'address' => 'Complete Address',
-            'barangay' => 'Barangay'
-        ];
-
-        foreach ($requiredFields as $field => $label) {
-            if (empty($input[$field]) || trim($input[$field]) === '') {
-                $errors[] = "{$label} is required.";
-            }
-        }
-
-        // 2. Name fields regex & length validation (Letters, spaces, hyphens, apostrophes, dots, ñ/Ñ)
-        $namePattern = '/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u';
-
-        if (!empty($input['first_name'])) {
-            $firstName = trim($input['first_name']);
-            if (!preg_match($namePattern, $firstName)) {
-                $errors[] = 'First Name must contain only letters, spaces, hyphens, or apostrophes (2 to 50 characters, no numbers allowed).';
-            }
-        }
-
-        if (!empty($input['middle_name']) && trim($input['middle_name']) !== '') {
-            $middleName = trim($input['middle_name']);
-            if (!preg_match($namePattern, $middleName)) {
-                $errors[] = 'Middle Name must contain only letters, spaces, hyphens, or apostrophes (2 to 50 characters, no numbers allowed).';
-            }
-        }
-
-        if (!empty($input['last_name'])) {
-            $lastName = trim($input['last_name']);
-            if (!preg_match($namePattern, $lastName)) {
-                $errors[] = 'Last Name must contain only letters, spaces, hyphens, or apostrophes (2 to 50 characters, no numbers allowed).';
-            }
-        }
-
-        if (!empty($input['emergency_name']) && trim($input['emergency_name']) !== '') {
-            $emergencyName = trim($input['emergency_name']);
-            if (!preg_match('/^[a-zA-ZñÑ\s\-\'\.\,]{2,100}$/u', $emergencyName)) {
-                $errors[] = 'Emergency Contact Person Name must contain only letters, spaces, hyphens, commas, or apostrophes (2 to 100 characters).';
-            }
-        }
-
-        // 3. Philippine Mobile Phone Numbers (11 digits, starting with 09)
-        $phonePattern = '/^09\d{9}$/';
-        
-        if (!empty($input['contact_no']) && trim($input['contact_no']) !== '') {
-            $contactNo = trim($input['contact_no']);
-            if (!preg_match($phonePattern, $contactNo)) {
-                $errors[] = 'Primary Contact No. must be a valid 11-digit Philippine mobile number starting with 09 (e.g. 09998698088).';
-            }
-        }
-
-        if (!empty($input['emergency_no']) && trim($input['emergency_no']) !== '') {
-            $emergencyNo = trim($input['emergency_no']);
-            if (!preg_match($phonePattern, $emergencyNo)) {
-                $errors[] = 'Emergency Contact Number must be a valid 11-digit Philippine mobile number starting with 09 (e.g. 09998698088).';
-            }
-        }
-
-        // 4. Date of Birth Bounds & Format Validation
-        if (!empty($input['dob'])) {
-            $dob = trim($input['dob']);
-            $d = \DateTime::createFromFormat('Y-m-d', $dob);
-            if (!$d || $d->format('Y-m-d') !== $dob) {
-                $errors[] = 'Date of Birth must be a valid date in YYYY-MM-DD format.';
-            } else {
-                $dobTimestamp = strtotime($dob);
-                $now = time();
-                $minDate = strtotime('1900-01-01');
-
-                if ($dobTimestamp > $now) {
-                    $errors[] = 'Date of Birth cannot be a future date.';
-                } elseif ($dobTimestamp < $minDate) {
-                    $errors[] = 'Date of Birth cannot be prior to 1900.';
-                }
-            }
-        }
-
-        // 5. PhilHealth ID Number Validation (XX-XXXXXXXXX-X format)
-        if (!empty($input['philhealth_no']) && trim($input['philhealth_no']) !== '') {
-            $philhealthNo = trim($input['philhealth_no']);
-            if (!preg_match('/^\d{2}-\d{9}-\d{1}$/', $philhealthNo)) {
-                $errors[] = 'PhilHealth ID No. must follow the standard 12-digit format: XX-XXXXXXXXX-X (e.g. 12-345678901-2).';
-            } elseif (!$this->patientModel->isPhilHealthUnique($philhealthNo, $excludePatientId)) {
-                $errors[] = 'PhilHealth ID number is already registered to another active patient.';
-            }
-        }
-
-        // 6. Biological Sex Whitelist
-        if (!empty($input['sex'])) {
-            if (!in_array($input['sex'], ['Male', 'Female'], true)) {
-                $errors[] = 'Invalid Biological Sex selected.';
-            }
-        }
-
-        // 7. Civil Status Whitelist & Conditional 'Others' Validation
-        if (!empty($input['civil_status'])) {
-            $allowedStatuses = ['Single', 'Married', 'Widow/Widower', 'Annulled', 'Separated', 'Others'];
-            if (!in_array($input['civil_status'], $allowedStatuses, true)) {
-                $errors[] = 'Invalid Civil Status selected.';
-            } elseif ($input['civil_status'] === 'Others' && empty(trim($input['civil_status_other'] ?? ''))) {
-                $errors[] = 'Please specify the Civil Status when "Others" is selected.';
-            }
-        }
-
-        // 8. Blood Type Whitelist
-        if (!empty($input['blood_type'])) {
-            $allowedBloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'];
-            if (!in_array($input['blood_type'], $allowedBloodTypes, true)) {
-                $errors[] = 'Invalid Blood Type selected.';
-            }
-        }
-
-        // 9. Barangay & Address Length
-        if (!empty($input['barangay'])) {
-            $barangay = trim($input['barangay']);
-            if (mb_strlen($barangay) < 2 || mb_strlen($barangay) > 100) {
-                $errors[] = 'Barangay name must be between 2 and 100 characters.';
-            }
-        }
-
-        if (!empty($input['address'])) {
-            $address = trim($input['address']);
-            if (mb_strlen($address) < 5 || mb_strlen($address) > 500) {
-                $errors[] = 'Complete Address must be between 5 and 500 characters.';
-            }
-        }
-
-        // 10. Suffix / Extension Validation
-        if (!empty($input['suffix']) && trim($input['suffix']) !== '') {
-            $suffix = trim($input['suffix']);
-            if (mb_strlen($suffix) > 20 || !preg_match('/^[a-zA-Z0-9\.\s\-]+$/', $suffix)) {
-                $errors[] = 'Extension (Sr., Jr., etc.) must be 20 characters or less.';
-            }
-        }
-
-        // 11. Family Number Format
-        if (!empty($input['family_no']) && trim($input['family_no']) !== '') {
-            $familyNo = trim($input['family_no']);
-            if (mb_strlen($familyNo) > 50 || !preg_match('/^[a-zA-Z0-9\-\_\s\.]+$/', $familyNo)) {
-                $errors[] = 'Family Number must be alphanumeric and under 50 characters.';
-            }
-        }
-
-        // 12. Educational Attainment Whitelist
-        if (!empty($input['education_attainment']) && trim($input['education_attainment']) !== '') {
-            $allowedEdu = ['No Schooling', 'Elementary', 'High School', 'Vocational', 'College degree, post graduate'];
-            if (!in_array($input['education_attainment'], $allowedEdu, true)) {
-                $errors[] = 'Invalid Educational Attainment selected.';
-            }
-        }
-
-        // 13. PhilHealth Membership Status
-        if (!empty($input['phic_status'])) {
-            $allowedPhicStatus = ['Member', 'Dependent', 'Non-Member'];
-            if (!in_array($input['phic_status'], $allowedPhicStatus, true)) {
-                $errors[] = 'Invalid PhilHealth Status selected.';
-            }
-        }
-
-        // 14. Immediate Family Names Validation
-        $familyNames = [
-            'father_name' => "Father's Name",
-            'mother_name' => "Mother's Maiden Name",
-            'spouse_name' => "Spouse's Name"
-        ];
-
-        foreach ($familyNames as $field => $fieldLabel) {
-            if (!empty($input[$field]) && trim($input[$field]) !== '') {
-                $val = trim($input[$field]);
-                if (mb_strlen($val) > 150 || !preg_match('/^[a-zA-ZñÑ\s\-\'\.\,]{2,150}$/u', $val)) {
-                    $errors[] = "{$fieldLabel} must contain only letters, spaces, hyphens, commas, or apostrophes (2 to 150 characters).";
-                }
-            }
-        }
-
-        // 15. Immediate Family Dates of Birth
-        $familyDobs = [
-            'father_dob' => "Father's Date of Birth",
-            'mother_dob' => "Mother's Date of Birth",
-            'spouse_dob' => "Spouse's Date of Birth"
-        ];
-
-        foreach ($familyDobs as $field => $fieldLabel) {
-            if (!empty($input[$field]) && trim($input[$field]) !== '') {
-                $dobVal = trim($input[$field]);
-                $d = \DateTime::createFromFormat('Y-m-d', $dobVal);
-                if (!$d || $d->format('Y-m-d') !== $dobVal) {
-                    $errors[] = "{$fieldLabel} must be a valid date in YYYY-MM-DD format.";
-                } elseif (strtotime($dobVal) > time()) {
-                    $errors[] = "{$fieldLabel} cannot be a future date.";
-                }
-            }
-        }
-
-        return $errors;
+        $validator = new \App\Validators\PatientValidator($this->patientModel);
+        return $validator->validate($input, $excludePatientId);
     }
 
     /**

@@ -75,14 +75,6 @@ class PatientMedicalHistoryController extends Controller {
             return;
         }
 
-        // Verify CSRF token (Defense-in-Depth)
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Invalid or expired session token. Please try again.';
-            $this->redirect("/patients/{$patientId}#tab-ihp");
-            return;
-        }
-
         // Process Checklists and Structured Text - build associative map [Condition => Detail]
         $rawPastMedical = $_POST['past_medical_history'] ?? [];
         if (!is_array($rawPastMedical)) {

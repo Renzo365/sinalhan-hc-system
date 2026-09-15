@@ -17,7 +17,7 @@ class PrenatalVisit extends Model {
                        u.role AS attendant_role
                 FROM prenatal_visits pv
                 LEFT JOIN users u ON pv.attended_by = u.id
-                WHERE pv.prenatal_id = :prenatal_id
+                WHERE pv.prenatal_id = :prenatal_id AND pv.deleted_at IS NULL
                 ORDER BY pv.visit_date ASC, pv.created_at ASC";
         
         $stmt = $this->db->prepare($sql);
@@ -36,7 +36,7 @@ class PrenatalVisit extends Model {
                        CONCAT(u.first_name, ' ', u.last_name) AS attendant_name
                 FROM prenatal_visits pv
                 LEFT JOIN users u ON pv.attended_by = u.id
-                WHERE pv.id = :id
+                WHERE pv.id = :id AND pv.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -85,13 +85,25 @@ class PrenatalVisit extends Model {
     }
 
     /**
-     * Delete a prenatal visit entry.
+     * Soft delete a prenatal visit entry.
      * 
      * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
      * @return bool
      */
-    public function deleteVisit($id) {
-        $stmt = $this->db->prepare("DELETE FROM prenatal_visits WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
+    public function deleteVisit($id, $userId = null, $reason = null) {
+        $stmt = $this->db->prepare("
+            UPDATE prenatal_visits 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = :reason 
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+        return $stmt->execute([
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : null
+        ]);
     }
 }
