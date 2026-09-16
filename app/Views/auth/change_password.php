@@ -40,43 +40,12 @@ $initials = strtoupper($initials ?: 'ST');
                 </div>
             </div>
 
-            <!-- Version Status Indicator (Directly above Main Heading) -->
-            <div class="brand-status-wrapper">
-                <div class="brand-status-pill">
-                    <span class="status-dot-pulse"></span>
-                    <span>BHC-PMS Beta 1.3 Secure Portal</span>
-                </div>
-            </div>
-
             <!-- Main Heading & Mission -->
             <h1 class="brand-hero-title">Barangay Sinalhan<br>Health Center</h1>
             <div class="brand-hero-subtitle">Patient Management &amp; Health Records System</div>
             <p class="brand-mission-desc">
                 Providing accessible, standardized, and secure public health services for the constituents of Barangay Sinalhan, City of Santa Rosa, Laguna. Dedicated to compassionate primary care and digital health governance.
             </p>
-
-            <!-- Compliance Pills / Feature Cards -->
-            <div class="compliance-pills-list">
-                <div class="compliance-pill-card">
-                    <div class="compliance-pill-icon">
-                        <i class="bi bi-shield-check"></i>
-                    </div>
-                    <div>
-                        <div class="compliance-pill-title">RA 10173 Compliant</div>
-                        <div class="compliance-pill-sub">Strict adherence to Philippine Data Privacy Act &amp; patient confidentiality</div>
-                    </div>
-                </div>
-
-                <div class="compliance-pill-card">
-                    <div class="compliance-pill-icon">
-                        <i class="bi bi-hospital"></i>
-                    </div>
-                    <div>
-                        <div class="compliance-pill-title">Department of Health Aligned</div>
-                        <div class="compliance-pill-sub">Standardized clinical charting, immunization registers &amp; RHU reporting</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Institutional Footer / Assistance Block -->
@@ -96,10 +65,6 @@ $initials = strtoupper($initials ?: 'ST');
         <div class="auth-form-box">
             <!-- Top Status Badges -->
             <div class="auth-top-badges">
-                <span class="gateway-status-badge">
-                    <span class="status-dot-pulse"></span>
-                    <span>Security Gateway Online</span>
-                </span>
                 <span class="authorized-only-badge">
                     <i class="bi bi-patch-check-fill text-success"></i>
                     <span>Staff Account Activation</span>

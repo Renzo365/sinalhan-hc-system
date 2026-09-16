@@ -829,9 +829,9 @@ PHP;
     echo "   CLEANUP & TEARDOWN: RESTORING DATABASE INTEGRITY                 \n";
     echo "====================================================================\n";
 
-    // Clean all test users created during audit
-    $pdo->prepare("DELETE FROM users WHERE username LIKE 'qa_audit_%' OR username LIKE 'val_%'")->execute();
-    $pdo->prepare("DELETE FROM audit_logs WHERE username LIKE 'qa_audit_%' OR username LIKE 'val_%'")->execute();
+    // Clean all test users created during audit (including boundary test accounts)
+    $pdo->prepare("DELETE FROM users WHERE username LIKE 'qa_audit_%' OR username LIKE 'val_%' OR username IN ('nurse_maria', 'admin2026', 'abc', 'a1234567890123456789')")->execute();
+    $pdo->prepare("DELETE FROM audit_logs WHERE username LIKE 'qa_audit_%' OR username LIKE 'val_%' OR details LIKE '%nurse_maria%' OR details LIKE '%admin2026%' OR details LIKE '%abc%' OR details LIKE '%a1234567890123456789%'")->execute();
 
     // Clean any session timeout log created during test
     $pdo->prepare("DELETE FROM audit_logs WHERE action = 'SESSION_TIMEOUT' AND details LIKE '%admin%'")->execute();
