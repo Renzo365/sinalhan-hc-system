@@ -88,9 +88,13 @@ require __DIR__ . '/layout/header.php';
                         <tbody>
                             <?php if (empty($todayAppointments)): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">
-                                        <i class="bi bi-calendar-x d-block fs-3 mb-2 text-muted"></i>
-                                        No appointments scheduled for today.
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <i class="bi bi-calendar-check fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                        <div class="fw-semibold text-dark mb-1">No appointments scheduled for today</div>
+                                        <p class="small text-secondary mb-3">All clear! You can book new appointments in the calendar module.</p>
+                                        <a href="<?= url('/appointments') ?>" class="btn btn-sm btn-outline-primary px-3">
+                                            <i class="bi bi-calendar-plus me-1"></i> Go to Appointments
+                                        </a>
                                     </td>
                                 </tr>
                             <?php else: ?>
@@ -102,11 +106,11 @@ require __DIR__ . '/layout/header.php';
                                     elseif ($appt['status'] === 'Missed') $badge = 'bg-dark text-white';
                                 ?>
                                     <tr>
-                                        <td class="ps-4 fw-semibold text-secondary" style="white-space: nowrap;">
+                                        <td class="ps-4 fw-semibold text-secondary font-monospace small" style="white-space: nowrap;">
                                             <?= date('h:i A', strtotime($appt['appointment_time'])) ?>
                                         </td>
                                         <td class="fw-bold">
-                                            <a href="<?= url('/patients/' . $appt['patient_id']) ?>" class="link-primary-dark">
+                                            <a href="<?= url('/patients/' . $appt['patient_id']) ?>" class="link-primary-dark text-decoration-none">
                                                 <?= h($appt['patient_last']) ?>, <?= h($appt['patient_first']) ?>
                                             </a>
                                         </td>
@@ -135,27 +139,35 @@ require __DIR__ . '/layout/header.php';
                 </h3>
                 <span class="badge bg-warning-bg text-warning border border-warning-subtle">Active</span>
             </div>
-            <div class="card-body py-4">
-                <div class="text-center py-4">
-                    <div class="display-3 fw-bold text-primary mb-2"><?= $queueStats['serving_no'] ? sprintf('%03d', $queueStats['serving_no']) : '000' ?></div>
-                    <div class="text-muted small uppercase fw-semibold tracking-wider">Current Queue Number</div>
+            <div class="card-body py-4 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="text-center py-3">
+                        <div class="display-3 fw-bold text-primary mb-1 font-monospace"><?= $queueStats['serving_no'] ? sprintf('%03d', $queueStats['serving_no']) : '000' ?></div>
+                        <div class="text-muted small text-uppercase fw-semibold tracking-wider">Current Queue Number</div>
+                    </div>
+                    
+                    <hr class="my-3 text-muted opacity-25">
+                    
+                    <div class="d-flex justify-content-around text-center mt-3">
+                        <div>
+                            <div class="fs-4 fw-bold text-warning font-monospace"><?= number_format($queueStats['waiting']) ?></div>
+                            <div class="text-muted small">Waiting</div>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-primary font-monospace"><?= number_format($queueStats['called']) ?></div>
+                            <div class="text-muted small">Called</div>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-success font-monospace"><?= number_format($queueStats['completed']) ?></div>
+                            <div class="text-muted small">Completed</div>
+                        </div>
+                    </div>
                 </div>
-                
-                <hr class="my-3 text-muted opacity-25">
-                
-                <div class="d-flex justify-content-around text-center mt-3">
-                    <div>
-                        <div class="fs-4 fw-bold text-warning"><?= number_format($queueStats['waiting']) ?></div>
-                        <div class="text-muted small">Waiting</div>
-                    </div>
-                    <div>
-                        <div class="fs-4 fw-bold text-primary"><?= number_format($queueStats['called']) ?></div>
-                        <div class="text-muted small">Called</div>
-                    </div>
-                    <div>
-                        <div class="fs-4 fw-bold text-success"><?= number_format($queueStats['completed']) ?></div>
-                        <div class="text-muted small">Completed</div>
-                    </div>
+
+                <div class="mt-4 pt-3 border-top text-center">
+                    <a href="<?= url('/queue') ?>" class="btn btn-light border text-primary fw-semibold w-100 py-2 d-inline-flex align-items-center justify-content-center">
+                        <i class="bi bi-card-checklist me-2"></i> Manage Live Queue
+                    </a>
                 </div>
             </div>
         </div>

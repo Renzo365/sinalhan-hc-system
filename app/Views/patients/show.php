@@ -4072,12 +4072,12 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 </div>
             </div>
             
-            <div class="modal-footer bg-light py-2 px-3 border-top d-flex justify-content-between" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="window.print()">
-                    <i class="bi bi-printer me-1"></i> Print
+            <div class="modal-footer bg-light py-2.5 px-3 border-top d-flex justify-content-between align-items-center" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-dark btn-sm px-3 d-inline-flex align-items-center" onclick="window.print()">
+                    <i class="bi bi-printer me-1.5"></i> Print Record
                 </button>
                 <div class="d-flex align-items-center gap-2" id="consultationModalFooterRight">
-                    <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -4981,9 +4981,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (footerRight) {
                         let footerBtns = '';
                         if (data.can_edit) {
-                            footerBtns += `<a href="<?= url('/consultations/') ?>${data.id}/edit" class="btn btn-primary btn-sm px-3"><i class="bi bi-pencil-square me-1"></i> Edit Consultation</a>`;
+                            footerBtns += `<a href="<?= url('/consultations/') ?>${data.id}/edit" class="btn btn-primary btn-sm px-3 d-inline-flex align-items-center"><i class="bi bi-pencil-square me-1.5"></i> Edit Consultation</a>`;
                         }
-                        footerBtns += `<button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
+                        footerBtns += `<button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
                         footerRight.innerHTML = footerBtns;
                     }
                 })

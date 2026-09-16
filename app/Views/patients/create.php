@@ -458,7 +458,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex gap-3">
                     <a href="<?= url('/patients') ?>" class="btn btn-light px-4">Cancel</a>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btnSubmitPatient">
-                        <i class="bi bi-check2-circle me-1 fs-5 align-middle"></i> Register Patient
+                        <i class="bi bi-check2-circle me-1 fs-5 align-middle"></i> Register & View Profile
                     </button>
                 </div>
             </div>
