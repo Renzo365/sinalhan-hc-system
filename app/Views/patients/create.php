@@ -51,20 +51,8 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
-                    <!-- Row 1: Last Name & First Name -->
-                    <div class="col-12 col-md-6">
-                        <label for="last_name" class="form-label fw-semibold text-secondary small">Last Name <span class="text-danger">*</span></label>
-                        <input type="text" 
-                               name="last_name" 
-                               id="last_name" 
-                               class="form-control name-input" 
-                               value="<?= h($input['last_name'] ?? '') ?>" 
-                               placeholder="e.g. Dela Cruz"
-                               maxlength="50"
-                               minlength="2"
-                               required>
-                    </div>
-                    <div class="col-12 col-md-6">
+                    <!-- Row 1: First Name -> Middle Name -> Last Name -> Extension -->
+                    <div class="col-12 col-md-3">
                         <label for="first_name" class="form-label fw-semibold text-secondary small">First Name <span class="text-danger">*</span></label>
                         <input type="text" 
                                name="first_name" 
@@ -76,9 +64,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                minlength="2"
                                required>
                     </div>
-
-                    <!-- Row 2: Middle Name & Extension -->
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-3">
                         <label for="middle_name" class="form-label fw-semibold text-secondary small">Middle Name</label>
                         <input type="text" 
                                name="middle_name" 
@@ -88,8 +74,20 @@ require dirname(__DIR__) . '/layout/header.php';
                                maxlength="50"
                                value="<?= h($input['middle_name'] ?? '') ?>">
                     </div>
-                    <div class="col-12 col-md-6">
-                        <label for="suffix" class="form-label fw-semibold text-secondary small">Extension (Sr., Jr., III, etc.)</label>
+                    <div class="col-12 col-md-3">
+                        <label for="last_name" class="form-label fw-semibold text-secondary small">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="last_name" 
+                               id="last_name" 
+                               class="form-control name-input" 
+                               value="<?= h($input['last_name'] ?? '') ?>" 
+                               placeholder="e.g. Dela Cruz"
+                               maxlength="50"
+                               minlength="2"
+                               required>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="suffix" class="form-label fw-semibold text-secondary small">Extension (Sr., Jr., III)</label>
                         <input type="text" 
                                name="suffix" 
                                id="suffix" 
@@ -99,7 +97,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                value="<?= h($input['suffix'] ?? '') ?>">
                     </div>
 
-                    <!-- Row 3: Date of Birth, Biological Sex, Civil Status, Blood Type -->
+                    <!-- Row 2: Date of Birth, Biological Sex, Civil Status, Blood Type -->
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="dob" class="form-label fw-semibold text-secondary small">Date of Birth <span class="text-danger">*</span></label>
                         <input type="date" 
@@ -144,7 +142,22 @@ require dirname(__DIR__) . '/layout/header.php';
                         </select>
                     </div>
 
-                    <!-- Row 4: Religion & Specify Civil Status -->
+                    <!-- Row 3: Physical Envelope No. & Religion -->
+                    <div class="col-12 col-md-6">
+                        <label for="envelope_no" class="form-label fw-semibold text-secondary small">
+                            Physical Envelope No. <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 font-monospace" style="font-size: 0.7rem;">Logbook #</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="bi bi-folder2-open"></i></span>
+                            <input type="text" 
+                                   name="envelope_no" 
+                                   id="envelope_no" 
+                                   class="form-control" 
+                                   placeholder="e.g. 1001" 
+                                   maxlength="50" 
+                                   value="<?= h($input['envelope_no'] ?? '') ?>">
+                        </div>
+                    </div>
                     <div class="col-12 col-md-6">
                         <label for="religion" class="form-label fw-semibold text-secondary small">Religion</label>
                         <input type="text" 
@@ -155,13 +168,15 @@ require dirname(__DIR__) . '/layout/header.php';
                                maxlength="100" 
                                value="<?= h($input['religion'] ?? '') ?>">
                     </div>
-                    <div class="col-12 col-md-6">
-                        <label for="civil_status_other" class="form-label fw-semibold text-secondary small">Specify Civil Status (if applicable)</label>
+
+                    <!-- Row 4: Specify Civil Status (Conditionally visible ONLY when Others is selected) -->
+                    <div class="col-12 col-md-6 <?= ($input['civil_status'] ?? '') === 'Others' ? '' : 'd-none' ?>" id="civilStatusOtherContainer">
+                        <label for="civil_status_other" class="form-label fw-semibold text-secondary small">Specify Civil Status <span class="text-danger">*</span></label>
                         <input type="text" 
                                name="civil_status_other" 
                                id="civil_status_other" 
                                class="form-control" 
-                               placeholder="Please specify if Others is selected" 
+                               placeholder="Please specify civil status" 
                                maxlength="100"
                                value="<?= h($input['civil_status_other'] ?? '') ?>"
                                <?= ($input['civil_status'] ?? '') === 'Others' ? '' : 'disabled' ?>>
@@ -212,39 +227,18 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
 
-                    <!-- Row 2: Barangay & Street Address -->
-                    <div class="col-12 col-md-6">
-                        <label for="barangay" class="form-label fw-semibold text-secondary small">Barangay <span class="text-danger">*</span></label>
-                        <select name="barangay" id="barangay" class="form-select" required>
-                            <option value="Sinalhan" <?= ($input['barangay'] ?? 'Sinalhan') === 'Sinalhan' ? 'selected' : '' ?>>Sinalhan (Catchment Area)</option>
-                            <option value="Aplaya" <?= ($input['barangay'] ?? '') === 'Aplaya' ? 'selected' : '' ?>>Aplaya</option>
-                            <option value="Caingin" <?= ($input['barangay'] ?? '') === 'Caingin' ? 'selected' : '' ?>>Caingin</option>
-                            <option value="Dila" <?= ($input['barangay'] ?? '') === 'Dila' ? 'selected' : '' ?>>Dila</option>
-                            <option value="Dita" <?= ($input['barangay'] ?? '') === 'Dita' ? 'selected' : '' ?>>Dita</option>
-                            <option value="Don Jose" <?= ($input['barangay'] ?? '') === 'Don Jose' ? 'selected' : '' ?>>Don Jose</option>
-                            <option value="Ibaba" <?= ($input['barangay'] ?? '') === 'Ibaba' ? 'selected' : '' ?>>Ibaba</option>
-                            <option value="Labas" <?= ($input['barangay'] ?? '') === 'Labas' ? 'selected' : '' ?>>Labas</option>
-                            <option value="Macabling" <?= ($input['barangay'] ?? '') === 'Macabling' ? 'selected' : '' ?>>Macabling</option>
-                            <option value="Malitlit" <?= ($input['barangay'] ?? '') === 'Malitlit' ? 'selected' : '' ?>>Malitlit</option>
-                            <option value="Market Area" <?= ($input['barangay'] ?? '') === 'Market Area' ? 'selected' : '' ?>>Market Area</option>
-                            <option value="Pooc" <?= ($input['barangay'] ?? '') === 'Pooc' ? 'selected' : '' ?>>Pooc</option>
-                            <option value="Pulong Santa Cruz" <?= ($input['barangay'] ?? '') === 'Pulong Santa Cruz' ? 'selected' : '' ?>>Pulong Santa Cruz</option>
-                            <option value="Santo Domingo" <?= ($input['barangay'] ?? '') === 'Santo Domingo' ? 'selected' : '' ?>>Santo Domingo</option>
-                            <option value="Tagapo" <?= ($input['barangay'] ?? '') === 'Tagapo' ? 'selected' : '' ?>>Tagapo</option>
-                            <option value="Other" <?= ($input['barangay'] ?? '') === 'Other' ? 'selected' : '' ?>>Other / Out of Town</option>
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <label for="address" class="form-label fw-semibold text-secondary small">House No. / Street / Purok <span class="text-danger">*</span></label>
+                    <!-- Row 2: Full Address -->
+                    <div class="col-12">
+                        <label for="address" class="form-label fw-semibold text-secondary small">Full Address <span class="text-danger">*</span></label>
                         <input type="text" 
                                name="address" 
                                id="address" 
                                class="form-control" 
-                               placeholder="e.g. Blk 4 Lot 12 Purok 3" 
-                               maxlength="255" 
+                               placeholder="e.g. Blk 4 Lot 12 Purok 3, Barangay Sinalhan, Santa Rosa, Laguna" 
+                               maxlength="500" 
                                value="<?= h($input['address'] ?? '') ?>" 
                                required>
+                        <div class="form-text small text-muted">Enter complete residential address (House No., Street, Purok, Barangay, City/Municipality).</div>
                     </div>
                 </div>
             </div>
@@ -308,6 +302,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                    maxlength="14"
                                    value="<?= h($input['philhealth_no'] ?? '') ?>">
                         </div>
+                        <div class="form-text small text-muted">Leave blank if not applicable.</div>
                     </div>
 
                     <div class="col-12 col-md-6">
@@ -370,7 +365,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- Row 2: Mother's Name & Mother's DOB -->
                     <div class="col-12 col-md-7">
-                        <label for="mother_name" class="form-label fw-semibold text-secondary small">Mother's Maiden Name</label>
+                        <label for="mother_name" class="form-label fw-semibold text-secondary small">Mother's Maiden Name (Pangalan sa Pagkadalaga)</label>
                         <input type="text" 
                                name="mother_name" 
                                id="mother_name" 
@@ -391,12 +386,12 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- Row 3: Spouse's Name & Spouse's DOB -->
                     <div class="col-12 col-md-7">
-                        <label for="spouse_name" class="form-label fw-semibold text-secondary small">Spouse's Full Name</label>
+                        <label for="spouse_name" class="form-label fw-semibold text-secondary small">Spouse's Full Name (if married / live-in)</label>
                         <input type="text" 
                                name="spouse_name" 
                                id="spouse_name" 
                                class="form-control name-input" 
-                               placeholder="Full Name of Spouse (if married)" 
+                               placeholder="Full Name of Spouse" 
                                maxlength="150"
                                value="<?= h($input['spouse_name'] ?? '') ?>">
                     </div>
@@ -502,13 +497,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. Civil Status Toggle for 'Others'
     const civilStatusSelect = document.getElementById('civil_status');
     const civilStatusOther = document.getElementById('civil_status_other');
+    const civilStatusOtherContainer = document.getElementById('civilStatusOtherContainer');
 
     function toggleCivilStatusOther() {
         if (civilStatusSelect && civilStatusOther) {
             if (civilStatusSelect.value === 'Others') {
+                if (civilStatusOtherContainer) civilStatusOtherContainer.classList.remove('d-none');
                 civilStatusOther.disabled = false;
                 civilStatusOther.focus();
             } else {
+                if (civilStatusOtherContainer) civilStatusOtherContainer.classList.add('d-none');
                 civilStatusOther.disabled = true;
                 civilStatusOther.value = '';
             }

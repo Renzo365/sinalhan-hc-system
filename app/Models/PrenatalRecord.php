@@ -109,13 +109,11 @@ class PrenatalRecord extends Model {
         $sql = "INSERT INTO prenatal_records (
                     patient_id, husband_name, gravida, para, term_births,
                     preterm_births, abortions, living_children, lmp, edc,
-                    is_active, pre_eclampsia, fp_counselling, delivery_date,
-                    delivery_outcome, notes, created_by
+                    is_active, delivery_date, delivery_outcome, notes, created_by
                 ) VALUES (
                     :patient_id, :husband_name, :gravida, :para, :term_births,
                     :preterm_births, :abortions, :living_children, :lmp, :edc,
-                    :is_active, :pre_eclampsia, :fp_counselling, :delivery_date,
-                    :delivery_outcome, :notes, :created_by
+                    :is_active, :delivery_date, :delivery_outcome, :notes, :created_by
                 )";
 
         $stmt = $this->db->prepare($sql);
@@ -131,8 +129,6 @@ class PrenatalRecord extends Model {
             'lmp' => $data['lmp'],
             'edc' => $edc,
             'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1,
-            'pre_eclampsia' => !empty($data['pre_eclampsia']) ? 1 : 0,
-            'fp_counselling' => isset($data['fp_counselling']) ? (int)$data['fp_counselling'] : 1,
             'delivery_date' => !empty($data['delivery_date']) ? $data['delivery_date'] : null,
             'delivery_outcome' => !empty($data['delivery_outcome']) ? $data['delivery_outcome'] : null,
             'notes' => !empty($data['notes']) ? trim($data['notes']) : null,
@@ -163,8 +159,6 @@ class PrenatalRecord extends Model {
                     lmp = :lmp,
                     edc = :edc,
                     is_active = :is_active,
-                    pre_eclampsia = :pre_eclampsia,
-                    fp_counselling = :fp_counselling,
                     delivery_date = :delivery_date,
                     delivery_outcome = :delivery_outcome,
                     notes = :notes
@@ -183,8 +177,6 @@ class PrenatalRecord extends Model {
             'lmp' => $data['lmp'],
             'edc' => $edc,
             'is_active' => isset($data['is_active']) ? (int)$data['is_active'] : 1,
-            'pre_eclampsia' => !empty($data['pre_eclampsia']) ? 1 : 0,
-            'fp_counselling' => isset($data['fp_counselling']) ? (int)$data['fp_counselling'] : 1,
             'delivery_date' => !empty($data['delivery_date']) ? $data['delivery_date'] : null,
             'delivery_outcome' => !empty($data['delivery_outcome']) ? $data['delivery_outcome'] : null,
             'notes' => !empty($data['notes']) ? trim($data['notes']) : null
@@ -313,5 +305,80 @@ class PrenatalRecord extends Model {
             'user_id' => $userId ? (int)$userId : null,
             'reason' => $reason ? trim($reason) : null
         ]);
+    }
+
+    /**
+     * Get all active pregnancy episodes with patient demographics and visit counts for roster listing.
+     * 
+     * @param string $search
+     * @return array
+     */
+    public function getActiveRoster($search = '') {
+        $sql = "SELECT pr.*, 
+                       p.id AS patient_id, p.patient_no, p.envelope_no, p.first_name, p.last_name, 
+                       p.middle_name, p.suffix, p.dob, p.contact_no, p.barangay,
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
+                       CONCAT(u.first_name, ' ', u.last_name) AS creator_name,
+                       (SELECT COUNT(*) FROM prenatal_visits pv 
+                        WHERE pv.prenatal_id = pr.id AND pv.deleted_at IS NULL) AS visit_count,
+                       DATEDIFF(pr.edc, CURRENT_DATE()) AS days_until_edc
+                FROM prenatal_records pr
+                INNER JOIN patients p ON pr.patient_id = p.id
+                LEFT JOIN users u ON pr.created_by = u.id
+                WHERE pr.is_active = 1 
+                  AND pr.deleted_at IS NULL 
+                  AND p.deleted_at IS NULL";
+        
+        $params = [];
+        if (!empty($search)) {
+            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR p.barangay LIKE :s5)";
+            $term = '%' . trim($search) . '%';
+            $params['s1'] = $term;
+            $params['s2'] = $term;
+            $params['s3'] = $term;
+            $params['s4'] = $term;
+            $params['s5'] = $term;
+        }
+
+        $sql .= " ORDER BY pr.edc ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $records = $stmt->fetchAll();
+
+        foreach ($records as &$record) {
+            if (!empty($record['lmp'])) {
+                $record['calculated_aog'] = $this->calculateCurrentAOG($record['lmp']);
+            }
+        }
+
+        return $records;
+    }
+
+    /**
+     * Get recently concluded pregnancy episodes (within the last $days days).
+     * 
+     * @param int $days
+     * @return array
+     */
+    public function getRecentlyDelivered($days = 90) {
+        $intDays = (int)$days;
+        $sql = "SELECT pr.*, 
+                       p.id AS patient_id, p.patient_no, p.envelope_no, p.first_name, p.last_name, 
+                       p.middle_name, p.suffix, p.dob, p.contact_no, p.barangay,
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
+                       (SELECT COUNT(*) FROM prenatal_visits pv 
+                        WHERE pv.prenatal_id = pr.id AND pv.deleted_at IS NULL) AS visit_count
+                FROM prenatal_records pr
+                INNER JOIN patients p ON pr.patient_id = p.id
+                WHERE pr.is_active = 0 
+                  AND pr.deleted_at IS NULL 
+                  AND p.deleted_at IS NULL
+                  AND (pr.delivery_date >= DATE_SUB(CURRENT_DATE(), INTERVAL {$intDays} DAY) OR pr.updated_at >= DATE_SUB(CURRENT_DATE(), INTERVAL {$intDays} DAY))
+                ORDER BY COALESCE(pr.delivery_date, pr.updated_at) DESC
+                LIMIT 50";
+        
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll();
     }
 }

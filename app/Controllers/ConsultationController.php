@@ -101,8 +101,11 @@ class ConsultationController extends Controller {
             return;
         }
 
-        // Save
+        $vitalSignsId = !empty($_POST['vital_signs_id']) ? (int)$_POST['vital_signs_id'] : null;
+
+        // Save Consultation
         $data = $_POST;
+        $data['vital_signs_id'] = $vitalSignsId;
         $data['status'] = !empty($_POST['status']) ? $_POST['status'] : 'Completed';
         $data['created_by'] = $_SESSION['user_id'];
 

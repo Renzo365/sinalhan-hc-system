@@ -106,4 +106,53 @@ class PrenatalVisit extends Model {
             'reason' => $reason ? trim($reason) : null
         ]);
     }
+
+    /**
+     * Count the number of active visits logged for a specific prenatal record.
+     *
+     * @param int $prenatalId
+     * @return int
+     */
+    public function countByPrenatalId($prenatalId) {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) FROM prenatal_visits 
+            WHERE prenatal_id = :prenatal_id AND deleted_at IS NULL
+        ");
+        $stmt->execute(['prenatal_id' => (int)$prenatalId]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Update an existing prenatal visit record (e.g. adding clinical remarks, FHT, or updating vitals).
+     *
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function updateVisit($id, $data) {
+        $fields = [];
+        $params = ['id' => (int)$id];
+
+        $allowed = [
+            'visit_date', 'chief_complaint', 'aog_weeks',
+            'bp_systolic', 'bp_diastolic', 'weight_kg', 'height_cm',
+            'fetal_heart_tone', 'fundal_height_cm', 'fetal_presentation',
+            'tcb', 'remarks'
+        ];
+
+        foreach ($allowed as $col) {
+            if (array_key_exists($col, $data)) {
+                $fields[] = "{$col} = :{$col}";
+                $params[$col] = $data[$col];
+            }
+        }
+
+        if (empty($fields)) {
+            return false;
+        }
+
+        $sql = "UPDATE prenatal_visits SET " . implode(', ', $fields) . ", updated_at = CURRENT_TIMESTAMP WHERE id = :id AND deleted_at IS NULL";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
+    }
 }

@@ -14,9 +14,7 @@ class Patient extends Model {
      */
     public function allActive($filters = []) {
         $sql = "SELECT p.*, 
-                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age,
-                        (SELECT COUNT(*) FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL) AS active_prenatal_count,
-                        (SELECT COUNT(*) FROM wellbaby_records wb WHERE wb.patient_id = p.id AND wb.deleted_at IS NULL) AS has_wellbaby_record
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age
                 FROM patients p
                 WHERE p.deleted_at IS NULL";
         $params = [];
@@ -26,6 +24,7 @@ class Patient extends Model {
             $sql .= " AND (p.first_name LIKE :search_first 
                         OR p.last_name LIKE :search_last 
                         OR p.patient_no LIKE :search_no 
+                        OR p.envelope_no LIKE :search_envelope
                         OR p.family_no LIKE :search_family
                         OR p.contact_no LIKE :search_contact 
                         OR p.philhealth_no LIKE :search_phic
@@ -34,6 +33,7 @@ class Patient extends Model {
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
             $params['search_no'] = $searchTerm;
+            $params['search_envelope'] = $searchTerm;
             $params['search_family'] = $searchTerm;
             $params['search_contact'] = $searchTerm;
             $params['search_phic'] = $searchTerm;
@@ -76,70 +76,11 @@ class Patient extends Model {
             }
         }
 
-        // Filter by Program Type
-        if (!empty($filters['program_type'])) {
-            switch ($filters['program_type']) {
-                case 'wellbaby':
-                    $sql .= " AND (TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5 OR EXISTS (SELECT 1 FROM wellbaby_records wb WHERE wb.patient_id = p.id AND wb.deleted_at IS NULL))";
-                    break;
-                case 'prenatal':
-                    $sql .= " AND p.sex = 'Female' AND EXISTS (SELECT 1 FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL)";
-                    break;
-                case 'senior':
-                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) >= 60";
-                    break;
-                case 'opd':
-                    $sql .= " AND (TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 6 AND 59)
-                              AND NOT (p.sex = 'Female' AND EXISTS (SELECT 1 FROM prenatal_records pr WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL))";
-                    break;
-            }
-        }
-
         $sql .= " ORDER BY p.last_name ASC, p.first_name ASC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
-        $patients = $stmt->fetchAll();
-
-        // Attach computed program badge to each record
-        foreach ($patients as &$patient) {
-            $age = (int)($patient['age'] ?? 0);
-            $sex = $patient['sex'] ?? 'Unknown';
-            $hasActivePrenatal = !empty($patient['active_prenatal_count']) && (int)$patient['active_prenatal_count'] > 0;
-            $hasWellBaby = !empty($patient['has_wellbaby_record']) && (int)$patient['has_wellbaby_record'] > 0;
-
-            if ($age <= 5 || $hasWellBaby) {
-                $patient['program_badge'] = [
-                    'tag' => 'wellbaby',
-                    'class' => 'bg-success text-white',
-                    'icon' => 'bi-emoji-smile-fill',
-                    'label' => 'Well Baby'
-                ];
-            } elseif ($hasActivePrenatal && strtolower($sex) === 'female') {
-                $patient['program_badge'] = [
-                    'tag' => 'prenatal',
-                    'class' => 'bg-pink text-white',
-                    'icon' => 'bi-heart-pulse-fill',
-                    'label' => 'Prenatal'
-                ];
-            } elseif ($age >= 60) {
-                $patient['program_badge'] = [
-                    'tag' => 'senior',
-                    'class' => 'bg-purple text-white',
-                    'icon' => 'bi-award-fill',
-                    'label' => 'Senior'
-                ];
-            } else {
-                $patient['program_badge'] = [
-                    'tag' => 'opd',
-                    'class' => 'bg-primary text-white',
-                    'icon' => 'bi-clipboard2-pulse',
-                    'label' => 'General OPD'
-                ];
-            }
-        }
-
-        return $patients;
+        return $stmt->fetchAll();
     }
 
     /**
@@ -172,7 +113,7 @@ class Patient extends Model {
      * @return array Matches
      */
     public function findDuplicates($firstName, $lastName) {
-        $sql = "SELECT id, patient_no, first_name, last_name, dob, sex, barangay 
+        $sql = "SELECT id, patient_no, envelope_no, first_name, last_name, dob, sex, barangay 
                 FROM patients 
                 WHERE first_name = :first_name AND last_name = :last_name AND deleted_at IS NULL";
         
@@ -195,13 +136,13 @@ class Patient extends Model {
         $data['patient_no'] = $this->generatePatientNo();
 
         $sql = "INSERT INTO patients (
-                    patient_no, family_no, first_name, middle_name, last_name, suffix, dob, sex, 
+                    patient_no, envelope_no, family_no, first_name, middle_name, last_name, suffix, dob, sex, 
                     civil_status, civil_status_other, blood_type, religion, occupation, education_attainment,
                     contact_no, barangay, address, phic_status, phic_type, philhealth_no,
                     father_name, father_dob, mother_name, mother_dob, spouse_name, spouse_dob,
                     emergency_name, emergency_relationship, emergency_no, created_by
                 ) VALUES (
-                    :patient_no, :family_no, :first_name, :middle_name, :last_name, :suffix, :dob, :sex, 
+                    :patient_no, :envelope_no, :family_no, :first_name, :middle_name, :last_name, :suffix, :dob, :sex, 
                     :civil_status, :civil_status_other, :blood_type, :religion, :occupation, :education_attainment,
                     :contact_no, :barangay, :address, :phic_status, :phic_type, :philhealth_no,
                     :father_name, :father_dob, :mother_name, :mother_dob, :spouse_name, :spouse_dob,
@@ -211,6 +152,7 @@ class Patient extends Model {
         $stmt = $this->db->prepare($sql);
         $result = $stmt->execute([
             'patient_no' => $data['patient_no'],
+            'envelope_no' => !empty($data['envelope_no']) ? trim($data['envelope_no']) : null,
             'family_no' => !empty($data['family_no']) ? trim($data['family_no']) : null,
             'first_name' => trim($data['first_name']),
             'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
@@ -226,7 +168,7 @@ class Patient extends Model {
             'education_attainment' => !empty($data['education_attainment']) ? $data['education_attainment'] : null,
             'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
             'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
-            'address' => trim($data['address']),
+            'address' => !empty($data['address']) ? trim($data['address']) : '',
             'phic_status' => !empty($data['phic_status']) ? $data['phic_status'] : 'Non-Member',
             'phic_type' => !empty($data['phic_type']) ? trim($data['phic_type']) : null,
             'philhealth_no' => !empty($data['philhealth_no']) ? trim($data['philhealth_no']) : null,
@@ -254,6 +196,7 @@ class Patient extends Model {
      */
     public function update($id, $data) {
         $sql = "UPDATE patients SET 
+                    envelope_no = :envelope_no,
                     family_no = :family_no,
                     first_name = :first_name,
                     middle_name = :middle_name,
@@ -289,6 +232,7 @@ class Patient extends Model {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             'id' => $id,
+            'envelope_no' => !empty($data['envelope_no']) ? trim($data['envelope_no']) : null,
             'family_no' => !empty($data['family_no']) ? trim($data['family_no']) : null,
             'first_name' => trim($data['first_name']),
             'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
@@ -304,7 +248,7 @@ class Patient extends Model {
             'education_attainment' => !empty($data['education_attainment']) ? $data['education_attainment'] : null,
             'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
             'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
-            'address' => trim($data['address']),
+            'address' => !empty($data['address']) ? trim($data['address']) : '',
             'phic_status' => !empty($data['phic_status']) ? $data['phic_status'] : 'Non-Member',
             'phic_type' => !empty($data['phic_type']) ? trim($data['phic_type']) : null,
             'philhealth_no' => !empty($data['philhealth_no']) ? trim($data['philhealth_no']) : null,
@@ -318,6 +262,37 @@ class Patient extends Model {
             'emergency_relationship' => !empty($data['emergency_relationship']) ? trim($data['emergency_relationship']) : null,
             'emergency_no' => !empty($data['emergency_no']) ? trim($data['emergency_no']) : null,
             'updated_by' => $data['updated_by']
+        ]);
+    }
+
+    /**
+     * Update an infant's parental information (Mother/Father names and birth dates).
+     * 
+     * @param int $id Patient ID
+     * @param string|null $fatherName
+     * @param string|null $fatherDob
+     * @param string|null $motherName
+     * @param string|null $motherDob
+     * @param int $userId
+     * @return bool
+     */
+    public function updateParentalInfo($id, $fatherName, $fatherDob, $motherName, $motherDob, $userId) {
+        $sql = "UPDATE patients SET 
+                    father_name = :father_name,
+                    father_dob = :father_dob,
+                    mother_name = :mother_name,
+                    mother_dob = :mother_dob,
+                    updated_by = :updated_by,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :id AND deleted_at IS NULL";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => (int)$id,
+            'father_name' => !empty($fatherName) ? trim($fatherName) : null,
+            'father_dob' => !empty($fatherDob) ? $fatherDob : null,
+            'mother_name' => !empty($motherName) ? trim($motherName) : null,
+            'mother_dob' => !empty($motherDob) ? $motherDob : null,
+            'updated_by' => (int)$userId
         ]);
     }
 
@@ -385,11 +360,13 @@ class Patient extends Model {
         if (!empty($filters['search'])) {
             $sql .= " AND (p.first_name LIKE :search_first 
                         OR p.last_name LIKE :search_last 
-                        OR p.patient_no LIKE :search_no)";
+                        OR p.patient_no LIKE :search_no
+                        OR p.envelope_no LIKE :search_envelope)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
             $params['search_no'] = $searchTerm;
+            $params['search_envelope'] = $searchTerm;
         }
 
         if (!empty($filters['date_from'])) {
@@ -605,5 +582,64 @@ class Patient extends Model {
         $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Get active child patients aged 0-5 who do NOT yet have a well-baby record.
+     * 
+     * @param string $search
+     * @return array
+     */
+    public function getUnregisteredChildren($search = '') {
+        $sql = "SELECT p.*, 
+                       TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age
+                FROM patients p
+                WHERE p.deleted_at IS NULL
+                  AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5
+                  AND NOT EXISTS (
+                      SELECT 1 FROM wellbaby_records wb 
+                      WHERE wb.patient_id = p.id AND wb.deleted_at IS NULL
+                  )";
+        
+        $params = [];
+        if (!empty($search)) {
+            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR p.barangay LIKE :s5)";
+            $term = '%' . trim($search) . '%';
+            $params['s1'] = $term;
+            $params['s2'] = $term;
+            $params['s3'] = $term;
+            $params['s4'] = $term;
+            $params['s5'] = $term;
+        }
+
+        $sql .= " ORDER BY p.dob DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get active female patients eligible for maternal care registration
+     * (Female, non-archived, without an active prenatal episode).
+     *
+     * @return array
+     */
+    public function getEligibleMaternalPatients() {
+        $sql = "SELECT p.*, 
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age
+                FROM patients p
+                WHERE p.deleted_at IS NULL
+                  AND LOWER(p.sex) = 'female'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM prenatal_records pr 
+                      WHERE pr.patient_id = p.id 
+                        AND pr.is_active = 1 
+                        AND pr.deleted_at IS NULL
+                  )
+                ORDER BY p.last_name ASC, p.first_name ASC";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll() ?: [];
     }
 }

@@ -36,6 +36,16 @@ if (!function_exists('isActive')) {
             <span>Patients</span>
         </a>
         
+        <a href="<?= url('/maternal') ?>" class="sidebar-item <?= isActive('/maternal', $uri) ?>">
+            <i class="bi bi-heart-pulse-fill"></i>
+            <span>Maternal Care</span>
+        </a>
+
+        <a href="<?= url('/well-baby') ?>" class="sidebar-item <?= isActive('/well-baby', $uri) ?>">
+            <i class="bi bi-emoji-smile-fill"></i>
+            <span>Well-Baby / EPI</span>
+        </a>
+        
         <a href="<?= url('/appointments') ?>" class="sidebar-item <?= isActive('/appointments', $uri) ?>">
             <i class="bi bi-calendar-event"></i>
             <span>Appointments</span>

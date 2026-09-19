@@ -35,4 +35,11 @@ migration has guards for its columns and index.
 - `2026_09_02_ihp_maternal_wellbaby_schema.sql`: Added tables for Prenatal care, Well-Baby care, Past Obstetric matrix, and child growth logs.
 - `2026_09_02_phase6_integration.sql`: Added appointment program and queue service fields.
 - `2026_09_06_ihp_annex_a1_alignment.sql`: Added `physical_examination` and `external_immunizations` JSON fields to `patient_medical_histories`, and aligned `civil_status` and `education_attainment` ENUM options with PhilHealth Annex A1.
+- `2026_09_07_pcb_ledger_tables.sql`: Added PhilHealth PCB1 obligated preventive services and service encounter ledger tables.
+- `2026_09_15_add_soft_deletes_to_clinical_tables.sql`: Added `deleted_at`, `deleted_by`, and `archive_reason` columns across clinical tables for legal audit compliance.
+- `2026_09_15_normalize_ihp_medical_histories.sql`: Normalized IHP medical histories into relational tables (`patient_conditions`, `patient_surgeries`, `patient_external_immunizations`).
 - `2026_09_15_record_integrity_and_immunization_provenance.sql`: Added provenance and documentation status to immunization events and an index for active prenatal episode checks.
+- `2026_09_17_align_clinic_workflow.sql`: Added `envelope_no` to `patients` and `lineage` to `patient_conditions`.
+- `2026_09_17_refactor_prenatal_records.sql`: Dropped misplaced legacy IHP columns (`pre_eclampsia`, `fp_counselling`) from `prenatal_records`.
+- `2026_09_17_03_consolidate_schema_and_soft_deletes.sql`: **Universal Idempotent Catch-up Migration**: Brings any older database up-to-date with complete soft-delete tracking across all 13 clinical tables, physical envelope number, virtual generated column `active_patient_id` with unique active episode constraint, and `queue_daily_counters` table.
+

@@ -48,9 +48,11 @@ class VitalSignsController extends Controller {
             }
         }
 
+        $redirectTo = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : "/patients/{$patientId}#tab-vitals";
+
         if (!$hasMetric) {
             $_SESSION['error_message'] = 'At least one vital sign value must be filled.';
-            $this->redirect("/patients/{$patientId}");
+            $this->redirect($redirectTo);
             return;
         }
 
@@ -78,7 +80,7 @@ class VitalSignsController extends Controller {
             $_SESSION['error_message'] = 'Failed to save vital signs. Please try again.';
         }
 
-        $this->redirect("/patients/{$patientId}");
+        $this->redirect($redirectTo);
     }
 
     /**

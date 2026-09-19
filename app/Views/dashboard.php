@@ -10,55 +10,66 @@ require __DIR__ . '/layout/header.php';
     </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <!-- Total Patients Card -->
+<div class="row g-3 mb-4">
+    <!-- New Patients Today Card -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card card-premium hover-action metric-card">
-            <div class="metric-data">
-                <span class="metric-label">Total Patients</span>
-                <div class="metric-value"><?= number_format($stats['total_patients']) ?></div>
-            </div>
-            <div class="metric-icon-box primary">
-                <i class="bi bi-people-fill"></i>
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-primary">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-primary-subtle text-primary p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                    <i class="bi bi-people-fill fs-4"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="text-secondary small fw-medium text-uppercase tracking-wider">New Patients Today</div>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="fs-3 fw-bold text-dark"><?= number_format($stats['new_patients_today'] ?? 0) ?></span>
+                        <span class="text-muted small" title="Total active registered patients in database">(<?= number_format($stats['total_patients']) ?> total)</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Today's Appointments Card -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card card-premium hover-action metric-card">
-            <div class="metric-data">
-                <span class="metric-label">Today's Appointments</span>
-                <div class="metric-value"><?= number_format($stats['today_appointments']) ?></div>
-            </div>
-            <div class="metric-icon-box accent">
-                <i class="bi bi-calendar2-check-fill"></i>
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-info">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-info-subtle text-info p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                    <i class="bi bi-calendar2-check-fill fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small fw-medium text-uppercase tracking-wider">Today's Appointments</div>
+                    <div class="fs-3 fw-bold text-dark"><?= number_format($stats['today_appointments']) ?></div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Today's Queue Card -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card card-premium hover-action metric-card">
-            <div class="metric-data">
-                <span class="metric-label">Today's Queue</span>
-                <div class="metric-value"><?= number_format($stats['queue_now']) ?></div>
-            </div>
-            <div class="metric-icon-box warning">
-                <i class="bi bi-ticket-perforated-fill"></i>
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-warning">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-warning-subtle text-warning p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                    <i class="bi bi-ticket-perforated-fill fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small fw-medium text-uppercase tracking-wider">Today's Active Queue</div>
+                    <div class="fs-3 fw-bold text-dark"><?= number_format($stats['queue_now']) ?></div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Completed Visits Today Card -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card card-premium hover-action metric-card">
-            <div class="metric-data">
-                <span class="metric-label">Visits Completed</span>
-                <div class="metric-value"><?= number_format($stats['today_visits']) ?></div>
-            </div>
-            <div class="metric-icon-box success">
-                <i class="bi bi-check-circle-fill"></i>
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-success">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-success-subtle text-success p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                    <i class="bi bi-check-circle-fill fs-4"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small fw-medium text-uppercase tracking-wider">Visits Completed</div>
+                    <div class="fs-3 fw-bold text-dark"><?= number_format($stats['today_visits']) ?></div>
+                </div>
             </div>
         </div>
     </div>

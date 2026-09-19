@@ -10,50 +10,22 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- Left Institutional Branding Panel -->
     <div class="auth-brand-col">
         <div class="auth-brand-content">
-            <!-- Institutional Seal Badge -->
-            <div class="brand-header-top">
-                <div class="brand-seal-badge">
-                    <div class="brand-seal-icon-box">
-                        <i class="bi bi-shield-shaded"></i>
-                    </div>
-                    <div>
-                        <div class="brand-republic-text">Republic of the Philippines</div>
-                        <div class="brand-republic-sub">Barangay Sinalhan Health Services</div>
-                    </div>
-                </div>
-            </div>
+            <!-- Institutional Eyebrow -->
+            <div class="brand-hero-eyebrow">Barangay Sinalhan Health Center</div>
 
-            <!-- Main Heading & Mission -->
-            <h1 class="brand-hero-title">Barangay Sinalhan<br>Health Center</h1>
-            <div class="brand-hero-subtitle">Patient Management &amp; Health Records System</div>
+            <!-- Main Hero Heading -->
+            <h1 class="brand-hero-title">Patient &amp; Health Records <br>Management System</h1>
+
+            <!-- Mission Description -->
             <p class="brand-mission-desc">
                 Providing accessible, standardized, and secure public health services for the constituents of Barangay Sinalhan, City of Santa Rosa, Laguna. Dedicated to compassionate primary care and digital health governance.
             </p>
-        </div>
-
-        <!-- Institutional Footer / Assistance Block -->
-        <div class="brand-footer-block">
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <i class="bi bi-headset text-teal-light"></i>
-                <span>Need assistance? BHC IT Desk: <strong>Local 104</strong></span>
-            </div>
-            <div>
-                Contact: <a href="mailto:support@sinalhan.gov.ph">support@sinalhan.gov.ph</a> &bull; Clinic Administrator
-            </div>
         </div>
     </div>
 
     <!-- Right Form Panel (Staff Sign In) -->
     <div class="auth-form-col">
         <div class="auth-form-box">
-            <!-- Top Status Badges -->
-            <div class="auth-top-badges">
-                <span class="authorized-only-badge">
-                    <i class="bi bi-lock-fill"></i>
-                    <span>Authorized Staff Only</span>
-                </span>
-            </div>
-
             <!-- Header Section -->
             <h2 class="auth-card-title">Staff Portal Sign In</h2>
             <p class="auth-card-subtitle">
@@ -96,6 +68,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                placeholder="e.g. bhw-nurse01 or BHC-2026-0042" 
                                value="<?= h($username ?? '') ?>" 
                                required 
+                               autocomplete="username"
                                autofocus>
                     </div>
                 </div>
@@ -112,6 +85,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                id="password" 
                                class="form-control" 
                                placeholder="Enter password" 
+                               autocomplete="current-password"
                                required>
                         <button class="btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
                             <i class="bi bi-eye"></i>
@@ -146,8 +120,9 @@ require dirname(__DIR__) . '/layout/header.php';
                     <span class="auth-footer-separator">&bull;</span>
                     <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Use</a>
                 </div>
-                <div class="mb-1">&copy; <?= date('Y') ?> Barangay Sinalhan Health Center. All rights reserved.</div>
-                <div class="auth-footer-location">City of Santa Rosa, Laguna &bull; Republic of the Philippines</div>
+                <div class="auth-footer-meta">
+                    &copy; <?= date('Y') ?> Barangay Sinalhan Health Center &bull; City of Santa Rosa, Laguna
+                </div>
             </div>
         </div>
     </div>

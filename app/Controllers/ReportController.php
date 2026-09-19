@@ -296,10 +296,12 @@ class ReportController extends Controller {
                                    p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.contact_no, p.barangay, p.blood_type, p.philhealth_no,
                                    TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
                                    TIMESTAMPDIFF(WEEK, pr.lmp, CURRENT_DATE()) AS calculated_aog,
-                                   (SELECT COUNT(*) FROM prenatal_visits pv WHERE pv.prenatal_id = pr.id) AS total_visits
+                                   COALESCE(pmh.pre_eclampsia, 0) AS pre_eclampsia,
+                                   (SELECT COUNT(*) FROM prenatal_visits pv WHERE pv.prenatal_id = pr.id AND pv.deleted_at IS NULL) AS total_visits
                             FROM prenatal_records pr
                             JOIN patients p ON pr.patient_id = p.id
-                            WHERE p.deleted_at IS NULL AND (pr.is_active = 1 OR pr.edc BETWEEN :date_from AND :date_to)
+                            LEFT JOIN patient_medical_histories pmh ON pmh.patient_id = p.id AND pmh.deleted_at IS NULL
+                            WHERE p.deleted_at IS NULL AND pr.deleted_at IS NULL AND (pr.is_active = 1 OR pr.edc BETWEEN :date_from AND :date_to)
                             ORDER BY pr.edc ASC";
                     $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;

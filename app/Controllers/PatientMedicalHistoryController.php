@@ -201,6 +201,7 @@ class PatientMedicalHistoryController extends Controller {
             'past_medical_history' => $pastMedical,
             'surgical_history' => $surgical,
             'family_history' => $family,
+            'family_history_lineage' => is_array($_POST['family_history_lineage'] ?? null) ? $_POST['family_history_lineage'] : [],
             'smoking_status' => $smokingStatus,
             'smoking_pack_years' => !empty($_POST['smoking_pack_years']) ? (float)$_POST['smoking_pack_years'] : null,
             'alcohol_status' => $alcoholStatus,

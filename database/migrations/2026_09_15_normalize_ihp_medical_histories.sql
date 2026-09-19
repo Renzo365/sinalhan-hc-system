@@ -1,4 +1,4 @@
-﻿-- Migration: 2026_09_15_normalize_ihp_medical_histories.sql
+-- Migration: 2026_09_15_normalize_ihp_medical_histories.sql
 -- Description: Normalizes IHP medical history JSON/text fields into relational tables
 
 SET FOREIGN_KEY_CHECKS = 0;

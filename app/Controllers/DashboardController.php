@@ -37,7 +37,12 @@ class DashboardController extends Controller {
             
             // Total active patients
             $stmt = $db->query("SELECT COUNT(*) FROM patients WHERE deleted_at IS NULL");
-            $stats['total_patients'] = $stmt->fetchColumn();
+            $stats['total_patients'] = (int)$stmt->fetchColumn();
+
+            // New patients registered today
+            $stmt = $db->prepare("SELECT COUNT(*) FROM patients WHERE DATE(created_at) = CURRENT_DATE() AND deleted_at IS NULL");
+            $stmt->execute();
+            $stats['new_patients_today'] = (int)$stmt->fetchColumn();
             
             // Today's scheduled appointments
             $stmt = $db->prepare("SELECT COUNT(*) FROM appointments WHERE appointment_date = CURRENT_DATE() AND status = 'Scheduled'");

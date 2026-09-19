@@ -83,7 +83,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Global Password Visibility Toggle
     document.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const inputGroup = this.closest('.input-group');
             if (!inputGroup) return;
             const input = inputGroup.querySelector('input[type="password"], input[type="text"]');
@@ -160,9 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ping the server to refresh PHP session activity
         function keepSessionAlive(isBackground = false) {
             fetch(PING_URL, {
-                method: 'POST',
+                method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })

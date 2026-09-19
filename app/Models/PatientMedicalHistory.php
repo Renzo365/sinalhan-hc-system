@@ -41,7 +41,7 @@ class PatientMedicalHistory extends Model {
 
         // Fetch relational conditions (Past Medical & Family Hereditary)
         $cStmt = $this->db->prepare("
-            SELECT condition_type, condition_name, remarks 
+            SELECT condition_type, lineage, condition_name, remarks 
             FROM patient_conditions 
             WHERE patient_id = :patient_id AND deleted_at IS NULL
             ORDER BY id ASC
@@ -51,18 +51,21 @@ class PatientMedicalHistory extends Model {
 
         $pmh = [];
         $fam = [];
+        $famLineage = [];
         foreach ($conditionRows as $c) {
             $name = MedicalDictionaryService::normalizeCondition($c['condition_name']);
             if ($name === '') continue;
             $remarks = trim((string)($c['remarks'] ?? ''));
             if ($c['condition_type'] === 'Family') {
                 $fam[$name] = $remarks;
+                $famLineage[$name] = !empty($c['lineage']) ? $c['lineage'] : 'Unknown';
             } else {
                 $pmh[$name] = $remarks;
             }
         }
         $row['past_medical_history'] = $pmh;
         $row['family_history'] = $fam;
+        $row['family_history_lineage'] = $famLineage;
 
         // Fetch relational surgeries
         $sStmt = $this->db->prepare("
@@ -419,8 +422,8 @@ class PatientMedicalHistory extends Model {
             $delCond->execute(['patient_id' => $patientId, 'user_id' => $userId]);
 
             $insCond = $this->db->prepare("
-                INSERT INTO patient_conditions (patient_id, condition_type, condition_name, remarks)
-                VALUES (:patient_id, :condition_type, :condition_name, :remarks)
+                INSERT INTO patient_conditions (patient_id, condition_type, lineage, condition_name, remarks)
+                VALUES (:patient_id, :condition_type, :lineage, :condition_name, :remarks)
             ");
 
             $cleanPmh = self::normalizePastMedicalHistory($data['past_medical_history'] ?? []);
@@ -428,16 +431,23 @@ class PatientMedicalHistory extends Model {
                 $insCond->execute([
                     'patient_id' => $patientId,
                     'condition_type' => 'Past',
+                    'lineage' => null,
                     'condition_name' => $cond,
                     'remarks' => !empty($remarks) ? $remarks : null
                 ]);
             }
 
             $cleanFam = self::normalizeFamilyHistory($data['family_history'] ?? []);
+            $famLineages = $data['family_history_lineage'] ?? [];
             foreach ($cleanFam as $cond => $remarks) {
+                $lin = $famLineages[$cond] ?? null;
+                if (!in_array($lin, ['Mother', 'Father', 'Both', 'Unknown'], true)) {
+                    $lin = null;
+                }
                 $insCond->execute([
                     'patient_id' => $patientId,
                     'condition_type' => 'Family',
+                    'lineage' => $lin,
                     'condition_name' => $cond,
                     'remarks' => !empty($remarks) ? $remarks : null
                 ]);
@@ -568,6 +578,102 @@ class PatientMedicalHistory extends Model {
         } catch (\Throwable $e) {
             $this->db->rollBack();
             error_log("Failed to soft-delete patient medical history: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Incrementally update obstetric metrics in IHP when a pregnancy concludes.
+     *
+     * @param int $patientId
+     * @param array $outcomeData
+     * @param int $userId
+     * @return bool
+     */
+    public function updateObstetricOutcome($patientId, array $outcomeData, $userId = 1) {
+        try {
+            $current = $this->findByPatientId($patientId);
+            $para = (int)($current['para'] ?? 0);
+            $term = (int)($current['term_births'] ?? 0);
+            $preterm = (int)($current['preterm_births'] ?? 0);
+            $abortions = (int)($current['abortions'] ?? 0);
+            $living = (int)($current['living_children'] ?? 0);
+            $deliveryType = !empty($outcomeData['delivery_type']) ? trim($outcomeData['delivery_type']) : ($current['delivery_type'] ?? null);
+
+            $outcome = $outcomeData['delivery_outcome'] ?? 'Live Birth';
+            $isTerm = !empty($outcomeData['is_term']);
+            $addLiving = isset($outcomeData['living_children']) ? (int)$outcomeData['living_children'] : 1;
+
+            if ($outcome === 'Live Birth') {
+                $para++;
+                if ($isTerm) {
+                    $term++;
+                } else {
+                    $preterm++;
+                }
+                $living += max(0, $addLiving);
+            } elseif ($outcome === 'Stillbirth') {
+                $para++;
+                if ($isTerm) {
+                    $term++;
+                } else {
+                    $preterm++;
+                }
+            } elseif (in_array($outcome, ['Miscarriage', 'Ectopic', 'Other'], true)) {
+                $abortions++;
+            }
+
+            $stmt = $this->db->prepare("
+                UPDATE patient_medical_histories 
+                SET para = :para,
+                    term_births = :term_births,
+                    preterm_births = :preterm_births,
+                    abortions = :abortions,
+                    living_children = :living_children,
+                    delivery_type = :delivery_type,
+                    updated_by = :updated_by,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE patient_id = :patient_id AND deleted_at IS NULL
+            ");
+
+            return $stmt->execute([
+                'para' => $para,
+                'term_births' => $term,
+                'preterm_births' => $preterm,
+                'abortions' => $abortions,
+                'living_children' => $living,
+                'delivery_type' => $deliveryType,
+                'updated_by' => (int)$userId,
+                'patient_id' => (int)$patientId
+            ]);
+        } catch (\Throwable $e) {
+            error_log("Failed to update obstetric outcome to IHP: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Decrement Gravida by 1 if a pregnancy episode was created in error and cancelled.
+     *
+     * @param int $patientId
+     * @param int $userId
+     * @return bool
+     */
+    public function decrementGravida($patientId, $userId = 1) {
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE patient_medical_histories 
+                SET gravida = GREATEST(0, COALESCE(gravida, 1) - 1),
+                    updated_by = :updated_by,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE patient_id = :patient_id AND deleted_at IS NULL
+            ");
+            return $stmt->execute([
+                'updated_by' => (int)$userId,
+                'patient_id' => (int)$patientId
+            ]);
+        } catch (\Throwable $e) {
+            error_log("Failed to decrement gravida in IHP: " . $e->getMessage());
             return false;
         }
     }

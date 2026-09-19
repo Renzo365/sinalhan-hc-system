@@ -154,4 +154,34 @@ class Immunization extends Model {
             'reason' => $reason ? trim($reason) : null
         ]);
     }
+
+    /**
+     * Soft delete an immunization record by patient ID, vaccine name, and dose number.
+     * Used when an accidentally entered dose date is cleared in the EPI schedule.
+     * 
+     * @param int $patientId
+     * @param string $vaccineName
+     * @param int $doseNumber
+     * @param int|null $userId
+     * @return bool True if a record was actually deleted, false otherwise
+     */
+    public function deleteByPatientVaccineDose($patientId, $vaccineName, $doseNumber, $userId = null) {
+        $stmt = $this->db->prepare("
+            UPDATE immunizations 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                deleted_by = :user_id, 
+                archive_reason = 'Cleared from EPI schedule' 
+            WHERE patient_id = :patient_id 
+              AND UPPER(TRIM(vaccine_name)) = UPPER(TRIM(:vaccine_name))
+              AND dose_number = :dose_number
+              AND deleted_at IS NULL
+        ");
+        $stmt->execute([
+            'patient_id' => (int)$patientId,
+            'vaccine_name' => trim($vaccineName),
+            'dose_number' => (int)$doseNumber,
+            'user_id' => $userId ? (int)$userId : null
+        ]);
+        return $stmt->rowCount() > 0;
+    }
 }

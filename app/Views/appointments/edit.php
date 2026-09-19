@@ -63,9 +63,9 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
 
-                    <!-- 2. Appointment Details -->
+                    <!-- 2. Schedule Details -->
                     <div>
-                        <h4 class="h6 fw-bold text-dark mb-3 border-bottom pb-2">Appointment Schedule</h4>
+                        <h4 class="h6 fw-bold text-dark mb-3 border-bottom pb-2">2. Appointment Schedule</h4>
                         
                         <div class="row g-3">
                             <!-- Date Picker -->
@@ -109,39 +109,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                             </div>
 
-                            <!-- Program Type Selection -->
-                            <div class="col-12 col-sm-6">
-                                <label for="program_type" class="form-label fw-semibold text-secondary small">Clinical Program <span class="text-danger">*</span></label>
-                                <?php $pt = $appointment['program_type'] ?? 'General OPD'; ?>
-                                <select name="program_type" id="program_type" class="form-select bg-light" required>
-                                    <option value="General OPD" <?= $pt === 'General OPD' ? 'selected' : '' ?>>General OPD / Consultation</option>
-                                    <option value="Prenatal Care" <?= $pt === 'Prenatal Care' ? 'selected' : '' ?>>Maternal & Prenatal Care</option>
-                                    <option value="Well Baby Immunization" <?= $pt === 'Well Baby Immunization' ? 'selected' : '' ?>>Well Baby & EPI Routine Vaccines</option>
-                                    <option value="Senior Care" <?= $pt === 'Senior Care' ? 'selected' : '' ?>>Senior Citizen Care</option>
-                                    <option value="Family Planning" <?= $pt === 'Family Planning' ? 'selected' : '' ?>>Family Planning Services</option>
-                                    <option value="NCD / Hypertension" <?= $pt === 'NCD / Hypertension' ? 'selected' : '' ?>>NCD / Hypertension / Diabetes</option>
-                                    <option value="Dental Care" <?= $pt === 'Dental Care' ? 'selected' : '' ?>>Dental Care</option>
-                                </select>
-                            </div>
-
-                            <!-- Purpose Selection -->
-                            <div class="col-12 col-sm-6">
-                                <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger">*</span></label>
-                                <select name="purpose" id="purpose" class="form-select bg-light" required>
-                                    <option value="">-- Select Purpose --</option>
-                                    <option value="General Check-up" <?= $appointment['purpose'] === 'General Check-up' ? 'selected' : '' ?>>General Check-up</option>
-                                    <option value="Consultation (SOAP)" <?= $appointment['purpose'] === 'Consultation (SOAP)' ? 'selected' : '' ?>>Consultation (SOAP)</option>
-                                    <option value="Prenatal Follow-up" <?= $appointment['purpose'] === 'Prenatal Follow-up' ? 'selected' : '' ?>>Prenatal Follow-up</option>
-                                    <option value="Routine EPI Vaccine" <?= $appointment['purpose'] === 'Routine EPI Vaccine' ? 'selected' : '' ?>>Routine EPI Vaccine</option>
-                                    <option value="Deworming / Vitamin A" <?= $appointment['purpose'] === 'Deworming / Vitamin A' ? 'selected' : '' ?>>Deworming / Vitamin A Supplementation</option>
-                                    <option value="Senior Citizen Checkup" <?= $appointment['purpose'] === 'Senior Citizen Checkup' ? 'selected' : '' ?>>Senior Citizen Checkup</option>
-                                    <option value="Dental Check-up" <?= $appointment['purpose'] === 'Dental Check-up' ? 'selected' : '' ?>>Dental Check-up</option>
-                                    <option value="Follow-up Visit" <?= $appointment['purpose'] === 'Follow-up Visit' ? 'selected' : '' ?>>Follow-up Visit</option>
-                                    <option value="Others / Referrals" <?= $appointment['purpose'] === 'Others / Referrals' ? 'selected' : '' ?>>Others / Referrals</option>
-                                </select>
-                            </div>
-
-                            <!-- Status Dropdown -->
+                            <!-- Status Dropdown (Moved into vacated space) -->
                             <div class="col-12 col-sm-6">
                                 <label for="status" class="form-label fw-semibold text-secondary small">Appointment Status</label>
                                 <select name="status" id="status" class="form-select bg-light">
@@ -150,6 +118,33 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <option value="Cancelled" <?= $appointment['status'] === 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                                     <option value="Missed" <?= $appointment['status'] === 'Missed' ? 'selected' : '' ?>>Missed</option>
                                 </select>
+                            </div>
+
+                            <!-- Purpose Input with Datalist Suggestions -->
+                            <div class="col-12 col-sm-6">
+                                <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       name="purpose" 
+                                       id="purpose" 
+                                       class="form-control bg-light" 
+                                       placeholder="e.g. Follow-up consultation, Routine EPI Vaccine, Blood pressure check..." 
+                                       value="<?= h($appointment['purpose'] ?? '') ?>" 
+                                       list="purposeSuggestions" 
+                                       required>
+                                <datalist id="purposeSuggestions">
+                                    <option value="General Check-up">
+                                    <option value="Consultation (SOAP)">
+                                    <option value="Prenatal Follow-up">
+                                    <option value="Routine EPI Vaccine">
+                                    <option value="Deworming / Vitamin A">
+                                    <option value="Senior Citizen Checkup">
+                                    <option value="Dental Check-up">
+                                    <option value="Follow-up Visit">
+                                    <option value="Postpartum Care">
+                                    <option value="Blood Pressure Check">
+                                    <option value="Maintenance Medicine Refill">
+                                    <option value="Others / Referrals">
+                                </datalist>
                             </div>
 
                             <!-- Notes -->
@@ -174,15 +169,14 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-
-
-    // 3. Conflict Detector AJAX (excluding current appointment id)
+    // Conflict Detector AJAX (excluding current appointment id)
     const dateInput = document.getElementById('appointment_date');
     const timeInput = document.getElementById('appointment_time');
     const warningAlert = document.getElementById('conflictAlertContainer');
     const excludeId = '<?= $appointment['id'] ?>';
 
     function checkSchedulingConflict() {
+        if (!dateInput || !timeInput || !warningAlert) return;
         const d = dateInput.value;
         const t = timeInput.value;
 
@@ -204,8 +198,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (dateInput && timeInput) {
+    if (dateInput) {
         dateInput.addEventListener('change', checkSchedulingConflict);
+    }
+    if (timeInput) {
         timeInput.addEventListener('change', checkSchedulingConflict);
     }
 });

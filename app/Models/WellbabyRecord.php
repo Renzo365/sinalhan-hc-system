@@ -172,4 +172,45 @@ class WellbabyRecord extends Model {
             'reason' => $reason ? trim($reason) : null
         ]);
     }
+
+    /**
+     * Get all registered well-baby records with child demographics and mother info for registry roster.
+     * 
+     * @param string $search
+     * @return array
+     */
+    public function getRegisteredRoster($search = '') {
+        $sql = "SELECT wb.*, 
+                       p.id AS patient_id, p.patient_no, p.envelope_no, p.first_name, p.last_name, 
+                       p.middle_name, p.suffix, p.dob, p.sex, p.barangay,
+                       TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age_years,
+                       m.id AS mother_id, m.first_name AS mother_first_name, m.last_name AS mother_last_name, m.patient_no AS mother_patient_no,
+                       (SELECT COUNT(*) FROM immunizations imm WHERE imm.patient_id = p.id AND imm.deleted_at IS NULL) AS imm_count,
+                       (SELECT COUNT(*) FROM child_growth_logs cgl WHERE cgl.wellbaby_id = wb.id AND cgl.deleted_at IS NULL) AS growth_log_count,
+                       (SELECT MAX(log_date) FROM child_growth_logs cgl WHERE cgl.wellbaby_id = wb.id AND cgl.deleted_at IS NULL) AS last_growth_date
+                FROM wellbaby_records wb
+                INNER JOIN patients p ON wb.patient_id = p.id
+                LEFT JOIN patients m ON wb.mother_patient_id = m.id
+                WHERE wb.deleted_at IS NULL 
+                  AND p.deleted_at IS NULL";
+
+        $params = [];
+        if (!empty($search)) {
+            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR m.first_name LIKE :s5 OR m.last_name LIKE :s6)";
+            $term = '%' . trim($search) . '%';
+            $params['s1'] = $term;
+            $params['s2'] = $term;
+            $params['s3'] = $term;
+            $params['s4'] = $term;
+            $params['s5'] = $term;
+            $params['s6'] = $term;
+        }
+
+        $sql .= " ORDER BY p.dob DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
 }

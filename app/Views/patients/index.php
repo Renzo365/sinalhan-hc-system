@@ -15,100 +15,55 @@ require dirname(__DIR__) . '/layout/header.php';
 </div>
 
 <!-- Filters Card -->
-<div class="card card-premium mb-4 shadow-sm border-0">
-    <div class="card-body p-3 p-md-4">
-        <?php 
-        $hasAdvancedFilters = !empty($filters['program_type']) || !empty($filters['age_group']) || !empty($filters['sex']);
-        $activeFilterCount = (!empty($filters['program_type']) ? 1 : 0) + (!empty($filters['age_group']) ? 1 : 0) + (!empty($filters['sex']) ? 1 : 0);
-        ?>
-        <form action="<?= url('/patients') ?>" method="GET">
-            <!-- Primary Search Row -->
-            <div class="row g-2 align-items-center">
-                <div class="col-12 col-md-7 col-lg-8">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
-                        <input type="text" 
-                               name="search" 
-                               id="search" 
-                               class="form-control bg-light border-start-0" 
-                               placeholder="Search by Patient Name, Family #, or Patient No..." 
-                               value="<?= h($filters['search']) ?>">
-                        <?php if (!empty($filters['search'])): ?>
-                            <a href="<?= url('/patients' . ($hasAdvancedFilters ? '?program_type=' . urlencode($filters['program_type']) . '&age_group=' . urlencode($filters['age_group']) . '&sex=' . urlencode($filters['sex']) : '')) ?>" 
-                               class="input-group-text bg-light text-muted text-decoration-none border-start-0" 
-                               title="Clear search keyword">
-                                <i class="bi bi-x-circle-fill"></i>
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-5 col-lg-4 d-flex gap-2">
-                    <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center flex-grow-1" 
-                            type="button" 
-                            data-bs-toggle="collapse" 
-                            data-bs-target="#advancedFilters" 
-                            aria-expanded="<?= $hasAdvancedFilters ? 'true' : 'false' ?>" 
-                            aria-controls="advancedFilters">
-                        <i class="bi bi-sliders2 me-2"></i>
-                        <span>Filters</span>
-                        <?php if ($activeFilterCount > 0): ?>
-                            <span class="badge bg-primary text-white rounded-pill ms-2"><?= $activeFilterCount ?></span>
-                        <?php endif; ?>
-                        <i class="bi bi-chevron-down ms-auto ms-md-2 small"></i>
-                    </button>
-                    
-                    <button type="submit" class="btn btn-primary px-3" title="Apply Search">
-                        <i class="bi bi-search me-1 d-none d-sm-inline"></i> Search
-                    </button>
-                    
-                    <?php if (!empty($filters['search']) || $hasAdvancedFilters): ?>
-                        <a href="<?= url('/patients') ?>" class="btn btn-light border text-secondary" title="Reset All Filters">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </a>
-                    <?php endif; ?>
+<div class="card card-premium mb-4">
+    <div class="card-body p-4">
+        <form action="<?= url('/patients') ?>" method="GET" class="row g-3 align-items-end" id="filtersForm">
+            <!-- Search Keyword -->
+            <div class="col-12 col-md-4">
+                <label for="search" class="form-label fw-semibold text-secondary small">Search Patient</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" 
+                           name="search" 
+                           id="search" 
+                           class="form-control bg-light border-start-0" 
+                           placeholder="Search name, ID, envelope, family..." 
+                           value="<?= h($filters['search'] ?? '') ?>">
                 </div>
             </div>
 
-            <!-- Collapsible Advanced Filters -->
-            <div class="collapse <?= $hasAdvancedFilters ? 'show' : '' ?> pt-3 mt-3 border-top" id="advancedFilters">
-                <div class="row g-3">
-                    <!-- Program Category Filter -->
-                    <div class="col-12 col-sm-4">
-                        <label for="program_type" class="form-label fw-semibold text-secondary small mb-1">Program Category</label>
-                        <select name="program_type" id="program_type" class="form-select form-select-sm bg-light">
-                            <option value="">-- All Programs --</option>
-                            <option value="opd" <?= ($filters['program_type'] ?? '') === 'opd' ? 'selected' : '' ?>>General OPD</option>
-                            <option value="prenatal" <?= ($filters['program_type'] ?? '') === 'prenatal' ? 'selected' : '' ?>>Maternal / Prenatal</option>
-                            <option value="wellbaby" <?= ($filters['program_type'] ?? '') === 'wellbaby' ? 'selected' : '' ?>>Well Baby (0–5)</option>
-                            <option value="senior" <?= ($filters['program_type'] ?? '') === 'senior' ? 'selected' : '' ?>>Senior Citizen</option>
-                        </select>
-                    </div>
+            <!-- Age Bracket -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label for="age_group" class="form-label fw-semibold text-secondary small">Age Bracket</label>
+                <select name="age_group" id="age_group" class="form-select bg-light">
+                    <option value="">-- All Ages --</option>
+                    <option value="infant" <?= ($filters['age_group'] ?? '') === 'infant' ? 'selected' : '' ?>>Infant (0–1)</option>
+                    <option value="toddler" <?= ($filters['age_group'] ?? '') === 'toddler' ? 'selected' : '' ?>>Toddler (2–5)</option>
+                    <option value="child" <?= ($filters['age_group'] ?? '') === 'child' ? 'selected' : '' ?>>Child (6–12)</option>
+                    <option value="teen" <?= ($filters['age_group'] ?? '') === 'teen' ? 'selected' : '' ?>>Teen (13–19)</option>
+                    <option value="adult" <?= ($filters['age_group'] ?? '') === 'adult' ? 'selected' : '' ?>>Adult (20–59)</option>
+                    <option value="senior" <?= ($filters['age_group'] ?? '') === 'senior' ? 'selected' : '' ?>>Senior (60+)</option>
+                </select>
+            </div>
 
-                    <!-- Age Group Filter -->
-                    <div class="col-12 col-sm-4">
-                        <label for="age_group" class="form-label fw-semibold text-secondary small mb-1">Age Bracket</label>
-                        <select name="age_group" id="age_group" class="form-select form-select-sm bg-light">
-                            <option value="">-- All Ages --</option>
-                            <option value="infant" <?= ($filters['age_group'] ?? '') === 'infant' ? 'selected' : '' ?>>Infant (0–1)</option>
-                            <option value="toddler" <?= ($filters['age_group'] ?? '') === 'toddler' ? 'selected' : '' ?>>Toddler (2–5)</option>
-                            <option value="child" <?= ($filters['age_group'] ?? '') === 'child' ? 'selected' : '' ?>>Child (6–12)</option>
-                            <option value="teen" <?= ($filters['age_group'] ?? '') === 'teen' ? 'selected' : '' ?>>Teen (13–19)</option>
-                            <option value="adult" <?= ($filters['age_group'] ?? '') === 'adult' ? 'selected' : '' ?>>Adult (20–59)</option>
-                            <option value="senior" <?= ($filters['age_group'] ?? '') === 'senior' ? 'selected' : '' ?>>Senior (60+)</option>
-                        </select>
-                    </div>
+            <!-- Biological Sex -->
+            <div class="col-12 col-sm-6 col-md-3">
+                <label for="sex" class="form-label fw-semibold text-secondary small">Biological Sex</label>
+                <select name="sex" id="sex" class="form-select bg-light">
+                    <option value="">-- All --</option>
+                    <option value="Male" <?= ($filters['sex'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
+                    <option value="Female" <?= ($filters['sex'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
+                </select>
+            </div>
 
-                    <!-- Sex Filter -->
-                    <div class="col-12 col-sm-4">
-                        <label for="sex" class="form-label fw-semibold text-secondary small mb-1">Biological Sex</label>
-                        <select name="sex" id="sex" class="form-select form-select-sm bg-light">
-                            <option value="">-- All --</option>
-                            <option value="Male" <?= ($filters['sex'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
-                            <option value="Female" <?= ($filters['sex'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
-                        </select>
-                    </div>
-                </div>
+            <!-- Action Buttons -->
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary" title="Clear Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
             </div>
         </form>
     </div>
@@ -130,9 +85,9 @@ require dirname(__DIR__) . '/layout/header.php';
                 <thead class="table-light">
                     <tr>
                         <th class="ps-4">Patient No.</th>
-                        <th>Family No.</th>
                         <th>Full Name</th>
-                        <th>Program</th>
+                        <th>Envelope No.</th>
+                        <th>Family No.</th>
                         <th>Age</th>
                         <th>Sex</th>
                         <th class="pe-4 text-end">Action</th>
@@ -159,6 +114,20 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <?= h($p['patient_no']) ?>
                                 </td>
                                 <td>
+                                    <a href="<?= url('/patients/' . $p['id']) ?>" class="fw-bold text-dark text-decoration-none text-hover-primary">
+                                        <?= h($p['last_name']) ?>, <?= h($p['first_name']) ?> <?= h($p['middle_name'] ? mb_substr($p['middle_name'], 0, 1) . '.' : '') ?> <?= h($p['suffix'] ?? '') ?>
+                                    </a>
+                                </td>
+                                <td>
+                                    <?php if (!empty($p['envelope_no'])): ?>
+                                        <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.75rem;" title="Physical Envelope No.">
+                                            <i class="bi bi-folder2-open text-primary me-1"></i>Env #<?= h($p['envelope_no']) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-muted small">&mdash;</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
                                     <?php if (!empty($p['family_no'])): ?>
                                         <a href="<?= url('/patients?search=' . urlencode($p['family_no'])) ?>" 
                                            class="badge bg-light text-dark border text-decoration-none" 
@@ -168,24 +137,6 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <?php else: ?>
                                         <span class="text-muted small">&mdash;</span>
                                     <?php endif; ?>
-                                </td>
-                                <td>
-                                    <a href="<?= url('/patients/' . $p['id']) ?>" class="fw-bold text-dark text-decoration-none text-hover-primary">
-                                        <?= h($p['last_name']) ?>, <?= h($p['first_name']) ?> <?= h($p['middle_name'] ? mb_substr($p['middle_name'], 0, 1) . '.' : '') ?> <?= h($p['suffix'] ?? '') ?>
-                                    </a>
-                                </td>
-                                <td>
-                                    <?php 
-                                    $badge = $p['program_badge'] ?? [
-                                        'tag' => 'opd',
-                                        'class' => 'bg-primary text-white',
-                                        'icon' => 'bi-clipboard2-pulse',
-                                        'label' => 'General OPD'
-                                    ];
-                                    ?>
-                                    <span class="badge <?= $badge['class'] ?> fw-medium px-2 py-1">
-                                        <i class="bi <?= $badge['icon'] ?? 'bi-tag' ?> me-1"></i><?= $badge['label'] ?>
-                                    </span>
                                 </td>
                                 <td>
                                     <span class="fw-semibold text-dark font-monospace small"><?= h($p['age']) ?> <span class="text-muted fw-normal">yrs</span></span>
@@ -232,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "responsive": true,
             "pageLength": 10,
             "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            "order": [[2, "asc"]], // Sort by Full Name ascending by default
+            "order": [[1, "asc"]], // Sort by Full Name ascending by default
             "columnDefs": [
                 { "orderable": false, "targets": 6 } // Action button column (0-indexed: 6 is Action)
             ],

@@ -37,12 +37,26 @@ return function (\App\Core\Router $router) {
     $router->get('/patients/{id}/edit', 'PatientController@edit', [AuthMiddleware::class]);
     $router->post('/patients/{id}', 'PatientController@update', [AuthMiddleware::class]);
     $router->post('/patients/{id}/medical-history', 'PatientMedicalHistoryController@save', [AuthMiddleware::class]);
+    // Maternal Care Workstation Routes
+    $router->get('/maternal', 'MaternalController@index', [AuthMiddleware::class]);
+    $router->get('/maternal/register', 'PrenatalController@createEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/register', 'PrenatalController@storeEpisode', [AuthMiddleware::class]);
+    $router->get('/maternal/episode/{id}/edit', 'PrenatalController@editEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/episode/{id}/edit', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
+    $router->get('/maternal/{id}', 'MaternalController@show', [AuthMiddleware::class]);
     $router->post('/patients/{id}/prenatal/episode', 'PrenatalController@storeEpisode', [AuthMiddleware::class]);
     $router->post('/patients/{id}/past-obstetric', 'PrenatalController@storePastObstetric', [AuthMiddleware::class]);
     $router->post('/past-obstetric/{id}/delete', 'PrenatalController@deletePastObstetric', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/update', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/visit', 'PrenatalController@storeVisit', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/conclude', 'PrenatalController@concludeEpisode', [AuthMiddleware::class]);
+    $router->post('/prenatal/{id}/cancel', 'PrenatalController@cancelEpisode', [AuthMiddleware::class]);
+    $router->post('/prenatal/visit/{id}/delete', 'PrenatalController@deleteVisit', [AuthMiddleware::class]);
+    $router->post('/prenatal/visit/{id}/update', 'PrenatalController@updateVisit', [AuthMiddleware::class]);
+
+    // Maternal AJAX Search & Patient Data API
+    $router->get('/api/patients/search/female', 'PatientController@searchFemale', [AuthMiddleware::class]);
+    $router->get('/api/patients/{id}/maternal-data', 'PatientController@getMaternalData', [AuthMiddleware::class]);
 
     // PhilHealth PCB Patient Ledger Routes (Page 3)
     $router->post('/patients/{id}/pcb/obligated', 'PcbLedgerController@saveObligated', [AuthMiddleware::class]);
@@ -50,13 +64,19 @@ return function (\App\Core\Router $router) {
     $router->post('/pcb/service-log/{id}/delete', 'PcbLedgerController@deleteLog', [AuthMiddleware::class]);
 
     // Well Baby & Pediatric Routes
+    $router->get('/well-baby', 'WellbabyController@index', [AuthMiddleware::class]);
+    $router->get('/well-baby/register', 'WellbabyController@register', [AuthMiddleware::class]);
+    $router->post('/well-baby/register', 'WellbabyController@store', [AuthMiddleware::class]);
+    $router->get('/well-baby/search-infant', 'WellbabyController@searchInfant', [AuthMiddleware::class]);
+    $router->get('/well-baby/{id}', 'WellbabyController@show', [AuthMiddleware::class]);
+    $router->get('/well-baby/{id}/edit', 'WellbabyController@editBirthRecord', [AuthMiddleware::class]);
+    $router->post('/well-baby/{id}/edit', 'WellbabyController@storeBirthRecord', [AuthMiddleware::class]);
     $router->post('/patients/{id}/wellbaby/birth-record', 'WellbabyController@storeBirthRecord', [AuthMiddleware::class]);
     $router->post('/wellbaby/{id}/growth-log', 'WellbabyController@storeGrowthLog', [AuthMiddleware::class]);
     $router->post('/wellbaby/growth-log/{id}/delete', 'WellbabyController@deleteGrowthLog', [AuthMiddleware::class]);
     $router->post('/patients/{id}/wellbaby/epi-schedule', 'WellbabyController@batchSaveEPI', [AuthMiddleware::class]);
     $router->post('/patients/{id}/immunizations/record', 'WellbabyController@recordImmunization', [AuthMiddleware::class]);
     $router->post('/immunizations/{id}/delete', 'WellbabyController@deleteImmunization', [AuthMiddleware::class]);
-    $router->post('/prenatal/visit/{id}/delete', 'PrenatalController@deleteVisit', [AuthMiddleware::class]);
 
     // Vital Signs Routes
     $router->post('/vital-signs', 'VitalSignsController@store', [AuthMiddleware::class]);

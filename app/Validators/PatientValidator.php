@@ -32,8 +32,7 @@ class PatientValidator extends BaseValidator {
             'dob' => 'Date of Birth',
             'sex' => 'Biological Sex',
             'civil_status' => 'Civil Status',
-            'address' => 'Complete Address',
-            'barangay' => 'Barangay'
+            'address' => 'Full Address'
         ];
 
         foreach ($requiredFields as $field => $label) {
@@ -224,6 +223,11 @@ class PatientValidator extends BaseValidator {
                     $this->addError("{$fieldLabel} cannot be a future date.");
                 }
             }
+        }
+
+        // 16. Physical Envelope Number (Optional, max 50 chars)
+        if (!empty($input['envelope_no']) && mb_strlen(trim($input['envelope_no'])) > 50) {
+            $this->addError('Physical Envelope No. cannot exceed 50 characters.');
         }
 
         return $this->errors;

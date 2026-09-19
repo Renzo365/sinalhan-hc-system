@@ -62,6 +62,7 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                            placeholder="e.g. jdoe" 
                            value="<?= h($old['username'] ?? '') ?>" 
                            required 
+                           autocomplete="username"
                            pattern="^[a-zA-Z0-9_]{3,20}$" 
                            title="Username must be alphanumeric, between 3 to 20 characters.">
                 </div>
@@ -75,6 +76,8 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                class="form-control border-end-0" 
                                placeholder="Enter initial secure password" 
                                required 
+                               autocomplete="new-password"
+                               data-lpignore="true"
                                minlength="8">
                         <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
                             <i class="bi bi-eye"></i>

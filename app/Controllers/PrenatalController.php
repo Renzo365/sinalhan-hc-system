@@ -23,13 +23,83 @@ class PrenatalController extends Controller {
     }
 
     /**
-     * Start a new active maternal pregnancy episode for a patient.
-     * 
-     * @param int $patientId
+     * Display the dedicated Maternal Pregnancy Episode Registration Page.
      */
-    public function storeEpisode($patientId) {
+    public function createEpisode() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+
+        $preselectedId = !empty($_GET['patient_id']) ? (int)$_GET['patient_id'] : null;
+        $preselectedPatient = null;
+        $preselectedIhp = null;
+        $hasActiveEpisode = false;
+
+        if ($preselectedId) {
+            $patient = $this->patientModel->findById($preselectedId);
+            if ($patient && strtolower($patient['sex'] ?? '') === 'female') {
+                $preselectedPatient = $patient;
+                $hasActiveEpisode = $this->prenatalModel->hasActiveEpisode($preselectedId);
+                $pmhModel = new \App\Models\PatientMedicalHistory();
+                $preselectedIhp = $pmhModel->findByPatientId($preselectedId);
+            }
+        }
+
+        $this->view('maternal/register', [
+            'preselectedPatient' => $preselectedPatient,
+            'preselectedIhp' => $preselectedIhp,
+            'hasActiveEpisode' => $hasActiveEpisode
+        ]);
+    }
+
+    /**
+     * Display the dedicated Maternal Pregnancy Episode Edit Page.
+     * 
+     * @param int $id
+     */
+    public function editEpisode($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $episode = $this->prenatalModel->findById($id);
+        if (!$episode) {
+            http_response_code(404);
+            $this->view('errors/404');
+            return;
+        }
+
+        $patient = $this->patientModel->findById($episode['patient_id']);
+        if (!$patient) {
+            http_response_code(404);
+            $this->view('errors/404');
+            return;
+        }
+
+        $this->view('maternal/edit_episode', [
+            'episode' => $episode,
+            'patient' => $patient
+        ]);
+    }
+
+    /**
+     * Start a new active maternal pregnancy episode for a patient.
+     * 
+     * @param int|null $patientId
+     */
+    public function storeEpisode($patientId = null) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (empty($patientId) && !empty($_POST['patient_id'])) {
+            $patientId = (int)$_POST['patient_id'];
+        }
+
+        if (empty($patientId)) {
+            $_SESSION['error_message'] = 'Please select a valid female patient to enroll in Maternal Care.';
+            $this->redirect('/maternal/register');
+            return;
         }
 
         $patient = $this->patientModel->findById($patientId);
@@ -41,26 +111,26 @@ class PrenatalController extends Controller {
 
         if (strtolower($patient['sex']) !== 'female') {
             $_SESSION['error_message'] = 'Prenatal care episodes can only be recorded for female patients.';
-            $this->redirect("/patients/{$patientId}");
+            $this->redirect("/maternal/register?patient_id={$patientId}");
             return;
         }
 
         if ($this->prenatalModel->hasActiveEpisode($patientId)) {
             $_SESSION['error_message'] = 'This patient already has an active pregnancy episode. Conclude it before starting another episode.';
-            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            $this->redirect("/maternal/{$patientId}");
             return;
         }
 
         $lmp = $_POST['lmp'] ?? '';
         if (empty($lmp) || !strtotime($lmp)) {
             $_SESSION['error_message'] = 'Valid Last Menstrual Period (LMP) is required.';
-            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            $this->redirect("/maternal/register?patient_id={$patientId}");
             return;
         }
 
         if (strtotime($lmp) > time()) {
             $_SESSION['error_message'] = 'LMP cannot be a future date.';
-            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            $this->redirect("/maternal/register?patient_id={$patientId}");
             return;
         }
 
@@ -78,8 +148,6 @@ class PrenatalController extends Controller {
             'lmp' => $lmp,
             'edc' => $this->prenatalModel->calculateEDC($lmp),
             'is_active' => 1,
-            'pre_eclampsia' => !empty($_POST['pre_eclampsia']) ? 1 : 0,
-            'fp_counselling' => isset($_POST['fp_counselling']) ? (int)$_POST['fp_counselling'] : 1,
             'notes' => trim($_POST['notes'] ?? ''),
             'created_by' => $userId
         ];
@@ -87,13 +155,16 @@ class PrenatalController extends Controller {
         $episodeId = $this->prenatalModel->createEpisode($data);
 
         if ($episodeId) {
+            $this->syncObstetricHistoryToIhp($patientId, $data, $userId);
             AuditLog::log('PRENATAL_EPISODE_CREATED', 'Maternal Care', "Started Pregnancy Episode #{$episodeId} for {$patient['patient_no']} (EDC: {$data['edc']})");
             $_SESSION['success_message'] = 'Maternal pregnancy episode started successfully! EDC calculated: ' . date('M d, Y', strtotime($data['edc']));
         } else {
             $_SESSION['error_message'] = 'Failed to create pregnancy episode. Please try again.';
+            $this->redirect("/maternal/register?patient_id={$patientId}");
+            return;
         }
 
-        $this->redirect("/patients/{$patientId}#tab-prenatal");
+        $this->redirect("/maternal/{$patientId}");
     }
 
     /**
@@ -117,14 +188,14 @@ class PrenatalController extends Controller {
         $lmpDate = \DateTime::createFromFormat('Y-m-d', $lmp);
         if (!$lmpDate || $lmpDate->format('Y-m-d') !== $lmp || $lmp > date('Y-m-d')) {
             $_SESSION['error_message'] = 'Last Menstrual Period must be a valid date that is not in the future.';
-            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            $this->redirect("/maternal/episode/{$id}/edit");
             return;
         }
         $counts = ['gravida', 'para', 'term_births', 'preterm_births', 'abortions', 'living_children'];
         foreach ($counts as $count) {
             if (isset($_POST[$count]) && (int)$_POST[$count] < 0) {
                 $_SESSION['error_message'] = 'Pregnancy and delivery counts cannot be negative.';
-                $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+                $this->redirect("/maternal/episode/{$id}/edit");
                 return;
             }
         }
@@ -139,8 +210,6 @@ class PrenatalController extends Controller {
             'lmp' => $lmp,
             'edc' => $this->prenatalModel->calculateEDC($lmp),
             'is_active' => $episode['is_active'],
-            'pre_eclampsia' => !empty($_POST['pre_eclampsia']) ? 1 : 0,
-            'fp_counselling' => isset($_POST['fp_counselling']) ? (int)$_POST['fp_counselling'] : $episode['fp_counselling'],
             'delivery_date' => $episode['delivery_date'],
             'delivery_outcome' => $episode['delivery_outcome'],
             'notes' => trim($_POST['notes'] ?? $episode['notes'])
@@ -149,13 +218,17 @@ class PrenatalController extends Controller {
         $updated = $this->prenatalModel->updateEpisode($id, $data);
 
         if ($updated) {
+            $currentUserId = (int)($_SESSION['user_id'] ?? 1);
+            $this->syncObstetricHistoryToIhp($episode['patient_id'], $data, $currentUserId);
             AuditLog::log('PRENATAL_EPISODE_UPDATED', 'Maternal Care', "Updated Pregnancy Episode #{$id}");
             $_SESSION['success_message'] = 'Pregnancy episode details updated successfully!';
         } else {
             $_SESSION['error_message'] = 'Failed to update pregnancy episode.';
+            $this->redirect("/maternal/episode/{$id}/edit");
+            return;
         }
 
-        $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+        $this->redirect("/maternal/{$episode['patient_id']}");
     }
 
     /**
@@ -180,7 +253,7 @@ class PrenatalController extends Controller {
         $visitDateObject = \DateTime::createFromFormat('Y-m-d', $visitDate);
         if (!$visitDateObject || $visitDateObject->format('Y-m-d') !== $visitDate || $visitDate > date('Y-m-d')) {
             $_SESSION['error_message'] = 'Prenatal visit date must be a valid date that is not in the future.';
-            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            $this->redirect("/maternal/{$episode['patient_id']}");
             return;
         }
 
@@ -188,7 +261,7 @@ class PrenatalController extends Controller {
         $aogWeeks = !empty($_POST['aog_weeks']) ? (float)$_POST['aog_weeks'] : ($episode['calculated_aog']['weeks'] ?? 0);
         if ($aogWeeks < 0 || $aogWeeks > 45) {
             $_SESSION['error_message'] = 'Age of gestation must be between 0 and 45 weeks.';
-            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            $this->redirect("/maternal/{$episode['patient_id']}");
             return;
         }
 
@@ -218,7 +291,80 @@ class PrenatalController extends Controller {
             $_SESSION['error_message'] = 'Failed to record prenatal visit.';
         }
 
-        $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+        $this->redirect("/maternal/{$episode['patient_id']}");
+    }
+
+    /**
+     * Update an existing follow-up prenatal visit (e.g. Midwife adding clinical remarks, FHT, fundal height).
+     * 
+     * @param int $id
+     */
+    public function updateVisit($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $visit = $this->visitModel->findById($id);
+        if (!$visit) {
+            $_SESSION['error_message'] = 'Prenatal visit record not found.';
+            $this->redirect('/maternal');
+            return;
+        }
+
+        $episode = $this->prenatalModel->findById($visit['prenatal_id']);
+        if (!$episode) {
+            $_SESSION['error_message'] = 'Associated maternal episode not found.';
+            $this->redirect('/maternal');
+            return;
+        }
+
+        $data = [];
+        if (isset($_POST['visit_date'])) {
+            $data['visit_date'] = $_POST['visit_date'];
+        }
+        if (isset($_POST['aog_weeks'])) {
+            $data['aog_weeks'] = (float)$_POST['aog_weeks'];
+        }
+        if (isset($_POST['bp_systolic'])) {
+            $data['bp_systolic'] = !empty($_POST['bp_systolic']) ? (int)$_POST['bp_systolic'] : null;
+        }
+        if (isset($_POST['bp_diastolic'])) {
+            $data['bp_diastolic'] = !empty($_POST['bp_diastolic']) ? (int)$_POST['bp_diastolic'] : null;
+        }
+        if (isset($_POST['weight_kg'])) {
+            $data['weight_kg'] = !empty($_POST['weight_kg']) ? (float)$_POST['weight_kg'] : null;
+        }
+        if (isset($_POST['height_cm'])) {
+            $data['height_cm'] = !empty($_POST['height_cm']) ? (float)$_POST['height_cm'] : null;
+        }
+        if (isset($_POST['fetal_heart_tone'])) {
+            $data['fetal_heart_tone'] = !empty($_POST['fetal_heart_tone']) ? (int)$_POST['fetal_heart_tone'] : null;
+        }
+        if (isset($_POST['fundal_height_cm'])) {
+            $data['fundal_height_cm'] = !empty($_POST['fundal_height_cm']) ? (float)$_POST['fundal_height_cm'] : null;
+        }
+        if (isset($_POST['fetal_presentation'])) {
+            $data['fetal_presentation'] = $_POST['fetal_presentation'];
+        }
+        if (isset($_POST['tcb'])) {
+            $data['tcb'] = trim($_POST['tcb']);
+        }
+        if (isset($_POST['chief_complaint'])) {
+            $data['chief_complaint'] = trim($_POST['chief_complaint']);
+        }
+        if (isset($_POST['remarks'])) {
+            $data['remarks'] = trim($_POST['remarks']);
+        }
+
+        $updated = $this->visitModel->updateVisit($id, $data);
+        if ($updated) {
+            AuditLog::log('PRENATAL_VISIT_UPDATED', 'Maternal Care', "Updated clinical assessment for Prenatal Visit #{$id} in Episode #{$visit['prenatal_id']}");
+            $_SESSION['success_message'] = 'Prenatal visit clinical details updated successfully!';
+        } else {
+            $_SESSION['error_message'] = 'Failed to update prenatal visit.';
+        }
+
+        $this->redirect("/maternal/{$episode['patient_id']}");
     }
 
     /**
@@ -260,7 +406,7 @@ class PrenatalController extends Controller {
             $_SESSION['error_message'] = 'Failed to save past delivery record.';
         }
 
-        $this->redirect("/patients/{$patientId}#tab-prenatal");
+        $this->redirect("/maternal/{$patientId}");
     }
 
     /**
@@ -290,14 +436,14 @@ class PrenatalController extends Controller {
         $patientId = (int)$record['patient_id'];
         if (($_SESSION['user_role'] ?? 'staff') !== 'admin') {
             $_SESSION['error_message'] = 'Only an administrator may remove past obstetric history.';
-            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            $this->redirect("/maternal/{$patientId}");
             return;
         }
 
         $this->pohModel->deleteRecord($id);
         AuditLog::log('PAST_OBSTETRIC_DELETED', 'Maternal Care', "Deleted past obstetric record #{$id} for patient ID #{$patientId}");
         $_SESSION['success_message'] = 'Past obstetric record removed.';
-        $this->redirect("/patients/{$patientId}#tab-prenatal");
+        $this->redirect("/maternal/{$patientId}");
     }
 
     /**
@@ -324,14 +470,17 @@ class PrenatalController extends Controller {
         $allowedOutcomes = ['Live Birth', 'Stillbirth', 'Miscarriage', 'Ectopic', 'Other'];
         if (!$deliveryDateObject || $deliveryDateObject->format('Y-m-d') !== $deliveryDate || $deliveryDate > date('Y-m-d')) {
             $_SESSION['error_message'] = 'Pregnancy outcome date must be a valid date that is not in the future.';
-            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            $this->redirect("/maternal/{$episode['patient_id']}");
             return;
         }
         if (!in_array($deliveryOutcome, $allowedOutcomes, true)) {
             $_SESSION['error_message'] = 'Invalid pregnancy outcome selected.';
-            $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+            $this->redirect("/maternal/{$episode['patient_id']}");
             return;
         }
+
+        $userId = (int)($_SESSION['user_id'] ?? 1);
+        $patientId = (int)$episode['patient_id'];
 
         $concluded = $this->prenatalModel->concludeEpisode($id, [
             'delivery_date' => $deliveryDate,
@@ -340,13 +489,96 @@ class PrenatalController extends Controller {
         ]);
 
         if ($concluded) {
-            AuditLog::log('PRENATAL_EPISODE_CONCLUDED', 'Maternal Care', "Concluded Pregnancy Episode #{$id} with outcome: {$deliveryOutcome}");
-            $_SESSION['success_message'] = "Pregnancy episode concluded successfully ({$deliveryOutcome}).";
+            $isTerm = (($_POST['delivery_classification'] ?? 'Term') === 'Term');
+            $deliveryType = trim($_POST['delivery_type'] ?? 'NSD');
+            $livingChildrenCount = max(0, (int)($_POST['living_children'] ?? 1));
+
+            // 1. Automatically update Master Obstetric History (GTPAL) in IHP
+            $pmhModel = new \App\Models\PatientMedicalHistory();
+            $pmhModel->updateObstetricOutcome($patientId, [
+                'delivery_outcome' => $deliveryOutcome,
+                'is_term' => $isTerm,
+                'delivery_type' => $deliveryType,
+                'living_children' => $livingChildrenCount
+            ], $userId);
+
+            // 2. Automatically log into Past Deliveries Matrix if outcome is a delivery
+            if (in_array($deliveryOutcome, ['Live Birth', 'Stillbirth'], true)) {
+                $pohData = [
+                    'patient_id' => $patientId,
+                    'gravida_no' => (int)($episode['gravida'] ?? 1),
+                    'delivery_type' => in_array($deliveryType, ['NSD', 'CS', 'Abortion', 'Other'], true) ? $deliveryType : 'NSD',
+                    'infant_sex' => in_array($_POST['infant_sex'] ?? '', ['Male', 'Female', 'Unknown'], true) ? $_POST['infant_sex'] : 'Unknown',
+                    'place_of_delivery' => trim($_POST['place_of_delivery'] ?? 'Health Center / Lying-in'),
+                    'year_delivered' => (int)date('Y', strtotime($deliveryDate)),
+                    'attended_by' => trim($_POST['attended_by'] ?? $_SESSION['user_name'] ?? 'Midwife'),
+                    'status' => ($deliveryOutcome === 'Live Birth') ? 'Alive' : 'Not Alive',
+                    'birth_date' => $deliveryDate,
+                    'tt_status' => trim($_POST['tt_status'] ?? '')
+                ];
+                $this->pohModel->createRecord($pohData);
+            }
+
+            AuditLog::log('PRENATAL_EPISODE_CONCLUDED', 'Maternal Care', "Concluded Pregnancy Episode #{$id} with outcome: {$deliveryOutcome}. IHP & Past Deliveries updated.");
+            $_SESSION['success_message'] = "Pregnancy episode concluded successfully ({$deliveryOutcome}). Patient's IHP Obstetric Score and Deliveries Matrix have been updated!";
         } else {
             $_SESSION['error_message'] = 'Failed to conclude pregnancy episode.';
         }
 
-        $this->redirect("/patients/{$episode['patient_id']}#tab-prenatal");
+        $this->redirect("/maternal/{$episode['patient_id']}");
+    }
+
+    /**
+     * Cancel an active pregnancy episode (e.g. started in error).
+     * Only allowed if no visits are recorded.
+     * 
+     * @param int $id
+     */
+    public function cancelEpisode($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $episode = $this->prenatalModel->findById($id);
+        if (!$episode) {
+            http_response_code(404);
+            $this->view('errors/404');
+            return;
+        }
+
+        $patientId = (int)$episode['patient_id'];
+
+        // Verify that no checkup visits have been logged
+        $visitCount = $this->visitModel->countByPrenatalId($id);
+        if ($visitCount > 0) {
+            $_SESSION['error_message'] = "Cannot cancel this pregnancy episode because it already has {$visitCount} logged prenatal checkup visit(s). Remove visits first or conclude the episode.";
+            $this->redirect("/maternal/{$patientId}");
+            return;
+        }
+
+        $userId = (int)($_SESSION['user_id'] ?? 1);
+        $reason = trim($_POST['cancel_reason'] ?? 'Started in error / Cancelled by staff');
+
+        $deleted = $this->prenatalModel->deleteEpisode($id, $userId, $reason);
+
+        if ($deleted) {
+            // Decrement Gravida in IHP to revert erroneous enrollment
+            (new \App\Models\PatientMedicalHistory())->decrementGravida($patientId, $userId);
+
+            AuditLog::log('PRENATAL_EPISODE_CANCELLED', 'Maternal Care', "Cancelled Pregnancy Episode #{$id} for Patient #{$patientId} (Reason: {$reason})");
+            $_SESSION['success_message'] = 'Pregnancy episode cancelled and removed successfully. Obstetric Gravida count in IHP reverted.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to cancel pregnancy episode.';
+        }
+
+        $this->redirect("/maternal/{$patientId}");
     }
 
     /**
@@ -384,7 +616,7 @@ class PrenatalController extends Controller {
 
         if (!$canDelete) {
             $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this prenatal visit.';
-            $this->redirect("/patients/{$patientId}#tab-prenatal");
+            $this->redirect("/maternal/{$patientId}");
             return;
         }
 
@@ -392,6 +624,62 @@ class PrenatalController extends Controller {
         AuditLog::log('PRENATAL_VISIT_DELETED', 'Maternal Care', "Deleted prenatal visit ID #{$id} dated {$visit['visit_date']} for patient ID #{$patientId}");
 
         $_SESSION['success_message'] = 'Prenatal checkup visit record removed successfully.';
-        $this->redirect("/patients/{$patientId}#tab-prenatal");
+        $this->redirect("/maternal/{$patientId}");
+    }
+
+    /**
+     * Synchronize obstetric history (G, P, T, P, A, L) to baseline IHP medical history.
+     */
+    protected function syncObstetricHistoryToIhp($patientId, array $data, $userId = 1) {
+        try {
+            $db = \App\Core\Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT id FROM patient_medical_histories WHERE patient_id = :patient_id LIMIT 1");
+            $stmt->execute(['patient_id' => $patientId]);
+            $exists = $stmt->fetchColumn();
+
+            if ($exists) {
+                $up = $db->prepare("UPDATE patient_medical_histories SET 
+                    gravida = :gravida,
+                    para = :para,
+                    term_births = :term_births,
+                    preterm_births = :preterm_births,
+                    abortions = :abortions,
+                    living_children = :living_children,
+                    lmp = :lmp,
+                    updated_by = :updated_by,
+                    updated_at = CURRENT_TIMESTAMP
+                    WHERE patient_id = :patient_id");
+                $up->execute([
+                    'gravida' => $data['gravida'] ?? null,
+                    'para' => $data['para'] ?? null,
+                    'term_births' => $data['term_births'] ?? null,
+                    'preterm_births' => $data['preterm_births'] ?? null,
+                    'abortions' => $data['abortions'] ?? null,
+                    'living_children' => $data['living_children'] ?? null,
+                    'lmp' => !empty($data['lmp']) ? $data['lmp'] : null,
+                    'updated_by' => $userId,
+                    'patient_id' => $patientId
+                ]);
+            } else {
+                $ins = $db->prepare("INSERT INTO patient_medical_histories (
+                    patient_id, gravida, para, term_births, preterm_births, abortions, living_children, lmp, updated_by
+                ) VALUES (
+                    :patient_id, :gravida, :para, :term_births, :preterm_births, :abortions, :living_children, :lmp, :updated_by
+                )");
+                $ins->execute([
+                    'patient_id' => $patientId,
+                    'gravida' => $data['gravida'] ?? null,
+                    'para' => $data['para'] ?? null,
+                    'term_births' => $data['term_births'] ?? null,
+                    'preterm_births' => $data['preterm_births'] ?? null,
+                    'abortions' => $data['abortions'] ?? null,
+                    'living_children' => $data['living_children'] ?? null,
+                    'lmp' => !empty($data['lmp']) ? $data['lmp'] : null,
+                    'updated_by' => $userId
+                ]);
+            }
+        } catch (\Exception $e) {
+            error_log("Failed to sync obstetric history to IHP: " . $e->getMessage());
+        }
     }
 }

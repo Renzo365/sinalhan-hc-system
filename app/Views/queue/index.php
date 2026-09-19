@@ -57,22 +57,6 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php endforeach; ?>
                         </select>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="service_type" class="form-label fw-semibold text-secondary small">Service Program <span class="text-danger">*</span></label>
-                        <select name="service_type" id="service_type" class="form-select bg-light" required>
-                            <option value="General OPD" <?= (isset($input['service_type']) && $input['service_type'] == 'General OPD') ? 'selected' : '' ?>>General OPD / Consultation</option>
-                            <option value="Prenatal Care" <?= (isset($input['service_type']) && $input['service_type'] == 'Prenatal Care') ? 'selected' : '' ?>>Maternal & Prenatal Care</option>
-                            <option value="Well Baby Immunization" <?= (isset($input['service_type']) && $input['service_type'] == 'Well Baby Immunization') ? 'selected' : '' ?>>Well Baby & EPI Immunization</option>
-                            <option value="Senior Care" <?= (isset($input['service_type']) && $input['service_type'] == 'Senior Care') ? 'selected' : '' ?>>Senior Citizen Consultation</option>
-                            <option value="Family Planning" <?= (isset($input['service_type']) && $input['service_type'] == 'Family Planning') ? 'selected' : '' ?>>Family Planning Services</option>
-                            <option value="NCD / Hypertension" <?= (isset($input['service_type']) && $input['service_type'] == 'NCD / Hypertension') ? 'selected' : '' ?>>NCD / Hypertension / Diabetes</option>
-                            <option value="Dental Care" <?= (isset($input['service_type']) && $input['service_type'] == 'Dental Care') ? 'selected' : '' ?>>Dental Care</option>
-                        </select>
-                        <div class="form-text small mt-2">
-                            Select a registered patient and clinical program to issue today's queue number.
-                        </div>
-                    </div>
                 </div>
 
                 <div class="card-footer bg-light py-3 border-0 d-grid" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
@@ -91,7 +75,12 @@ require dirname(__DIR__) . '/layout/header.php';
                 <h3 class="card-title h6 mb-0 fw-bold text-dark">
                     <i class="bi bi-list-ol text-primary me-2"></i>Today's Active Queue List
                 </h3>
-                <span class="badge bg-primary-soft text-primary small"><?= count($queueList) ?> total entries</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-secondary border font-monospace" title="Standard clinic intake order">
+                        <i class="bi bi-arrow-down-up me-1"></i>FCFS Order
+                    </span>
+                    <span class="badge bg-primary-soft text-primary small"><?= count($queueList) ?> total entries</span>
+                </div>
             </div>
             
             <div class="card-body p-0">
@@ -101,7 +90,6 @@ require dirname(__DIR__) . '/layout/header.php';
                             <tr>
                                 <th>Queue No.</th>
                                 <th class="text-start">Patient Name</th>
-                                <th>Service Program</th>
                                 <th>Time In</th>
                                 <th>Time Called</th>
                                 <th>Status</th>
@@ -111,7 +99,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <tbody>
                             <?php if (empty($queueList)): ?>
                                 <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
+                                    <td colspan="6" class="text-center py-5 text-muted">
                                         <i class="bi bi-people d-block fs-3 mb-2 text-muted"></i>
                                         No patients are currently queued for today.
                                     </td>
@@ -124,13 +112,6 @@ require dirname(__DIR__) . '/layout/header.php';
                                     elseif ($q['status'] === 'Serving') $statusBadge = 'bg-info text-dark';
                                     elseif ($q['status'] === 'Completed') $statusBadge = 'bg-success text-white';
                                     elseif ($q['status'] === 'Cancelled') $statusBadge = 'bg-danger text-white';
-
-                                    $svc = $q['service_type'] ?? 'General OPD';
-                                    $svcBadge = 'badge bg-primary-soft text-primary';
-                                    if (stripos($svc, 'prenatal') !== false) $svcBadge = 'badge bg-pink text-white';
-                                    elseif (stripos($svc, 'baby') !== false || stripos($svc, 'immunization') !== false) $svcBadge = 'badge bg-success-soft text-success';
-                                    elseif (stripos($svc, 'senior') !== false) $svcBadge = 'badge bg-purple text-white';
-                                    elseif (stripos($svc, 'family') !== false) $svcBadge = 'badge bg-info text-dark';
                                 ?>
                                     <tr>
                                         <td class="fw-bold fs-6 text-primary-dark">
@@ -141,9 +122,6 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 <?= h($q['patient_last']) ?>, <?= h($q['patient_first']) ?>
                                                 <span class="text-muted fw-normal font-monospace fs-7">(<?= h($q['patient_no']) ?>)</span>
                                             </a>
-                                        </td>
-                                        <td>
-                                            <span class="<?= $svcBadge ?>"><?= h($svc) ?></span>
                                         </td>
                                         <td class="text-secondary"><?= date('h:i A', strtotime($q['time_in'])) ?></td>
                                         <td class="text-secondary"><?= $q['time_called'] ? date('h:i A', strtotime($q['time_called'])) : '<span class="text-muted">-</span>' ?></td>
@@ -220,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "responsive": true,
             "order": [[0, "asc"]], // Order by Queue No ascending
             "columnDefs": [
-                { "orderable": false, "targets": 6 } // Disable sorting on action buttons
+                { "orderable": false, "targets": 5 } // Disable sorting on action buttons
             ],
             "language": {
                 "paginate": {

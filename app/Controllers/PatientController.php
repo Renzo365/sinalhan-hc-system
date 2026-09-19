@@ -30,8 +30,7 @@ class PatientController extends Controller {
             'search' => trim($_GET['search'] ?? ''),
             'barangay' => trim($_GET['barangay'] ?? ''),
             'sex' => trim($_GET['sex'] ?? ''),
-            'age_group' => trim($_GET['age_group'] ?? ''),
-            'program_type' => trim($_GET['program_type'] ?? '')
+            'age_group' => trim($_GET['age_group'] ?? '')
         ];
 
         // Fetch patients
@@ -196,8 +195,6 @@ class PatientController extends Controller {
         // Fetch potential registered mothers for linking
         $potentialMothers = $this->patientModel->findPotentialMothers(100);
 
-        // Compute Program Badge
-        $programBadge = $this->patientModel->getProgramBadge($id, $patient['dob'], $patient['sex']);
 
         // Fetch PhilHealth PCB Obligated Services & Service Encounter Logs (Page 3)
         $pcbModel = new \App\Models\PcbLedger();
@@ -223,8 +220,7 @@ class PatientController extends Controller {
             'growthLogs' => $growthLogs,
             'patientImmunizations' => $patientImmunizations,
             'vaccineMap' => $vaccineMap,
-            'potentialMothers' => $potentialMothers,
-            'programBadge' => $programBadge,
+
             'pcbObligated' => $pcbObligated,
             'pcbServiceLogs' => $pcbServiceLogs,
             'pcbYear' => $pcbYear
@@ -411,5 +407,136 @@ class PatientController extends Controller {
             $_SESSION['error_message'] = 'Failed to restore patient. Please try again.';
             $this->redirect('/archive/patients');
         }
+    }
+
+    /**
+     * AJAX endpoint to search female patients for maternal registration.
+     */
+    public function searchFemale() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $query = trim($_GET['q'] ?? $_GET['search'] ?? '');
+        $db = \App\Core\Database::getInstance()->getConnection();
+
+        $sql = "SELECT p.id, p.patient_no, p.envelope_no, p.first_name, p.last_name, p.middle_name, p.suffix,
+                       p.dob, p.civil_status, p.contact_no, p.address, p.barangay,
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age,
+                       (SELECT id FROM prenatal_records pr 
+                        WHERE pr.patient_id = p.id AND pr.is_active = 1 AND pr.deleted_at IS NULL LIMIT 1) AS active_episode_id
+                FROM patients p
+                WHERE p.deleted_at IS NULL 
+                  AND LOWER(p.sex) = 'female'";
+        
+        $params = [];
+        if (!empty($query)) {
+            $sql .= " AND (p.first_name LIKE :q1 
+                        OR p.last_name LIKE :q2 
+                        OR p.patient_no LIKE :q3 
+                        OR p.envelope_no LIKE :q4)";
+            $param = '%' . $query . '%';
+            $params['q1'] = $param;
+            $params['q2'] = $param;
+            $params['q3'] = $param;
+            $params['q4'] = $param;
+        }
+
+        $sql .= " ORDER BY p.last_name ASC, p.first_name ASC LIMIT 25";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll() ?: [];
+
+        $data = array_map(function($p) {
+            $name = trim($p['last_name'] . ', ' . $p['first_name'] . ' ' . (!empty($p['middle_name']) ? mb_substr($p['middle_name'], 0, 1) . '.' : '') . ' ' . ($p['suffix'] ?? ''));
+            $addressParts = array_filter([$p['address'] ?? '', $p['barangay'] ?? '', 'Santa Rosa, Laguna']);
+            $address = implode(', ', $addressParts);
+            
+            return [
+                'id' => (int)$p['id'],
+                'patient_no' => $p['patient_no'],
+                'envelope_no' => $p['envelope_no'],
+                'name' => $name,
+                'first_name' => $p['first_name'],
+                'last_name' => $p['last_name'],
+                'middle_name' => $p['middle_name'],
+                'dob' => $p['dob'],
+                'dob_formatted' => !empty($p['dob']) ? date('M d, Y', strtotime($p['dob'])) : 'N/A',
+                'age' => $p['age'],
+                'address' => $address ?: 'Barangay Sinalhan, Santa Rosa, Laguna',
+                'contact_no' => $p['contact_no'] ?: 'N/A',
+                'civil_status' => $p['civil_status'] ?: 'Single',
+                'has_active_episode' => !empty($p['active_episode_id']),
+                'active_episode_id' => $p['active_episode_id']
+            ];
+        }, $results);
+
+        $this->json(['results' => $data]);
+    }
+
+    /**
+     * AJAX endpoint to get patient identity info and IHP GTPAL data for maternal registration.
+     */
+    public function getMaternalData($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $patient = $this->patientModel->findById($id);
+        if (!$patient || strtolower($patient['sex'] ?? '') !== 'female') {
+            $this->json(['error' => 'Female patient not found.'], 404);
+            return;
+        }
+
+        $prenatalModel = new \App\Models\PrenatalRecord();
+        $activeEpisode = $prenatalModel->findActiveByPatientId($id);
+
+        $pmhModel = new \App\Models\PatientMedicalHistory();
+        $ihp = $pmhModel->findByPatientId($id);
+
+        $name = trim($patient['last_name'] . ', ' . $patient['first_name'] . ' ' . (!empty($patient['middle_name']) ? mb_substr($patient['middle_name'], 0, 1) . '.' : '') . ' ' . ($patient['suffix'] ?? ''));
+        $addressParts = array_filter([$patient['address'] ?? '', $patient['barangay'] ?? '', 'Santa Rosa, Laguna']);
+        $address = implode(', ', $addressParts);
+
+        $ihpGravida = isset($ihp['gravida']) ? (int)$ihp['gravida'] : null;
+        $suggestedGravida = ($ihpGravida !== null && $ihpGravida > 0) ? ($ihpGravida + 1) : 1;
+
+        $response = [
+            'patient' => [
+                'id' => (int)$patient['id'],
+                'patient_no' => $patient['patient_no'],
+                'envelope_no' => $patient['envelope_no'],
+                'name' => $name,
+                'first_name' => $patient['first_name'],
+                'last_name' => $patient['last_name'],
+                'middle_name' => $patient['middle_name'],
+                'dob' => $patient['dob'],
+                'dob_formatted' => !empty($patient['dob']) ? date('M d, Y', strtotime($patient['dob'])) : 'N/A',
+                'age' => $patient['age'],
+                'address' => $address ?: 'Barangay Sinalhan, Santa Rosa, Laguna',
+                'contact_no' => $patient['contact_no'] ?: 'N/A',
+                'civil_status' => $patient['civil_status'] ?: 'Single',
+                'spouse_name' => $patient['spouse_name'] ?? ''
+            ],
+            'has_active_episode' => !empty($activeEpisode),
+            'active_episode' => $activeEpisode ? [
+                'id' => $activeEpisode['id'],
+                'created_at' => date('M d, Y', strtotime($activeEpisode['created_at'])),
+                'lmp' => $activeEpisode['lmp'],
+                'edc' => $activeEpisode['edc']
+            ] : null,
+            'ihp' => [
+                'has_ihp' => !empty($ihp),
+                'gravida' => $suggestedGravida,
+                'para' => isset($ihp['para']) ? (int)$ihp['para'] : 0,
+                'term_births' => isset($ihp['term_births']) ? (int)$ihp['term_births'] : 0,
+                'preterm_births' => isset($ihp['preterm_births']) ? (int)$ihp['preterm_births'] : 0,
+                'abortions' => isset($ihp['abortions']) ? (int)$ihp['abortions'] : 0,
+                'living_children' => isset($ihp['living_children']) ? (int)$ihp['living_children'] : 0,
+                'lmp' => $ihp['lmp'] ?? ''
+            ]
+        ];
+
+        $this->json($response);
     }
 }

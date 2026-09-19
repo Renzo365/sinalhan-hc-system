@@ -248,33 +248,49 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
             </div>
 
-            <!-- Vital Signs Dropdown Selector -->
-            <div class="mb-3">
-                <label for="vital_signs_id" class="form-label fw-semibold text-secondary small d-flex justify-content-between">
-                    <span>Link Vital Signs Record</span>
-                    <span class="text-muted fw-normal">Select triage entry to associate with this checkup</span>
-                </label>
-                <select name="vital_signs_id" id="vital_signs_id" class="form-select bg-light">
-                    <option value="" data-empty="1">-- No Linked Vital Signs --</option>
-                    <?php if (!empty($vitalsList)): ?>
-                        <?php foreach ($vitalsList as $idx => $v): 
-                            $vLabel = date('M d, Y h:i A', strtotime($v['recorded_at']));
-                            if (!empty($v['bp_systolic']) && !empty($v['bp_diastolic'])) {
-                                $vLabel .= " | BP: {$v['bp_systolic']}/{$v['bp_diastolic']} mmHg";
-                            }
-                            if (!empty($v['temperature'])) {
-                                $vLabel .= " | Temp: " . number_format((float)$v['temperature'], 1) . "°C";
-                            }
-                            if (!empty($v['weight'])) {
-                                $vLabel .= " | Wt: {$v['weight']}kg";
-                            }
-                            $isHighBp = ((int)($v['bp_systolic'] ?? 0) >= 140 || (int)($v['bp_diastolic'] ?? 0) >= 90);
-                            $isSelected = '';
-                            if (empty($input['vital_signs_id']) && $idx === 0) {
-                                $isSelected = 'selected';
-                            } elseif (isset($input['vital_signs_id']) && (int)$input['vital_signs_id'] === (int)$v['id']) {
-                                $isSelected = 'selected';
-                            }
+            <!-- Section A2: Vital Signs Status & Link -->
+            <?php if (empty($vitalsList)): ?>
+                <div class="card border border-warning-subtle bg-warning-subtle p-3 rounded-3 mb-4">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle-fill text-warning fs-4"></i>
+                            <div>
+                                <strong class="text-dark small d-block">No Vital Signs Recorded Yet</strong>
+                                <span class="text-muted small">The patient does not have triage vital signs logged for today's visit yet. BHWs or staff can record them now.</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary px-3 text-nowrap shadow-xs" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
+                            <i class="bi bi-heart-pulse-fill me-1"></i> Record Vital Signs
+                        </button>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="vital_signs_id" class="form-label fw-semibold text-secondary small mb-0">
+                            Link Vital Signs Record
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
+                            <i class="bi bi-plus-lg me-1"></i> Record New Vitals
+                        </button>
+                    </div>
+                    <select name="vital_signs_id" id="vital_signs_id" class="form-select bg-light">
+                        <option value="" data-empty="1">-- No Linked Vital Signs --</option>
+                        <?php 
+                            $selectedVitalId = isset($input['vital_signs_id']) ? (int)$input['vital_signs_id'] : ($latestVitals['id'] ?? 0);
+                            foreach ($vitalsList as $v):
+                                $vLabel = date('M d, Y h:i A', strtotime($v['recorded_at']));
+                                if (!empty($v['bp_systolic']) && !empty($v['bp_diastolic'])) {
+                                    $vLabel .= " | BP: {$v['bp_systolic']}/{$v['bp_diastolic']} mmHg";
+                                }
+                                if (!empty($v['temperature'])) {
+                                    $vLabel .= " | Temp: " . number_format((float)$v['temperature'], 1) . "°C";
+                                }
+                                if (!empty($v['weight'])) {
+                                    $vLabel .= " | Wt: {$v['weight']}kg";
+                                }
+                                $isHighBp = ((int)($v['bp_systolic'] ?? 0) >= 140 || (int)($v['bp_diastolic'] ?? 0) >= 90);
+                                $isSelected = ($selectedVitalId === (int)$v['id']) ? 'selected' : '';
                         ?>
                             <option value="<?= $v['id'] ?>" 
                                     data-bp="<?= h(($v['bp_systolic'] ?? '-') . '/' . ($v['bp_diastolic'] ?? '-')) ?>"
@@ -293,14 +309,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <?= h($vLabel) ?>
                             </option>
                         <?php endforeach; ?>
-                    <?php endif; ?>
-                </select>
-            </div>
+                    </select>
+                </div>
 
-            <!-- Dynamic Vitals Preview Box -->
-            <div id="vitalsPreviewContainer" class="p-3 bg-light rounded-3 border mb-4">
-                <!-- Injected dynamically via JS -->
-            </div>
+                <!-- Dynamic Vitals Preview Box -->
+                <div id="vitalsPreviewContainer" class="p-3 bg-light rounded-3 border mb-4">
+                    <!-- Injected dynamically via JS -->
+                </div>
+            <?php endif; ?>
 
             <!-- Section B: SOAP Clinical Notes Divider -->
             <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
@@ -380,10 +396,161 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 </form>
 
+<!-- ==========================================================================
+   RECORD VITAL SIGNS MODAL (BHW TRIAGE / ON-THE-FLY ENTRY)
+   ========================================================================== -->
+<div class="modal fade" id="addVitalsModal" tabindex="-1" aria-labelledby="addVitalsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="addVitalsModalLabel">
+                    <i class="bi bi-heart-pulse-fill me-2"></i>Record Vital Signs
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="<?= url('/vital-signs') ?>" method="POST" id="vitalsForm">
+                <?= csrf_field() ?>
+                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+                <input type="hidden" name="redirect_to" value="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>">
+
+                <div class="modal-body p-4 bg-white">
+                    <div class="text-muted small mb-3">
+                        Patient: <strong><?= h($patient['last_name']) ?>, <?= h($patient['first_name']) ?></strong> &bull; DOB: <?= h($patient['dob']) ?>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <!-- Blood Pressure Systolic -->
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <label for="bp_systolic" class="form-label fw-semibold text-secondary small">Blood Pressure - Systolic</label>
+                            <div class="input-group">
+                                <input type="number" name="bp_systolic" id="bp_systolic" class="form-control" placeholder="120" min="40" max="300">
+                                <span class="input-group-text small">mmHg</span>
+                            </div>
+                        </div>
+
+                        <!-- Blood Pressure Diastolic -->
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <label for="bp_diastolic" class="form-label fw-semibold text-secondary small">Blood Pressure - Diastolic</label>
+                            <div class="input-group">
+                                <input type="number" name="bp_diastolic" id="bp_diastolic" class="form-control" placeholder="80" min="30" max="200">
+                                <span class="input-group-text small">mmHg</span>
+                            </div>
+                        </div>
+
+                        <!-- Heart Rate -->
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <label for="heart_rate" class="form-label fw-semibold text-secondary small">Heart Rate / Pulse</label>
+                            <div class="input-group">
+                                <input type="number" name="heart_rate" id="heart_rate" class="form-control" placeholder="72" min="20" max="250">
+                                <span class="input-group-text small">bpm</span>
+                            </div>
+                        </div>
+
+                        <!-- Temperature -->
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <label for="temperature" class="form-label fw-semibold text-secondary small">Body Temperature</label>
+                            <div class="input-group">
+                                <input type="number" name="temperature" id="temperature" class="form-control" placeholder="36.5" step="0.1" min="30" max="45">
+                                <span class="input-group-text small">°C</span>
+                            </div>
+                        </div>
+
+                        <!-- Respiratory Rate -->
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <label for="respiratory_rate" class="form-label fw-semibold text-secondary small">Respiratory Rate</label>
+                            <div class="input-group">
+                                <input type="number" name="respiratory_rate" id="respiratory_rate" class="form-control" placeholder="18" min="5" max="80">
+                                <span class="input-group-text small">cpm</span>
+                            </div>
+                        </div>
+
+                        <!-- Oxygen Saturation -->
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <label for="oxygen_saturation" class="form-label fw-semibold text-secondary small">Oxygen Saturation (SpO2)</label>
+                            <div class="input-group">
+                                <input type="number" name="oxygen_saturation" id="oxygen_saturation" class="form-control" placeholder="98" min="50" max="100">
+                                <span class="input-group-text small">%</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-3 text-muted opacity-25">
+
+                        <!-- Weight -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="weight" class="form-label fw-semibold text-secondary small">Weight</label>
+                            <div class="input-group">
+                                <input type="number" name="weight" id="weight" class="form-control" placeholder="60" step="0.01" min="1" max="500">
+                                <span class="input-group-text small">kg</span>
+                            </div>
+                        </div>
+
+                        <!-- Height -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="height" class="form-label fw-semibold text-secondary small">Height</label>
+                            <div class="input-group">
+                                <input type="number" name="height" id="height" class="form-control" placeholder="165" step="0.1" min="30" max="300">
+                                <span class="input-group-text small">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- BMI (Auto-calculated) -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="bmi" class="form-label fw-semibold text-secondary small">Calculated BMI</label>
+                            <input type="text" name="bmi" id="bmi" class="form-control bg-light" placeholder="BMI auto-calc" readonly>
+                        </div>
+
+                        <!-- Waist Circumference -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="waist_circumference" class="form-label fw-semibold text-secondary small">Waist Circumference</label>
+                            <div class="input-group">
+                                <input type="number" name="waist_circumference" id="waist_circumference" class="form-control" placeholder="75" step="0.1" min="10" max="250">
+                                <span class="input-group-text small">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="col-12">
+                            <label for="notes" class="form-label fw-semibold text-secondary small">Clinical Notes / Symptoms</label>
+                            <textarea name="notes" id="notes" rows="2" class="form-control" placeholder="Patient states feeling dizzy, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Vitals</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 1. BMI Auto-calculation in Vitals Modal
+    const weightInput = document.getElementById('weight');
+    const heightInput = document.getElementById('height');
+    const bmiInput = document.getElementById('bmi');
+
+    function calculateBMI() {
+        const weight = parseFloat(weightInput?.value);
+        const height = parseFloat(heightInput?.value);
+        if (weight > 0 && height > 0) {
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            if (bmiInput) bmiInput.value = bmi.toFixed(2);
+        } else {
+            if (bmiInput) bmiInput.value = '';
+        }
+    }
+
+    if (weightInput && heightInput) {
+        weightInput.addEventListener('input', calculateBMI);
+        heightInput.addEventListener('input', calculateBMI);
+    }
 
     // 2. Dynamic Vital Signs Preview Handler
     const vitalsSelect = document.getElementById('vital_signs_id');
@@ -464,7 +631,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (vitalsSelect) {
         vitalsSelect.addEventListener('change', updateVitalsPreview);
-        // Initialize preview on page load
         updateVitalsPreview();
     }
 });

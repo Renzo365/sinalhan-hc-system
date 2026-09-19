@@ -27,55 +27,22 @@ $initials = strtoupper($initials ?: 'ST');
     <!-- Left Institutional Branding Panel -->
     <div class="auth-brand-col">
         <div class="auth-brand-content">
-            <!-- Institutional Seal Badge -->
-            <div class="brand-header-top">
-                <div class="brand-seal-badge">
-                    <div class="brand-seal-icon-box">
-                        <i class="bi bi-shield-shaded"></i>
-                    </div>
-                    <div>
-                        <div class="brand-republic-text">Republic of the Philippines</div>
-                        <div class="brand-republic-sub">Barangay Sinalhan Health Services</div>
-                    </div>
-                </div>
-            </div>
+            <!-- Institutional Eyebrow -->
+            <div class="brand-hero-eyebrow">Barangay Sinalhan Health Center</div>
 
-            <!-- Main Heading & Mission -->
-            <h1 class="brand-hero-title">Barangay Sinalhan<br>Health Center</h1>
-            <div class="brand-hero-subtitle">Patient Management &amp; Health Records System</div>
+            <!-- Main Hero Heading -->
+            <h1 class="brand-hero-title">Patient Management &amp;<br>Health Records System</h1>
+
+            <!-- Mission Description -->
             <p class="brand-mission-desc">
                 Providing accessible, standardized, and secure public health services for the constituents of Barangay Sinalhan, City of Santa Rosa, Laguna. Dedicated to compassionate primary care and digital health governance.
             </p>
-        </div>
-
-        <!-- Institutional Footer / Assistance Block -->
-        <div class="brand-footer-block">
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <i class="bi bi-headset text-teal-light"></i>
-                <span>Need assistance? BHC IT Desk: <strong>Local 104</strong></span>
-            </div>
-            <div>
-                Contact: <a href="mailto:support@sinalhan.gov.ph">support@sinalhan.gov.ph</a> &bull; Clinic Administrator
-            </div>
         </div>
     </div>
 
     <!-- Right Form Panel (First-Time Password Update) -->
     <div class="auth-form-col">
         <div class="auth-form-box">
-            <!-- Top Status Badges -->
-            <div class="auth-top-badges">
-                <span class="authorized-only-badge">
-                    <i class="bi bi-patch-check-fill text-success"></i>
-                    <span>Staff Account Activation</span>
-                </span>
-            </div>
-
-            <!-- Emblem Icon Container -->
-            <div class="auth-lock-emblem">
-                <i class="bi bi-shield-lock-fill"></i>
-            </div>
-
             <!-- Title & Explanatory Subtitle -->
             <h2 class="auth-card-title">First-Time Password Update</h2>
             <p class="auth-card-subtitle">
@@ -248,8 +215,9 @@ $initials = strtoupper($initials ?: 'ST');
                     <span class="auth-footer-separator">&bull;</span>
                     <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Use</a>
                 </div>
-                <div class="mb-1">&copy; <?= date('Y') ?> Barangay Sinalhan Health Center. All rights reserved.</div>
-                <div class="auth-footer-location">City of Santa Rosa, Laguna &bull; Republic of the Philippines</div>
+                <div class="auth-footer-meta">
+                    &copy; <?= date('Y') ?> Barangay Sinalhan Health Center &bull; City of Santa Rosa, Laguna
+                </div>
             </div>
         </div>
     </div>

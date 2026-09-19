@@ -108,7 +108,7 @@ class Appointment extends Model {
             'patient_id' => (int)$data['patient_id'],
             'appointment_date' => $data['appointment_date'],
             'appointment_time' => $data['appointment_time'],
-            'purpose' => trim($data['purpose']),
+            'purpose' => !empty($data['purpose']) ? trim($data['purpose']) : (!empty($data['reason']) ? trim($data['reason']) : 'Clinical Appointment'),
             'program_type' => $programType,
             'status' => !empty($data['status']) ? $data['status'] : 'Scheduled',
             'notes' => !empty($data['notes']) ? trim($data['notes']) : null,

@@ -49,7 +49,7 @@ body.auth-redesign-body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   padding: 3.5rem 3.25rem;
   z-index: 1;
 }
@@ -65,93 +65,46 @@ body.auth-redesign-body {
   z-index: 2;
 }
 
-/* Brand Header Block */
+/* Brand Header Block (Legacy fallback) */
 .brand-header-top {
-  display: block;
-  width: 100%;
-  margin-bottom: 2.75rem;
+  display: none;
 }
 
-.brand-seal-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  margin-bottom: 0;
-}
-
-.brand-seal-icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  color: #5eead4;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.brand-republic-text {
-  font-size: 0.75rem;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
+/* Eyebrow & Hero Titles */
+.brand-hero-eyebrow {
+  font-size: 0.85rem;
   font-weight: 700;
-  line-height: 1.3;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #a7f3d0;
+  margin-bottom: 1.25rem;
+  display: block;
 }
 
-.brand-republic-sub {
-  font-size: 0.88rem;
-  color: #ffffff;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-/* Titles */
 .brand-hero-title {
-  font-size: 2.15rem;
+  font-size: 2.75rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: -0.5px;
   color: #ffffff;
-  margin-bottom: 0.4rem;
+  margin-bottom: 1.5rem;
 }
 
 .brand-hero-subtitle {
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--auth-teal-mint);
-  margin-bottom: 1.25rem;
+  display: none;
 }
 
 .brand-mission-desc {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.85);
   margin-bottom: 0;
   max-width: 95%;
 }
 
-/* Left Brand Footer */
+/* Left Brand Footer (Disabled per design request) */
 .brand-footer-block {
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  padding-top: 1.5rem;
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.brand-footer-block a {
-  color: #5eead4;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.brand-footer-block a:hover {
-  text-decoration: underline;
+  display: none;
 }
 
 /* ==========================================================================
@@ -564,9 +517,10 @@ body.auth-redesign-body {
   color: #cbd5e1;
 }
 
-.auth-footer-location {
-  font-size: 0.76rem;
+.auth-footer-meta {
+  font-size: 0.78rem;
   color: #94a3b8;
+  margin-top: 0.35rem;
 }
 
 /* Compliance Modals Styling */
@@ -616,17 +570,22 @@ body.auth-redesign-body {
     padding: 2.5rem 1.75rem;
   }
 
-  .brand-hero-title {
-    font-size: 1.75rem;
+  .brand-hero-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.75rem;
   }
 
-  .brand-hero-subtitle {
-    font-size: 1rem;
+  .brand-hero-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
   }
 
   .brand-mission-desc {
     max-width: 100%;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
   }
 
   .auth-form-col {
@@ -644,6 +603,10 @@ body.auth-redesign-body {
 @media (max-width: 575.98px) {
   .auth-brand-col {
     padding: 2rem 1.25rem;
+  }
+
+  .brand-hero-title {
+    font-size: 1.65rem;
   }
 
   .auth-form-col {

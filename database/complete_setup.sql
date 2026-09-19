@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS `settings`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `immunizations`;
 DROP TABLE IF EXISTS `prescriptions`;
+DROP TABLE IF EXISTS `queue_daily_counters`;
 DROP TABLE IF EXISTS `queue_entries`;
 DROP TABLE IF EXISTS `appointments`;
 DROP TABLE IF EXISTS `consultations`;
@@ -71,6 +72,7 @@ CREATE TABLE `users` (
 CREATE TABLE `patients` (
   `id` INT AUTO_INCREMENT,
   `patient_no` VARCHAR(20) NOT NULL,
+  `envelope_no` VARCHAR(50) DEFAULT NULL,
   `family_no` VARCHAR(50) DEFAULT NULL,
   `first_name` VARCHAR(50) NOT NULL,
   `middle_name` VARCHAR(50) DEFAULT NULL,
@@ -109,6 +111,7 @@ CREATE TABLE `patients` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_patient_no` (`patient_no`),
   UNIQUE KEY `idx_philhealth` (`philhealth_no`),
+  INDEX `idx_patients_envelope_no` (`envelope_no`),
   INDEX `idx_patients_family_no` (`family_no`),
   CONSTRAINT `fk_patients_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_patients_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
@@ -132,9 +135,14 @@ CREATE TABLE `vital_signs` (
   `notes` TEXT DEFAULT NULL,
   `recorded_by` INT NOT NULL,
   `recorded_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_vital_signs_deleted` (`deleted_at`),
   CONSTRAINT `fk_vitals_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_vitals_recorded_by` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_vitals_recorded_by` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_vital_signs_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. Consultations Table
@@ -207,6 +215,15 @@ CREATE TABLE `queue_entries` (
   CONSTRAINT `fk_queue_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+
+-- 6a. Queue Daily Counters Table
+CREATE TABLE `queue_daily_counters` (
+  `queue_date` DATE NOT NULL,
+  `last_queue_no` INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`queue_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 7. Prescriptions Table
 CREATE TABLE `prescriptions` (
   `id` INT AUTO_INCREMENT,
@@ -221,10 +238,15 @@ CREATE TABLE `prescriptions` (
   `prescribed_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_prescriptions_deleted` (`deleted_at`),
   CONSTRAINT `fk_prescription_consultation` FOREIGN KEY (`consultation_id`) REFERENCES `consultations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_prescription_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_prescription_prescribed_by` FOREIGN KEY (`prescribed_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_prescription_prescribed_by` FOREIGN KEY (`prescribed_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_prescriptions_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. Immunizations Table
@@ -240,9 +262,14 @@ CREATE TABLE `immunizations` (
   `administered_by` INT NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_immunizations_deleted` (`deleted_at`),
   CONSTRAINT `fk_immunization_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_immunization_administered_by` FOREIGN KEY (`administered_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_immunization_administered_by` FOREIGN KEY (`administered_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_immunizations_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9. Patient Medical Histories (Annex A1 IHP Baseline & Demographics)
@@ -283,10 +310,15 @@ CREATE TABLE `patient_medical_histories` (
   `updated_by` INT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_pmh_patient` (`patient_id`),
+  INDEX `idx_pmh_deleted` (`deleted_at`),
   CONSTRAINT `fk_pmh_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pmh_updater` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  INDEX `idx_pmh_patient` (`patient_id`)
+  CONSTRAINT `fk_pmh_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9a. Patient Conditions (Past Medical and Family Hereditary Illnesses)
@@ -294,14 +326,20 @@ CREATE TABLE `patient_conditions` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
   `condition_type` ENUM('Past', 'Family') NOT NULL DEFAULT 'Past',
+  `lineage` ENUM('Mother', 'Father', 'Both', 'Unknown') DEFAULT NULL,
   `condition_name` VARCHAR(150) NOT NULL,
   `remarks` TEXT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_patient_conditions_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   INDEX `idx_patient_conditions_patient_type` (`patient_id`, `condition_type`),
-  INDEX `idx_patient_conditions_name` (`condition_name`)
+  INDEX `idx_patient_conditions_name` (`condition_name`),
+  INDEX `idx_patient_conditions_deleted` (`deleted_at`),
+  CONSTRAINT `fk_patient_conditions_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_patient_conditions_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9b. Patient Surgeries (Surgical History)
@@ -313,9 +351,14 @@ CREATE TABLE `patient_surgeries` (
   `hospital` VARCHAR(255) DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_patient_surgeries_patient` (`patient_id`),
+  INDEX `idx_patient_surgeries_deleted` (`deleted_at`),
   CONSTRAINT `fk_patient_surgeries_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  INDEX `idx_patient_surgeries_patient` (`patient_id`)
+  CONSTRAINT `fk_patient_surgeries_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9c. Patient External Immunizations (IHP Annex A1 Lifetime Immunization Checklist)
@@ -328,9 +371,14 @@ CREATE TABLE `patient_external_immunizations` (
   `remarks` TEXT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_patient_ext_imm_patient` (`patient_id`),
+  INDEX `idx_patient_ext_imm_deleted` (`deleted_at`),
   CONSTRAINT `fk_patient_ext_imm_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  INDEX `idx_patient_ext_imm_patient` (`patient_id`)
+  CONSTRAINT `fk_patient_ext_imm_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 10. Prenatal Records (Maternal Pregnancy Episodes)
@@ -347,20 +395,25 @@ CREATE TABLE `prenatal_records` (
   `lmp` DATE NOT NULL,
   `edc` DATE NOT NULL,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `pre_eclampsia` TINYINT(1) NOT NULL DEFAULT 0,
-  `fp_counselling` TINYINT(1) NOT NULL DEFAULT 1,
   `delivery_date` DATE NULL,
   `delivery_outcome` ENUM('Live Birth', 'Stillbirth', 'Miscarriage', 'Ectopic', 'Other') NULL,
   `notes` TEXT NULL,
   `created_by` INT NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `active_patient_id` INT GENERATED ALWAYS AS (IF(`is_active` = 1, `patient_id`, NULL)) STORED,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_pr_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_pr_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
+  UNIQUE KEY `uq_pr_active_patient` (`active_patient_id`),
   INDEX `idx_pr_patient` (`patient_id`),
   INDEX `idx_pr_active` (`is_active`),
-  INDEX `idx_pr_patient_active` (`patient_id`, `is_active`)
+  INDEX `idx_pr_patient_active` (`patient_id`, `is_active`),
+  INDEX `idx_prenatal_records_deleted` (`deleted_at`),
+  CONSTRAINT `fk_pr_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`),
+  CONSTRAINT `fk_pr_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_prenatal_records_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 11. Prenatal Visits (Serial Trimester Checkup Logs)
@@ -381,11 +434,16 @@ CREATE TABLE `prenatal_visits` (
   `remarks` TEXT NULL,
   `attended_by` INT NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_pv_prenatal` (`prenatal_id`),
+  INDEX `idx_pv_visit_date` (`visit_date`),
+  INDEX `idx_prenatal_visits_deleted` (`deleted_at`),
   CONSTRAINT `fk_pv_prenatal` FOREIGN KEY (`prenatal_id`) REFERENCES `prenatal_records` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_pv_attendant` FOREIGN KEY (`attended_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
-  INDEX `idx_pv_prenatal` (`prenatal_id`),
-  INDEX `idx_pv_visit_date` (`visit_date`)
+  CONSTRAINT `fk_prenatal_visits_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 12. Past Obstetric Histories (Prior Delivery Matrix)
@@ -402,9 +460,14 @@ CREATE TABLE `past_obstetric_histories` (
   `birth_date` DATE NULL,
   `tt_status` VARCHAR(100) NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_poh_patient` (`patient_id`),
+  INDEX `idx_poh_deleted` (`deleted_at`),
   CONSTRAINT `fk_poh_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
-  INDEX `idx_poh_patient` (`patient_id`)
+  CONSTRAINT `fk_poh_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 13. Well Baby Records (Infant Birth Context & Child Health)
@@ -426,12 +489,17 @@ CREATE TABLE `wellbaby_records` (
   `created_by` INT NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_wb_patient` (`patient_id`),
+  INDEX `idx_wb_mother` (`mother_patient_id`),
+  INDEX `idx_wellbaby_records_deleted` (`deleted_at`),
   CONSTRAINT `fk_wb_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_wb_mother` FOREIGN KEY (`mother_patient_id`) REFERENCES `patients` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_wb_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
-  INDEX `idx_wb_patient` (`patient_id`),
-  INDEX `idx_wb_mother` (`mother_patient_id`)
+  CONSTRAINT `fk_wellbaby_records_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 14. Child Growth Logs (Monthly Anthropometrics & EPI Immunizations)
@@ -452,11 +520,16 @@ CREATE TABLE `child_growth_logs` (
   `tcb_notes` TEXT NULL,
   `recorded_by` INT NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_cgl_wellbaby` (`wellbaby_id`),
+  INDEX `idx_cgl_log_date` (`log_date`),
+  INDEX `idx_cgl_deleted` (`deleted_at`),
   CONSTRAINT `fk_cgl_wellbaby` FOREIGN KEY (`wellbaby_id`) REFERENCES `wellbaby_records` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_cgl_recorder` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
-  INDEX `idx_cgl_wellbaby` (`wellbaby_id`),
-  INDEX `idx_cgl_log_date` (`log_date`)
+  CONSTRAINT `fk_cgl_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 15. Lab Requests Table
@@ -469,10 +542,15 @@ CREATE TABLE `lab_requests` (
   `notes` TEXT DEFAULT NULL,
   `requested_by` INT NOT NULL,
   `requested_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_lab_requests_deleted` (`deleted_at`),
   CONSTRAINT `fk_lab_request_consultation` FOREIGN KEY (`consultation_id`) REFERENCES `consultations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_lab_request_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_request_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_lab_request_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_lab_requests_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 16. Lab Results Table
@@ -484,10 +562,15 @@ CREATE TABLE `lab_results` (
   `file_path` VARCHAR(255) DEFAULT NULL,
   `recorded_by` INT NOT NULL,
   `recorded_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_lab_results_deleted` (`deleted_at`),
   CONSTRAINT `fk_lab_result_request` FOREIGN KEY (`lab_request_id`) REFERENCES `lab_requests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_lab_result_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_result_recorded_by` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_lab_result_recorded_by` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_lab_results_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 17. Settings Table

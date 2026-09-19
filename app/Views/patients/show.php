@@ -121,9 +121,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                         <span class="badge bg-light text-dark border font-monospace fs-7">
                             <?= h($patient['patient_no']) ?>
                         </span>
-                        <span class="badge <?= $programBadge['class'] ?? 'bg-primary text-white' ?> fs-7">
-                            <i class="bi <?= $programBadge['icon'] ?? 'bi-tag' ?> me-1"></i><?= $programBadge['label'] ?? 'General OPD' ?>
-                        </span>
+                        <?php if (!empty($patient['envelope_no'])): ?>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
+                                <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
 
                     <?php
@@ -244,29 +246,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                         </button>
                     </li>
 
-                    <!-- Dynamic Tab 6: Maternal / Prenatal (Rendered for females) -->
-                    <?php if ($isFemale): ?>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link tab-prenatal fw-semibold text-nowrap" id="tab-prenatal-btn" data-bs-toggle="tab" data-bs-target="#tab-prenatal" type="button" role="tab">
-                                <i class="bi bi-heart-pulse-fill me-1"></i> Prenatal Care
-                                <?php if ($activePrenatal): ?>
-                                    <span class="badge bg-pink text-white ms-1">Active (<?= h($activePrenatal['calculated_aog']['weeks'] ?? '--') ?>w)</span>
-                                <?php endif; ?>
-                            </button>
-                        </li>
-                    <?php endif; ?>
 
-                    <!-- Dynamic Tab 7: Well Baby & Growth (Rendered for infants/children) -->
-                    <?php if ($isChild): ?>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link tab-wellbaby fw-semibold text-nowrap" id="tab-wellbaby-btn" data-bs-toggle="tab" data-bs-target="#tab-wellbaby" type="button" role="tab">
-                                <i class="bi bi-emoji-smile-fill me-1"></i> Well Baby
-                                <?php if ($wellbabyRecord): ?>
-                                    <span class="badge bg-success text-white ms-1"><?= count($growthLogs) ?> logs</span>
-                                <?php endif; ?>
-                            </button>
-                        </li>
-                    <?php endif; ?>
 
                     <!-- Tab 8: Appointments & Queue -->
                     <li class="nav-item" role="presentation">
@@ -592,7 +572,9 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 if (!empty($medicalHistory['family_history']) && is_array($medicalHistory['family_history'])) {
                                                     foreach ($medicalHistory['family_history'] as $cond => $det) {
                                                         if (empty($cond)) continue;
-                                                        $overviewFamList[] = !empty($det) ? "{$cond}: {$det}" : $cond;
+                                                        $lin = $medicalHistory['family_history_lineage'][$cond] ?? null;
+                                                        $linBadge = (!empty($lin) && $lin !== 'Unknown') ? " ({$lin})" : "";
+                                                        $overviewFamList[] = !empty($det) ? "{$cond}{$linBadge}: {$det}" : "{$cond}{$linBadge}";
                                                     }
                                                 }
                                                 ?>
@@ -611,6 +593,87 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                 </div>
                             </div>
 
+                            <!-- Maternal Care Workstation Quick Card (Only if registered in Maternal program) -->
+                            <?php 
+                            $hasMaternalRegistration = !empty($activePrenatal) || !empty($allPrenatalEpisodes);
+                            $hasWellbabyRegistration = !empty($wellbabyRecord);
+                            ?>
+                            <?php if ($hasMaternalRegistration): ?>
+                                <div class="col-12 <?= $hasWellbabyRegistration ? 'col-md-6' : '' ?>">
+                                    <div class="card border rounded-3 h-100 shadow-xs">
+                                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                                            <h5 class="h6 mb-0 fw-bold text-dark">
+                                                <i class="bi bi-heart-pulse-fill text-pink me-2"></i>Maternal Care
+                                            </h5>
+                                            <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-xs btn-outline-primary py-1 px-2">
+                                                Open Workstation <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                        <div class="card-body p-3 small">
+                                            <?php if ($activePrenatal): ?>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <span class="badge bg-pink text-white"><i class="bi bi-heart-fill me-1"></i>Active Pregnancy Episode</span>
+                                                    <span class="fw-bold text-pink"><?= h($activePrenatal['calculated_aog']['weeks'] ?? '--') ?> weeks AOG</span>
+                                                </div>
+                                                <div class="row g-2 text-muted">
+                                                    <div class="col-6"><strong>LMP:</strong> <?= !empty($activePrenatal['lmp']) ? date('M d, Y', strtotime($activePrenatal['lmp'])) : 'N/A' ?></div>
+                                                    <div class="col-6"><strong>EDC:</strong> <?= !empty($activePrenatal['edc']) ? date('M d, Y', strtotime($activePrenatal['edc'])) : 'N/A' ?></div>
+                                                    <div class="col-6"><strong>Gravida/Para:</strong> G<?= h($activePrenatal['gravida'] ?? 1) ?> P<?= h($activePrenatal['para'] ?? 0) ?></div>
+                                                    <div class="col-6"><strong>Trimester:</strong> <?= h($activePrenatal['calculated_aog']['trimester'] ?? '1st') ?></div>
+                                                </div>
+                                                <div class="mt-3">
+                                                    <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-sm btn-pink text-white w-100 shadow-xs">
+                                                        <i class="bi bi-heart-pulse-fill me-1"></i> Open Maternal Workstation
+                                                    </a>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <span class="badge bg-secondary text-white"><i class="bi bi-clock-history me-1"></i>Concluded / Past Episodes</span>
+                                                    <span class="text-muted"><?= count($allPrenatalEpisodes) ?> episode(s)</span>
+                                                </div>
+                                                <p class="text-muted mb-2">Patient has past maternal health and delivery records on file.</p>
+                                                <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary w-100 shadow-xs">
+                                                    <i class="bi bi-journal-medical me-1"></i> Open Maternal Workstation
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Well-Baby & EPI Workstation Quick Card (Only if registered in Well-Baby program) -->
+                            <?php if ($hasWellbabyRegistration): ?>
+                                <div class="col-12 <?= $hasMaternalRegistration ? 'col-md-6' : '' ?>">
+                                    <div class="card border rounded-3 h-100 shadow-xs">
+                                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                                            <h5 class="h6 mb-0 fw-bold text-dark">
+                                                <i class="bi bi-emoji-smile-fill text-success me-2"></i>Well-Baby &amp; EPI
+                                            </h5>
+                                            <a href="<?= url('/well-baby/' . $patient['id']) ?>" class="btn btn-xs btn-outline-success py-1 px-2">
+                                                Open Workstation <i class="bi bi-arrow-right ms-1"></i>
+                                            </a>
+                                        </div>
+                                        <div class="card-body p-3 small">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i>Registered Infant</span>
+                                                <span class="text-muted"><?= count($growthLogs ?? []) ?> growth visits logged</span>
+                                            </div>
+                                            <div class="row g-2 text-muted">
+                                                <div class="col-6"><strong>Birth Weight:</strong> <?= h($wellbabyRecord['birth_weight_kg'] ?? '--') ?> kg</div>
+                                                <div class="col-6"><strong>Birth Length:</strong> <?= h($wellbabyRecord['birth_length_cm'] ?? '--') ?> cm</div>
+                                                <div class="col-6"><strong>Delivery:</strong> <?= h($wellbabyRecord['place_of_delivery'] ?? '--') ?></div>
+                                                <div class="col-6"><strong>NBS:</strong> <?= !empty($wellbabyRecord['newborn_screening_done']) ? 'Done' : 'Pending' ?></div>
+                                            </div>
+                                            <div class="mt-3">
+                                                <a href="<?= url('/well-baby/' . $patient['id']) ?>" class="btn btn-sm btn-success text-white w-100 shadow-xs">
+                                                    <i class="bi bi-emoji-smile-fill me-1"></i> Open Well-Baby Workstation
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
                             <!-- 6. Metadata Footer -->
                             <div class="col-12 text-center text-muted pt-2" style="font-size: 0.75rem;">
                                 <span>Patient chart registered on <?= date('M d, Y \a\t h:i A', strtotime($patient['created_at'])) ?> <?= !empty($patient['creator_name']) ? 'by ' . h($patient['creator_name']) : '' ?></span>
@@ -626,6 +689,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                         <?php 
                         $pmhSaved = $medicalHistory['past_medical_history'] ?? [];
                         $familySaved = $medicalHistory['family_history'] ?? [];
+                        $famLineageSaved = $medicalHistory['family_history_lineage'] ?? [];
                         $surgicalSaved = $medicalHistory['surgical_history'] ?? [];
                         $peSaved = $medicalHistory['physical_examination'] ?? [];
                         $immSaved = $medicalHistory['external_immunizations'] ?? [];
@@ -1307,7 +1371,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                     <div class="row g-2 small pt-1">
                                                         <div class="col-6">
                                                             <span class="text-muted d-block">Gravida / Para (G/P):</span>
-                                                            <span class="fw-bold text-dark">G<?= h($medicalHistory['gravida'] ?? '0') ?> P<?= h($medicalHistory['para'] ?? '0') ?> (F:<?= h($medicalHistory['term_births'] ?? '0') ?> P:<?= h($medicalHistory['preterm_births'] ?? '0') ?> A:<?= h($medicalHistory['abortions'] ?? '0') ?> L:<?= h($medicalHistory['living_children'] ?? '0') ?>)</span>
+                                                            <span class="fw-bold text-dark">G<?= h($medicalHistory['gravida'] ?? '0') ?> P<?= h($medicalHistory['para'] ?? '0') ?> (T:<?= h($medicalHistory['term_births'] ?? '0') ?> P:<?= h($medicalHistory['preterm_births'] ?? '0') ?> A:<?= h($medicalHistory['abortions'] ?? '0') ?> L:<?= h($medicalHistory['living_children'] ?? '0') ?>)</span>
                                                         </div>
                                                         <div class="col-6">
                                                             <span class="text-muted d-block">Type of Delivery:</span>
@@ -1508,80 +1572,116 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             </div>
 
                                             <!-- Group 2A: Hereditary Conditions with Specific Details (2 Columns) -->
-                                            <div class="row g-3 small mb-3">
-                                                <!-- Allergy -->
-                                                <div class="col-12 col-md-6">
-                                                    <div class="p-2 border rounded bg-light h-100">
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Allergy" id="fam_allergy" <?= (isset($familySaved['Allergy']) || in_array('Allergy', $familySaved) || isset($familySaved['Allergies']) || in_array('Allergies', $familySaved)) ? 'checked' : '' ?>>
-                                                            <label class="form-check-label fw-semibold text-dark" for="fam_allergy">Allergy</label>
-                                                        </div>
-                                                        <input type="text" name="fam_allergy_specifics" class="form-control form-control-sm bg-white" placeholder="Specify allergens (e.g. Asthma, Eczema, Food)" value="<?= h(is_array($familySaved) ? ($familySaved['Allergy'] ?? $familySaved['Allergies'] ?? '') : '') ?>">
-                                                    </div>
-                                                </div>
+                                             <div class="row g-3 small mb-3">
+                                                 <!-- Allergy -->
+                                                 <div class="col-12 col-md-6">
+                                                     <div class="p-2 border rounded bg-light h-100">
+                                                         <div class="form-check mb-1">
+                                                             <input class="form-check-input" type="checkbox" name="family_history[]" value="Allergy" id="fam_allergy" <?= (isset($familySaved['Allergy']) || in_array('Allergy', $familySaved) || isset($familySaved['Allergies']) || in_array('Allergies', $familySaved)) ? 'checked' : '' ?>>
+                                                             <label class="form-check-label fw-semibold text-dark" for="fam_allergy">Allergy</label>
+                                                         </div>
+                                                         <input type="text" name="fam_allergy_specifics" class="form-control form-control-sm bg-white mb-1" placeholder="Specify allergens (e.g. Asthma, Eczema, Food)" value="<?= h(is_array($familySaved) ? ($familySaved['Allergy'] ?? $familySaved['Allergies'] ?? '') : '') ?>">
+                                                         <select name="family_history_lineage[Allergy]" class="form-select form-select-sm bg-white py-0 px-2" style="font-size: 0.75rem;">
+                                                             <option value="Unknown" <?= ($famLineageSaved['Allergy'] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage: Unknown / Unspecified --</option>
+                                                             <option value="Mother" <?= ($famLineageSaved['Allergy'] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother (Maternal)</option>
+                                                             <option value="Father" <?= ($famLineageSaved['Allergy'] ?? '') === 'Father' ? 'selected' : '' ?>>Father (Paternal)</option>
+                                                             <option value="Both" <?= ($famLineageSaved['Allergy'] ?? '') === 'Both' ? 'selected' : '' ?>>Both Parents</option>
+                                                         </select>
+                                                     </div>
+                                                 </div>
 
-                                                <!-- Hypertension -->
-                                                <div class="col-12 col-md-6">
-                                                    <div class="p-2 border rounded bg-light h-100">
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Hypertension" id="fam_hypertension" <?= (isset($familySaved['Hypertension']) || in_array('Hypertension', $familySaved)) ? 'checked' : '' ?>>
-                                                            <label class="form-check-label fw-semibold text-dark" for="fam_hypertension">Hypertension</label>
-                                                        </div>
-                                                        <input type="text" name="fam_hypertension_highest_bp" class="form-control form-control-sm bg-white" placeholder="Highest BP / Complication (e.g. 180/100, Stroke)" value="<?= h(is_array($familySaved) ? str_replace('Highest BP: ', '', $familySaved['Hypertension'] ?? '') : '') ?>">
-                                                    </div>
-                                                </div>
+                                                 <!-- Hypertension -->
+                                                 <div class="col-12 col-md-6">
+                                                     <div class="p-2 border rounded bg-light h-100">
+                                                         <div class="form-check mb-1">
+                                                             <input class="form-check-input" type="checkbox" name="family_history[]" value="Hypertension" id="fam_hypertension" <?= (isset($familySaved['Hypertension']) || in_array('Hypertension', $familySaved)) ? 'checked' : '' ?>>
+                                                             <label class="form-check-label fw-semibold text-dark" for="fam_hypertension">Hypertension</label>
+                                                         </div>
+                                                         <input type="text" name="fam_hypertension_highest_bp" class="form-control form-control-sm bg-white mb-1" placeholder="Highest BP / Complication (e.g. 180/100, Stroke)" value="<?= h(is_array($familySaved) ? str_replace('Highest BP: ', '', $familySaved['Hypertension'] ?? '') : '') ?>">
+                                                         <select name="family_history_lineage[Hypertension]" class="form-select form-select-sm bg-white py-0 px-2" style="font-size: 0.75rem;">
+                                                             <option value="Unknown" <?= ($famLineageSaved['Hypertension'] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage: Unknown / Unspecified --</option>
+                                                             <option value="Mother" <?= ($famLineageSaved['Hypertension'] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother (Maternal)</option>
+                                                             <option value="Father" <?= ($famLineageSaved['Hypertension'] ?? '') === 'Father' ? 'selected' : '' ?>>Father (Paternal)</option>
+                                                             <option value="Both" <?= ($famLineageSaved['Hypertension'] ?? '') === 'Both' ? 'selected' : '' ?>>Both Parents</option>
+                                                         </select>
+                                                     </div>
+                                                 </div>
 
-                                                <!-- Cancer -->
-                                                <div class="col-12 col-md-6">
-                                                    <div class="p-2 border rounded bg-light h-100">
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Cancer" id="fam_cancer" <?= (isset($familySaved['Cancer']) || in_array('Cancer', $familySaved)) ? 'checked' : '' ?>>
-                                                            <label class="form-check-label fw-semibold text-dark" for="fam_cancer">Cancer</label>
-                                                        </div>
-                                                        <input type="text" name="fam_cancer_organ" class="form-control form-control-sm bg-white" placeholder="Specify organ (e.g. Breast, Colon)" value="<?= h(is_array($familySaved) ? ($familySaved['Cancer'] ?? '') : '') ?>">
-                                                    </div>
-                                                </div>
+                                                 <!-- Cancer -->
+                                                 <div class="col-12 col-md-6">
+                                                     <div class="p-2 border rounded bg-light h-100">
+                                                         <div class="form-check mb-1">
+                                                             <input class="form-check-input" type="checkbox" name="family_history[]" value="Cancer" id="fam_cancer" <?= (isset($familySaved['Cancer']) || in_array('Cancer', $familySaved)) ? 'checked' : '' ?>>
+                                                             <label class="form-check-label fw-semibold text-dark" for="fam_cancer">Cancer</label>
+                                                         </div>
+                                                         <input type="text" name="fam_cancer_organ" class="form-control form-control-sm bg-white mb-1" placeholder="Specify organ (e.g. Breast, Colon)" value="<?= h(is_array($familySaved) ? ($familySaved['Cancer'] ?? '') : '') ?>">
+                                                         <select name="family_history_lineage[Cancer]" class="form-select form-select-sm bg-white py-0 px-2" style="font-size: 0.75rem;">
+                                                             <option value="Unknown" <?= ($famLineageSaved['Cancer'] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage: Unknown / Unspecified --</option>
+                                                             <option value="Mother" <?= ($famLineageSaved['Cancer'] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother (Maternal)</option>
+                                                             <option value="Father" <?= ($famLineageSaved['Cancer'] ?? '') === 'Father' ? 'selected' : '' ?>>Father (Paternal)</option>
+                                                             <option value="Both" <?= ($famLineageSaved['Cancer'] ?? '') === 'Both' ? 'selected' : '' ?>>Both Parents</option>
+                                                         </select>
+                                                     </div>
+                                                 </div>
 
-                                                <!-- Hepatitis -->
-                                                <div class="col-12 col-md-6">
-                                                    <div class="p-2 border rounded bg-light h-100">
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Hepatitis" id="fam_hepatitis" <?= (isset($familySaved['Hepatitis']) || in_array('Hepatitis', $familySaved)) ? 'checked' : '' ?>>
-                                                            <label class="form-check-label fw-semibold text-dark" for="fam_hepatitis">Hepatitis</label>
-                                                        </div>
-                                                        <input type="text" name="fam_hepatitis_type" class="form-control form-control-sm bg-white" placeholder="Specify type (e.g. Hepatitis B)" value="<?= h(is_array($familySaved) ? ($familySaved['Hepatitis'] ?? '') : '') ?>">
-                                                    </div>
-                                                </div>
+                                                 <!-- Hepatitis -->
+                                                 <div class="col-12 col-md-6">
+                                                     <div class="p-2 border rounded bg-light h-100">
+                                                         <div class="form-check mb-1">
+                                                             <input class="form-check-input" type="checkbox" name="family_history[]" value="Hepatitis" id="fam_hepatitis" <?= (isset($familySaved['Hepatitis']) || in_array('Hepatitis', $familySaved)) ? 'checked' : '' ?>>
+                                                             <label class="form-check-label fw-semibold text-dark" for="fam_hepatitis">Hepatitis</label>
+                                                         </div>
+                                                         <input type="text" name="fam_hepatitis_type" class="form-control form-control-sm bg-white mb-1" placeholder="Specify type (e.g. Hepatitis B)" value="<?= h(is_array($familySaved) ? ($familySaved['Hepatitis'] ?? '') : '') ?>">
+                                                         <select name="family_history_lineage[Hepatitis]" class="form-select form-select-sm bg-white py-0 px-2" style="font-size: 0.75rem;">
+                                                             <option value="Unknown" <?= ($famLineageSaved['Hepatitis'] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage: Unknown / Unspecified --</option>
+                                                             <option value="Mother" <?= ($famLineageSaved['Hepatitis'] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother (Maternal)</option>
+                                                             <option value="Father" <?= ($famLineageSaved['Hepatitis'] ?? '') === 'Father' ? 'selected' : '' ?>>Father (Paternal)</option>
+                                                             <option value="Both" <?= ($famLineageSaved['Hepatitis'] ?? '') === 'Both' ? 'selected' : '' ?>>Both Parents</option>
+                                                         </select>
+                                                     </div>
+                                                 </div>
 
-                                                <!-- Tuberculosis & PTB Category -->
-                                                <div class="col-12 col-md-6">
-                                                    <div class="p-2 border rounded bg-light h-100">
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Tuberculosis" id="fam_ptb" <?= (isset($familySaved['Tuberculosis']) || isset($familySaved['PTB Category']) || in_array('Tuberculosis', $familySaved) || in_array('PTB Category', $familySaved)) ? 'checked' : '' ?>>
-                                                            <label class="form-check-label fw-semibold text-dark" for="fam_ptb">Tuberculosis / PTB</label>
-                                                        </div>
-                                                        <div class="row g-2">
-                                                            <div class="col-6">
-                                                                <input type="text" name="fam_tuberculosis_organ" class="form-control form-control-sm bg-white" placeholder="Organ (e.g. Pulmonary)" value="<?= h(is_array($familySaved) ? ($familySaved['Tuberculosis'] ?? '') : '') ?>">
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <input type="text" name="fam_ptb_details" class="form-control form-control-sm bg-white" placeholder="PTB Category (e.g. Active)" value="<?= h(is_array($familySaved) ? ($familySaved['PTB Category'] ?? '') : '') ?>">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                 <!-- Tuberculosis & PTB Category -->
+                                                 <div class="col-12 col-md-6">
+                                                     <div class="p-2 border rounded bg-light h-100">
+                                                         <div class="form-check mb-1">
+                                                             <input class="form-check-input" type="checkbox" name="family_history[]" value="Tuberculosis" id="fam_ptb" <?= (isset($familySaved['Tuberculosis']) || isset($familySaved['PTB Category']) || in_array('Tuberculosis', $familySaved) || in_array('PTB Category', $familySaved)) ? 'checked' : '' ?>>
+                                                             <label class="form-check-label fw-semibold text-dark" for="fam_ptb">Tuberculosis / PTB</label>
+                                                         </div>
+                                                         <div class="row g-2 mb-1">
+                                                             <div class="col-6">
+                                                                 <input type="text" name="fam_tuberculosis_organ" class="form-control form-control-sm bg-white" placeholder="Organ (e.g. Pulmonary)" value="<?= h(is_array($familySaved) ? ($familySaved['Tuberculosis'] ?? '') : '') ?>">
+                                                             </div>
+                                                             <div class="col-6">
+                                                                 <input type="text" name="fam_ptb_details" class="form-control form-control-sm bg-white" placeholder="PTB Category (e.g. Active)" value="<?= h(is_array($familySaved) ? ($familySaved['PTB Category'] ?? '') : '') ?>">
+                                                             </div>
+                                                         </div>
+                                                         <select name="family_history_lineage[Tuberculosis]" class="form-select form-select-sm bg-white py-0 px-2" style="font-size: 0.75rem;">
+                                                             <option value="Unknown" <?= ($famLineageSaved['Tuberculosis'] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage: Unknown / Unspecified --</option>
+                                                             <option value="Mother" <?= ($famLineageSaved['Tuberculosis'] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother (Maternal)</option>
+                                                             <option value="Father" <?= ($famLineageSaved['Tuberculosis'] ?? '') === 'Father' ? 'selected' : '' ?>>Father (Paternal)</option>
+                                                             <option value="Both" <?= ($famLineageSaved['Tuberculosis'] ?? '') === 'Both' ? 'selected' : '' ?>>Both Parents</option>
+                                                         </select>
+                                                     </div>
+                                                 </div>
 
-                                                <!-- Others -->
-                                                <div class="col-12 col-md-6">
-                                                    <div class="p-2 border rounded bg-light h-100">
-                                                        <div class="form-check mb-1">
-                                                            <input class="form-check-input" type="checkbox" name="family_history[]" value="Others" id="fam_others" <?= (isset($familySaved['Others']) || in_array('Others', $familySaved)) ? 'checked' : '' ?>>
-                                                            <label class="form-check-label fw-semibold text-dark" for="fam_others">Others (Specify)</label>
-                                                        </div>
-                                                        <input type="text" name="family_other" class="form-control form-control-sm bg-white" placeholder="Specify other hereditary illnesses..." value="<?= h(is_array($familySaved) ? ($familySaved['Others'] ?? '') : '') ?>">
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                 <!-- Others -->
+                                                 <div class="col-12 col-md-6">
+                                                     <div class="p-2 border rounded bg-light h-100">
+                                                         <div class="form-check mb-1">
+                                                             <input class="form-check-input" type="checkbox" name="family_history[]" value="Others" id="fam_others" <?= (isset($familySaved['Others']) || in_array('Others', $familySaved)) ? 'checked' : '' ?>>
+                                                             <label class="form-check-label fw-semibold text-dark" for="fam_others">Others (Specify)</label>
+                                                         </div>
+                                                         <input type="text" name="family_other" class="form-control form-control-sm bg-white mb-1" placeholder="Specify other hereditary illnesses..." value="<?= h(is_array($familySaved) ? ($familySaved['Others'] ?? '') : '') ?>">
+                                                         <select name="family_history_lineage[Others]" class="form-select form-select-sm bg-white py-0 px-2" style="font-size: 0.75rem;">
+                                                             <option value="Unknown" <?= ($famLineageSaved['Others'] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage: Unknown / Unspecified --</option>
+                                                             <option value="Mother" <?= ($famLineageSaved['Others'] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother (Maternal)</option>
+                                                             <option value="Father" <?= ($famLineageSaved['Others'] ?? '') === 'Father' ? 'selected' : '' ?>>Father (Paternal)</option>
+                                                             <option value="Both" <?= ($famLineageSaved['Others'] ?? '') === 'Both' ? 'selected' : '' ?>>Both Parents</option>
+                                                         </select>
+                                                     </div>
+                                                 </div>
+                                             </div>
 
                                             <!-- Group 2B: Hereditary Illnesses Checklist (4 Columns) -->
                                             <div class="border-top pt-2">
@@ -1606,11 +1706,17 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                         $fChecked = is_array($familySaved) && (isset($familySaved[$fKey]) || in_array($fKey, $familySaved));
                                                     ?>
                                                         <div class="col-12 col-sm-6 col-md-3">
-                                                            <div class="p-2 border rounded bg-light h-100 d-flex align-items-center">
-                                                                <div class="form-check mb-0">
+                                                            <div class="p-2 border rounded bg-light h-100">
+                                                                <div class="form-check mb-1">
                                                                     <input class="form-check-input" type="checkbox" name="family_history[]" value="<?= $fKey ?>" id="fam_g_<?= md5($fKey) ?>" <?= $fChecked ? 'checked' : '' ?>>
                                                                     <label class="form-check-label fw-semibold text-dark small" for="fam_g_<?= md5($fKey) ?>"><?= $fLabel ?></label>
                                                                 </div>
+                                                                <select name="family_history_lineage[<?= $fKey ?>]" class="form-select form-select-sm bg-white py-0 px-1" style="font-size: 0.72rem;">
+                                                                    <option value="Unknown" <?= ($famLineageSaved[$fKey] ?? '') === 'Unknown' ? 'selected' : '' ?>>-- Lineage --</option>
+                                                                    <option value="Mother" <?= ($famLineageSaved[$fKey] ?? '') === 'Mother' ? 'selected' : '' ?>>Mother</option>
+                                                                    <option value="Father" <?= ($famLineageSaved[$fKey] ?? '') === 'Father' ? 'selected' : '' ?>>Father</option>
+                                                                    <option value="Both" <?= ($famLineageSaved[$fKey] ?? '') === 'Both' ? 'selected' : '' ?>>Both</option>
+                                                                </select>
                                                             </div>
                                                         </div>
                                                     <?php endforeach; ?>
@@ -2548,533 +2654,6 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                     </div>
 
                     <!-- ==============================================================
-                       TAB 6: MATERNAL / PRENATAL CARE WORKSTATION (If Female)
-                       ============================================================== -->
-                    <?php if ($isFemale): ?>
-                        <div class="tab-pane fade" id="tab-prenatal" role="tabpanel">
-                            
-                            <!-- 1. Active Pregnancy Episode Header & Cards -->
-                            <?php if ($activePrenatal): ?>
-                                <div class="card border-pink rounded-3 p-4 mb-4 bg-light-subtle shadow-xs">
-                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 pb-2 border-bottom">
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <h5 class="h6 fw-bold text-pink mb-0">
-                                                    <i class="bi bi-heart-pulse-fill me-2"></i>Active Pregnancy Episode (CHO I Record)
-                                                </h5>
-                                                <span class="badge bg-pink text-white">Gravida <?= $activePrenatal['gravida'] ?> Para <?= $activePrenatal['para'] ?></span>
-                                                <?php if (!empty($activePrenatal['pre_eclampsia'])): ?>
-                                                    <span class="badge bg-danger text-white"><i class="bi bi-shield-exclamation me-1"></i>Pre-Eclampsia Risk</span>
-                                                <?php endif; ?>
-                                            </div>
-                                            <span class="text-muted small">Enrolled on <?= date('M d, Y', strtotime($activePrenatal['created_at'])) ?> by <?= h($activePrenatal['creator_name'] ?? 'Clinician') ?></span>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editPrenatalModal">
-                                                <i class="bi bi-pencil me-1"></i> Edit Details
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#concludePrenatalModal">
-                                                <i class="bi bi-check2-circle me-1"></i> Conclude Episode
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-pink text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
-                                                <i class="bi bi-plus-lg me-1"></i> + Log Prenatal Visit
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Key Metrics Row -->
-                                    <div class="row g-3 small">
-                                        <!-- LMP -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Last Menstrual Period (LMP)</span>
-                                                <span class="fw-bold text-dark fs-7"><?= date('M d, Y', strtotime($activePrenatal['lmp'])) ?></span>
-                                            </div>
-                                        </div>
-
-                                        <!-- EDC -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Expected Date of Delivery (EDC)</span>
-                                                <span class="fw-bold text-pink fs-7"><?= date('M d, Y', strtotime($activePrenatal['edc'])) ?></span>
-                                            </div>
-                                        </div>
-
-                                        <!-- AOG -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Age of Gestation (AOG)</span>
-                                                <span class="fw-bold text-primary fs-7"><?= h($activePrenatal['calculated_aog']['formatted'] ?? '--') ?></span>
-                                            </div>
-                                        </div>
-
-                                        <!-- GTPAL Details -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Obstetric Score (GTPAL)</span>
-                                                <span class="fw-bold text-dark fs-7">
-                                                    G:<?= $activePrenatal['gravida'] ?> P:<?= $activePrenatal['para'] ?> (T:<?= $activePrenatal['term_births'] ?> P:<?= $activePrenatal['preterm_births'] ?> A:<?= $activePrenatal['abortions'] ?> L:<?= $activePrenatal['living_children'] ?>)
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Secondary Info Row -->
-                                        <div class="col-12 col-sm-6">
-                                            <span class="text-muted">Husband / Partner:</span>
-                                            <strong class="text-dark ms-1"><?= h($activePrenatal['husband_name'] ?? 'Not specified') ?></strong>
-                                        </div>
-                                        <div class="col-12 col-sm-6 text-sm-end">
-                                            <span class="text-muted">Family Planning Counselling:</span>
-                                            <span class="badge <?= !empty($activePrenatal['fp_counselling']) ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?> ms-1">
-                                                <?= !empty($activePrenatal['fp_counselling']) ? 'Counseled' : 'Pending' ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 2. Serial Follow-up Prenatal Visits Table -->
-                                <div class="card border rounded-3 p-3 mb-4 shadow-xs">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="fw-bold text-dark mb-0">
-                                            <i class="bi bi-calendar2-check text-primary me-2"></i>Serial Prenatal Checkup Follow-up Visits
-                                        </h6>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
-                                            <i class="bi bi-plus-circle me-1"></i> Log Checkup Visit
-                                        </button>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0 text-center small" id="prenatalVisitsTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th class="text-start ps-3">Visit Date</th>
-                                                    <th>AOG</th>
-                                                    <th>Maternal BP</th>
-                                                    <th>Weight (kg)</th>
-                                                    <th>FHT (bpm)</th>
-                                                    <th>Fundic Ht (cm)</th>
-                                                    <th>Presentation</th>
-                                                    <th>TCB / Tetanus</th>
-                                                    <th>Remarks</th>
-                                                    <th>Attendant</th>
-                                                    <th class="pe-3 text-end">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (empty($prenatalVisits)): ?>
-                                                    <tr>
-                                                        <td colspan="11" class="text-center py-4 text-muted">
-                                                            <i class="bi bi-heartbreak fs-4 d-block mb-1 text-secondary"></i>
-                                                            No follow-up prenatal visits logged yet for this pregnancy.
-                                                        </td>
-                                                    </tr>
-                                                <?php else: ?>
-                                                    <?php 
-                                                        $curUserId = (int)($_SESSION['user_id'] ?? 0);
-                                                        $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-                                                    ?>
-                                                    <?php foreach ($prenatalVisits as $pv): 
-                                                        $fht = (int)($pv['fetal_heart_tone'] ?? 0);
-                                                        $fhtBadge = 'badge bg-light text-dark border';
-                                                        if ($fht > 0) {
-                                                            if ($fht >= 120 && $fht <= 160) {
-                                                                $fhtBadge = 'badge bg-success-subtle text-success border border-success-subtle';
-                                                            } else {
-                                                                $fhtBadge = 'badge bg-danger-subtle text-danger border border-danger-subtle fw-bold';
-                                                            }
-                                                        }
-                                                        $canDeleteVisit = ($curRole === 'admin' || $curUserId === (int)($pv['attended_by'] ?? 0));
-                                                    ?>
-                                                        <tr>
-                                                            <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y', strtotime($pv['visit_date'])) ?></td>
-                                                            <td class="font-monospace fw-semibold"><?= h($pv['aog_weeks']) ?> wks</td>
-                                                            <td class="font-monospace"><?= h($pv['bp_systolic'] ?? '--') ?>/<?= h($pv['bp_diastolic'] ?? '--') ?></td>
-                                                            <td><?= h($pv['weight_kg'] ?? '--') ?></td>
-                                                            <td><span class="<?= $fhtBadge ?>"><?= $fht > 0 ? $fht . ' bpm' : '--' ?></span></td>
-                                                            <td><?= h($pv['fundal_height_cm'] ?? '--') ?></td>
-                                                            <td><span class="badge bg-light text-dark border"><?= h($pv['fetal_presentation'] ?? 'Cephalic') ?></span></td>
-                                                            <td class="text-muted"><?= h($pv['tcb'] ?? '--') ?></td>
-                                                            <td class="text-start small"><?= h($pv['remarks'] ?? '--') ?></td>
-                                                            <td class="text-muted"><?= h($pv['attendant_name'] ?? 'Midwife') ?></td>
-                                                            <td class="pe-3 text-end text-nowrap">
-                                                                <?php if ($canDeleteVisit): ?>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-prenatal-visit" data-id="<?= $pv['id'] ?>" data-date="<?= date('M d, Y', strtotime($pv['visit_date'])) ?>" title="Delete Visit">
-                                                                        <i class="bi bi-trash fs-6"></i>
-                                                                    </button>
-                                                                <?php else: ?>
-                                                                    <span class="text-muted small">&mdash;</span>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                            <?php else: ?>
-                                <!-- Empty State for Non-Active Episode -->
-                                <div class="card border rounded-3 p-5 text-center mb-4 bg-light shadow-xs" style="border-style: dashed !important; border-width: 2px !important; border-color: #f3c2db !important;">
-                                    <div class="d-inline-flex align-items-center justify-content-center bg-pink bg-opacity-10 text-pink rounded-circle mx-auto mb-3" style="width: 72px; height: 72px;">
-                                        <i class="bi bi-heart-pulse fs-1"></i>
-                                    </div>
-                                    <h5 class="h6 fw-bold text-dark mb-1">No Active Maternal / Prenatal Care Episode</h5>
-                                    <p class="text-muted small mb-3 mx-auto" style="max-width: 500px;">
-                                        Enrolling this female patient into the CHO I Maternal Record tracks gestational progress (LMP, EDC, AOG), serial fetal heart tones, and delivery outcomes.
-                                    </p>
-                                    <div>
-                                        <button type="button" class="btn btn-pink text-white px-4 py-2 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#startPrenatalModal">
-                                            <i class="bi bi-plus-circle me-1"></i> Start Pregnancy Episode
-                                        </button>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-
-                            <!-- 3. Past Obstetric History Matrix (G1–G5) -->
-                            <div class="card border rounded-3 p-3 shadow-xs">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h6 class="fw-bold text-dark mb-0">
-                                            <i class="bi bi-clock-history text-primary me-2"></i>Past Obstetric Deliveries Matrix (G1, G2, G3...)
-                                        </h6>
-                                        <span class="text-muted small">Historical delivery outcomes, birth places, attendants, and maternal TT vaccination status.</span>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPastObstetricModal">
-                                        <i class="bi bi-plus-circle me-1"></i> Add Past Delivery
-                                    </button>
-                                </div>
-
-                                <?php if (empty($pastDeliveries)): ?>
-                                    <div class="text-center py-4 text-muted bg-light rounded-3 border border-dashed my-2">
-                                        <i class="bi bi-clock-history fs-3 d-block mb-1 text-secondary opacity-50"></i>
-                                        <p class="mb-1 text-secondary fw-medium small">No previous delivery records logged for this patient.</p>
-                                        <span class="text-muted" style="font-size: 0.75rem;">Click "+ Add Past Delivery" above if the patient has previous child deliveries.</span>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0 text-center small" id="pastObstetricTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th class="text-start ps-3">Gravida #</th>
-                                                    <th>Delivery Type</th>
-                                                    <th>Infant Sex</th>
-                                                    <th>Place of Delivery</th>
-                                                    <th>Year</th>
-                                                    <th>Attendant</th>
-                                                    <th>Status</th>
-                                                    <th>Maternal TT</th>
-                                                    <th class="pe-3 text-end">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($pastDeliveries as $poh): ?>
-                                                    <tr>
-                                                        <td class="text-start ps-3 fw-bold text-primary font-monospace">Gravida <?= h($poh['gravida_no']) ?></td>
-                                                        <td><span class="badge bg-light text-dark border"><?= h($poh['delivery_type']) ?></span></td>
-                                                        <td><?= h($poh['infant_sex']) ?></td>
-                                                        <td><?= h($poh['place_of_delivery'] ?? '--') ?></td>
-                                                        <td><?= h($poh['year_delivered'] ?? '--') ?></td>
-                                                        <td><?= h($poh['attended_by'] ?? '--') ?></td>
-                                                        <td>
-                                                            <span class="badge <?= $poh['status'] === 'Alive' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' ?>">
-                                                                <?= h($poh['status']) ?>
-                                                            </span>
-                                                        </td>
-                                                        <td><?= h($poh['tt_status'] ?? '--') ?></td>
-                                                        <td class="pe-3 text-end">
-                                                            <form action="<?= url('/past-obstetric/' . $poh['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Delete this past delivery record?');">
-                                                                <?= csrf_field() ?>
-                                                                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                                                <button type="submit" class="btn btn-xs btn-outline-danger border-0 py-1 px-2" title="Delete Entry">
-                                                                    <i class="bi bi-trash"></i>
-                                                                </button>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- ==============================================================
-                       TAB 7: WELL BABY & PEDIATRIC GROWTH MONITORING WORKSTATION (If Child)
-                       ============================================================== -->
-                    <?php if ($isChild): ?>
-                        <div class="tab-pane fade" id="tab-wellbaby" role="tabpanel">
-                            <?php if ($wellbabyRecord): ?>
-                                
-                                <!-- 1. Infant Birth Context & Newborn Screening Card -->
-                                <div class="card border-success rounded-3 p-4 mb-4 bg-light-subtle shadow-xs">
-                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 pb-2 border-bottom">
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <h5 class="h6 fw-bold text-success mb-0">
-                                                    <i class="bi bi-emoji-smile-fill me-2"></i>Well Baby Infant Profile (CHO Santa Rosa Record)
-                                                </h5>
-                                                <span class="badge bg-success text-white">Birth Record</span>
-                                                <?php if (!empty($wellbabyRecord['mother_cpab_tt'])): ?>
-                                                    <span class="badge bg-info text-white"><i class="bi bi-shield-check me-1"></i>CPAB: <?= h($wellbabyRecord['mother_cpab_tt']) ?></span>
-                                                <?php endif; ?>
-                                            </div>
-                                            <span class="text-muted small">Registered on <?= date('M d, Y', strtotime($wellbabyRecord['created_at'])) ?> by <?= h($wellbabyRecord['creator_name'] ?? 'Midwife') ?></span>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#wellbabyBirthModal">
-                                                <i class="bi bi-pencil me-1"></i> Edit Birth Record
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-success text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
-                                                <i class="bi bi-plus-lg me-1"></i> + Record Growth Visit
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Birth Metrics Row -->
-                                    <div class="row g-3 small">
-                                        <!-- Birth Wt / Length -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Birth Weight / Length</span>
-                                                <span class="fw-bold text-success fs-7"><?= h($wellbabyRecord['birth_weight_kg']) ?> kg / <?= h($wellbabyRecord['birth_length_cm']) ?> cm</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Delivery Place & Type -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Delivery Place & Type</span>
-                                                <span class="fw-bold text-dark fs-7"><?= h($wellbabyRecord['place_of_delivery']) ?> (<?= h($wellbabyRecord['delivery_type']) ?>)</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Newborn Screening -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Newborn Screening (NBS)</span>
-                                                <span class="badge <?= !empty($wellbabyRecord['newborn_screening_done']) ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning' ?>">
-                                                    <?= !empty($wellbabyRecord['newborn_screening_done']) ? 'Done' : 'Pending' ?>
-                                                </span>
-                                                <span class="fw-semibold text-dark d-block mt-1" style="font-size: 0.75rem;">
-                                                    <?= !empty($wellbabyRecord['newborn_screening_result']) ? h($wellbabyRecord['newborn_screening_result']) : 'No Cert #' ?>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Mother Link & Feeding Method -->
-                                        <div class="col-6 col-sm-3">
-                                            <div class="p-2 bg-white rounded border">
-                                                <span class="text-muted d-block" style="font-size: 0.75rem;">Mother / Feeding Method</span>
-                                                <?php if (!empty($wellbabyRecord['mother_patient_id'])): ?>
-                                                    <a href="<?= url('/patients/' . $wellbabyRecord['mother_patient_id']) ?>" class="fw-bold text-primary text-decoration-none d-block">
-                                                        <i class="bi bi-person-fill"></i> <?= h($wellbabyRecord['mother_last_name']) ?>, <?= h($wellbabyRecord['mother_first_name']) ?>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="fw-bold text-dark d-block"><?= h($patient['mother_name'] ?? 'Not Linked') ?></span>
-                                                <?php endif; ?>
-                                                <span class="text-muted small" style="font-size: 0.7rem;"><?= h($wellbabyRecord['feeding_method']) ?></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 2. DOH Expanded Program on Immunization (EPI) Grid -->
-                                <div class="card border rounded-3 p-3 mb-4 shadow-xs">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div>
-                                            <h6 class="fw-bold text-dark mb-0">
-                                                <i class="bi bi-shield-check text-primary me-2"></i>DOH Mandatory Routine Infant Immunization Schedule (EPI)
-                                            </h6>
-                                            <span class="text-muted small">Official schedule for infants aged 0–12 months. Dates save directly to the central registry.</span>
-                                        </div>
-                                        <button type="submit" form="epiScheduleForm" class="btn btn-sm btn-primary shadow-xs">
-                                            <i class="bi bi-check2-circle me-1"></i> Save EPI Schedule
-                                        </button>
-                                    </div>
-
-                                    <form action="<?= url('/patients/' . $patient['id'] . '/wellbaby/epi-schedule') ?>" method="POST" id="epiScheduleForm">
-                                        <?= csrf_field() ?>
-
-                                        <?php
-                                        // EPI Vaccine Milestones
-                                        $epiSchedule = [
-                                            'At Birth' => [
-                                                ['key' => 'BCG__1', 'name' => 'BCG', 'dose' => 1, 'desc' => 'Tuberculosis (Right Deltoid)'],
-                                                ['key' => 'Hepatitis_B__1', 'name' => 'Hepatitis B', 'dose' => 1, 'desc' => 'Within 24 hours of birth']
-                                            ],
-                                            '1.5 Months (6 Weeks)' => [
-                                                ['key' => 'Pentavalent__1', 'name' => 'Pentavalent (DTP-HepB-Hib)', 'dose' => 1, 'desc' => 'Dose 1'],
-                                                ['key' => 'OPV__1', 'name' => 'Oral Polio Vaccine (OPV)', 'dose' => 1, 'desc' => 'Dose 1'],
-                                                ['key' => 'Rotavirus__1', 'name' => 'Rotavirus / PCV', 'dose' => 1, 'desc' => 'Dose 1']
-                                            ],
-                                            '2.5 Months (10 Weeks)' => [
-                                                ['key' => 'Pentavalent__2', 'name' => 'Pentavalent (DTP-HepB-Hib)', 'dose' => 2, 'desc' => 'Dose 2'],
-                                                ['key' => 'OPV__2', 'name' => 'Oral Polio Vaccine (OPV)', 'dose' => 2, 'desc' => 'Dose 2'],
-                                                ['key' => 'Rotavirus__2', 'name' => 'Rotavirus / PCV', 'dose' => 2, 'desc' => 'Dose 2']
-                                            ],
-                                            '3.5 Months (14 Weeks)' => [
-                                                ['key' => 'Pentavalent__3', 'name' => 'Pentavalent (DTP-HepB-Hib)', 'dose' => 3, 'desc' => 'Dose 3'],
-                                                ['key' => 'OPV__3', 'name' => 'Oral Polio Vaccine (OPV)', 'dose' => 3, 'desc' => 'Dose 3'],
-                                                ['key' => 'IPV__1', 'name' => 'Inactivated Polio (IPV)', 'dose' => 1, 'desc' => 'Dose 1']
-                                            ],
-                                            '9 Months' => [
-                                                ['key' => 'MCV__1', 'name' => 'Measles (MCV 1)', 'dose' => 1, 'desc' => 'Anti-Measles dose']
-                                            ],
-                                            '12 Months (1 Year)' => [
-                                                ['key' => 'MCV__2', 'name' => 'MMR Booster (MCV 2)', 'dose' => 2, 'desc' => 'Measles, Mumps, Rubella']
-                                            ]
-                                        ];
-                                        ?>
-
-                                        <div class="row g-3">
-                                            <?php foreach ($epiSchedule as $milestone => $vaccines): ?>
-                                                <div class="col-12 col-md-6 col-lg-4">
-                                                    <div class="card border bg-light-subtle h-100 p-2 rounded-3">
-                                                        <div class="fw-bold text-primary small mb-2 border-bottom pb-1">
-                                                            <i class="bi bi-clock-history me-1"></i><?= $milestone ?>
-                                                        </div>
-                                                        <div class="d-flex flex-column gap-2">
-                                                            <?php foreach ($vaccines as $v): 
-                                                                $lookupKey = strtoupper(trim(str_replace('_', ' ', explode('__', $v['key'])[0]))) . ':' . $v['dose'];
-                                                                $existingRecord = $vaccineMap[$lookupKey] ?? null;
-                                                                $isDone = !empty($existingRecord);
-                                                                $administeredDate = $isDone ? $existingRecord['administered_date'] : '';
-                                                            ?>
-                                                                <div class="p-2 bg-white rounded border small">
-                                                                    <div class="d-flex justify-content-between align-items-start mb-1">
-                                                                        <div>
-                                                                            <strong class="text-dark"><?= h($v['name']) ?></strong>
-                                                                            <span class="text-muted d-block" style="font-size: 0.7rem;"><?= h($v['desc']) ?></span>
-                                                                        </div>
-                                                                        <?php if ($isDone): ?>
-                                                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                                                                <i class="bi bi-check-circle-fill me-1"></i>Done
-                                                                            </span>
-                                                                        <?php else: ?>
-                                                                            <span class="badge bg-light text-secondary border">Pending</span>
-                                                                        <?php endif; ?>
-                                                                    </div>
-                                                                    <div class="input-group input-group-sm mt-1">
-                                                                        <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
-                                                                        <input type="date" name="epi[<?= $v['key'] ?>]" class="form-control  bg-white" placeholder="Administered Date" value="<?= h($administeredDate) ?>">
-                                                                    </div>
-                                                                </div>
-                                                            <?php endforeach; ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <!-- 3. Periodic Pediatric Growth Monitoring Log -->
-                                <div class="card border rounded-3 p-3 shadow-xs">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div>
-                                            <h6 class="fw-bold text-dark mb-0">
-                                                <i class="bi bi-activity text-primary me-2"></i>Child Anthropometric & Growth Monitoring Log
-                                            </h6>
-                                            <span class="text-muted small">Serial measurements of weight, height, head circumference, chest circumference, and feeding practices.</span>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
-                                            <i class="bi bi-plus-circle me-1"></i> Record Growth Visit
-                                        </button>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0 text-center small" id="childGrowthTable">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th class="text-start ps-3">Visit Date</th>
-                                                    <th>Age (Mos)</th>
-                                                    <th>Weight (kg)</th>
-                                                    <th>Height (cm)</th>
-                                                    <th>Feeding Method</th>
-                                                    <th>Supplements</th>
-                                                    <th class="pe-3 text-end">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (empty($growthLogs)): ?>
-                                                    <tr>
-                                                        <td colspan="7" class="text-center py-4 text-muted">
-                                                            No periodic growth checkups logged yet for this infant.
-                                                        </td>
-                                                    </tr>
-                                                <?php else: ?>
-                                                    <?php foreach ($growthLogs as $gl): ?>
-                                                        <tr>
-                                                            <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y', strtotime($gl['log_date'])) ?></td>
-                                                            <td class="font-monospace fw-bold text-primary"><?= h($gl['age_months']) ?> mos</td>
-                                                            <td class="fw-bold text-dark"><?= h($gl['weight_kg']) ?> kg</td>
-                                                            <td><?= h($gl['height_cm']) ?> cm</td>
-                                                            <td><span class="badge bg-light text-dark border"><?= h($gl['feeding_method']) ?></span></td>
-                                                            <td>
-                                                                <?php if (!empty($gl['vitamin_a_dose'])): ?>
-                                                                    <span class="badge bg-warning-subtle text-dark border me-1">Vit A</span>
-                                                                <?php endif; ?>
-                                                                <?php if (!empty($gl['deworming_dose'])): ?>
-                                                                    <span class="badge bg-info-subtle text-info border">Dewormed</span>
-                                                                <?php endif; ?>
-                                                                <?php if (empty($gl['vitamin_a_dose']) && empty($gl['deworming_dose'])): ?>
-                                                                    <span class="text-muted">--</span>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <td class="pe-3 text-end text-nowrap">
-                                                                <div class="d-inline-flex gap-1 justify-content-end align-items-center">
-                                                                    <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-growth-log" 
-                                                                        data-date="<?= date('M d, Y', strtotime($gl['log_date'])) ?>" 
-                                                                        data-age="<?= h($gl['age_months']) ?> mos" 
-                                                                        data-weight="<?= h($gl['weight_kg']) ?> kg" 
-                                                                        data-height="<?= h($gl['height_cm']) ?> cm" 
-                                                                        data-head="<?= h($gl['head_circumference_cm'] ?? '--') ?>" 
-                                                                        data-chest="<?= h($gl['chest_circumference_cm'] ?? '--') ?>" 
-                                                                        data-temp="<?= h($gl['temperature'] ?? '--') ?>" 
-                                                                        data-feeding="<?= h($gl['feeding_method']) ?>" 
-                                                                        data-supplements="<?= (!empty($gl['vitamin_a_dose']) ? 'Vitamin A' : '') . (!empty($gl['deworming_dose']) ? ' Deworming' : '') ?: 'None' ?>" 
-                                                                        data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>" 
-                                                                        title="View Growth Details">
-                                                                        <i class="bi bi-eye fs-6"></i>
-                                                                    </button>
-                                                                    <form action="<?= url('/wellbaby/growth-log/' . $gl['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Delete this growth visit entry?');">
-                                                                        <?= csrf_field() ?>
-                                                                        <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry">
-                                                                            <i class="bi bi-trash fs-6"></i>
-                                                                        </button>
-                                                                    </form>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                            <?php else: ?>
-                                <!-- Empty State for Non-Initialized Well Baby Record -->
-                                <div class="card border rounded-3 p-5 text-center mb-4 bg-light-subtle shadow-xs">
-                                    <i class="bi bi-emoji-smile fs-1 d-block mb-2 text-success"></i>
-                                    <h5 class="h6 fw-bold text-dark mb-1">No Well Baby Infant Health Record</h5>
-                                    <p class="text-muted small mb-3">Initializing the Well Baby Record (CHO Santa Rosa / Brgy. Ibaba) registers birth circumstances, Newborn Screening (NBS) certification, mother link, and mandatory EPI childhood vaccines.</p>
-                                    <div>
-                                        <button type="button" class="btn btn-success text-white px-4 shadow-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#wellbabyBirthModal">
-                                            <i class="bi bi-plus-circle me-1"></i> Initialize Well Baby Record
-                                        </button>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- ==============================================================
                        TAB 8: APPOINTMENTS & QUEUE
                        ============================================================== -->
                     <div class="tab-pane fade" id="tab-appointments" role="tabpanel">
@@ -3145,254 +2724,6 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 </div>
             </div>
         </div>
-
-<!-- ==========================================================================
-   WELL BABY & PEDIATRIC MODALS (If Child)
-   ========================================================================== -->
-<?php if ($isChild): ?>
-
-    <!-- 1. INITIALIZE / EDIT WELL BABY RECORD MODAL -->
-    <div class="modal fade" id="wellbabyBirthModal" tabindex="-1" aria-labelledby="wellbabyModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                    <h5 class="modal-title fw-bold" id="wellbabyModalLabel">
-                        <i class="bi bi-emoji-smile-fill me-2"></i><?= $wellbabyRecord ? 'Edit Well Baby Birth Record' : 'Initialize Well Baby Infant Record' ?>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form action="<?= url('/patients/' . $patient['id'] . '/wellbaby/birth-record') ?>" method="POST" id="wellbabyBirthForm">
-                    <?= csrf_field() ?>
-
-                    <div class="modal-body p-4 bg-white small">
-                        <div class="alert alert-info border-0 small mb-3">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Official CHO Santa Rosa Well Baby Record: Record infant birth circumstances, newborn screening certificate, and maternal link.
-                        </div>
-
-                        <div class="row g-3">
-                            <!-- Link Registered Mother -->
-                            <div class="col-12 col-sm-6">
-                                <label for="mother_patient_id" class="form-label fw-semibold text-secondary">Link Registered Mother Profile</label>
-                                <select name="mother_patient_id" id="mother_patient_id" class="form-select">
-                                    <option value="">-- Select Registered Mother (Optional) --</option>
-                                    <?php foreach ($potentialMothers as $mom): ?>
-                                        <option value="<?= $mom['id'] ?>" <?= (!empty($wellbabyRecord['mother_patient_id']) && (int)$wellbabyRecord['mother_patient_id'] === (int)$mom['id']) ? 'selected' : '' ?>>
-                                            <?= h($mom['last_name']) ?>, <?= h($mom['first_name']) ?> (<?= h($mom['patient_no']) ?> <?= !empty($mom['family_no']) ? '• Fam: ' . h($mom['family_no']) : '' ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-
-                            <!-- Maternal CPAB TT Status -->
-                            <div class="col-12 col-sm-6">
-                                <label for="mother_cpab_tt" class="form-label fw-semibold text-secondary">Maternal CPAB TT Status (Protected at Birth)</label>
-                                <input type="text" name="mother_cpab_tt" id="mother_cpab_tt" class="form-control" placeholder="e.g. TT2 Given in 2024, TT3 Complete" value="<?= h($wellbabyRecord['mother_cpab_tt'] ?? 'Protected at Birth') ?>">
-                            </div>
-
-                            <!-- Birth Weight -->
-                            <div class="col-12 col-sm-4">
-                                <label for="birth_weight_kg" class="form-label fw-semibold text-secondary">Birth Weight (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="birth_weight_kg" id="birth_weight_kg" class="form-control" placeholder="e.g. 3.20" value="<?= h($wellbabyRecord['birth_weight_kg'] ?? '') ?>" required>
-                            </div>
-
-                            <!-- Birth Length -->
-                            <div class="col-12 col-sm-4">
-                                <label for="birth_length_cm" class="form-label fw-semibold text-secondary">Birth Length (cm) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" name="birth_length_cm" id="birth_length_cm" class="form-control" placeholder="e.g. 50.0" value="<?= h($wellbabyRecord['birth_length_cm'] ?? '') ?>" required>
-                            </div>
-
-                            <!-- Birth Time -->
-                            <div class="col-12 col-sm-4">
-                                <label for="birth_time" class="form-label fw-semibold text-secondary">Time of Birth</label>
-                                <input type="time" name="birth_time" id="birth_time" class="form-control" value="<?= h($wellbabyRecord['birth_time'] ?? '') ?>">
-                            </div>
-
-                            <!-- Place of Delivery -->
-                            <div class="col-12 col-sm-4">
-                                <label for="place_of_delivery" class="form-label fw-semibold text-secondary">Place of Delivery</label>
-                                <select name="place_of_delivery" class="form-select">
-                                    <option value="Lying-in Clinic" <?= ($wellbabyRecord['place_of_delivery'] ?? '') === 'Lying-in Clinic' ? 'selected' : '' ?>>Lying-in Clinic</option>
-                                    <option value="Hospital (SRCH / Public)" <?= ($wellbabyRecord['place_of_delivery'] ?? '') === 'Hospital (SRCH / Public)' ? 'selected' : '' ?>>Hospital (SRCH / Public)</option>
-                                    <option value="Hospital (Private)" <?= ($wellbabyRecord['place_of_delivery'] ?? '') === 'Hospital (Private)' ? 'selected' : '' ?>>Hospital (Private)</option>
-                                    <option value="Home" <?= ($wellbabyRecord['place_of_delivery'] ?? '') === 'Home' ? 'selected' : '' ?>>Home</option>
-                                    <option value="Other" <?= ($wellbabyRecord['place_of_delivery'] ?? '') === 'Other' ? 'selected' : '' ?>>Other</option>
-                                </select>
-                            </div>
-
-                            <!-- Delivery Type -->
-                            <div class="col-12 col-sm-4">
-                                <label for="delivery_type" class="form-label fw-semibold text-secondary">Delivery Type</label>
-                                <select name="delivery_type" class="form-select">
-                                    <option value="Normal Spontaneous Delivery (NSD)" selected>Normal Spontaneous (NSD)</option>
-                                    <option value="Caesarean Section (CS)">Caesarean Section (CS)</option>
-                                    <option value="Vacuum Extraction">Vacuum Extraction</option>
-                                    <option value="Breech Delivery">Breech Delivery</option>
-                                </select>
-                            </div>
-
-                            <!-- Attended By -->
-                            <div class="col-12 col-sm-4">
-                                <label for="attended_by" class="form-label fw-semibold text-secondary">Attended By</label>
-                                <input type="text" name="attended_by" class="form-control" placeholder="e.g. Midwife Ramos, Dr. Santos" value="<?= h($wellbabyRecord['attended_by'] ?? 'Midwife') ?>">
-                            </div>
-
-                            <hr class="my-2 text-muted opacity-25">
-
-                            <!-- Newborn Screening (NBS) Section -->
-                            <div class="col-12">
-                                <h6 class="fw-bold text-dark mb-0">Newborn Screening (NBS) Certificate</h6>
-                            </div>
-                            
-                            <div class="col-12 col-sm-4 d-flex align-items-center">
-                                <div class="form-check mt-2">
-                                    <input class="form-check-input" type="checkbox" name="newborn_screening_done" value="1" id="nbs_done_check" <?= !empty($wellbabyRecord['newborn_screening_done']) ? 'checked' : '' ?>>
-                                    <label class="form-check-label text-success fw-semibold" for="nbs_done_check">
-                                        NBS Screening Done
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-4">
-                                <label for="newborn_screening_date" class="form-label fw-semibold text-secondary">NBS Date Screened</label>
-                                <input type="date" name="newborn_screening_date" class="form-control  bg-white" placeholder="YYYY-MM-DD" value="<?= h($wellbabyRecord['newborn_screening_date'] ?? '') ?>">
-                            </div>
-
-                            <div class="col-12 col-sm-4">
-                                <label for="newborn_screening_result" class="form-label fw-semibold text-secondary">NBS Result / Cert #</label>
-                                <input type="text" name="newborn_screening_result" class="form-control" placeholder="e.g. Normal (Cert # NBS-2026-09)" value="<?= h($wellbabyRecord['newborn_screening_result'] ?? 'Normal') ?>">
-                            </div>
-
-                            <!-- Infant Feeding Method -->
-                            <div class="col-12">
-                                <label for="feeding_method" class="form-label fw-semibold text-secondary">Initial Infant Feeding Practice</label>
-                                <select name="feeding_method" class="form-select">
-                                    <option value="LAM / Exclusive Breastfeeding" <?= ($wellbabyRecord['feeding_method'] ?? '') === 'LAM / Exclusive Breastfeeding' ? 'selected' : '' ?>>LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feeding (Formula)" <?= ($wellbabyRecord['feeding_method'] ?? '') === 'Bottle Feeding (Formula)' ? 'selected' : '' ?>>Bottle Feeding (Formula)</option>
-                                    <option value="Mixed Feeding" <?= ($wellbabyRecord['feeding_method'] ?? '') === 'Mixed Feeding' ? 'selected' : '' ?>>Mixed Feeding</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success text-white px-4 fw-semibold">Save Well Baby Record</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. RECORD MONTHLY GROWTH VISIT MODAL -->
-    <?php if ($wellbabyRecord): ?>
-        <div class="modal fade" id="addGrowthLogModal" tabindex="-1" aria-labelledby="addGrowthLogModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                        <h5 class="modal-title fw-bold" id="addGrowthLogModalLabel">
-                            <i class="bi bi-activity me-2"></i>Record Pediatric Anthropometrics & Growth Visit
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                    <form action="<?= url('/wellbaby/' . $wellbabyRecord['id'] . '/growth-log') ?>" method="POST" id="growthLogForm">
-                        <?= csrf_field() ?>
-
-                        <div class="modal-body p-4 bg-white small">
-                            <div class="row g-3">
-                                <!-- Checkup Date -->
-                                <div class="col-12 col-sm-6">
-                                    <label for="log_date" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="log_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
-                                </div>
-
-                                <!-- Age in Months -->
-                                <div class="col-12 col-sm-6">
-                                    <label for="age_months" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" name="age_months" class="form-control font-monospace" placeholder="e.g. 1.5" required>
-                                </div>
-
-                                <!-- Weight (kg) -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Weight (kg) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" name="weight_kg" class="form-control" placeholder="e.g. 4.5" required>
-                                </div>
-
-                                <!-- Height (cm) -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Height / Length (cm) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" name="height_cm" class="form-control" placeholder="e.g. 54.0" required>
-                                </div>
-
-                                <!-- Head Circumference (cm) -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Head Circumference (cm)</label>
-                                    <input type="number" step="0.1" name="head_circumference_cm" class="form-control" placeholder="e.g. 37.5">
-                                </div>
-
-                                <!-- Chest Circumference (cm) -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Chest Circumference (cm)</label>
-                                    <input type="number" step="0.1" name="chest_circumference_cm" class="form-control" placeholder="e.g. 37.0">
-                                </div>
-
-                                <!-- Body Temp -->
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">Body Temperature (°C)</label>
-                                    <input type="number" step="0.1" name="temperature" class="form-control" placeholder="36.5">
-                                </div>
-
-                                <!-- Feeding Practice -->
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
-                                    <select name="feeding_method" class="form-select">
-                                        <option value="LAM / Exclusive Breastfeeding" selected>LAM / Exclusive Breastfeeding</option>
-                                        <option value="Bottle Feeding (Formula)">Bottle Feeding (Formula)</option>
-                                        <option value="Mixed Feeding">Mixed Feeding</option>
-                                    </select>
-                                </div>
-
-                                <hr class="my-2 text-muted opacity-25">
-
-                                <!-- Vaccines Administered Today -->
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
-                                    <input type="text" name="vaccines_administered" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization History">
-                                </div>
-
-                                <!-- Supplementation Toggles -->
-                                <div class="col-12 col-sm-6 d-flex align-items-center gap-4 mt-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="vitamin_a_dose" value="1" id="vit_a_check">
-                                        <label class="form-check-label text-dark fw-semibold" for="vit_a_check">Vitamin A Capsule Given</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="deworming_dose" value="1" id="deworming_check">
-                                        <label class="form-check-label text-dark fw-semibold" for="deworming_check">Deworming Tablet Given</label>
-                                    </div>
-                                </div>
-
-                                <!-- TCB / Developmental Notes -->
-                                <div class="col-12">
-                                    <label class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
-                                    <textarea name="tcb_notes" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-success text-white px-4 fw-semibold">Save Growth Visit</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
-
-<?php endif; ?>
 
 <!-- ==========================================================================
    UNIVERSAL IMMUNIZATION MODAL (Any Patient)
@@ -3480,446 +2811,6 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
         </div>
     </div>
 </div>
-
-<!-- ==========================================================================
-   MATERNAL PRENATAL CARE MODALS (If Female)
-   ========================================================================== -->
-<?php if ($isFemale): ?>
-
-    <!-- 1. START PREGNANCY EPISODE MODAL -->
-    <div class="modal fade" id="startPrenatalModal" tabindex="-1" aria-labelledby="startPrenatalModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-pink text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                    <h5 class="modal-title fw-bold" id="startPrenatalModalLabel">
-                        <i class="bi bi-heart-pulse-fill me-2"></i>Start Maternal Pregnancy Episode (CHO I Record)
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form action="<?= url('/patients/' . $patient['id'] . '/prenatal/episode') ?>" method="POST" id="startPrenatalForm">
-                    <?= csrf_field() ?>
-
-                    <div class="modal-body p-4 bg-white">
-                        <div class="alert alert-info border-0 small mb-3">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Select the patient's <strong>Last Menstrual Period (LMP)</strong> to automatically calculate the <strong>EDC (Due Date)</strong> via Naegele's Rule and dynamic <strong>AOG</strong>.
-                        </div>
-
-                        <div class="row g-3 small">
-                            <!-- LMP Picker -->
-                            <div class="col-12 col-sm-6">
-                                <label for="lmp" class="form-label fw-semibold text-secondary">Last Menstrual Period (LMP) <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
-                                    <input type="date" name="lmp" id="prenatal_lmp_input" class="form-control  bg-white" placeholder="YYYY-MM-DD" required>
-                                </div>
-                            </div>
-
-                            <!-- Live Calculated EDC Preview -->
-                            <div class="col-12 col-sm-6">
-                                <label class="form-label fw-semibold text-secondary">Auto-calculated EDC (Naegele's Rule)</label>
-                                <div class="p-2 bg-light rounded border fw-bold text-pink font-monospace" id="live_edc_preview">
-                                    Select LMP to compute EDC...
-                                </div>
-                            </div>
-
-                            <!-- Husband / Partner Name -->
-                            <div class="col-12 col-sm-6">
-                                <label for="husband_name" class="form-label fw-semibold text-secondary">Husband / Partner Name</label>
-                                <input type="text" name="husband_name" id="husband_name" class="form-control" placeholder="Full Name of Partner" value="<?= h($patient['spouse_name'] ?? '') ?>">
-                            </div>
-
-                            <!-- Pre-Eclampsia High Risk Toggle -->
-                            <div class="col-12 col-sm-6 d-flex align-items-center">
-                                <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox" name="pre_eclampsia" value="1" id="pre_eclampsia_check">
-                                    <label class="form-check-label text-danger fw-semibold" for="pre_eclampsia_check">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Flag as High-Risk (Pre-Eclampsia)
-                                    </label>
-                                </div>
-                            </div>
-
-                            <hr class="my-2 text-muted opacity-25">
-
-                            <!-- Obstetric GTPAL Matrix -->
-                            <div class="col-12">
-                                <label class="form-label fw-bold text-dark">Obstetric History (GTPAL Score)</label>
-                            </div>
-                            <div class="col-4 col-sm-2">
-                                <label class="form-label text-secondary" style="font-size: 0.75rem;">Gravida (G)</label>
-                                <input type="number" name="gravida" class="form-control form-control-sm text-center font-monospace" value="1" min="1" max="20" required>
-                            </div>
-                            <div class="col-4 col-sm-2">
-                                <label class="form-label text-secondary" style="font-size: 0.75rem;">Para (P)</label>
-                                <input type="number" name="para" class="form-control form-control-sm text-center font-monospace" value="0" min="0" max="20">
-                            </div>
-                            <div class="col-4 col-sm-2">
-                                <label class="form-label text-secondary" style="font-size: 0.75rem;">Term (T)</label>
-                                <input type="number" name="term_births" class="form-control form-control-sm text-center font-monospace" value="0" min="0" max="20">
-                            </div>
-                            <div class="col-4 col-sm-2">
-                                <label class="form-label text-secondary" style="font-size: 0.75rem;">Preterm (P)</label>
-                                <input type="number" name="preterm_births" class="form-control form-control-sm text-center font-monospace" value="0" min="0" max="20">
-                            </div>
-                            <div class="col-4 col-sm-2">
-                                <label class="form-label text-secondary" style="font-size: 0.75rem;">Abortion (A)</label>
-                                <input type="number" name="abortions" class="form-control form-control-sm text-center font-monospace" value="0" min="0" max="20">
-                            </div>
-                            <div class="col-4 col-sm-2">
-                                <label class="form-label text-secondary" style="font-size: 0.75rem;">Living (L)</label>
-                                <input type="number" name="living_children" class="form-control form-control-sm text-center font-monospace" value="0" min="0" max="20">
-                            </div>
-
-                            <hr class="my-2 text-muted opacity-25">
-
-                            <!-- Family Planning Counselling -->
-                            <div class="col-12 col-sm-6">
-                                <div class="form-check mt-1">
-                                    <input class="form-check-input" type="checkbox" name="fp_counselling" value="1" id="fp_counselling_check" checked>
-                                    <label class="form-check-label text-secondary" for="fp_counselling_check">Family Planning Counselling Provided</label>
-                                </div>
-                            </div>
-
-                            <!-- Notes -->
-                            <div class="col-12">
-                                <label for="prenatal_notes" class="form-label fw-semibold text-secondary">Clinical Notes / Midwife Remarks</label>
-                                <textarea name="notes" id="prenatal_notes" rows="2" class="form-control" placeholder="Special pregnancy instructions, high-risk notes..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-pink text-white px-4 fw-semibold">Enroll Pregnancy Episode</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. LOG SERIAL PRENATAL VISIT MODAL -->
-    <?php if ($activePrenatal): ?>
-        <div class="modal fade" id="addPrenatalVisitModal" tabindex="-1" aria-labelledby="addPrenatalVisitModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                        <h5 class="modal-title fw-bold" id="addPrenatalVisitModalLabel">
-                            <i class="bi bi-journal-medical me-2"></i>Log Serial Prenatal Follow-up Visit
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                    <form action="<?= url('/prenatal/' . $activePrenatal['id'] . '/visit') ?>" method="POST" id="prenatalVisitForm">
-                        <?= csrf_field() ?>
-
-                        <div class="modal-body p-4 bg-white">
-                            <div class="row g-3 small">
-                                <!-- Visit Date -->
-                                <div class="col-12 col-sm-6">
-                                    <label for="visit_date" class="form-label fw-semibold text-secondary">Visit Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="visit_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
-                                </div>
-
-                                <!-- AOG in Weeks -->
-                                <div class="col-12 col-sm-6">
-                                    <label for="aog_weeks" class="form-label fw-semibold text-secondary">AOG (Weeks) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.1" name="aog_weeks" class="form-control font-monospace" value="<?= h($activePrenatal['calculated_aog']['weeks'] ?? '12') ?>" required>
-                                </div>
-
-                                <!-- Maternal Blood Pressure -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Systolic BP (mmHg)</label>
-                                    <input type="number" name="bp_systolic" class="form-control" placeholder="120" min="40" max="250">
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Diastolic BP (mmHg)</label>
-                                    <input type="number" name="bp_diastolic" class="form-control" placeholder="80" min="30" max="150">
-                                </div>
-
-                                <!-- Weight & Height -->
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Weight (kg)</label>
-                                    <input type="number" step="0.1" name="weight_kg" class="form-control" placeholder="55.0">
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <label class="form-label fw-semibold text-secondary">Height (cm)</label>
-                                    <input type="number" step="0.1" name="height_cm" class="form-control" placeholder="158.0">
-                                </div>
-
-                                <hr class="my-2 text-muted opacity-25">
-
-                                <!-- FHT (bpm) -->
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <label class="form-label fw-semibold text-pink">Fetal Heart Tone - FHT (bpm)</label>
-                                    <input type="number" name="fetal_heart_tone" class="form-control" placeholder="140 (Normal 120-160)">
-                                    <div class="form-text" style="font-size: 0.7rem;">Normal physiological range: 120 to 160 bpm.</div>
-                                </div>
-
-                                <!-- Fundal Height (cm) -->
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <label class="form-label fw-semibold text-secondary">Fundal Height (FH cm)</label>
-                                    <input type="number" step="0.5" name="fundal_height_cm" class="form-control" placeholder="e.g. 24.0">
-                                </div>
-
-                                <!-- Fetal Presentation -->
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <label class="form-label fw-semibold text-secondary">Fetal Presentation</label>
-                                    <select name="fetal_presentation" class="form-select">
-                                        <option value="Cephalic" selected>Cephalic (Head down)</option>
-                                        <option value="Breech">Breech</option>
-                                        <option value="Transverse">Transverse</option>
-                                        <option value="Variable">Variable / Not Determined</option>
-                                    </select>
-                                </div>
-
-                                <!-- TCB / Tetanus Status -->
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">TCB / Maternal TT Dose Given</label>
-                                    <input type="text" name="tcb" class="form-control" placeholder="e.g. TT3 Administered, Iron/Folic given">
-                                </div>
-
-                                <!-- Chief Complaint -->
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">Chief Complaint / Symptoms</label>
-                                    <input type="text" name="chief_complaint" class="form-control" placeholder="e.g. Routine checkup, mild backache">
-                                </div>
-
-                                <!-- Remarks -->
-                                <div class="col-12">
-                                    <label class="form-label fw-semibold text-secondary">Midwife / Clinician Remarks</label>
-                                    <textarea name="remarks" rows="2" class="form-control" placeholder="Advised rest, iron supplements prescribed, next follow up in 4 weeks..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Prenatal Visit</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. EDIT PREGNANCY EPISODE MODAL -->
-        <div class="modal fade" id="editPrenatalModal" tabindex="-1" aria-labelledby="editPrenatalModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                        <h5 class="modal-title fw-bold" id="editPrenatalModalLabel">
-                            <i class="bi bi-pencil-square me-2"></i>Edit Pregnancy Episode Details
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                    <form action="<?= url('/prenatal/' . $activePrenatal['id'] . '/update') ?>" method="POST" id="editPrenatalForm">
-                        <?= csrf_field() ?>
-
-                        <div class="modal-body p-4 bg-white small">
-                            <div class="row g-3">
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">LMP Date</label>
-                                    <input type="date" name="lmp" class="form-control  bg-white" value="<?= h($activePrenatal['lmp']) ?>" required>
-                                </div>
-                                <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary">Husband / Partner Name</label>
-                                    <input type="text" name="husband_name" class="form-control" value="<?= h($activePrenatal['husband_name'] ?? '') ?>">
-                                </div>
-
-                                <div class="col-4 col-sm-2">
-                                    <label class="form-label text-secondary" style="font-size: 0.75rem;">Gravida</label>
-                                    <input type="number" name="gravida" class="form-control form-control-sm text-center font-monospace" value="<?= $activePrenatal['gravida'] ?>">
-                                </div>
-                                <div class="col-4 col-sm-2">
-                                    <label class="form-label text-secondary" style="font-size: 0.75rem;">Para</label>
-                                    <input type="number" name="para" class="form-control form-control-sm text-center font-monospace" value="<?= $activePrenatal['para'] ?>">
-                                </div>
-                                <div class="col-4 col-sm-2">
-                                    <label class="form-label text-secondary" style="font-size: 0.75rem;">Term</label>
-                                    <input type="number" name="term_births" class="form-control form-control-sm text-center font-monospace" value="<?= $activePrenatal['term_births'] ?>">
-                                </div>
-                                <div class="col-4 col-sm-2">
-                                    <label class="form-label text-secondary" style="font-size: 0.75rem;">Preterm</label>
-                                    <input type="number" name="preterm_births" class="form-control form-control-sm text-center font-monospace" value="<?= $activePrenatal['preterm_births'] ?>">
-                                </div>
-                                <div class="col-4 col-sm-2">
-                                    <label class="form-label text-secondary" style="font-size: 0.75rem;">Abortion</label>
-                                    <input type="number" name="abortions" class="form-control form-control-sm text-center font-monospace" value="<?= $activePrenatal['abortions'] ?>">
-                                </div>
-                                <div class="col-4 col-sm-2">
-                                    <label class="form-label text-secondary" style="font-size: 0.75rem;">Living</label>
-                                    <input type="number" name="living_children" class="form-control form-control-sm text-center font-monospace" value="<?= $activePrenatal['living_children'] ?>">
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" name="pre_eclampsia" value="1" id="edit_pre_eclampsia" <?= !empty($activePrenatal['pre_eclampsia']) ? 'checked' : '' ?>>
-                                        <label class="form-check-label text-danger fw-semibold" for="edit_pre_eclampsia">High-Risk Pre-Eclampsia</label>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" name="fp_counselling" value="1" id="edit_fp_counselling" <?= !empty($activePrenatal['fp_counselling']) ? 'checked' : '' ?>>
-                                        <label class="form-check-label text-secondary" for="edit_fp_counselling">FP Counselling Provided</label>
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <label class="form-label fw-semibold text-secondary">Notes</label>
-                                    <textarea name="notes" rows="2" class="form-control"><?= h($activePrenatal['notes'] ?? '') ?></textarea>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary px-4 fw-semibold">Update Details</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. CONCLUDE PREGNANCY EPISODE MODAL -->
-        <div class="modal fade" id="concludePrenatalModal" tabindex="-1" aria-labelledby="concludePrenatalModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <div class="modal-header bg-danger text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                        <h5 class="modal-title fw-bold" id="concludePrenatalModalLabel">
-                            <i class="bi bi-check2-circle me-2"></i>Conclude Pregnancy Episode
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    
-                    <form action="<?= url('/prenatal/' . $activePrenatal['id'] . '/conclude') ?>" method="POST" id="concludePrenatalForm">
-                        <?= csrf_field() ?>
-
-                        <div class="modal-body p-4 bg-white small">
-                            <div class="alert alert-warning border-0 small mb-3">
-                                Concluding this episode will mark the maternal care record as completed and record the delivery outcome.
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="delivery_date" class="form-label fw-semibold text-secondary">Delivery / Outcome Date <span class="text-danger">*</span></label>
-                                <input type="date" name="delivery_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="delivery_outcome" class="form-label fw-semibold text-secondary">Delivery Outcome <span class="text-danger">*</span></label>
-                                <select name="delivery_outcome" class="form-select" required>
-                                    <option value="Live Birth (Single)" selected>Live Birth (Single)</option>
-                                    <option value="Live Birth (Multiple/Twins)">Live Birth (Multiple / Twins)</option>
-                                    <option value="Stillbirth">Stillbirth</option>
-                                    <option value="Miscarriage">Miscarriage / Abortion</option>
-                                    <option value="Delivered Elsewhere">Delivered in Another Hospital / Clinic</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="conclude_notes" class="form-label fw-semibold text-secondary">Outcome Notes</label>
-                                <textarea name="notes" id="conclude_notes" rows="2" class="form-control" placeholder="Baby boy delivered via NSD, 3.2kg..."></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-danger px-4 fw-semibold">Confirm Conclusion</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- 5. ADD PAST OBSTETRIC DELIVERY MODAL -->
-    <div class="modal fade" id="addPastObstetricModal" tabindex="-1" aria-labelledby="addPastObstetricModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                    <h5 class="modal-title fw-bold" id="addPastObstetricModalLabel">
-                        <i class="bi bi-clock-history me-2"></i>Add Past Delivery Record (G1, G2...)
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <form action="<?= url('/patients/' . $patient['id'] . '/past-obstetric') ?>" method="POST" id="pastObstetricForm">
-                    <?= csrf_field() ?>
-
-                    <div class="modal-body p-4 bg-white small">
-                        <div class="row g-3">
-                            <!-- Gravida No -->
-                            <div class="col-12 col-sm-4">
-                                <label for="gravida_no" class="form-label fw-semibold text-secondary">Gravida No. (Pregnancy #) <span class="text-danger">*</span></label>
-                                <input type="number" name="gravida_no" class="form-control font-monospace" placeholder="e.g. 1" min="1" max="25" value="<?= count($pastDeliveries) + 1 ?>" required>
-                            </div>
-
-                            <!-- Delivery Type -->
-                            <div class="col-12 col-sm-4">
-                                <label for="delivery_type" class="form-label fw-semibold text-secondary">Delivery Type <span class="text-danger">*</span></label>
-                                <select name="delivery_type" class="form-select" required>
-                                    <option value="NSD" selected>NSD (Normal Spontaneous)</option>
-                                    <option value="CS">CS (Caesarean Section)</option>
-                                    <option value="Other">Vacuum / Forceps / Other</option>
-                                    <option value="Abortion">Abortion / Miscarriage</option>
-                                </select>
-                            </div>
-
-                            <!-- Infant Sex -->
-                            <div class="col-12 col-sm-4">
-                                <label for="infant_sex" class="form-label fw-semibold text-secondary">Infant Sex</label>
-                                <select name="infant_sex" class="form-select">
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Unknown">Unknown / Undetermined</option>
-                                </select>
-                            </div>
-
-                            <!-- Place of Delivery -->
-                            <div class="col-12 col-sm-6">
-                                <label for="place_of_delivery" class="form-label fw-semibold text-secondary">Place of Delivery</label>
-                                <input type="text" name="place_of_delivery" class="form-control" placeholder="e.g. Sta. Rosa Lying-in, SRCH, Home">
-                            </div>
-
-                            <!-- Year Delivered -->
-                            <div class="col-12 col-sm-6">
-                                <label for="year_delivered" class="form-label fw-semibold text-secondary">Year Delivered</label>
-                                <input type="number" name="year_delivered" class="form-control font-monospace" placeholder="e.g. 2022" min="1970" max="<?= date('Y') ?>">
-                            </div>
-
-                            <!-- Attended By -->
-                            <div class="col-12 col-sm-6">
-                                <label for="attended_by" class="form-label fw-semibold text-secondary">Birth Attendant</label>
-                                <input type="text" name="attended_by" class="form-control" placeholder="e.g. Midwife Ramos, Dr. Santos">
-                            </div>
-
-                            <!-- Child Status -->
-                            <div class="col-12 col-sm-6">
-                                <label for="status" class="form-label fw-semibold text-secondary">Child Status</label>
-                                <select name="status" class="form-select">
-                                    <option value="Alive" selected>Alive</option>
-                                    <option value="Not Alive">Not Alive</option>
-                                </select>
-                            </div>
-
-                            <!-- Maternal TT Status -->
-                            <div class="col-12">
-                                <label for="tt_status" class="form-label fw-semibold text-secondary">Maternal TT (Tetanus Toxoid) Injections During Pregnancy</label>
-                                <input type="text" name="tt_status" class="form-control" placeholder="e.g. TT2 Given in 2022">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Past Delivery</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-<?php endif; ?>
 
 <!-- ==========================================================================
    VITAL SIGNS RECORDING MODAL
@@ -4179,88 +3070,6 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
 </div>
 
 <!-- ==========================================================================
-   VIEW CHILD GROWTH VISIT DETAILS MODAL
-   ========================================================================== -->
-<div class="modal fade" id="viewGrowthLogModal" tabindex="-1" aria-labelledby="viewGrowthLogModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold" id="viewGrowthLogModalLabel">
-                    <i class="bi bi-activity me-2"></i>Child Growth Visit Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 bg-white" id="growthLogModalContent">
-                <!-- Recorded Meta -->
-                <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
-                    <div>
-                        <span class="text-muted small d-block">Visit Date</span>
-                        <strong class="text-dark" id="modalGrowthDate">--</strong>
-                    </div>
-                    <div class="text-end">
-                        <span class="text-muted small d-block">Age</span>
-                        <strong class="text-success" id="modalGrowthAge">--</strong>
-                    </div>
-                </div>
-
-                <!-- Grid of Anthropometric Cards -->
-                <div class="row g-2 mb-3">
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Weight &amp; Height</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthWeight">--</span> / <span id="modalGrowthHeight">--</span></span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Head Circumference</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthHead">--</span> <small class="text-muted fw-normal">cm</small></span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Chest Circumference</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthChest">--</span> <small class="text-muted fw-normal">cm</small></span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Temperature</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthTemp">--</span> <small class="text-muted fw-normal">°C</small></span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Feeding Method</span>
-                            <span class="fs-6 fw-bold text-dark" id="modalGrowthFeeding">--</span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Supplements</span>
-                            <span class="fs-6 fw-bold text-dark" id="modalGrowthSupplements">--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TCB / Developmental Milestones & Remarks -->
-                <div class="card border rounded bg-white">
-                    <div class="card-header bg-light py-1.5 px-3 small fw-bold text-secondary">
-                        <i class="bi bi-journal-text me-1 text-success"></i> TCB / Developmental Milestones &amp; Remarks
-                    </div>
-                    <div class="card-body p-3 small text-dark" id="modalGrowthTcb" style="white-space: pre-line; min-height: 50px;">
-                        No developmental milestones or remarks recorded.
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ==========================================================================
    HIDDEN WORKSTATION ACTION FORMS (CSRF-Protected)
    ========================================================================== -->
 <form id="archiveConsultationForm" method="POST" class="d-none">
@@ -4276,9 +3085,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
     <?= csrf_field() ?>
 </form>
 
-<form id="deletePrenatalVisitForm" method="POST" class="d-none">
-    <?= csrf_field() ?>
-</form>
+
 
 <form id="cancelAppointmentForm" method="POST" class="d-none">
     <?= csrf_field() ?>
@@ -4686,8 +3493,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'vitals': 'tab-vitals',
             'vitals-log': 'tab-vitals',
             'immunizations': 'tab-immunizations',
-            'prenatal': 'tab-prenatal',
-            'wellbaby': 'tab-wellbaby',
+            // 'prenatal': routed to dedicated /maternal workstation,
+            // 'wellbaby': routed to dedicated /well-baby workstation,
             'appointments': 'tab-appointments',
             'queue': 'tab-appointments'
         };
@@ -5121,70 +3928,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // View Child Growth Visit Details Modal
-    const viewGrowthLogModalEl = document.getElementById('viewGrowthLogModal');
-    const viewGrowthLogModal = viewGrowthLogModalEl ? bootstrap.Modal.getOrCreateInstance(viewGrowthLogModalEl) : null;
-
-    if (viewGrowthLogModalEl) {
-        viewGrowthLogModalEl.addEventListener('hidden.bs.modal', function () {
-            if (!document.querySelector('.modal.show')) {
-                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-                document.body.classList.remove('modal-open');
-                document.body.style.removeProperty('overflow');
-                document.body.style.removeProperty('padding-right');
-            }
-        });
-    }
-
-    document.querySelectorAll('.btn-view-growth-log').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const date = this.getAttribute('data-date') || '--';
-            const age = this.getAttribute('data-age') || '--';
-            const weight = this.getAttribute('data-weight') || '--';
-            const height = this.getAttribute('data-height') || '--';
-            const head = this.getAttribute('data-head') || '--';
-            const chest = this.getAttribute('data-chest') || '--';
-            const temp = this.getAttribute('data-temp') || '--';
-            const feeding = this.getAttribute('data-feeding') || '--';
-            const supplements = this.getAttribute('data-supplements') || 'None';
-            const tcb = this.getAttribute('data-tcb') || '';
-
-            const elDate = document.getElementById('modalGrowthDate');
-            const elAge = document.getElementById('modalGrowthAge');
-            const elWeight = document.getElementById('modalGrowthWeight');
-            const elHeight = document.getElementById('modalGrowthHeight');
-            const elHead = document.getElementById('modalGrowthHead');
-            const elChest = document.getElementById('modalGrowthChest');
-            const elTemp = document.getElementById('modalGrowthTemp');
-            const elFeeding = document.getElementById('modalGrowthFeeding');
-            const elSupplements = document.getElementById('modalGrowthSupplements');
-            const elTcb = document.getElementById('modalGrowthTcb');
-
-            if (elDate) elDate.textContent = date;
-            if (elAge) elAge.textContent = age;
-            if (elWeight) elWeight.textContent = weight;
-            if (elHeight) elHeight.textContent = height;
-            if (elHead) elHead.textContent = head;
-            if (elChest) elChest.textContent = chest;
-            if (elTemp) elTemp.textContent = temp;
-            if (elFeeding) elFeeding.textContent = feeding;
-            if (elSupplements) elSupplements.textContent = supplements;
-
-            if (elTcb) {
-                if (tcb && tcb.trim()) {
-                    elTcb.textContent = tcb.trim();
-                } else {
-                    elTcb.innerHTML = '<span class="text-muted fst-italic">No developmental milestones or remarks recorded.</span>';
-                }
-            }
-
-            if (viewGrowthLogModalEl) {
-                bootstrap.Modal.getOrCreateInstance(viewGrowthLogModalEl).show();
-            }
-        });
-    });
-
     // C. Delete Vital Signs Record
     document.querySelectorAll('.btn-delete-vital').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -5249,38 +3992,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // E. Delete Prenatal Visit
-    document.querySelectorAll('.btn-delete-prenatal-visit').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const id = this.getAttribute('data-id');
-            const date = this.getAttribute('data-date') || '';
-
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Delete Prenatal Visit?',
-                    text: `Are you sure you want to remove the prenatal checkup visit dated ${date}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, delete visit',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const form = document.getElementById('deletePrenatalVisitForm');
-                        form.action = `<?= url('/prenatal/visit/') ?>${id}/delete`;
-                        form.submit();
-                    }
-                });
-            } else if (confirm(`Remove prenatal checkup visit dated ${date}?`)) {
-                const form = document.getElementById('deletePrenatalVisitForm');
-                form.action = `<?= url('/prenatal/visit/') ?>${id}/delete`;
-                form.submit();
-            }
-        });
-    });
-
     // F. Cancel Appointment
     document.querySelectorAll('.btn-cancel-appointment').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -5315,31 +4026,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     
 
-    // 5. Live Naegele Rule EDC Calculator Preview
-    const prenatalLmpInput = document.getElementById('prenatal_lmp_input');
-    const liveEdcPreview = document.getElementById('live_edc_preview');
-
-    if (prenatalLmpInput && liveEdcPreview) {
-        prenatalLmpInput.addEventListener('change', function() {
-            const lmpVal = this.value;
-            if (lmpVal) {
-                const lmpDate = new Date(lmpVal);
-                if (!isNaN(lmpDate.getTime())) {
-                    // Naegele's rule: +1 year, -3 months, +7 days
-                    const edc = new Date(lmpDate);
-                    edc.setFullYear(edc.getFullYear() + 1);
-                    edc.setMonth(edc.getMonth() - 3);
-                    edc.setDate(edc.getDate() + 7);
-                    
-                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                    liveEdcPreview.innerText = edc.toLocaleDateString('en-US', options) + ' (' + edc.toISOString().split('T')[0] + ')';
-                }
-            } else {
-                liveEdcPreview.innerText = 'Select LMP to compute EDC...';
-            }
-        });
-    }
-});
+    });
 </script>
 
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>

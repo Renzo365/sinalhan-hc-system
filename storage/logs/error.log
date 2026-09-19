@@ -449,3 +449,269 @@ Stack Trace:
 #6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(62): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
 #7 {main}
 --------------------------------------------------------------------------------
+[2026-09-17 21:08:58] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:11:17] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:13:00] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:13:43] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:15:52] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:15:53] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:16:17] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:16:33] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:18:42] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 21:20:27] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php:381
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalRecord.php(381): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(40): App\Models\PrenatalRecord->getRecentlyDelivered(90)
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 22:24:39] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/well-baby
+Exception: TypeError: count(): Argument #1 ($value) must be of type Countable|array, null given in C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\index.php:15
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\WellbabyController.php(37): App\Core\Controller->view('wellbaby/index', Array)
+#2 [internal function]: App\Controllers\WellbabyController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 22:26:16] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/well-baby
+Exception: TypeError: count(): Argument #1 ($value) must be of type Countable|array, null given in C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\index.php:15
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\WellbabyController.php(37): App\Core\Controller->view('wellbaby/index', Array)
+#2 [internal function]: App\Controllers\WellbabyController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 22:26:31] [TypeError] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/well-baby
+Exception: TypeError: count(): Argument #1 ($value) must be of type Countable|array, null given in C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\index.php:15
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require()
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\WellbabyController.php(37): App\Core\Controller->view('wellbaby/index', Array)
+#2 [internal function]: App\Controllers\WellbabyController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:13:45] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:01] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:17] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:18] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:26] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:31] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:35] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:15:38] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:16:11] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-17 23:16:19] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/maternal
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'pr.status' in 'where clause' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:611
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(611): PDO->query('SELECT p.*, \r\n ...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\MaternalController.php(54): App\Models\Patient->getEligibleMaternalPatients()
+#2 [internal function]: App\Controllers\MaternalController->index()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-18 16:05:13] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/api/patients/search/female?q=Santos
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.street_purok' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:446
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(446): PDO->prepare('SELECT p.id, p....')
+#1 [internal function]: App\Controllers\PatientController->searchFemale()
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#3 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#4 {main}
+--------------------------------------------------------------------------------
+[2026-09-18 16:06:25] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/api/patients/search/female?q=Santos
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.street_purok' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:446
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(446): PDO->prepare('SELECT p.id, p....')
+#1 [internal function]: App\Controllers\PatientController->searchFemale()
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#3 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#4 {main}
+--------------------------------------------------------------------------------
+[2026-09-18 16:06:53] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/api/patients/search/female?q=Santos
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.street_purok' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:446
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(446): PDO->prepare('SELECT p.id, p....')
+#1 [internal function]: App\Controllers\PatientController->searchFemale()
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#3 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#4 {main}
+--------------------------------------------------------------------------------
+[2026-09-18 16:07:07] [PDOException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/api/patients/search/female?q=Santos
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.street_purok' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php:446
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(446): PDO->prepare('SELECT p.id, p....')
+#1 [internal function]: App\Controllers\PatientController->searchFemale()
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#3 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#4 {main}
+--------------------------------------------------------------------------------
