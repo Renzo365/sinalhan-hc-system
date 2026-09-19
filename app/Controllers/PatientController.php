@@ -318,7 +318,7 @@ class PatientController extends Controller {
         }
 
         // Authorization check: Only administrators can archive patient records
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!is_admin()) {
             $_SESSION['error_message'] = 'Unauthorized access: Only administrators can archive patient records.';
             $this->redirect("/patients/{$id}");
             return;
@@ -362,14 +362,18 @@ class PatientController extends Controller {
         $consultationModel = new \App\Models\Consultation();
         $archivedConsultations = $consultationModel->allArchived($filters);
 
+        $userModel = new \App\Models\User();
+        $archivedUsers = $userModel->allArchived($filters);
+
         $activeTab = trim($_GET['tab'] ?? 'patients');
-        if (!in_array($activeTab, ['patients', 'consultations'], true)) {
+        if (!in_array($activeTab, ['patients', 'consultations', 'users'], true)) {
             $activeTab = 'patients';
         }
 
         $this->view('archive/patients', [
             'patients' => $archivedPatients,
             'consultations' => $archivedConsultations,
+            'users' => $archivedUsers,
             'filters' => $filters,
             'activeTab' => $activeTab
         ]);

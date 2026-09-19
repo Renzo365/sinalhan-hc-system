@@ -94,7 +94,7 @@ class UserValidator extends BaseValidator {
             $this->addError('Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).');
         }
 
-        if ($id == $currentUserId && $role !== 'admin') {
+        if ($id == $currentUserId && !in_array($role, ['admin', 'super_admin'], true)) {
             $this->addError('You cannot revoke your own administrator privilege.');
         }
 

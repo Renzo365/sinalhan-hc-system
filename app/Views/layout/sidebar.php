@@ -62,7 +62,7 @@ if (!function_exists('isActive')) {
         </a>
 
         <!-- Admin Only Section -->
-        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+        <?php if (is_admin()): ?>
             <div class="sidebar-section-title">Administration</div>
             
             <a href="<?= url('/archive/patients') ?>" class="sidebar-item <?= isActive('/archive/patients', $uri) ?>">

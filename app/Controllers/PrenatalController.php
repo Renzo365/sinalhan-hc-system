@@ -434,7 +434,7 @@ class PrenatalController extends Controller {
         }
 
         $patientId = (int)$record['patient_id'];
-        if (($_SESSION['user_role'] ?? 'staff') !== 'admin') {
+        if (!is_admin()) {
             $_SESSION['error_message'] = 'Only an administrator may remove past obstetric history.';
             $this->redirect("/maternal/{$patientId}");
             return;

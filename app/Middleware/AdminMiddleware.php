@@ -11,8 +11,8 @@ class AdminMiddleware {
         $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
             || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
 
-        // Check if role is admin
-        if (($_SESSION['user_role'] ?? '') !== 'admin') {
+        // Check if role is admin or super_admin
+        if (!is_admin()) {
             if ($isAjax) {
                 http_response_code(403);
                 header('Content-Type: application/json');

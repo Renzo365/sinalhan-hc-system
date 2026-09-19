@@ -19,7 +19,7 @@ require dirname(__DIR__) . '/layout/header.php';
 <div class="card card-premium mb-4">
     <div class="card-body p-4 bg-white">
         <form action="<?= url('/users') ?>" method="GET" class="row g-3 align-items-end">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-6">
                 <label for="search" class="form-label text-secondary small fw-semibold">Search Directory</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
@@ -27,22 +27,13 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
             </div>
             
-            <div class="col-12 col-sm-6 col-md-3">
+            <div class="col-12 col-sm-6 col-md-4">
                 <label for="role" class="form-label text-secondary small fw-semibold">Filter by Role</label>
                 <select name="role" id="role" class="form-select bg-light">
                     <option value="">-- All Roles --</option>
-                    <option value="main_admin" <?= (isset($filters['role']) && $filters['role'] === 'main_admin') ? 'selected' : '' ?>>Main Admin</option>
-                    <option value="co_admin" <?= (isset($filters['role']) && $filters['role'] === 'co_admin') ? 'selected' : '' ?>>Co-Admin</option>
+                    <option value="super_admin" <?= (isset($filters['role']) && $filters['role'] === 'super_admin') ? 'selected' : '' ?>>Super Admin</option>
+                    <option value="admin" <?= (isset($filters['role']) && $filters['role'] === 'admin') ? 'selected' : '' ?>>Admin</option>
                     <option value="staff" <?= (isset($filters['role']) && $filters['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
-                </select>
-            </div>
-            
-            <div class="col-12 col-sm-6 col-md-2">
-                <label for="status" class="form-label text-secondary small fw-semibold">Status</label>
-                <select name="status" id="status" class="form-select bg-light">
-                    <option value="">-- All Statuses --</option>
-                    <option value="active" <?= (isset($filters['status']) && $filters['status'] === 'active') ? 'selected' : '' ?>>Active</option>
-                    <option value="inactive" <?= (isset($filters['status']) && $filters['status'] === 'inactive') ? 'selected' : '' ?>>Inactive</option>
                 </select>
             </div>
             
@@ -69,7 +60,6 @@ require dirname(__DIR__) . '/layout/header.php';
                         <th class="text-start">Full Name</th>
                         <th>Role</th>
                         <th>Job Title & Unit</th>
-                        <th>Status</th>
                         <th>Last Login</th>
                         <th class="pe-4 text-end">Actions</th>
                     </tr>
@@ -77,7 +67,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <tbody>
                     <?php if (empty($users)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-people d-block fs-3 mb-2 text-muted"></i>
                                 No user accounts match the search criteria.
                             </td>
@@ -85,13 +75,32 @@ require dirname(__DIR__) . '/layout/header.php';
                     <?php else: ?>
                         <?php 
                         foreach ($users as $u): 
-                            $statusBadge = ($u['status'] === 'active') 
-                                ? 'bg-success-bg text-success border border-success-subtle' 
-                                : 'bg-secondary text-white';
-                            
-                            $roleBadge = $u['role'] === 'admin' ? 'bg-light text-primary border border-primary-subtle fw-bold' : 'bg-light text-dark border';
                             $lockoutInfo = $u['lockout_info'] ?? ['is_locked' => false, 'remaining_seconds' => 0, 'remaining_formatted' => ''];
                             $isLocked = !empty($lockoutInfo['is_locked']);
+                            
+                            $isTargetSuperAdmin = ($u['role'] === 'super_admin');
+                            $isTargetAdmin = ($u['role'] === 'admin');
+                            $isSelf = ($u['id'] == $_SESSION['user_id']);
+                            
+                            $canManage = false;
+                            if (is_super_admin()) {
+                                $canManage = true;
+                            } elseif ($isSelf) {
+                                $canManage = true;
+                            } elseif (!$isTargetSuperAdmin && !$isTargetAdmin) {
+                                $canManage = true; // Standard admin can manage staff
+                            }
+                            
+                            if ($u['role'] === 'super_admin') {
+                                $roleBadge = 'bg-primary text-white fw-bold shadow-sm';
+                                $roleDisplay = 'Super Admin';
+                            } elseif ($u['role'] === 'admin') {
+                                $roleBadge = 'bg-light text-primary border border-primary-subtle fw-bold';
+                                $roleDisplay = 'Admin';
+                            } else {
+                                $roleBadge = 'bg-light text-dark border';
+                                $roleDisplay = 'Staff';
+                            }
                         ?>
                             <tr>
                                 <td class="text-start ps-4 fw-bold font-monospace text-dark"><?= h($u['username']) ?></td>
@@ -101,29 +110,19 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-size: 0.68rem;"><?= h($u['employee_id']) ?></span>
                                     <?php endif; ?>
                                     <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['email'] ?: '-') ?></div>
+                                    <?php if ($isLocked): ?>
+                                        <div class="mt-1">
+                                            <span class="badge bg-warning text-dark border border-warning-subtle" style="font-size: 0.68rem;" title="Temporarily locked due to failed attempts">
+                                                <i class="bi bi-clock-history me-1"></i> Locked (<?= h($lockoutInfo['remaining_formatted']) ?>)
+                                            </span>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
-                                 <?php 
-                                 $roleDisplay = h(ucfirst($u['role']));
-                                 if ($u['role'] === 'admin') {
-                                     $roleDisplay = ($u['id'] == 1) ? 'Main Admin' : 'Co-Admin';
-                                 }
-                                 ?>
-                                 <td><span class="badge <?= $roleBadge ?>"><?= $roleDisplay ?></span></td>
+                                <td><span class="badge <?= $roleBadge ?>"><?= $roleDisplay ?></span></td>
                                 <td>
                                     <div class="fw-medium"><?= h($u['job_title'] ?: '-') ?></div>
                                     <?php if (!empty($u['department'])): ?>
                                         <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['department']) ?></div>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($isLocked): ?>
-                                        <span class="badge bg-warning text-dark border border-warning-subtle" title="Temporarily locked due to failed attempts">
-                                            <i class="bi bi-clock-history me-1"></i> Locked (<?= h($lockoutInfo['remaining_formatted']) ?>)
-                                        </span>
-                                    <?php elseif ($u['status'] === 'active'): ?>
-                                        <span class="badge bg-success-bg text-success border border-success-subtle">Active</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary text-white">Inactive</span>
                                     <?php endif; ?>
                                 </td>
                                  <td data-order="<?= $u['last_login_at'] ? h($u['last_login_at']) : '1970-01-01 00:00:00' ?>">
@@ -131,9 +130,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                  </td>
                                  <td class="pe-4 text-end">
                                      <div class="d-inline-flex gap-2 align-items-center">
-                                         <?php if ($u['role'] === 'admin' && $u['id'] != $_SESSION['user_id'] && $_SESSION['user_id'] != 1): ?>
-                                             <!-- Protected Administrator Badge -->
-                                             <span class="badge bg-light text-secondary border py-2 px-2.5" title="Administrator account is system-protected.">
+                                         <?php if (!$canManage): ?>
+                                             <!-- Protected Account Badge -->
+                                             <span class="badge bg-light text-secondary border py-2 px-2.5" title="This account is system-protected.">
                                                  <i class="bi bi-lock-fill text-muted me-1"></i> Protected
                                              </span>
                                          <?php else: ?>
@@ -171,27 +170,17 @@ require dirname(__DIR__) . '/layout/header.php';
                                                  <i class="bi bi-key-fill fs-6"></i>
                                              </button>
 
-                                             <!-- Activate / Deactivate Action Button -->
-                                             <?php if ($u['id'] != $_SESSION['user_id'] && $u['id'] != 1): ?>
-                                                 <form action="<?= url('/users/' . $u['id'] . '/toggle-status') ?>" method="POST" class="d-inline">
+                                             <!-- Archive Action Button -->
+                                             <?php if (!$isSelf && !$isTargetSuperAdmin && (!$isTargetAdmin || is_super_admin())): ?>
+                                                 <form action="<?= url('/users/' . $u['id'] . '/archive') ?>" method="POST" class="d-inline">
                                                      <?= csrf_field() ?>
-                                                     <?php if ($u['status'] === 'active'): ?>
-                                                         <button type="submit" 
-                                                                 class="btn btn-sm btn-outline-danger border d-inline-flex align-items-center justify-content-center" 
-                                                                 style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
-                                                                 title="Deactivate Account" 
-                                                                 data-confirm="Are you sure you want to deactivate user account '<?= h($u['username']) ?>'? They will not be able to log in to the system until reactivated.">
-                                                             <i class="bi bi-person-x-fill fs-6"></i>
-                                                         </button>
-                                                     <?php else: ?>
-                                                         <button type="submit" 
-                                                                 class="btn btn-sm btn-outline-success border d-inline-flex align-items-center justify-content-center" 
-                                                                 style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
-                                                                 title="Activate Account" 
-                                                                 data-confirm="Are you sure you want to activate user account '<?= h($u['username']) ?>'? They will regain system access immediately.">
-                                                             <i class="bi bi-person-check-fill fs-6"></i>
-                                                         </button>
-                                                     <?php endif; ?>
+                                                     <button type="submit" 
+                                                             class="btn btn-sm btn-outline-danger border d-inline-flex align-items-center justify-content-center" 
+                                                             style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
+                                                             title="Archive Account" 
+                                                             data-confirm="Are you sure you want to archive user account '<?= h($u['username']) ?>'? This account will be deactivated and moved to the Archived Records Hub.">
+                                                         <i class="bi bi-archive-fill fs-6"></i>
+                                                     </button>
                                                  </form>
                                              <?php endif; ?>
                                          <?php endif; ?>
@@ -237,21 +226,13 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- New Password field -->
                     <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label for="new_password" class="form-label fw-semibold text-secondary small mb-0">New Temporary Password <span class="text-danger">*</span></label>
-                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" id="btnGeneratePassword" style="font-size: 0.78rem;">
-                                <i class="bi bi-magic me-1"></i>Generate Secure Password
-                            </button>
-                        </div>
+                        <label for="new_password" class="form-label fw-semibold text-secondary small">New Temporary Password <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
                             <input type="password" name="new_password" id="new_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Minimum 8 characters" minlength="8" required>
                             <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
                                 <i class="bi bi-eye"></i>
                             </button>
-                        </div>
-                        <div id="passwordCopiedNotice" class="text-success small mt-1 d-none">
-                            <i class="bi bi-check-circle-fill me-1"></i> Generated password copied to clipboard!
                         </div>
                     </div>
 
@@ -291,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "responsive": true,
             "order": [[1, "asc"]], // Sort by name ascending
             "columnDefs": [
-                { "orderable": false, "targets": 6 } // Actions
+                { "orderable": false, "targets": 5 } // Actions
             ],
             "language": {
                 "paginate": {
@@ -316,11 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
             targetUsername.textContent = '@' + username;
             form.action = '<?= url('/users/') ?>' + userId + '/reset-password';
             
-            // Clear inputs, notice, and reset visibility states
-            const notice = document.getElementById('passwordCopiedNotice');
-            if (notice) {
-                notice.classList.add('d-none');
-            }
             ['admin_password', 'new_password', 'confirm_password'].forEach(function(id) {
                 const el = document.getElementById(id);
                 if (el) {
@@ -337,75 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 btn.setAttribute('title', 'Show password');
                 btn.setAttribute('aria-label', 'Show password');
             });
-        });
-    }
-
-    // Generate Secure Password Helper
-    const btnGenerate = document.getElementById('btnGeneratePassword');
-    if (btnGenerate) {
-        btnGenerate.addEventListener('click', function() {
-            const length = 14;
-            const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const lower = 'abcdefghijklmnopqrstuvwxyz';
-            const digits = '0123456789';
-            const special = '!@#$%^&*()-_=+';
-            const allChars = upper + lower + digits + special;
-
-            // Ensure at least one from each character set
-            let password = '';
-            password += upper.charAt(Math.floor(Math.random() * upper.length));
-            password += lower.charAt(Math.floor(Math.random() * lower.length));
-            password += digits.charAt(Math.floor(Math.random() * digits.length));
-            password += special.charAt(Math.floor(Math.random() * special.length));
-
-            for (let i = password.length; i < length; i++) {
-                password += allChars.charAt(Math.floor(Math.random() * allChars.length));
-            }
-
-            // Shuffle the characters
-            password = password.split('').sort(function() { return 0.5 - Math.random(); }).join('');
-
-            const newPassInput = document.getElementById('new_password');
-            const confirmPassInput = document.getElementById('confirm_password');
-
-            if (newPassInput && confirmPassInput) {
-                newPassInput.value = password;
-                confirmPassInput.value = password;
-
-                // Toggle type to text to reveal generated password
-                newPassInput.type = 'text';
-                confirmPassInput.type = 'text';
-
-                // Update eye icons for both password fields
-                [newPassInput, confirmPassInput].forEach(function(input) {
-                    const toggleBtn = input.closest('.input-group')?.querySelector('.btn-toggle-password');
-                    if (toggleBtn) {
-                        const icon = toggleBtn.querySelector('i');
-                        if (icon) {
-                            icon.classList.remove('bi-eye');
-                            icon.classList.add('bi-eye-slash');
-                        }
-                        toggleBtn.setAttribute('title', 'Hide password');
-                        toggleBtn.setAttribute('aria-label', 'Hide password');
-                    }
-                });
-
-                // Copy to clipboard
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(password).catch(function(err) {
-                        console.error('Clipboard copy failed: ', err);
-                    });
-                }
-
-                // Show confirmation notice
-                const notice = document.getElementById('passwordCopiedNotice');
-                if (notice) {
-                    notice.classList.remove('d-none');
-                    setTimeout(function() {
-                        notice.classList.add('d-none');
-                    }, 4000);
-                }
-            }
         });
     }
 });

@@ -660,7 +660,7 @@ class WellbabyController extends Controller {
         $patientId = $wellbaby ? (int)$wellbaby['patient_id'] : (int)($_POST['patient_id'] ?? 0);
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
         $userRole = $_SESSION['user_role'] ?? 'staff';
-        if ($userRole !== 'admin' && $currentUserId !== (int)$log['recorded_by']) {
+        if (!in_array($userRole, ['admin', 'super_admin'], true) && $currentUserId !== (int)$log['recorded_by']) {
             $_SESSION['error_message'] = 'Unauthorized: you may only remove growth records you recorded.';
             $this->redirect("/well-baby/{$patientId}");
             return;

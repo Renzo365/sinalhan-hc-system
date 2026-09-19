@@ -45,3 +45,16 @@ if (!function_exists('asset')) {
         return url('assets/' . $cleanPath) . $ver;
     }
 }
+
+if (!function_exists('is_admin')) {
+    function is_admin() {
+        return in_array($_SESSION['user_role'] ?? '', ['admin', 'super_admin'], true);
+    }
+}
+
+if (!function_exists('is_super_admin')) {
+    function is_super_admin() {
+        return ($_SESSION['user_role'] ?? '') === 'super_admin';
+    }
+}
+

@@ -111,7 +111,7 @@ class User extends Model {
      * @return array
      */
     public function all($filters = []) {
-        $sql = "SELECT * FROM users WHERE 1=1";
+        $sql = "SELECT * FROM users WHERE deleted_at IS NULL";
         $params = [];
 
         if (!empty($filters['search'])) {
@@ -126,11 +126,9 @@ class User extends Model {
         }
 
         if (!empty($filters['role'])) {
-            if ($filters['role'] === 'main_admin') {
-                $sql .= " AND role = 'admin' AND id = 1";
-            } elseif ($filters['role'] === 'co_admin') {
-                $sql .= " AND role = 'admin' AND id != 1";
-            } elseif ($filters['role'] === 'admin') {
+            if ($filters['role'] === 'super_admin' || $filters['role'] === 'main_admin') {
+                $sql .= " AND role = 'super_admin'";
+            } elseif ($filters['role'] === 'admin' || $filters['role'] === 'co_admin') {
                 $sql .= " AND role = 'admin'";
             } else {
                 $sql .= " AND role = :role";
@@ -138,16 +136,86 @@ class User extends Model {
             }
         }
 
-        if (!empty($filters['status'])) {
-            $sql .= " AND status = :status";
-            $params['status'] = $filters['status'];
-        }
-
         $sql .= " ORDER BY id DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Get all archived (soft-deleted) users.
+     * 
+     * @param array $filters
+     * @return array
+     */
+    public function allArchived($filters = []) {
+        $sql = "SELECT * FROM users WHERE deleted_at IS NOT NULL";
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $sql .= " AND (username LIKE :search_user OR first_name LIKE :search_first OR last_name LIKE :search_last OR email LIKE :search_email OR employee_id LIKE :search_emp OR department LIKE :search_dept)";
+            $searchTerm = '%' . $filters['search'] . '%';
+            $params['search_user'] = $searchTerm;
+            $params['search_first'] = $searchTerm;
+            $params['search_last'] = $searchTerm;
+            $params['search_email'] = $searchTerm;
+            $params['search_emp'] = $searchTerm;
+            $params['search_dept'] = $searchTerm;
+        }
+
+        if (!empty($filters['role'])) {
+            if ($filters['role'] === 'super_admin' || $filters['role'] === 'main_admin') {
+                $sql .= " AND role = 'super_admin'";
+            } elseif ($filters['role'] === 'admin' || $filters['role'] === 'co_admin') {
+                $sql .= " AND role = 'admin'";
+            } else {
+                $sql .= " AND role = :role";
+                $params['role'] = $filters['role'];
+            }
+        }
+
+        $sql .= " ORDER BY deleted_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Archive (soft-delete) a user account.
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function archive($id) {
+        $stmt = $this->db->prepare("
+            UPDATE users 
+            SET deleted_at = CURRENT_TIMESTAMP, 
+                status = 'inactive', 
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = :id
+        ");
+        return $stmt->execute(['id' => $id]);
+    }
+
+    /**
+     * Restore an archived user account.
+     * 
+     * @param int $id
+     * @return bool
+     */
+    public function restore($id) {
+        $stmt = $this->db->prepare("
+            UPDATE users 
+            SET deleted_at = NULL, 
+                status = 'active', 
+                failed_attempts = 0, 
+                last_failed_login_at = NULL, 
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = :id
+        ");
+        return $stmt->execute(['id' => $id]);
     }
 
     /**
@@ -159,7 +227,7 @@ class User extends Model {
     public function create($data) {
         $stmt = $this->db->prepare("
             INSERT INTO users (username, password_hash, role, first_name, middle_name, last_name, email, contact_no, job_title, employee_id, department, status)
-            VALUES (:username, :password_hash, :role, :first_name, :middle_name, :last_name, :email, :contact_no, :job_title, :employee_id, :department, :status)
+            VALUES (:username, :password_hash, :role, :first_name, :middle_name, :last_name, :email, :contact_no, :job_title, :employee_id, :department, 'active')
         ");
         return $stmt->execute([
             'username' => trim($data['username']),
@@ -172,8 +240,7 @@ class User extends Model {
             'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
             'job_title' => !empty($data['job_title']) ? trim($data['job_title']) : null,
             'employee_id' => !empty($data['employee_id']) ? trim($data['employee_id']) : null,
-            'department' => !empty($data['department']) ? trim($data['department']) : null,
-            'status' => $data['status'] ?? 'active'
+            'department' => !empty($data['department']) ? trim($data['department']) : null
         ]);
     }
 
@@ -211,18 +278,13 @@ class User extends Model {
             'role' => $data['role']
         ];
 
-        if (isset($data['status'])) {
-            $fields[] = 'status = :status';
-            $params['status'] = $data['status'];
-        }
-
         $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($params);
     }
 
     /**
-     * Toggle status between active and inactive.
+     * Toggle status between active and inactive (Deprecated - use archive/restore).
      * 
      * @param int $id
      * @param string $status 'active' or 'inactive'

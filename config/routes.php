@@ -134,7 +134,9 @@ return function (\App\Core\Router $router) {
     $router->get('/users/{id}/edit', 'UserController@edit', [AdminMiddleware::class]);
     $router->post('/users/{id}', 'UserController@update', [AdminMiddleware::class]);
     $router->post('/users/{id}/reset-password', 'UserController@resetPassword', [AdminMiddleware::class]);
-    $router->post('/users/{id}/toggle-status', 'UserController@toggleStatus', [AdminMiddleware::class]);
+    $router->post('/users/{id}/archive', 'UserController@archive', [AdminMiddleware::class]);
+    $router->post('/users/{id}/restore', 'UserController@restore', [AdminMiddleware::class]);
+    $router->post('/users/{id}/toggle-status', 'UserController@archive', [AdminMiddleware::class]);
     $router->post('/users/{id}/reset-lockout', 'UserController@resetLockout', [AdminMiddleware::class]);
 };
 

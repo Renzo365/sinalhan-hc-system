@@ -14,8 +14,10 @@
         $userFullName = $_SESSION['user_fullname'] ?? 'User';
         $userRole = $_SESSION['user_role'] ?? 'staff';
         $topbarRoleDisplay = 'Staff';
-        if ($userRole === 'admin') {
-            $topbarRoleDisplay = (isset($_SESSION['user_id']) && $_SESSION['user_id'] == 1) ? 'Admin' : 'Co-Admin';
+        if ($userRole === 'super_admin') {
+            $topbarRoleDisplay = 'Super Admin';
+        } elseif ($userRole === 'admin') {
+            $topbarRoleDisplay = 'Admin';
         }
         $avatarInitial = strtoupper(mb_substr(trim($userFullName), 0, 1, 'UTF-8'));
         if ($avatarInitial === '') {

@@ -187,7 +187,7 @@ class PcbLedgerController extends Controller {
         $patientId = (int)$log['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
         $userRole = $_SESSION['user_role'] ?? 'staff';
-        if ($userRole !== 'admin' && $currentUserId !== (int)$log['recorded_by']) {
+        if (!in_array($userRole, ['admin', 'super_admin'], true) && $currentUserId !== (int)$log['recorded_by']) {
             $_SESSION['form_errors'] = ['Unauthorized: you may only remove PCB service entries you recorded.'];
             $this->redirect("/patients/{$patientId}#tab-pcb");
             return;

@@ -402,7 +402,7 @@ body.auth-redesign-body {
   font-weight: 700;
   font-size: 0.95rem;
   border-radius: 10px;
-  transition: all 0.2s ease-in-out;
+  
   box-shadow: 0 3px 10px rgba(13, 115, 119, 0.25);
   display: flex;
   align-items: center;
@@ -414,7 +414,7 @@ body.auth-redesign-body {
 .btn-auth-primary:hover {
   background-color: #14A3A8;
   border-color: #14A3A8;
-  transform: translateY(-1.5px);
+  
   box-shadow: 0 5px 15px rgba(13, 115, 119, 0.35);
   color: #ffffff;
 }
@@ -422,7 +422,7 @@ body.auth-redesign-body {
 .btn-auth-primary:active {
   background-color: #095B5E;
   border-color: #095B5E;
-  transform: translateY(0);
+
 }
 
 /* Secondary Action (Cancel & Sign Out) */

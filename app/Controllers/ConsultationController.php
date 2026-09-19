@@ -370,7 +370,7 @@ class ConsultationController extends Controller {
         $patientId = (int)$consultation['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-        $canArchive = ($userRole === 'admin' || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
+        $canArchive = (in_array($userRole, ['admin', 'super_admin'], true) || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
 
         if (!$canArchive) {
             $_SESSION['error_message'] = 'Unauthorized: You do not have permission to archive this consultation.';
@@ -397,9 +397,9 @@ class ConsultationController extends Controller {
             session_start();
         }
 
-        // Enforce Admin role
+        // Enforce Admin/Super Admin role
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-        if ($userRole !== 'admin') {
+        if (!in_array($userRole, ['admin', 'super_admin'], true)) {
             $_SESSION['error_message'] = 'Unauthorized: Only administrators can restore archived consultations.';
             $this->redirect('/archive/patients?tab=consultations');
             return;

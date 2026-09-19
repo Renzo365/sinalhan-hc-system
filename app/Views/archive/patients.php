@@ -30,6 +30,12 @@ $activeTab = $activeTab ?? 'patients';
             <span class="badge <?= $activeTab === 'consultations' ? 'bg-white text-primary' : 'bg-light text-secondary border' ?> ms-2"><?= count($consultations ?? []) ?></span>
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link <?= $activeTab === 'users' ? 'active' : '' ?> px-4 py-2 fw-semibold" id="tab-users-btn" data-bs-toggle="pill" data-bs-target="#tab-users" type="button" role="tab">
+            <i class="bi bi-person-x-fill me-2"></i> Archived Staff Accounts
+            <span class="badge <?= $activeTab === 'users' ? 'bg-white text-primary' : 'bg-light text-secondary border' ?> ms-2"><?= count($users ?? []) ?></span>
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content" id="archiveTabsContent">
@@ -235,6 +241,109 @@ $activeTab = $activeTab ?? 'patients';
         </div>
     </div>
 
+    <!-- ==============================================================
+       TAB 3: ARCHIVED USER ACCOUNTS
+       ============================================================== -->
+    <div class="tab-pane fade <?= $activeTab === 'users' ? 'show active' : '' ?>" id="tab-users" role="tabpanel">
+        
+        <!-- Search and Filter Form for Users -->
+        <div class="card card-premium mb-4">
+            <div class="card-body p-4 bg-white">
+                <form action="<?= url('/archive/patients') ?>" method="GET" class="row g-3 align-items-end">
+                    <input type="hidden" name="tab" value="users">
+                    <div class="col-12 col-md-6">
+                        <label for="search_users" class="form-label text-secondary small fw-semibold">Search User</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" id="search_users" class="form-control border-start-0 bg-light" placeholder="Search by username, name, email, or department..." value="<?= h($filters['search'] ?? '') ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 col-md-4">
+                        <label for="role_users" class="form-label text-secondary small fw-semibold">Role</label>
+                        <select name="role" id="role_users" class="form-select bg-light">
+                            <option value="">-- All Roles --</option>
+                            <option value="admin" <?= (isset($filters['role']) && $filters['role'] === 'admin') ? 'selected' : '' ?>>Administrator</option>
+                            <option value="staff" <?= (isset($filters['role']) && $filters['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-12 col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                        <a href="<?= url('/archive/patients?tab=users') ?>" class="btn btn-outline-secondary" title="Clear Filters">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Archived Users Table -->
+        <div class="card card-premium">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-center small" id="archivedUsersTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start ps-4">Username</th>
+                                <th class="text-start">Full Name</th>
+                                <th>Role</th>
+                                <th>Department & Title</th>
+                                <th>Archived Date</th>
+                                <th class="pe-4 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($users)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-person-x d-block fs-3 mb-2 text-muted"></i>
+                                        No archived staff accounts match the criteria.
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($users as $u): 
+                                    $roleBadge = $u['role'] === 'admin' ? 'bg-light text-primary border border-primary-subtle fw-bold' : 'bg-light text-dark border';
+                                    $roleDisplay = $u['role'] === 'admin' ? 'Admin' : 'Staff';
+                                ?>
+                                    <tr>
+                                        <td class="text-start ps-4 fw-bold font-monospace text-dark"><?= h($u['username']) ?></td>
+                                        <td class="text-start">
+                                            <span class="fw-bold text-dark"><?= h($u['last_name']) ?>, <?= h($u['first_name']) ?></span>
+                                            <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['email'] ?: '-') ?></div>
+                                        </td>
+                                        <td><span class="badge <?= $roleBadge ?>"><?= $roleDisplay ?></span></td>
+                                        <td>
+                                            <div class="fw-medium"><?= h($u['job_title'] ?: '-') ?></div>
+                                            <?php if (!empty($u['department'])): ?>
+                                                <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['department']) ?></div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td data-order="<?= $u['deleted_at'] ? h($u['deleted_at']) : '' ?>">
+                                            <?= $u['deleted_at'] ? date('Y-m-d h:i A', strtotime($u['deleted_at'])) : '-' ?>
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            <form action="<?= url('/users/' . $u['id'] . '/restore') ?>" method="POST" class="d-inline">
+                                                <?= csrf_field() ?>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-success border px-3 py-1 btn-restore-user"
+                                                        data-username="<?= h($u['username']) ?>">
+                                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Restore Account
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>
@@ -286,12 +395,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     <?php endif; ?>
 
+    <?php if (!empty($users)): ?>
+        $('#archivedUsersTable').DataTable({
+            "paging": true,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            "responsive": true,
+            "order": [[4, "desc"]], // Sort by archive date descending
+            "columnDefs": [
+                { "orderable": false, "targets": 5 } // Actions
+            ],
+            "language": {
+                "paginate": {
+                    "previous": "<i class='bi bi-chevron-left'></i>",
+                    "next": "<i class='bi bi-chevron-right'></i>"
+                }
+            }
+        });
+    <?php endif; ?>
+
     // 2. Tab switching URL preservation
     const archiveTabs = document.querySelectorAll('#archiveTabs button[data-bs-toggle="pill"]');
     archiveTabs.forEach(tab => {
         tab.addEventListener('shown.bs.tab', function(e) {
             const target = e.target.getAttribute('data-bs-target');
-            const tabName = target === '#tab-consultations' ? 'consultations' : 'patients';
+            let tabName = 'patients';
+            if (target === '#tab-consultations') {
+                tabName = 'consultations';
+            } else if (target === '#tab-users') {
+                tabName = 'users';
+            }
             const url = new URL(window.location);
             url.searchParams.set('tab', tabName);
             window.history.replaceState(null, '', url);
@@ -349,6 +485,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             } else if (confirm(`Are you sure you want to restore this consultation record for ${patient}?`)) {
+                form.submit();
+            }
+        });
+    });
+
+    // 5. Restore User Account Confirmation with SweetAlert
+    document.querySelectorAll('.btn-restore-user').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('form');
+            const username = this.getAttribute('data-username') || 'this user';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Restore User Account?',
+                    text: `Are you sure you want to restore user account @${username}? They will regain access to the system.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0d9488',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Restore Account',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            } else if (confirm(`Are you sure you want to restore user account @${username}?`)) {
                 form.submit();
             }
         });

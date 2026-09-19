@@ -18,7 +18,7 @@ class UserController extends Controller {
             session_start();
         }
         
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!is_admin()) {
             $_SESSION['error_message'] = 'Unauthorized access to user management panel.';
             $this->redirect('/dashboard');
             exit;
@@ -31,8 +31,7 @@ class UserController extends Controller {
     public function index() {
         $filters = [
             'search' => trim($_GET['search'] ?? ''),
-            'role' => trim($_GET['role'] ?? ''),
-            'status' => trim($_GET['status'] ?? '')
+            'role' => trim($_GET['role'] ?? '')
         ];
 
         $users = $this->userModel->all($filters);
@@ -79,10 +78,15 @@ class UserController extends Controller {
         $password = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? 'staff';
         
-        // Privilege Escalation Guard: Non-Main Admin cannot create admin accounts
-        if ($_SESSION['user_id'] != 1 && $role === 'admin') {
+        // Privilege Escalation Guard: Only Super Admin can create admin or super_admin accounts
+        if (!is_super_admin()) {
             $role = 'staff';
             $_POST['role'] = 'staff';
+        } else {
+            if (!in_array($role, ['super_admin', 'admin', 'staff'], true)) {
+                $role = 'staff';
+                $_POST['role'] = 'staff';
+            }
         }
         
         $firstName = trim($_POST['first_name'] ?? '');
@@ -91,7 +95,6 @@ class UserController extends Controller {
         $contactNo = trim($_POST['contact_no'] ?? '');
         $employeeId = trim($_POST['employee_id'] ?? '');
         $department = trim($_POST['department'] ?? '');
-        $status = $_POST['status'] ?? 'active';
 
         $validator = new \App\Validators\UserValidator($this->userModel);
         $errors = $validator->validateCreate($_POST);
@@ -158,10 +161,10 @@ class UserController extends Controller {
             return;
         }
 
-        // Peer Admin Protection: Only the Primary Admin or the users themselves can modify an administrator account
-        if ($user['role'] === 'admin' && $_SESSION['user_id'] != 1 && $_SESSION['user_id'] != $id) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to modify administrator account ID {$id} details.");
-            $_SESSION['error_message'] = 'Access Denied: Only the Primary Administrator can modify other administrator accounts.';
+        // Protection: Non-Super Admins cannot modify a super_admin or admin account (except their own basic profile)
+        if (($user['role'] === 'super_admin' || $user['role'] === 'admin') && !is_super_admin() && $_SESSION['user_id'] != $id) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to modify account ID {$id} details.");
+            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can modify other administrator accounts.';
             $this->redirect('/users');
             return;
         }
@@ -172,10 +175,10 @@ class UserController extends Controller {
         $contactNo = trim($_POST['contact_no'] ?? '');
         $role = $_POST['role'] ?? $user['role'];
 
-        // Role Modification Guard: Only the Primary Admin can change access privileges (roles)
-        if ($_SESSION['user_id'] != 1 && $role !== $user['role']) {
+        // Role Modification Guard: Only Super Admin can change access privileges (roles)
+        if (!is_super_admin() && $role !== $user['role']) {
             AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to modify role of account ID {$id} from {$user['role']} to {$role}.");
-            $_SESSION['error_message'] = 'Access Denied: Only the Primary Administrator can modify user roles.';
+            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can modify user roles.';
             $this->redirect('/users');
             return;
         }
@@ -196,6 +199,9 @@ class UserController extends Controller {
             // Synchronize session full name in real time if editing current user
             if ($id == $_SESSION['user_id']) {
                 $_SESSION['user_fullname'] = trim($firstName . ' ' . $lastName);
+                if ($role !== $_SESSION['user_role']) {
+                    $_SESSION['user_role'] = $role;
+                }
             }
 
             AuditLog::log('USER_UPDATED', 'Users', "Updated user account settings for: {$user['username']}. Name: {$firstName} {$lastName}, Role: {$role}");
@@ -233,10 +239,10 @@ class UserController extends Controller {
             return;
         }
 
-        // Peer Admin Protection: Only the Primary Admin or the users themselves can reset an administrator's password
-        if ($user['role'] === 'admin' && $_SESSION['user_id'] != 1 && $_SESSION['user_id'] != $id) {
+        // Protection: Non-Super Admin cannot reset passwords of other admins or super admins
+        if (($user['role'] === 'super_admin' || $user['role'] === 'admin') && !is_super_admin() && $_SESSION['user_id'] != $id) {
             AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to reset administrator account ID {$id} password.");
-            $_SESSION['error_message'] = 'Access Denied: Only the Primary Administrator can reset the password of other administrator accounts.';
+            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can reset the password of other administrator accounts.';
             $this->redirect('/users');
             return;
         }
@@ -268,9 +274,9 @@ class UserController extends Controller {
     }
 
     /**
-     * Toggle status between active and inactive.
+     * Archive (soft-delete) user account.
      */
-    public function toggleStatus($id) {
+    public function archive($id) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/users');
             return;
@@ -279,7 +285,7 @@ class UserController extends Controller {
         // Verify CSRF Token
         $token = $_POST['csrf_token'] ?? '';
         if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during status toggle for user ID {$id}.");
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during user archive for user ID {$id}.");
             $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
             $this->redirect('/users');
             return;
@@ -292,42 +298,80 @@ class UserController extends Controller {
             return;
         }
 
-        // Primary Admin protection rule: Primary Admin cannot be deactivated
-        if ($id == 1) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to deactivate primary administrator.");
-            $_SESSION['error_message'] = 'Access Denied: The Primary Administrator account cannot be deactivated.';
+        // Super Admin protection rule: Super Admin cannot be archived
+        if ($user['role'] === 'super_admin') {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt to archive super administrator account ID {$id}.");
+            $_SESSION['error_message'] = 'Access Denied: Super Administrator accounts cannot be archived.';
             $this->redirect('/users');
             return;
         }
 
         // Self-exclusion prevention
         if ($id == $_SESSION['user_id']) {
-            $_SESSION['error_message'] = 'Access Denied: You cannot deactivate your own active session account.';
+            $_SESSION['error_message'] = 'Access Denied: You cannot archive your own active session account.';
             $this->redirect('/users');
             return;
         }
 
-        // Peer Admin Protection: Only the Primary Admin can deactivate another administrator account
-        if ($user['role'] === 'admin' && $_SESSION['user_id'] != 1) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to toggle administrator account ID {$id} status.");
-            $_SESSION['error_message'] = 'Access Denied: Only the Primary Administrator can change the status of other administrator accounts.';
+        // Only Super Admin can archive an admin account
+        if ($user['role'] === 'admin' && !is_super_admin()) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to archive administrator account ID {$id}.");
+            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can archive other administrator accounts.';
             $this->redirect('/users');
             return;
         }
 
-        $newStatus = ($user['status'] === 'active') ? 'inactive' : 'active';
-
-        if ($this->userModel->setStatus($id, $newStatus)) {
-            $actionText = ($newStatus === 'active') ? 'USER_ACTIVATED' : 'USER_DEACTIVATED';
-            AuditLog::log($actionText, 'Users', "Toggled status of user account {$user['username']} to {$newStatus}.");
-            
-            $statusLabel = ($newStatus === 'active') ? 'activated' : 'deactivated';
-            $_SESSION['success_message'] = "User account {$user['username']} has been successfully {$statusLabel}.";
+        if ($this->userModel->archive($id)) {
+            AuditLog::log('USER_ARCHIVED', 'Users', "Archived user account: {$user['username']} ({$user['first_name']} {$user['last_name']}).");
+            $_SESSION['success_message'] = "User account {$user['username']} has been archived and moved to the Archived Records Hub.";
         } else {
-            $_SESSION['error_message'] = 'Failed to update user account status. Please try again.';
+            $_SESSION['error_message'] = 'Failed to archive user account. Please try again.';
         }
 
         $this->redirect('/users');
+    }
+
+    /**
+     * Restore an archived user account.
+     */
+    public function restore($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/archive?tab=users');
+            return;
+        }
+
+        // Verify CSRF Token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during user restore for user ID {$id}.");
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
+            $this->redirect('/archive?tab=users');
+            return;
+        }
+
+        $user = $this->userModel->findById($id);
+        if (!$user) {
+            http_response_code(404);
+            $this->view('errors/404');
+            return;
+        }
+
+        // Only Super Admin can restore admin accounts
+        if ($user['role'] === 'admin' && !is_super_admin()) {
+            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to restore administrator account ID {$id}.");
+            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can restore administrator accounts.';
+            $this->redirect('/archive?tab=users');
+            return;
+        }
+
+        if ($this->userModel->restore($id)) {
+            AuditLog::log('USER_RESTORED', 'Users', "Restored user account: {$user['username']} ({$user['first_name']} {$user['last_name']}).");
+            $_SESSION['success_message'] = "User account {$user['username']} has been restored successfully and is now active.";
+        } else {
+            $_SESSION['error_message'] = 'Failed to restore user account. Please try again.';
+        }
+
+        $this->redirect('/archive?tab=users');
     }
 
     /**
@@ -355,10 +399,10 @@ class UserController extends Controller {
             return;
         }
 
-        // Peer Admin Protection: Only Primary Admin can clear lockouts for other admins
-        if ($user['role'] === 'admin' && $_SESSION['user_id'] != 1 && $_SESSION['user_id'] != $id) {
+        // Protection: Only Super Admin can clear lockouts for other admins or super admin
+        if (($user['role'] === 'super_admin' || $user['role'] === 'admin') && !is_super_admin() && $_SESSION['user_id'] != $id) {
             AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to clear lockout for administrator account ID {$id}.");
-            $_SESSION['error_message'] = 'Access Denied: Only the Primary Administrator can clear lockouts for other administrator accounts.';
+            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can clear lockouts for other administrator accounts.';
             $this->redirect('/users');
             return;
         }
