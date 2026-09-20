@@ -118,6 +118,14 @@ class VitalSigns extends Model {
      * @param string|null $reason
      * @return bool
      */
+    /**
+     * Soft delete a vital signs record by ID.
+     * 
+     * @param int $id
+     * @param int|null $userId
+     * @param string|null $reason
+     * @return bool
+     */
     public function delete($id, $userId = null, $reason = null) {
         $stmt = $this->db->prepare("
             UPDATE vital_signs 
@@ -130,6 +138,46 @@ class VitalSigns extends Model {
             'id' => (int)$id,
             'user_id' => $userId ? (int)$userId : null,
             'reason' => $reason ? trim($reason) : null
+        ]);
+    }
+
+    /**
+     * Update an existing vital signs record.
+     * 
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function update($id, $data) {
+        $stmt = $this->db->prepare("
+            UPDATE vital_signs SET
+                bp_systolic = :bp_systolic,
+                bp_diastolic = :bp_diastolic,
+                heart_rate = :heart_rate,
+                respiratory_rate = :respiratory_rate,
+                temperature = :temperature,
+                weight = :weight,
+                height = :height,
+                bmi = :bmi,
+                waist_circumference = :waist_circumference,
+                oxygen_saturation = :oxygen_saturation,
+                notes = :notes
+            WHERE id = :id AND deleted_at IS NULL
+        ");
+
+        return $stmt->execute([
+            'id' => (int)$id,
+            'bp_systolic' => !empty($data['bp_systolic']) ? (int)$data['bp_systolic'] : null,
+            'bp_diastolic' => !empty($data['bp_diastolic']) ? (int)$data['bp_diastolic'] : null,
+            'heart_rate' => !empty($data['heart_rate']) ? (int)$data['heart_rate'] : null,
+            'respiratory_rate' => !empty($data['respiratory_rate']) ? (int)$data['respiratory_rate'] : null,
+            'temperature' => !empty($data['temperature']) ? (float)$data['temperature'] : null,
+            'weight' => !empty($data['weight']) ? (float)$data['weight'] : null,
+            'height' => !empty($data['height']) ? (float)$data['height'] : null,
+            'bmi' => !empty($data['bmi']) ? (float)$data['bmi'] : null,
+            'waist_circumference' => !empty($data['waist_circumference']) ? (float)$data['waist_circumference'] : null,
+            'oxygen_saturation' => !empty($data['oxygen_saturation']) ? (int)$data['oxygen_saturation'] : null,
+            'notes' => !empty($data['notes']) ? trim($data['notes']) : null
         ]);
     }
 }

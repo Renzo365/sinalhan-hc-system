@@ -410,8 +410,8 @@ $motherLinkedPatientNo = $wellbabyRecord['mother_patient_no'] ?? '';
                                 <?php $feed = $wellbabyRecord['feeding_method'] ?? 'LAM / Exclusive Breastfeeding'; ?>
                                 <select name="feeding_method" id="feeding_method" class="form-select">
                                     <option value="LAM / Exclusive Breastfeeding" <?= ($feed === 'LAM / Exclusive Breastfeeding') ? 'selected' : '' ?>>LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feeding (Formula)" <?= ($feed === 'Bottle Feeding (Formula)') ? 'selected' : '' ?>>Bottle Feeding (Formula)</option>
-                                    <option value="Mixed Feeding" <?= ($feed === 'Mixed Feeding') ? 'selected' : '' ?>>Mixed Feeding</option>
+                                    <option value="Bottle Feed" <?= ($feed === 'Bottle Feed') ? 'selected' : '' ?>>Bottle Feeding (Formula)</option>
+                                    <option value="Mixed" <?= ($feed === 'Mixed') ? 'selected' : '' ?>>Mixed Feeding</option>
                                 </select>
                             </div>
 

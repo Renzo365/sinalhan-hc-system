@@ -282,7 +282,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                         $fhtBadge = 'badge bg-danger-subtle text-danger border border-danger-subtle fw-bold';
                                     }
                                 }
-                                $canDeleteVisit = ($curRole === 'admin' || $curUserId === (int)($pv['attended_by'] ?? 0));
+                                $canDeleteVisit = is_admin();
                             ?>
                                 <tr>
                                     <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y', strtotime($pv['visit_date'])) ?></td>
@@ -443,14 +443,31 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <span class="text-muted small">&mdash;</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="pe-3 text-end">
-                                    <form action="<?= url('/past-obstetric/' . $poh['id'] . '/delete') ?>" method="POST" class="d-inline">
-                                        <?= csrf_field() ?>
-                                        <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                        <button type="submit" class="btn btn-xs btn-outline-danger border-0 py-1 px-2" title="Delete Entry" data-confirm="Are you sure you want to delete this past delivery record?">
-                                            <i class="bi bi-trash"></i>
+                                <td class="pe-3 text-end text-nowrap">
+                                    <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                        <button type="button" class="btn btn-xs btn-outline-secondary border-0 py-1 px-2 btn-edit-past-obstetric"
+                                            data-id="<?= $poh['id'] ?>"
+                                            data-gravida="<?= h($poh['gravida_no']) ?>"
+                                            data-year="<?= h($poh['year_delivered'] ?? '') ?>"
+                                            data-delivery-type="<?= h($poh['delivery_type']) ?>"
+                                            data-place="<?= h($poh['place_of_delivery'] ?? '') ?>"
+                                            data-attendant="<?= h($poh['attended_by'] ?? '') ?>"
+                                            data-status="<?= h($poh['status'] ?? 'Alive') ?>"
+                                            data-sex="<?= h($poh['infant_sex'] ?? 'Unknown') ?>"
+                                            data-tt="<?= h($poh['tt_status'] ?? '') ?>"
+                                            title="Edit Past Delivery">
+                                            <i class="bi bi-pencil-square"></i>
                                         </button>
-                                    </form>
+                                        <?php if (is_admin()): ?>
+                                            <form action="<?= url('/past-obstetric/' . $poh['id'] . '/delete') ?>" method="POST" class="d-inline">
+                                                <?= csrf_field() ?>
+                                                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+                                                <button type="submit" class="btn btn-xs btn-outline-danger border-0 py-1 px-2" title="Delete Entry" data-confirm="Are you sure you want to delete this past delivery record?">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -611,7 +628,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <option value="Cephalic" selected>Cephalic</option>
                                     <option value="Breech">Breech</option>
                                     <option value="Transverse">Transverse</option>
-                                    <option value="Variable">Variable / Not Determined</option>
+                                    <option value="Undetermined">Variable / Not Determined</option>
                                 </select>
                             </div>
 
@@ -712,7 +729,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <option value="Cephalic">Cephalic</option>
                                     <option value="Breech">Breech</option>
                                     <option value="Transverse">Transverse</option>
-                                    <option value="Variable">Variable / Not Determined</option>
+                                    <option value="Undetermined">Variable / Not Determined</option>
                                 </select>
                             </div>
 
@@ -1111,6 +1128,94 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 </div>
 
+<!-- 6b. EDIT PAST OBSTETRIC DELIVERY MODAL -->
+<div class="modal fade" id="editPastObstetricModal" tabindex="-1" aria-labelledby="editPastObstetricModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="editPastObstetricModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Past Delivery Record
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="" method="POST" id="editPastObstetricForm">
+                <?= csrf_field() ?>
+                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+
+                <div class="modal-body p-4 bg-white small">
+                    <div class="row g-3">
+                        <!-- Gravida No -->
+                        <div class="col-12 col-sm-4">
+                            <label for="edit_poh_gravida" class="form-label fw-semibold text-secondary">Gravida No. (Pregnancy #) <span class="text-danger">*</span></label>
+                            <input type="number" name="gravida_no" id="edit_poh_gravida" class="form-control font-monospace" placeholder="e.g. 1" min="1" max="25" required>
+                        </div>
+
+                        <!-- Delivery Type -->
+                        <div class="col-12 col-sm-4">
+                            <label for="edit_poh_delivery_type" class="form-label fw-semibold text-secondary">Delivery Type <span class="text-danger">*</span></label>
+                            <select name="delivery_type" id="edit_poh_delivery_type" class="form-select" required>
+                                <option value="NSD">NSD (Normal Spontaneous)</option>
+                                <option value="CS">CS (Caesarean Section)</option>
+                                <option value="Other">Vacuum / Forceps / Other</option>
+                                <option value="Abortion">Abortion / Miscarriage</option>
+                            </select>
+                        </div>
+
+                        <!-- Infant Sex -->
+                        <div class="col-12 col-sm-4">
+                            <label for="edit_poh_sex" class="form-label fw-semibold text-secondary">Infant Sex</label>
+                            <select name="infant_sex" id="edit_poh_sex" class="form-select">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Unknown">Unknown / Undetermined</option>
+                            </select>
+                        </div>
+
+                        <!-- Place of Delivery -->
+                        <div class="col-12 col-sm-6">
+                            <label for="edit_poh_place" class="form-label fw-semibold text-secondary">Place of Delivery</label>
+                            <input type="text" name="place_of_delivery" id="edit_poh_place" class="form-control" placeholder="e.g. Sta. Rosa Lying-in, SRCH, Home">
+                        </div>
+
+                        <!-- Year Delivered -->
+                        <div class="col-12 col-sm-6">
+                            <label for="edit_poh_year" class="form-label fw-semibold text-secondary">Year Delivered</label>
+                            <input type="number" name="year_delivered" id="edit_poh_year" class="form-control font-monospace" placeholder="e.g. 2022" min="1970" max="<?= date('Y') ?>">
+                        </div>
+
+                        <!-- Attended By -->
+                        <div class="col-12 col-sm-6">
+                            <label for="edit_poh_attendant" class="form-label fw-semibold text-secondary">Birth Attendant</label>
+                            <input type="text" name="attended_by" id="edit_poh_attendant" class="form-control" placeholder="e.g. Midwife Ramos, Dr. Santos">
+                        </div>
+
+                        <!-- Child Status -->
+                        <div class="col-12 col-sm-6">
+                            <label for="edit_poh_status" class="form-label fw-semibold text-secondary">Child Status</label>
+                            <select name="status" id="edit_poh_status" class="form-select">
+                                <option value="Alive">Alive</option>
+                                <option value="Not Alive">Not Alive</option>
+                            </select>
+                        </div>
+
+                        <!-- Maternal TT Status -->
+                        <div class="col-12">
+                            <label for="edit_poh_tt" class="form-label fw-semibold text-secondary">Maternal TT (Tetanus Toxoid) Injections During Pregnancy</label>
+                            <input type="text" name="tt_status" id="edit_poh_tt" class="form-control" placeholder="e.g. TT2 Given in 2022">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- 5. PAST EPISODE VISITS MODALS -->
 <?php if (!empty($pastEpisodes)): ?>
     <?php foreach ($pastEpisodes as $pe): 
@@ -1379,6 +1484,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // 3. Edit Past Obstetric Delivery Handler
+    document.querySelectorAll('.btn-edit-past-obstetric').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const form = document.getElementById('editPastObstetricForm');
+            if (form) {
+                form.action = '<?= url('/past-obstetric/') ?>' + id + '/update';
+            }
+            const setVal = (fieldId, val) => {
+                const el = document.getElementById(fieldId);
+                if (el) el.value = val || '';
+            };
+            setVal('edit_poh_gravida', this.getAttribute('data-gravida'));
+            setVal('edit_poh_delivery_type', this.getAttribute('data-delivery-type'));
+            setVal('edit_poh_sex', this.getAttribute('data-sex'));
+            setVal('edit_poh_place', this.getAttribute('data-place'));
+            setVal('edit_poh_year', this.getAttribute('data-year'));
+            setVal('edit_poh_attendant', this.getAttribute('data-attendant'));
+            setVal('edit_poh_status', this.getAttribute('data-status'));
+            setVal('edit_poh_tt', this.getAttribute('data-tt'));
+
+            const modalEl = document.getElementById('editPastObstetricModal');
+            if (modalEl) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+        });
+    });
 });
 </script>
 

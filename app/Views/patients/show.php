@@ -175,7 +175,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Print Patient Profile">
                     <i class="bi bi-printer me-1"></i> Print
                 </button>
-                <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                <?php if (is_admin()): ?>
                     <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#archivePatientModal" title="Archive Patient Record">
                         <i class="bi bi-archive me-1"></i> Archive
                     </button>
@@ -2413,13 +2413,46 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                             <span class="text-muted">&mdash;</span>
                                                         <?php endif; ?>
                                                     </td>
-                                                    <td class="pe-3 text-end">
-                                                        <form action="<?= url('/pcb/service-log/' . $log['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this <?= h($log['service_type']) ?> encounter record?');">
-                                                            <?= csrf_field() ?>
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry">
-                                                                <i class="bi bi-trash"></i>
+                                                    <td class="pe-3 text-end text-nowrap">
+                                                        <?php 
+                                                            $canDeletePcb = is_admin();
+                                                        ?>
+                                                        <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                                            <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-pcb-service"
+                                                                data-id="<?= $log['id'] ?>"
+                                                                data-date="<?= date('M d, Y', strtotime($log['service_date'])) ?>"
+                                                                data-category="<?= h($log['service_category']) ?>"
+                                                                data-type="<?= h($log['service_type']) ?>"
+                                                                data-diagnosis="<?= h($log['diagnosis'] ?? 'None specified') ?>"
+                                                                data-given="<?= !empty($log['status_given']) ? 'Yes (Provided/Administered)' : 'No' ?>"
+                                                                data-referred="<?= !empty($log['status_referred']) ? 'Yes (' . h($log['referred_to'] ?? 'External Provider') . ')' : 'No' ?>"
+                                                                data-remarks="<?= h($log['remarks'] ?? 'None') ?>"
+                                                                data-recorder="<?= h($log['recorder_name'] ?? 'System') ?>"
+                                                                title="View Encounter Details">
+                                                                <i class="bi bi-eye fs-6"></i>
                                                             </button>
-                                                        </form>
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-pcb-service"
+                                                                    data-id="<?= $log['id'] ?>"
+                                                                    data-date="<?= h($log['service_date']) ?>"
+                                                                    data-category="<?= h($log['service_category']) ?>"
+                                                                    data-type="<?= h($log['service_type']) ?>"
+                                                                    data-diagnosis="<?= h($log['diagnosis'] ?? '') ?>"
+                                                                    data-given="<?= !empty($log['status_given']) ? '1' : '0' ?>"
+                                                                    data-referred="<?= !empty($log['status_referred']) ? '1' : '0' ?>"
+                                                                    data-referred-to="<?= h($log['referred_to'] ?? '') ?>"
+                                                                    data-remarks="<?= h($log['remarks'] ?? '') ?>"
+                                                                    title="Edit Encounter">
+                                                                    <i class="bi bi-pencil-square fs-6"></i>
+                                                                </button>
+                                                            <?php if ($canDeletePcb): ?>
+                                                                <form action="<?= url('/pcb/service-log/' . $log['id'] . '/delete') ?>" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this <?= h($log['service_type']) ?> encounter record?');">
+                                                                    <?= csrf_field() ?>
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry">
+                                                                        <i class="bi bi-trash fs-6"></i>
+                                                                    </button>
+                                                                </form>
+                                                            <?php endif; ?>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -2466,7 +2499,8 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             $curRole = $_SESSION['role'] ?? 'staff';
                                         ?>
                                         <?php foreach ($consultationsHistory as $c): 
-                                            $canEditRow = ($curRole === 'admin' || $curUserId === (int)($c['created_by'] ?? 0) || $curUserId === (int)($c['consulted_by'] ?? 0)) && ($c['status'] !== 'Cancelled');
+                                            $canArchiveConsultation = is_admin();
+                                            $canEditRow = ($c['status'] !== 'Cancelled');
                                             
                                             $badgeClass = 'bg-success-subtle text-success border border-success-subtle';
                                             if ($c['status'] === 'Cancelled') {
@@ -2490,9 +2524,11 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                                 <i class="bi bi-pencil-square fs-6"></i>
                                                             </a>
                                                         <?php endif; ?>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-archive-consultation" data-id="<?= $c['id'] ?>" data-patient-id="<?= $patient['id'] ?>" title="Archive Consultation">
-                                                            <i class="bi bi-archive fs-6"></i>
-                                                        </button>
+                                                        <?php if ($canArchiveConsultation): ?>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-archive-consultation" data-id="<?= $c['id'] ?>" data-patient-id="<?= $patient['id'] ?>" title="Archive Consultation">
+                                                                <i class="bi bi-archive fs-6"></i>
+                                                            </button>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -2539,7 +2575,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                                         ?>
                                         <?php foreach ($vitalsHistory as $v): 
-                                            $canDeleteVital = ($curRole === 'admin' || $curUserId === (int)($v['recorded_by'] ?? 0));
+                                            $canDeleteVital = is_admin();
                                         ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?></td>
@@ -2566,6 +2602,21 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                             title="View Details">
                                                             <i class="bi bi-eye fs-6"></i>
                                                         </button>
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-vitals"
+                                                                data-id="<?= $v['id'] ?>"
+                                                                data-bp-systolic="<?= h($v['bp_systolic'] ?? '') ?>"
+                                                                data-bp-diastolic="<?= h($v['bp_diastolic'] ?? '') ?>"
+                                                                data-pulse="<?= h($v['heart_rate'] ?? '') ?>"
+                                                                data-temp="<?= h($v['temperature'] ?? '') ?>"
+                                                                data-resp="<?= h($v['respiratory_rate'] ?? '') ?>"
+                                                                data-spo2="<?= h($v['oxygen_saturation'] ?? '') ?>"
+                                                                data-weight="<?= h($v['weight'] ?? '') ?>"
+                                                                data-height="<?= h($v['height'] ?? '') ?>"
+                                                                data-waist="<?= h($v['waist_circumference'] ?? '') ?>"
+                                                                data-notes="<?= h($v['notes'] ?? '') ?>"
+                                                                title="Edit Vital Signs">
+                                                                <i class="bi bi-pencil-square fs-6"></i>
+                                                            </button>
                                                         <?php if ($canDeleteVital): ?>
                                                             <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-vital" data-id="<?= $v['id'] ?>" title="Delete Vital Signs">
                                                                 <i class="bi bi-trash fs-6"></i>
@@ -2622,7 +2673,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                             $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                                         ?>
                                         <?php foreach ($patientImmunizations as $imm): 
-                                            $canDeleteImm = ($curRole === 'admin' || $curUserId === (int)($imm['administered_by'] ?? 0));
+                                            $canDeleteImm = is_admin();
                                         ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-bold text-primary">
@@ -2637,13 +2688,36 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <td class="text-muted small"><?= h($imm['remarks'] ?? 'Routine') ?></td>
                                                 <td class="text-muted"><?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?></td>
                                                 <td class="pe-3 text-end text-nowrap">
-                                                    <?php if ($canDeleteImm): ?>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-immunization" data-id="<?= $imm['id'] ?>" data-vaccine="<?= h($imm['vaccine_name']) ?>" data-dose="<?= h($imm['dose_number']) ?>" title="Delete Record">
-                                                            <i class="bi bi-trash fs-6"></i>
+                                                    <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-immunization"
+                                                            data-id="<?= $imm['id'] ?>"
+                                                            data-vaccine="<?= h($imm['vaccine_name']) ?>"
+                                                            data-dose="Dose <?= h($imm['dose_number']) ?>"
+                                                            data-date="<?= date('M d, Y', strtotime($imm['administered_date'])) ?>"
+                                                            data-source="<?= h($imm['source'] ?? 'Barangay Sinalhan Health Center') ?>"
+                                                            data-status="<?= h($imm['documentation_status'] ?? 'Administered') ?>"
+                                                            data-remarks="<?= h($imm['remarks'] ?? 'Routine immunisation protocol') ?>"
+                                                            data-vaccinator="<?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?>"
+                                                            title="View Immunization Details">
+                                                            <i class="bi bi-eye fs-6"></i>
                                                         </button>
-                                                    <?php else: ?>
-                                                        <span class="text-muted small">&mdash;</span>
-                                                    <?php endif; ?>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-immunization"
+                                                            data-id="<?= $imm['id'] ?>"
+                                                            data-vaccine="<?= h($imm['vaccine_name']) ?>"
+                                                            data-dose="<?= h($imm['dose_number']) ?>"
+                                                            data-date="<?= h($imm['administered_date']) ?>"
+                                                            data-source="<?= h($imm['source'] ?? 'Health Center') ?>"
+                                                            data-status="<?= h($imm['documentation_status'] ?? 'Administered') ?>"
+                                                            data-remarks="<?= h($imm['remarks'] ?? '') ?>"
+                                                            title="Edit Immunization">
+                                                            <i class="bi bi-pencil-square fs-6"></i>
+                                                        </button>
+                                                        <?php if ($canDeleteImm): ?>
+                                                            <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-immunization" data-id="<?= $imm['id'] ?>" data-vaccine="<?= h($imm['vaccine_name']) ?>" data-dose="<?= h($imm['dose_number']) ?>" title="Delete Record">
+                                                                <i class="bi bi-trash fs-6"></i>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -2740,6 +2814,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
             
             <form action="<?= url('/patients/' . $patient['id'] . '/immunizations/record') ?>" method="POST" id="singleImmunizationForm">
                 <?= csrf_field() ?>
+                <input type="hidden" name="redirect_to" value="<?= url('/patients/' . $patient['id'] . '#tab-immunizations') ?>">
 
                 <div class="modal-body p-4 bg-white small">
                     <div class="mb-3">
@@ -3070,6 +3145,352 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
 </div>
 
 <!-- ==========================================================================
+   EDIT VITAL SIGNS MODAL
+   ========================================================================== -->
+<div class="modal fade" id="editVitalsModal" tabindex="-1" aria-labelledby="editVitalsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="editVitalsModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Vital Signs Record
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editVitalsForm" method="POST" action="">
+                <?= csrf_field() ?>
+                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+                <div class="modal-body p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Systolic (mmHg)</label>
+                            <input type="number" name="bp_systolic" id="editVitalSystolic" class="form-control" placeholder="120" min="50" max="260">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Diastolic (mmHg)</label>
+                            <input type="number" name="bp_diastolic" id="editVitalDiastolic" class="form-control" placeholder="80" min="30" max="160">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Heart Rate (bpm)</label>
+                            <input type="number" name="heart_rate" id="editVitalPulse" class="form-control" placeholder="72" min="30" max="220">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Temp (°C)</label>
+                            <input type="number" step="0.1" name="temperature" id="editVitalTemp" class="form-control" placeholder="36.5" min="30" max="45">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Resp Rate (cpm)</label>
+                            <input type="number" name="respiratory_rate" id="editVitalResp" class="form-control" placeholder="18" min="5" max="80">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">SpO2 (%)</label>
+                            <input type="number" name="oxygen_saturation" id="editVitalSpo2" class="form-control" placeholder="98" min="50" max="100">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Weight (kg)</label>
+                            <input type="number" step="0.1" name="weight" id="editVitalWeight" class="form-control" placeholder="60.5" min="1" max="300">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-semibold text-secondary">Height (cm)</label>
+                            <input type="number" step="0.1" name="height" id="editVitalHeight" class="form-control" placeholder="165" min="30" max="250">
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label class="form-label small fw-semibold text-secondary">Waist Circumference (cm)</label>
+                            <input type="number" step="0.1" name="waist_circumference" id="editVitalWaist" class="form-control" placeholder="75" min="20" max="200">
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <label class="form-label small fw-semibold text-secondary">Clinical Notes</label>
+                            <input type="text" name="notes" id="editVitalNotes" class="form-control" placeholder="Optional clinical observations...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+   EDIT PCB SERVICE ENCOUNTER MODAL
+   ========================================================================== -->
+<div class="modal fade" id="editPcbServiceModal" tabindex="-1" aria-labelledby="editPcbServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="editPcbServiceModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Diagnostic / PCB Service
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editPcbServiceForm" method="POST" action="">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary small">Service Category *</label>
+                            <select name="service_category" id="editPcbCategory" class="form-select" required>
+                                <option value="Diagnostic">Diagnostic</option>
+                                <option value="PCB1">PCB1</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary small">Service Date *</label>
+                            <input type="date" name="service_date" id="editPcbDate" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary small">Service Name / Type *</label>
+                            <input type="text" name="service_type" id="editPcbType" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary small">Diagnosis / Indication</label>
+                            <input type="text" name="diagnosis" id="editPcbDiagnosis" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary small d-block mb-1">Status</label>
+                            <div class="d-flex gap-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="status_given" id="editPcbGiven" value="1">
+                                    <label class="form-check-label fw-semibold text-dark small" for="editPcbGiven">
+                                        <i class="bi bi-check2-circle text-success me-1"></i> Given
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="status_referred" id="editPcbReferred" value="1" onchange="document.getElementById('editReferredToWrapper').classList.toggle('d-none', !this.checked)">
+                                    <label class="form-check-label fw-semibold text-dark small" for="editPcbReferred">
+                                        <i class="bi bi-arrow-up-right-circle text-warning me-1"></i> Referred
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 d-none" id="editReferredToWrapper">
+                            <label class="form-label fw-semibold text-secondary small">Referred Facility / Specialist</label>
+                            <input type="text" name="referred_to" id="editPcbReferredTo" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary small">Remarks / Notes</label>
+                            <textarea name="remarks" id="editPcbRemarks" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+   VIEW PCB SERVICE ENCOUNTER MODAL
+   ========================================================================== -->
+<div class="modal fade" id="viewPcbServiceModal" tabindex="-1" aria-labelledby="viewPcbServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="viewPcbServiceModalLabel">
+                    <i class="bi bi-journal-medical me-2"></i>PCB Encounter Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                    <div>
+                        <span class="text-muted small d-block">Service Date</span>
+                        <strong class="text-dark" id="viewPcbDate">--</strong>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Recorded By</span>
+                        <strong class="text-primary" id="viewPcbRecorder">--</strong>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted small d-block mb-1">Service Category & Type</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-2" id="viewPcbCategory">--</span>
+                    <span class="fw-bold text-dark fs-6" id="viewPcbType">--</span>
+                </div>
+                <div class="mb-3 p-3 bg-light rounded border">
+                    <span class="text-muted small d-block mb-1">Clinical Diagnosis / Indication</span>
+                    <div class="text-dark fw-medium" id="viewPcbDiagnosis">--</div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Given Status</span>
+                            <span class="fw-semibold text-dark" id="viewPcbGiven">--</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Referred Status</span>
+                            <span class="fw-semibold text-dark" id="viewPcbReferred">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-light rounded border">
+                    <span class="text-muted small d-block mb-1">Remarks / Clinical Notes</span>
+                    <div class="text-secondary small" id="viewPcbRemarks">--</div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+   VIEW IMMUNIZATION DETAILS MODAL
+   ========================================================================== -->
+<div class="modal fade" id="viewImmunizationModal" tabindex="-1" aria-labelledby="viewImmunizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="viewImmunizationModalLabel">
+                    <i class="bi bi-shield-check me-2"></i>Immunization Record Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                    <div>
+                        <span class="text-muted small d-block">Administered Date</span>
+                        <strong class="text-dark" id="viewImmDate">--</strong>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Vaccinator / Clinician</span>
+                        <strong class="text-primary" id="viewImmVaccinator">--</strong>
+                    </div>
+                </div>
+                <div class="p-3 bg-light rounded border mb-3">
+                    <span class="text-muted small d-block">Vaccine & Schedule</span>
+                    <div class="fs-5 fw-bold text-dark d-flex align-items-center mt-1">
+                        <i class="bi bi-shield-fill-check text-success me-2"></i>
+                        <span id="viewImmVaccine">--</span>
+                        <span class="badge bg-primary text-white ms-2 fs-7" id="viewImmDose">--</span>
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Documentation Source</span>
+                            <span class="fw-semibold text-dark" id="viewImmSource">--</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded border">
+                            <span class="text-muted small d-block">Status</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle" id="viewImmStatus">Administered</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 bg-light rounded border">
+                    <span class="text-muted small d-block mb-1">Clinical Remarks / Batch Notes</span>
+                    <div class="text-secondary small" id="viewImmRemarks">--</div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+   MODAL: EDIT IMMUNIZATION RECORD
+   ========================================================================== -->
+<div class="modal fade" id="editImmunizationModal" tabindex="-1" aria-labelledby="editImmunizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="editImmunizationModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Vaccine Dose Record
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="" method="POST" id="editImmunizationForm">
+                <?= csrf_field() ?>
+                <input type="hidden" name="redirect_to" value="<?= url('/patients/' . $patient['id'] . '#tab-immunizations') ?>">
+
+                <div class="modal-body p-4 bg-white small">
+                    <div class="mb-3">
+                        <label for="edit_imm_vaccine_name" class="form-label fw-semibold text-secondary">Vaccine Name <span class="text-danger">*</span></label>
+                        <select name="vaccine_name" id="edit_imm_vaccine_name" class="form-select" required>
+                            <option value="">-- Select Vaccine --</option>
+                            <optgroup label="Routine Infant EPI">
+                                <option value="BCG">BCG</option>
+                                <option value="Hepatitis B">Hepatitis B</option>
+                                <option value="Pentavalent">Pentavalent (DTP-HepB-Hib)</option>
+                                <option value="OPV">Oral Polio Vaccine (OPV)</option>
+                                <option value="IPV">Inactivated Polio (IPV)</option>
+                                <option value="Rotavirus">Rotavirus</option>
+                                <option value="PCV">Pneumococcal Conjugate (PCV)</option>
+                                <option value="MCV">Measles / MMR (MCV)</option>
+                            </optgroup>
+                            <optgroup label="Adolescent & Adult Vaccines">
+                                <option value="HPV">HPV (Human Papillomavirus)</option>
+                                <option value="Tetanus Toxoid">Tetanus Toxoid (TT / Td)</option>
+                                <option value="Influenza">Influenza (Flu)</option>
+                                <option value="Pneumococcal Polysaccharide">Pneumococcal (PPV23 / Senior)</option>
+                                <option value="COVID-19">COVID-19</option>
+                                <option value="Hepatitis A">Hepatitis A</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="edit_imm_dose_number" class="form-label fw-semibold text-secondary">Dose Number <span class="text-danger">*</span></label>
+                            <input type="number" name="dose_number" id="edit_imm_dose_number" class="form-control font-monospace" min="1" max="10" required>
+                        </div>
+                        <div class="col-6">
+                            <label for="edit_imm_administered_date" class="form-label fw-semibold text-secondary">Administered Date <span class="text-danger">*</span></label>
+                            <input type="date" name="administered_date" id="edit_imm_administered_date" class="form-control bg-white" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label for="edit_imm_source" class="form-label fw-semibold text-secondary">Source</label>
+                            <select name="source" id="edit_imm_source" class="form-select">
+                                <option value="Health Center">Health Center</option>
+                                <option value="External">External facility</option>
+                                <option value="Patient Reported">Patient/parent reported</option>
+                                <option value="Unknown">Unknown</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="edit_imm_documentation_status" class="form-label fw-semibold text-secondary">Documentation status</label>
+                            <select name="documentation_status" id="edit_imm_documentation_status" class="form-select">
+                                <option value="Administered">Administered</option>
+                                <option value="Reported">Reported</option>
+                                <option value="Unknown">Unknown</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_imm_remarks" class="form-label fw-semibold text-secondary">Remarks / Lot Number</label>
+                        <textarea name="remarks" id="edit_imm_remarks" class="form-control" rows="2" placeholder="Optional notes, manufacturer, or adverse reactions"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold shadow-xs">
+                        <i class="bi bi-check2 me-1"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
    HIDDEN WORKSTATION ACTION FORMS (CSRF-Protected)
    ========================================================================== -->
 <form id="archiveConsultationForm" method="POST" class="d-none">
@@ -3092,7 +3513,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
     <input type="hidden" name="status" value="Cancelled">
 </form>
 
-<?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+<?php if (is_admin()): ?>
 <!-- ==========================================================================
    ARCHIVE PATIENT MODAL
    ========================================================================== -->
@@ -4024,7 +4445,119 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    
+    // G. Edit Vital Signs Modal Handler
+    const editVitalsModalEl = document.getElementById('editVitalsModal');
+    const editVitalsModal = editVitalsModalEl ? bootstrap.Modal.getOrCreateInstance(editVitalsModalEl) : null;
+    document.querySelectorAll('.btn-edit-vitals').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const form = document.getElementById('editVitalsForm');
+            if (form) form.action = `<?= url('/vital-signs/') ?>${id}/update`;
+
+            document.getElementById('editVitalSystolic').value = this.getAttribute('data-bp-systolic') || '';
+            document.getElementById('editVitalDiastolic').value = this.getAttribute('data-bp-diastolic') || '';
+            document.getElementById('editVitalPulse').value = this.getAttribute('data-pulse') || '';
+            document.getElementById('editVitalTemp').value = this.getAttribute('data-temp') || '';
+            document.getElementById('editVitalResp').value = this.getAttribute('data-resp') || '';
+            document.getElementById('editVitalSpo2').value = this.getAttribute('data-spo2') || '';
+            document.getElementById('editVitalWeight').value = this.getAttribute('data-weight') || '';
+            document.getElementById('editVitalHeight').value = this.getAttribute('data-height') || '';
+            document.getElementById('editVitalWaist').value = this.getAttribute('data-waist') || '';
+            document.getElementById('editVitalNotes').value = this.getAttribute('data-notes') || '';
+
+            if (editVitalsModal) editVitalsModal.show();
+        });
+    });
+
+    // H. View PCB Service Modal Handler
+    const viewPcbModalEl = document.getElementById('viewPcbServiceModal');
+    const viewPcbModal = viewPcbModalEl ? bootstrap.Modal.getOrCreateInstance(viewPcbModalEl) : null;
+    document.querySelectorAll('.btn-view-pcb-service').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('viewPcbDate').textContent = this.getAttribute('data-date') || '--';
+            document.getElementById('viewPcbRecorder').textContent = this.getAttribute('data-recorder') || '--';
+            document.getElementById('viewPcbCategory').textContent = this.getAttribute('data-category') || '--';
+            document.getElementById('viewPcbType').textContent = this.getAttribute('data-type') || '--';
+            document.getElementById('viewPcbDiagnosis').textContent = this.getAttribute('data-diagnosis') || '--';
+            document.getElementById('viewPcbGiven').textContent = this.getAttribute('data-given') || '--';
+            document.getElementById('viewPcbReferred').textContent = this.getAttribute('data-referred') || '--';
+            document.getElementById('viewPcbRemarks').textContent = this.getAttribute('data-remarks') || '--';
+
+            if (viewPcbModal) viewPcbModal.show();
+        });
+    });
+
+    // I. Edit PCB Service Modal Handler
+    const editPcbModalEl = document.getElementById('editPcbServiceModal');
+    const editPcbModal = editPcbModalEl ? bootstrap.Modal.getOrCreateInstance(editPcbModalEl) : null;
+    document.querySelectorAll('.btn-edit-pcb-service').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const form = document.getElementById('editPcbServiceForm');
+            if (form) form.action = `<?= url('/pcb/service-log/') ?>${id}/update`;
+
+            document.getElementById('editPcbCategory').value = this.getAttribute('data-category') || 'Diagnostic';
+            document.getElementById('editPcbDate').value = this.getAttribute('data-date') || '';
+            document.getElementById('editPcbType').value = this.getAttribute('data-type') || '';
+            document.getElementById('editPcbDiagnosis').value = this.getAttribute('data-diagnosis') || '';
+            
+            const isGiven = this.getAttribute('data-given') === '1';
+            document.getElementById('editPcbGiven').checked = isGiven;
+
+            const isReferred = this.getAttribute('data-referred') === '1';
+            document.getElementById('editPcbReferred').checked = isReferred;
+            const refWrapper = document.getElementById('editReferredToWrapper');
+            if (refWrapper) refWrapper.classList.toggle('d-none', !isReferred);
+            document.getElementById('editPcbReferredTo').value = this.getAttribute('data-referred-to') || '';
+            document.getElementById('editPcbRemarks').value = this.getAttribute('data-remarks') || '';
+
+            if (editPcbModal) editPcbModal.show();
+        });
+    });
+
+    // J. View Immunization Modal Handler
+    const viewImmModalEl = document.getElementById('viewImmunizationModal');
+    const viewImmModal = viewImmModalEl ? bootstrap.Modal.getOrCreateInstance(viewImmModalEl) : null;
+    document.querySelectorAll('.btn-view-immunization').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('viewImmDate').textContent = this.getAttribute('data-date') || '--';
+            document.getElementById('viewImmVaccinator').textContent = this.getAttribute('data-vaccinator') || '--';
+            document.getElementById('viewImmVaccine').textContent = this.getAttribute('data-vaccine') || '--';
+            document.getElementById('viewImmDose').textContent = this.getAttribute('data-dose') || '--';
+            document.getElementById('viewImmSource').textContent = this.getAttribute('data-source') || '--';
+            document.getElementById('viewImmStatus').textContent = this.getAttribute('data-status') || '--';
+            document.getElementById('viewImmRemarks').textContent = this.getAttribute('data-remarks') || '--';
+
+            if (viewImmModal) viewImmModal.show();
+        });
+    });
+
+    // K. Edit Immunization Modal Handler
+    const editImmModalEl = document.getElementById('editImmunizationModal');
+    const editImmModal = editImmModalEl ? bootstrap.Modal.getOrCreateInstance(editImmModalEl) : null;
+    document.querySelectorAll('.btn-edit-immunization').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const form = document.getElementById('editImmunizationForm');
+            if (form) form.action = `<?= url('/immunizations/') ?>${id}/update`;
+
+            const vaccineSelect = document.getElementById('edit_imm_vaccine_name');
+            if (vaccineSelect) vaccineSelect.value = this.getAttribute('data-vaccine') || '';
+
+            document.getElementById('edit_imm_dose_number').value = this.getAttribute('data-dose') || '1';
+            document.getElementById('edit_imm_administered_date').value = this.getAttribute('data-date') || '';
+            document.getElementById('edit_imm_source').value = this.getAttribute('data-source') || 'Health Center';
+            document.getElementById('edit_imm_documentation_status').value = this.getAttribute('data-status') || 'Administered';
+            document.getElementById('edit_imm_remarks').value = this.getAttribute('data-remarks') || '';
+
+            if (editImmModal) editImmModal.show();
+        });
+    });
 
     });
 </script>

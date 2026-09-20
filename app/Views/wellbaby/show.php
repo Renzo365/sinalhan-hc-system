@@ -365,6 +365,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <?php endif; ?>
                                     </td>
                                     <td class="pe-3 text-end text-nowrap">
+                                        <?php 
+                                            $canDeleteGrowth = is_admin();
+                                        ?>
                                         <div class="d-inline-flex gap-1 justify-content-end align-items-center">
                                             <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-growth-log" 
                                                 data-date="<?= date('M d, Y', strtotime($gl['log_date'])) ?>" 
@@ -380,13 +383,31 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 title="View Growth Details">
                                                 <i class="bi bi-eye fs-6"></i>
                                             </button>
-                                            <form action="<?= url('/wellbaby/growth-log/' . $gl['id'] . '/delete') ?>" method="POST" class="d-inline">
-                                                <?= csrf_field() ?>
-                                                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry" data-confirm="Are you sure you want to delete this growth visit record?">
-                                                    <i class="bi bi-trash fs-6"></i>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-growth-log"
+                                                    data-id="<?= $gl['id'] ?>"
+                                                    data-date="<?= h($gl['log_date']) ?>"
+                                                    data-age="<?= h($gl['age_months']) ?>"
+                                                    data-weight="<?= h($gl['weight_kg']) ?>"
+                                                    data-height="<?= h($gl['height_cm']) ?>"
+                                                    data-head="<?= h($gl['head_circumference_cm'] ?? '') ?>"
+                                                    data-chest="<?= h($gl['chest_circumference_cm'] ?? '') ?>"
+                                                    data-temp="<?= h($gl['temperature'] ?? '') ?>"
+                                                    data-feeding="<?= h($gl['feeding_method']) ?>"
+                                                    data-vita="<?= !empty($gl['vitamin_a_dose']) ? '1' : '0' ?>"
+                                                    data-deworm="<?= !empty($gl['deworming_dose']) ? '1' : '0' ?>"
+                                                    data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>"
+                                                    title="Edit Growth Checkup">
+                                                    <i class="bi bi-pencil-square fs-6"></i>
                                                 </button>
-                                            </form>
+                                            <?php if ($canDeleteGrowth): ?>
+                                                <form action="<?= url('/wellbaby/growth-log/' . $gl['id'] . '/delete') ?>" method="POST" class="d-inline">
+                                                    <?= csrf_field() ?>
+                                                    <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry" data-confirm="Are you sure you want to delete this growth visit record?">
+                                                        <i class="bi bi-trash fs-6"></i>
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
@@ -481,8 +502,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <label class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
                                 <select name="feeding_method" class="form-select">
                                     <option value="LAM / Exclusive Breastfeeding" selected>LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feeding (Formula)">Bottle Feeding (Formula)</option>
-                                    <option value="Mixed Feeding">Mixed Feeding</option>
+                                    <option value="Bottle Feed">Bottle Feeding (Formula)</option>
+                                    <option value="Mixed">Mixed Feeding</option>
                                 </select>
                             </div>
 
@@ -523,6 +544,85 @@ require dirname(__DIR__) . '/layout/header.php';
         </div>
     </div>
 <?php endif; ?>
+
+<!-- EDIT CHILD GROWTH VISIT DETAILS MODAL -->
+<div class="modal fade" id="editGrowthLogModal" tabindex="-1" aria-labelledby="editGrowthLogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold" id="editGrowthLogModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Growth Monitoring Checkup
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editGrowthLogForm" method="POST" action="">
+                <?= csrf_field() ?>
+                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
+                <div class="modal-body p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Date of Visit *</label>
+                            <input type="date" name="log_date" id="editGrowthDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Age in Months *</label>
+                            <input type="number" step="0.1" name="age_months" id="editGrowthAge" class="form-control" required>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Weight (kg) *</label>
+                            <input type="number" step="0.01" name="weight_kg" id="editGrowthWeight" class="form-control" required>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Length / Height (cm) *</label>
+                            <input type="number" step="0.1" name="height_cm" id="editGrowthHeight" class="form-control" required>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Head Circ. (cm)</label>
+                            <input type="number" step="0.1" name="head_circumference_cm" id="editGrowthHead" class="form-control">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-semibold text-secondary">Chest Circ. (cm)</label>
+                            <input type="number" step="0.1" name="chest_circumference_cm" id="editGrowthChest" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Temperature (°C)</label>
+                            <input type="number" step="0.1" name="temperature" id="editGrowthTemp" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-secondary">Feeding Method</label>
+                            <select name="feeding_method" id="editGrowthFeeding" class="form-select">
+                                <option value="LAM / Exclusive Breastfeeding">LAM / Exclusive Breastfeeding</option>
+                                <option value="Bottle Feed">Bottle Feeding (Formula)</option>
+                                <option value="Mixed">Mixed Feeding</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary d-block">Supplements Given</label>
+                            <div class="d-flex gap-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vitamin_a_dose" value="1" id="edit_vit_a_check">
+                                    <label class="form-check-label text-dark fw-semibold" for="edit_vit_a_check">Vitamin A Capsule</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="deworming_dose" value="1" id="edit_deworming_check">
+                                    <label class="form-check-label text-dark fw-semibold" for="edit_deworming_check">Deworming Tablet</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
+                            <textarea name="tcb_notes" id="editGrowthTcb" rows="2" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- 3. VIEW CHILD GROWTH VISIT DETAILS MODAL -->
 <div class="modal fade" id="viewGrowthLogModal" tabindex="-1" aria-labelledby="viewGrowthLogModalLabel" aria-hidden="true">
@@ -654,6 +754,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (viewGrowthLogModalEl) {
                 bootstrap.Modal.getOrCreateInstance(viewGrowthLogModalEl).show();
+            }
+        });
+    });
+
+    // Edit Growth Log Details
+    const editGrowthLogModalEl = document.getElementById('editGrowthLogModal');
+    const editGrowthLogModal = editGrowthLogModalEl ? bootstrap.Modal.getOrCreateInstance(editGrowthLogModalEl) : null;
+    document.querySelectorAll('.btn-edit-growth-log').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const form = document.getElementById('editGrowthLogForm');
+            if (form) form.action = `<?= url('/wellbaby/growth-log/') ?>${id}/update`;
+
+            document.getElementById('editGrowthDate').value = this.getAttribute('data-date') || '';
+            document.getElementById('editGrowthAge').value = this.getAttribute('data-age') || '';
+            document.getElementById('editGrowthWeight').value = this.getAttribute('data-weight') || '';
+            document.getElementById('editGrowthHeight').value = this.getAttribute('data-height') || '';
+            document.getElementById('editGrowthHead').value = this.getAttribute('data-head') || '';
+            document.getElementById('editGrowthChest').value = this.getAttribute('data-chest') || '';
+            document.getElementById('editGrowthTemp').value = this.getAttribute('data-temp') || '';
+            document.getElementById('editGrowthFeeding').value = this.getAttribute('data-feeding') || 'LAM / Exclusive Breastfeeding';
+            
+            document.getElementById('edit_vit_a_check').checked = (this.getAttribute('data-vita') === '1');
+            document.getElementById('edit_deworming_check').checked = (this.getAttribute('data-deworm') === '1');
+            document.getElementById('editGrowthTcb').value = this.getAttribute('data-tcb') || '';
+
+            if (editGrowthLogModal) {
+                editGrowthLogModal.show();
             }
         });
     });

@@ -5,6 +5,18 @@ namespace App\Models;
 use App\Core\Model;
 
 class WellbabyRecord extends Model {
+    private function normalizeFeedingMethod($feedingMethod) {
+        $aliases = [
+            'Bottle Feeding (Formula)' => 'Bottle Feed',
+            'Formula Feeding' => 'Bottle Feed',
+            'Mixed Feeding' => 'Mixed',
+        ];
+        $feedingMethod = $aliases[$feedingMethod] ?? $feedingMethod;
+        return in_array($feedingMethod, ['LAM / Exclusive Breastfeeding', 'Bottle Feed', 'Mixed'], true)
+            ? $feedingMethod
+            : 'LAM / Exclusive Breastfeeding';
+    }
+
     /**
      * Get the Well Baby record for a child patient.
      * 
@@ -102,7 +114,7 @@ class WellbabyRecord extends Model {
             'newborn_screening_date' => !empty($data['newborn_screening_date']) ? $data['newborn_screening_date'] : null,
             'newborn_screening_result' => !empty($data['newborn_screening_result']) ? trim($data['newborn_screening_result']) : null,
             'mother_cpab_tt' => !empty($data['mother_cpab_tt']) ? trim($data['mother_cpab_tt']) : null,
-            'feeding_method' => $data['feeding_method'] ?? 'LAM / Exclusive Breastfeeding',
+            'feeding_method' => $this->normalizeFeedingMethod($data['feeding_method'] ?? ''),
             'created_by' => $data['created_by']
         ]);
 
@@ -146,7 +158,7 @@ class WellbabyRecord extends Model {
             'newborn_screening_date' => !empty($data['newborn_screening_date']) ? $data['newborn_screening_date'] : null,
             'newborn_screening_result' => !empty($data['newborn_screening_result']) ? trim($data['newborn_screening_result']) : null,
             'mother_cpab_tt' => !empty($data['mother_cpab_tt']) ? trim($data['mother_cpab_tt']) : null,
-            'feeding_method' => $data['feeding_method'] ?? 'LAM / Exclusive Breastfeeding'
+            'feeding_method' => $this->normalizeFeedingMethod($data['feeding_method'] ?? '')
         ]);
     }
 

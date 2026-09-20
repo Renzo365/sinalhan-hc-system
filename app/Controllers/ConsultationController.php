@@ -148,19 +148,15 @@ class ConsultationController extends Controller {
             return;
         }
 
-        // Permission check: only author or Admin can edit
-        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['role'] ?? 'staff';
-        $canEdit = ($userRole === 'admin' || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
-
-        if (!$canEdit) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to edit this consultation.';
+        if ($consultation['status'] === 'Cancelled') {
+            $_SESSION['error_message'] = 'Cancelled consultations cannot be edited.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
 
-        if ($consultation['status'] === 'Cancelled') {
-            $_SESSION['error_message'] = 'Cancelled consultations cannot be edited.';
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        if (!is_admin() && $currentUserId !== (int)$consultation['created_by'] && $currentUserId !== (int)$consultation['consulted_by']) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to edit this consultation.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
@@ -223,19 +219,16 @@ class ConsultationController extends Controller {
         $patientId = (int)$consultation['patient_id'];
         $patient = $this->patientModel->findById($patientId);
 
-        // Permission check
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['role'] ?? 'staff';
-        $canEdit = ($userRole === 'admin' || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
 
-        if (!$canEdit) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to modify this consultation.';
+        if ($consultation['status'] === 'Cancelled') {
+            $_SESSION['error_message'] = 'Cancelled consultations cannot be updated.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
 
-        if ($consultation['status'] === 'Cancelled') {
-            $_SESSION['error_message'] = 'Cancelled consultations cannot be updated.';
+        if (!is_admin() && $currentUserId !== (int)$consultation['created_by'] && $currentUserId !== (int)$consultation['consulted_by']) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update this consultation.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
@@ -334,10 +327,12 @@ class ConsultationController extends Controller {
         }
 
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['role'] ?? 'staff';
 
-        // Check if current user can edit
-        $consultation['can_edit'] = ($userRole === 'admin' || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']) && ($consultation['status'] !== 'Cancelled');
+        // Only the author, the attending clinician, or an administrator can edit.
+        $consultation['can_edit'] = $consultation['status'] !== 'Cancelled'
+            && (is_admin()
+                || $currentUserId === (int)$consultation['created_by']
+                || $currentUserId === (int)$consultation['consulted_by']);
         
         // Formatting date helpers
         $consultation['formatted_date'] = date('F d, Y h:i A', strtotime($consultation['consulted_at']));
@@ -369,16 +364,15 @@ class ConsultationController extends Controller {
 
         $patientId = (int)$consultation['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-        $canArchive = (in_array($userRole, ['admin', 'super_admin'], true) || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
+        $canArchive = is_admin();
 
         if (!$canArchive) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to archive this consultation.';
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can archive consultation records.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
 
-        $reason = trim($_POST['reason'] ?? '') ?: 'Archived by staff';
+        $reason = trim($_POST['reason'] ?? '') ?: 'Archived by administrator';
         $this->consultationModel->archive($id, $currentUserId, $reason);
 
         AuditLog::log('CONSULTATION_ARCHIVED', 'Consultations', "Archived consultation ID #{$id} for patient: {$consultation['pat_first']} {$consultation['pat_last']}");

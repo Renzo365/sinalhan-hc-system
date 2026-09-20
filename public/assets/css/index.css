@@ -223,19 +223,24 @@ a:hover {
 .app-sidebar {
   width: var(--sidebar-width);
   background-color: var(--color-sidebar);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
   position: fixed;
   left: 0;
   top: 0;
+  bottom: 0;
   z-index: 1000;
   display: flex;
   flex-direction: column;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .sidebar-brand {
   height: var(--topbar-height);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   padding: 0 20px;
@@ -246,9 +251,28 @@ a:hover {
 }
 
 .sidebar-menu {
-  flex-grow: 1;
-  padding: 20px 0;
+  flex: 1 1 auto;
+  padding: 15px 0 30px 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom Sleek Scrollbar for Sidebar */
+.sidebar-menu::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .sidebar-section-title {
@@ -487,6 +511,55 @@ a:hover {
 @media (max-width: 767.98px) {
   .app-content {
     padding: 16px;
+  }
+}
+
+/* --- Vertical Height Adaptations for Laptops & Short Displays --- */
+@media (max-height: 820px) {
+  .sidebar-brand {
+    height: 56px;
+    font-size: 1.05rem;
+  }
+  .sidebar-menu {
+    padding: 10px 0 24px 0;
+  }
+  .sidebar-section-title {
+    padding: 4px 20px;
+    font-size: 0.7rem;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+  .sidebar-item {
+    padding: 9px 20px;
+    font-size: 0.9rem;
+  }
+  .sidebar-item i {
+    font-size: 1.05rem;
+    margin-right: 10px;
+  }
+}
+
+@media (max-height: 700px) {
+  .sidebar-brand {
+    height: 48px;
+    font-size: 0.98rem;
+  }
+  .sidebar-menu {
+    padding: 6px 0 20px 0;
+  }
+  .sidebar-section-title {
+    padding: 2px 20px;
+    font-size: 0.68rem;
+    margin-top: 6px;
+    margin-bottom: 2px;
+  }
+  .sidebar-item {
+    padding: 7px 20px;
+    font-size: 0.85rem;
+  }
+  .sidebar-item i {
+    font-size: 0.95rem;
+    margin-right: 8px;
   }
 }
 

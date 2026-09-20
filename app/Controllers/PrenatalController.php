@@ -440,9 +440,51 @@ class PrenatalController extends Controller {
             return;
         }
 
-        $this->pohModel->deleteRecord($id);
+        $this->pohModel->deleteRecord($id, $_SESSION['user_id'] ?? null, 'Deleted by administrator');
         AuditLog::log('PAST_OBSTETRIC_DELETED', 'Maternal Care', "Deleted past obstetric record #{$id} for patient ID #{$patientId}");
         $_SESSION['success_message'] = 'Past obstetric record removed.';
+        $this->redirect("/maternal/{$patientId}");
+    }
+
+    /**
+     * Update a past delivery record row.
+     * 
+     * @param int $id
+     */
+    public function updatePastObstetric($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $record = $this->pohModel->findById($id);
+        if (!$record) {
+            $_SESSION['error_message'] = 'Past obstetric record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$record['patient_id'];
+        if (!is_admin()) {
+            $_SESSION['error_message'] = 'Only an administrator may update past obstetric history.';
+            $this->redirect("/maternal/{$patientId}");
+            return;
+        }
+
+        $updated = $this->pohModel->updateRecord($id, $_POST);
+        if ($updated) {
+            AuditLog::log('PAST_OBSTETRIC_UPDATED', 'Maternal Care', "Updated past obstetric record #{$id} for patient ID #{$patientId}");
+            $_SESSION['success_message'] = 'Past obstetric record updated successfully.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to update past obstetric record.';
+        }
+
         $this->redirect("/maternal/{$patientId}");
     }
 
@@ -611,16 +653,15 @@ class PrenatalController extends Controller {
         $patientId = $episode ? (int)$episode['patient_id'] : (int)($_POST['patient_id'] ?? 0);
 
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-        $canDelete = ($userRole === 'admin' || $currentUserId === (int)$visit['attended_by']);
+        $canDelete = is_admin();
 
         if (!$canDelete) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this prenatal visit.';
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can delete prenatal visits.';
             $this->redirect("/maternal/{$patientId}");
             return;
         }
 
-        $this->visitModel->deleteVisit($id);
+        $this->visitModel->deleteVisit($id, $currentUserId, 'Deleted by clinician');
         AuditLog::log('PRENATAL_VISIT_DELETED', 'Maternal Care', "Deleted prenatal visit ID #{$id} dated {$visit['visit_date']} for patient ID #{$patientId}");
 
         $_SESSION['success_message'] = 'Prenatal checkup visit record removed successfully.';

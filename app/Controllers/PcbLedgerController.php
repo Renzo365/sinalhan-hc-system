@@ -186,14 +186,13 @@ class PcbLedgerController extends Controller {
 
         $patientId = (int)$log['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['user_role'] ?? 'staff';
-        if (!in_array($userRole, ['admin', 'super_admin'], true) && $currentUserId !== (int)$log['recorded_by']) {
-            $_SESSION['form_errors'] = ['Unauthorized: you may only remove PCB service entries you recorded.'];
+        if (!is_admin()) {
+            $_SESSION['form_errors'] = ['Unauthorized: Only administrators can delete PCB service entries.'];
             $this->redirect("/patients/{$patientId}#tab-pcb");
             return;
         }
 
-        $deleted = $this->pcbModel->deleteServiceLog($id, $patientId);
+        $deleted = $this->pcbModel->deleteServiceLog($id, $patientId, $currentUserId, 'Archived by user');
 
         if ($deleted) {
             AuditLog::log(
@@ -204,6 +203,50 @@ class PcbLedgerController extends Controller {
             $_SESSION['success_message'] = "PhilHealth PCB service encounter removed.";
         } else {
             $_SESSION['form_errors'] = ['Failed to remove service log entry.'];
+        }
+
+        $this->redirect("/patients/{$patientId}#tab-pcb");
+    }
+
+    /**
+     * Update a service log entry.
+     * 
+     * @param int $id
+     */
+    public function updateLog($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to update PCB service log #{$id}");
+            $_SESSION['form_errors'] = ['Security validation failed (invalid token). Please try again.'];
+            $this->redirect('/patients');
+            return;
+        }
+
+        $log = $this->pcbModel->findLogById($id);
+        if (!$log) {
+            $_SESSION['form_errors'] = ['Service log entry not found.'];
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$log['patient_id'];
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        if (!is_admin() && $currentUserId !== (int)$log['recorded_by']) {
+            $_SESSION['form_errors'] = ['Unauthorized: you may only update PCB service entries you recorded.'];
+            $this->redirect("/patients/{$patientId}#tab-pcb");
+            return;
+        }
+
+        $updated = $this->pcbModel->updateServiceLog($id, $_POST);
+        if ($updated) {
+            AuditLog::log('PCB_SERVICE_UPDATED', 'Patients', "Updated PhilHealth PCB service entry #{$id} for Patient ID #{$patientId}");
+            $_SESSION['success_message'] = "PhilHealth PCB service encounter updated.";
+        } else {
+            $_SESSION['form_errors'] = ['Failed to update service log entry.'];
         }
 
         $this->redirect("/patients/{$patientId}#tab-pcb");

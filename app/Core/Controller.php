@@ -26,10 +26,15 @@ class Controller {
      * @param string $url Route path (e.g. '/dashboard')
      */
     protected function redirect($url) {
-        // If it is a full absolute URL, redirect to it directly
-        if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0) {
-            header("Location: {$url}");
-            exit;
+        // Controllers only redirect within this application.  This prevents a
+        // user-controlled return URL from sending an authenticated user to an
+        // external site.
+        $url = is_string($url) ? $url : '/';
+        if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $url) || str_starts_with($url, '//')) {
+            $url = '/';
+        }
+        if (!str_starts_with($url, '/')) {
+            $url = '/' . $url;
         }
 
         $scriptName = $_SERVER['SCRIPT_NAME'];

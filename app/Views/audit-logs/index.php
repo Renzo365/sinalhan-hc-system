@@ -19,7 +19,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <select name="user_id" id="user_id" class="form-select bg-light">
                     <option value="">-- All Users --</option>
                     <?php foreach ($users as $u): 
-                        $uRoleLabel = ($u['id'] == 1) ? 'Main Admin' : ($u['role'] === 'admin' ? 'Co-Admin' : 'Staff');
+                        $uRoleLabel = ($u['role'] === 'super_admin') ? 'Super Admin' : ($u['role'] === 'admin' ? 'Admin' : 'Staff');
                     ?>
                         <option value="<?= $u['id'] ?>" <?= (isset($filters['user_id']) && $filters['user_id'] == $u['id']) ? 'selected' : '' ?>>
                             <?= h($u['last_name']) ?>, <?= h($u['first_name']) ?> (<?= h($u['username']) ?>) - <?= $uRoleLabel ?>
@@ -32,8 +32,8 @@ require dirname(__DIR__) . '/layout/header.php';
                 <label for="role" class="form-label text-secondary small fw-semibold">User Role</label>
                 <select name="role" id="role" class="form-select bg-light">
                     <option value="">-- All Roles --</option>
-                    <option value="main_admin" <?= (isset($filters['role']) && $filters['role'] === 'main_admin') ? 'selected' : '' ?>>Main Admin</option>
-                    <option value="co_admin" <?= (isset($filters['role']) && $filters['role'] === 'co_admin') ? 'selected' : '' ?>>Co-Admin</option>
+                    <option value="super_admin" <?= (isset($filters['role']) && $filters['role'] === 'super_admin') ? 'selected' : '' ?>>Super Admin</option>
+                    <option value="admin" <?= (isset($filters['role']) && $filters['role'] === 'admin') ? 'selected' : '' ?>>Admin</option>
                     <option value="staff" <?= (isset($filters['role']) && $filters['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
                 </select>
             </div>

@@ -24,9 +24,12 @@ $avatarInitial = strtoupper(mb_substr(trim($user['first_name'] ?: 'U'), 0, 1, 'U
 // Format Role Display
 $roleDisplay = 'Staff Member';
 $roleBadgeClass = 'bg-secondary-subtle text-secondary border border-secondary-subtle';
-if ($user['role'] === 'admin') {
-    $roleDisplay = ($user['id'] == 1) ? 'System Administrator' : 'Co-Administrator';
-    $roleBadgeClass = 'bg-primary-subtle text-primary border border-primary-subtle';
+if ($user['role'] === 'super_admin') {
+    $roleDisplay = 'Super Administrator';
+    $roleBadgeClass = 'bg-primary-subtle text-primary border border-primary-subtle fw-bold';
+} elseif ($user['role'] === 'admin') {
+    $roleDisplay = 'Administrator';
+    $roleBadgeClass = 'bg-info-subtle text-info border border-info-subtle fw-bold';
 }
 ?>
 

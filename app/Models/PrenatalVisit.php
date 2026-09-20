@@ -151,7 +151,10 @@ class PrenatalVisit extends Model {
             return false;
         }
 
-        $sql = "UPDATE prenatal_visits SET " . implode(', ', $fields) . ", updated_at = CURRENT_TIMESTAMP WHERE id = :id AND deleted_at IS NULL";
+        // prenatal_visits has a created_at timestamp but no updated_at column.
+        // Keep the update limited to columns that exist in the table so editing a
+        // serial visit works with both the current schema and installed databases.
+        $sql = "UPDATE prenatal_visits SET " . implode(', ', $fields) . " WHERE id = :id AND deleted_at IS NULL";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($params);
     }

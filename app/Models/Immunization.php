@@ -184,4 +184,41 @@ class Immunization extends Model {
         ]);
         return $stmt->rowCount() > 0;
     }
+
+    /**
+     * Update an existing immunization record.
+     * 
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function updateDose($id, $data) {
+        $source = $data['source'] ?? 'Health Center';
+        $documentationStatus = $data['documentation_status'] ?? 'Administered';
+        if (!in_array($source, ['Health Center', 'External', 'Patient Reported', 'Unknown'], true)) {
+            $source = 'Unknown';
+        }
+        if (!in_array($documentationStatus, ['Administered', 'Reported', 'Unknown'], true)) {
+            $documentationStatus = 'Unknown';
+        }
+
+        $sql = "UPDATE immunizations SET
+                    vaccine_name = :vaccine_name,
+                    dose_number = :dose_number,
+                    administered_date = :administered_date,
+                    source = :source,
+                    documentation_status = :documentation_status,
+                    remarks = :remarks
+                WHERE id = :id AND deleted_at IS NULL";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => (int)$id,
+            'vaccine_name' => trim($data['vaccine_name'] ?? ''),
+            'dose_number' => (int)($data['dose_number'] ?? 1),
+            'administered_date' => $data['administered_date'],
+            'source' => $source,
+            'documentation_status' => $documentationStatus,
+            'remarks' => !empty($data['remarks']) ? trim($data['remarks']) : null
+        ]);
+    }
 }

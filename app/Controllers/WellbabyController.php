@@ -503,15 +503,21 @@ class WellbabyController extends Controller {
         $documentationStatus = $_POST['documentation_status'] ?? 'Administered';
         $userId = $_SESSION['user_id'] ?? 1;
 
+        $redirectUrl = !empty($_POST['redirect_to']) 
+            ? $_POST['redirect_to'] 
+            : ((!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'well-baby') !== false) 
+                ? "/well-baby/{$patientId}" 
+                : "/patients/{$patientId}#tab-immunizations");
+
         $date = \DateTime::createFromFormat('Y-m-d', $adminDate);
         if (empty($vaccineName) || $doseNumber < 1 || !$date || $date->format('Y-m-d') !== $adminDate) {
             $_SESSION['error_message'] = 'A valid vaccine name, dose number, and administration date are required.';
-            $this->redirect("/well-baby/{$patientId}");
+            $this->redirect($redirectUrl);
             return;
         }
         if ($adminDate > date('Y-m-d')) {
             $_SESSION['error_message'] = 'Immunization date cannot be in the future.';
-            $this->redirect("/well-baby/{$patientId}");
+            $this->redirect($redirectUrl);
             return;
         }
 
@@ -540,7 +546,7 @@ class WellbabyController extends Controller {
             $_SESSION['error_message'] = 'Failed to record immunization.';
         }
 
-        $this->redirect("/well-baby/{$patientId}");
+        $this->redirect($redirectUrl);
     }
 
     /**
@@ -659,16 +665,61 @@ class WellbabyController extends Controller {
         $wellbaby = $this->wbModel->findById($log['wellbaby_id']);
         $patientId = $wellbaby ? (int)$wellbaby['patient_id'] : (int)($_POST['patient_id'] ?? 0);
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['user_role'] ?? 'staff';
-        if (!in_array($userRole, ['admin', 'super_admin'], true) && $currentUserId !== (int)$log['recorded_by']) {
-            $_SESSION['error_message'] = 'Unauthorized: you may only remove growth records you recorded.';
+        if (!is_admin()) {
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can delete growth records.';
             $this->redirect("/well-baby/{$patientId}");
             return;
         }
 
-        $this->growthModel->deleteLog($id);
+        $this->growthModel->deleteLog($id, $currentUserId, 'Deleted by clinician');
         AuditLog::log('CHILD_GROWTH_LOG_DELETED', 'Pediatric Care', "Deleted growth log #{$id} for patient ID #{$patientId}");
         $_SESSION['success_message'] = 'Growth log entry removed.';
+
+        $this->redirect($patientId ? "/well-baby/{$patientId}" : "/patients");
+    }
+
+    /**
+     * Update an existing child growth log entry.
+     * 
+     * @param int $id
+     */
+    public function updateGrowthLog($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Pediatric Care', "CSRF mismatch while attempting to update growth log #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $log = $this->growthModel->findById($id);
+        if (!$log) {
+            $_SESSION['error_message'] = 'Growth log entry not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $wellbaby = $this->wbModel->findById($log['wellbaby_id']);
+        $patientId = $wellbaby ? (int)$wellbaby['patient_id'] : (int)($_POST['patient_id'] ?? 0);
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        if (!is_admin() && $currentUserId !== (int)$log['recorded_by']) {
+            $_SESSION['error_message'] = 'Unauthorized: you may only update growth records you recorded.';
+            $this->redirect($patientId ? "/well-baby/{$patientId}" : '/patients');
+            return;
+        }
+
+        $updated = $this->growthModel->updateLog($id, $_POST);
+        if ($updated) {
+            AuditLog::log('CHILD_GROWTH_LOG_UPDATED', 'Pediatric Care', "Updated growth log #{$id} for patient ID #{$patientId}");
+            $_SESSION['success_message'] = 'Growth visit record updated successfully.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to update growth visit record.';
+        }
 
         $this->redirect($patientId ? "/well-baby/{$patientId}" : "/patients");
     }
@@ -701,23 +752,83 @@ class WellbabyController extends Controller {
 
         $patientId = (int)$imm['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-        $canDelete = ($userRole === 'admin' || $currentUserId === (int)$imm['administered_by']);
+        $canDelete = is_admin();
 
         $redirectUrl = (!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'well-baby') !== false) 
             ? "/well-baby/{$patientId}" 
             : "/patients/{$patientId}#tab-immunizations";
 
         if (!$canDelete) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this immunization record.';
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can delete immunization records.';
             $this->redirect($redirectUrl);
             return;
         }
 
-        $this->immModel->deleteDose($id);
+        $this->immModel->deleteDose($id, $currentUserId, 'Deleted by clinician');
         AuditLog::log('IMMUNIZATION_DELETED', 'Immunization', "Deleted immunization ID #{$id} ({$imm['vaccine_name']} Dose #{$imm['dose_number']}) for patient ID #{$patientId}");
 
         $_SESSION['success_message'] = 'Immunization record removed successfully.';
+        $this->redirect($redirectUrl);
+    }
+
+    /**
+     * Update an existing immunization dose record.
+     * Accessible to all authenticated users (Staff, Admin, Super Admin).
+     * 
+     * @param int $id
+     */
+    public function updateImmunization($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Immunization', "CSRF mismatch while attempting to update immunization #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $imm = $this->immModel->findById($id);
+        if (!$imm) {
+            $_SESSION['error_message'] = 'Immunization record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$imm['patient_id'];
+        $redirectUrl = !empty($_POST['redirect_to']) 
+            ? $_POST['redirect_to'] 
+            : ((!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'well-baby') !== false) 
+                ? "/well-baby/{$patientId}" 
+                : "/patients/{$patientId}#tab-immunizations");
+
+        $vaccineName = trim($_POST['vaccine_name'] ?? '');
+        $doseNumber = (int)($_POST['dose_number'] ?? 1);
+        $adminDate = trim($_POST['administered_date'] ?? '');
+
+        if (empty($vaccineName) || empty($adminDate)) {
+            $_SESSION['error_message'] = 'Vaccine name and administration date are required.';
+            $this->redirect($redirectUrl);
+            return;
+        }
+
+        if ($adminDate > date('Y-m-d')) {
+            $_SESSION['error_message'] = 'Immunization date cannot be in the future.';
+            $this->redirect($redirectUrl);
+            return;
+        }
+
+        $updated = $this->immModel->updateDose($id, $_POST);
+        if ($updated) {
+            AuditLog::log('IMMUNIZATION_UPDATED', 'Immunization', "Updated immunization ID #{$id} ({$vaccineName} Dose #{$doseNumber}) for patient ID #{$patientId}");
+            $_SESSION['success_message'] = 'Immunization record updated successfully.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to update immunization record.';
+        }
+
         $this->redirect($redirectUrl);
     }
 }

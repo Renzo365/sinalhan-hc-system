@@ -105,9 +105,9 @@ class PcbLedger extends Model {
     public function getServiceLogs($patientId, $category = null) {
         $sql = "SELECT psl.*,
                        CONCAT(u.first_name, ' ', u.last_name) AS recorder_name
-                FROM pcb_service_logs psl
-                LEFT JOIN users u ON psl.recorded_by = u.id
-                WHERE psl.patient_id = :patient_id";
+                 FROM pcb_service_logs psl
+                 LEFT JOIN users u ON psl.recorded_by = u.id
+                 WHERE psl.patient_id = :patient_id AND psl.deleted_at IS NULL";
         
         $params = ['patient_id' => $patientId];
         
@@ -158,13 +158,46 @@ class PcbLedger extends Model {
     }
 
     /**
+     * Update an existing service log entry.
+     * 
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+    public function updateServiceLog($id, $data) {
+        $sql = "UPDATE pcb_service_logs SET
+                    service_category = :service_category,
+                    service_date = :service_date,
+                    diagnosis = :diagnosis,
+                    service_type = :service_type,
+                    status_given = :status_given,
+                    status_referred = :status_referred,
+                    referred_to = :referred_to,
+                    remarks = :remarks
+                WHERE id = :id AND deleted_at IS NULL";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => (int)$id,
+            'service_category' => in_array($data['service_category'] ?? '', ['Diagnostic', 'PCB1', 'Other'], true) ? $data['service_category'] : 'Diagnostic',
+            'service_date' => !empty($data['service_date']) ? $data['service_date'] : date('Y-m-d'),
+            'diagnosis' => !empty($data['diagnosis']) ? trim($data['diagnosis']) : null,
+            'service_type' => trim($data['service_type'] ?? 'General PCB Service'),
+            'status_given' => !empty($data['status_given']) ? 1 : 0,
+            'status_referred' => !empty($data['status_referred']) ? 1 : 0,
+            'referred_to' => !empty($data['referred_to']) ? trim($data['referred_to']) : null,
+            'remarks' => !empty($data['remarks']) ? trim($data['remarks']) : null
+        ]);
+    }
+
+    /**
      * Find single service log by ID.
      * 
      * @param int $id
      * @return array|null
      */
     public function findLogById($id) {
-        $sql = "SELECT * FROM pcb_service_logs WHERE id = :id LIMIT 1";
+        $sql = "SELECT * FROM pcb_service_logs WHERE id = :id AND deleted_at IS NULL LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
@@ -172,18 +205,28 @@ class PcbLedger extends Model {
     }
 
     /**
-     * Delete a service log entry.
+     * Soft delete a service log entry.
      * 
      * @param int $id
      * @param int|null $patientId
+     * @param int|null $userId
+     * @param string|null $reason
      * @return bool
      */
-    public function deleteServiceLog($id, $patientId = null) {
-        $sql = "DELETE FROM pcb_service_logs WHERE id = :id";
-        $params = ['id' => $id];
+    public function deleteServiceLog($id, $patientId = null, $userId = null, $reason = null) {
+        $sql = "UPDATE pcb_service_logs 
+                SET deleted_at = CURRENT_TIMESTAMP,
+                    deleted_by = :user_id,
+                    archive_reason = :reason
+                WHERE id = :id AND deleted_at IS NULL";
+        $params = [
+            'id' => (int)$id,
+            'user_id' => $userId ? (int)$userId : null,
+            'reason' => $reason ? trim($reason) : 'Deleted by clinician'
+        ];
         if ($patientId !== null) {
             $sql .= " AND patient_id = :patient_id";
-            $params['patient_id'] = $patientId;
+            $params['patient_id'] = (int)$patientId;
         }
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($params);

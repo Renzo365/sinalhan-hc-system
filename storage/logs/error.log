@@ -715,3 +715,73 @@ Stack Trace:
 #3 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
 #4 {main}
 --------------------------------------------------------------------------------
+[2026-09-20 15:26:43] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-20 15:27:00] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-20 15:27:03] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-20 15:27:53] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-20 15:27:57] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-20 15:31:47] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------
+[2026-09-20 15:31:49] [PDOException] User: admin | IP: 127.0.0.1 | URI: /sinalhan-hc-system/public/prenatal/visit/6/update
+Exception: PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list' in C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php:155
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\PrenatalVisit.php(155): PDO->prepare('UPDATE prenatal...')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PrenatalController.php(359): App\Models\PrenatalVisit->updateVisit('6', Array)
+#2 [internal function]: App\Controllers\PrenatalController->updateVisit('6')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(63): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------

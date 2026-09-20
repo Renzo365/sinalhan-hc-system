@@ -47,6 +47,7 @@ return function (\App\Core\Router $router) {
     $router->post('/patients/{id}/prenatal/episode', 'PrenatalController@storeEpisode', [AuthMiddleware::class]);
     $router->post('/patients/{id}/past-obstetric', 'PrenatalController@storePastObstetric', [AuthMiddleware::class]);
     $router->post('/past-obstetric/{id}/delete', 'PrenatalController@deletePastObstetric', [AuthMiddleware::class]);
+    $router->post('/past-obstetric/{id}/update', 'PrenatalController@updatePastObstetric', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/update', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/visit', 'PrenatalController@storeVisit', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/conclude', 'PrenatalController@concludeEpisode', [AuthMiddleware::class]);
@@ -62,6 +63,7 @@ return function (\App\Core\Router $router) {
     $router->post('/patients/{id}/pcb/obligated', 'PcbLedgerController@saveObligated', [AuthMiddleware::class]);
     $router->post('/patients/{id}/pcb/service-log', 'PcbLedgerController@storeLog', [AuthMiddleware::class]);
     $router->post('/pcb/service-log/{id}/delete', 'PcbLedgerController@deleteLog', [AuthMiddleware::class]);
+    $router->post('/pcb/service-log/{id}/update', 'PcbLedgerController@updateLog', [AuthMiddleware::class]);
 
     // Well Baby & Pediatric Routes
     $router->get('/well-baby', 'WellbabyController@index', [AuthMiddleware::class]);
@@ -74,13 +76,16 @@ return function (\App\Core\Router $router) {
     $router->post('/patients/{id}/wellbaby/birth-record', 'WellbabyController@storeBirthRecord', [AuthMiddleware::class]);
     $router->post('/wellbaby/{id}/growth-log', 'WellbabyController@storeGrowthLog', [AuthMiddleware::class]);
     $router->post('/wellbaby/growth-log/{id}/delete', 'WellbabyController@deleteGrowthLog', [AuthMiddleware::class]);
+    $router->post('/wellbaby/growth-log/{id}/update', 'WellbabyController@updateGrowthLog', [AuthMiddleware::class]);
     $router->post('/patients/{id}/wellbaby/epi-schedule', 'WellbabyController@batchSaveEPI', [AuthMiddleware::class]);
     $router->post('/patients/{id}/immunizations/record', 'WellbabyController@recordImmunization', [AuthMiddleware::class]);
     $router->post('/immunizations/{id}/delete', 'WellbabyController@deleteImmunization', [AuthMiddleware::class]);
+    $router->post('/immunizations/{id}/update', 'WellbabyController@updateImmunization', [AuthMiddleware::class]);
 
     // Vital Signs Routes
     $router->post('/vital-signs', 'VitalSignsController@store', [AuthMiddleware::class]);
     $router->post('/vital-signs/{id}/delete', 'VitalSignsController@delete', [AuthMiddleware::class]);
+    $router->post('/vital-signs/{id}/update', 'VitalSignsController@update', [AuthMiddleware::class]);
 
     // Consultation Routes
     $router->get('/patients/{id}/consultations/create', 'ConsultationController@create', [AuthMiddleware::class]);

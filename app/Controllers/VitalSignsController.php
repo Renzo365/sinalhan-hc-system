@@ -111,11 +111,10 @@ class VitalSignsController extends Controller {
 
         $patientId = (int)$vital['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
-        $canDelete = ($userRole === 'admin' || $currentUserId === (int)$vital['recorded_by']);
+        $canDelete = is_admin();
 
         if (!$canDelete) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to delete this vital signs record.';
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can delete vital signs records.';
             $this->redirect("/patients/{$patientId}#tab-vitals");
             return;
         }
@@ -130,10 +129,68 @@ class VitalSignsController extends Controller {
             return;
         }
 
-        $this->vitalsModel->delete($id);
-        AuditLog::log('VITAL_SIGNS_DELETED', 'Patients', "Deleted vital signs ID #{$id}");
+        $this->vitalsModel->delete($id, $currentUserId, 'Deleted by clinician');
+        AuditLog::log('VITAL_SIGNS_DELETED', 'Patients', "Deleted vital signs ID #{$id} for patient ID #{$patientId}");
 
         $_SESSION['success_message'] = 'Vital signs record deleted successfully.';
+        $this->redirect("/patients/{$patientId}#tab-vitals");
+    }
+
+    /**
+     * Update an existing vital signs record.
+     * 
+     * @param int $id
+     */
+    public function update($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Validate CSRF token
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) || !hash_equals(csrf_token(), $token)) {
+            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to update vital signs #{$id}");
+            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $vital = $this->vitalsModel->findById($id);
+        if (!$vital) {
+            $_SESSION['error_message'] = 'Vital signs record not found.';
+            $this->redirect('/patients');
+            return;
+        }
+
+        $patientId = (int)$vital['patient_id'];
+        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        if (!is_admin() && $currentUserId !== (int)$vital['recorded_by']) {
+            $_SESSION['error_message'] = 'Unauthorized: you may only update vital signs you recorded.';
+            $this->redirect("/patients/{$patientId}#tab-vitals");
+            return;
+        }
+
+        // Server-Side BMI Calculation
+        $weight = !empty($_POST['weight']) ? (float)$_POST['weight'] : null;
+        $height = !empty($_POST['height']) ? (float)$_POST['height'] : null;
+        $bmi = null;
+
+        if ($weight && $height && $height > 0) {
+            $heightInMeters = $height / 100;
+            $bmi = round($weight / ($heightInMeters * $heightInMeters), 2);
+        }
+
+        $data = $_POST;
+        $data['bmi'] = $bmi;
+
+        $updated = $this->vitalsModel->update($id, $data);
+        if ($updated) {
+            AuditLog::log('VITAL_SIGNS_UPDATED', 'Patients', "Updated vital signs ID #{$id} for patient ID #{$patientId}");
+            $_SESSION['success_message'] = 'Vital signs record updated successfully!';
+        } else {
+            $_SESSION['error_message'] = 'Failed to update vital signs. Please try again.';
+        }
+
         $this->redirect("/patients/{$patientId}#tab-vitals");
     }
 }

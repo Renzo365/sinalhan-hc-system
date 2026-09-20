@@ -449,8 +449,8 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 </label>
                                 <select name="feeding_method" id="feeding_method" class="form-select">
                                     <option value="LAM / Exclusive Breastfeeding">LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feeding (Formula)">Bottle Feeding (Formula)</option>
-                                    <option value="Mixed Feeding">Mixed Feeding</option>
+                                    <option value="Bottle Feed">Bottle Feeding (Formula)</option>
+                                    <option value="Mixed">Mixed Feeding</option>
                                 </select>
                             </div>
 

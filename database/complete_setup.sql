@@ -643,11 +643,16 @@ CREATE TABLE `pcb_service_logs` (
   `recorded_by` INT NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `idx_pcb_logs_patient` (`patient_id`, `service_category`),
   INDEX `idx_pcb_logs_date` (`service_date`),
+  INDEX `idx_pcb_service_logs_deleted` (`deleted_at`),
   CONSTRAINT `fk_pcb_logs_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_pcb_logs_recorder` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_pcb_logs_recorder` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_pcb_service_logs_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------------
