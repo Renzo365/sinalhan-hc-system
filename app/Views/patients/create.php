@@ -365,7 +365,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- Row 2: Mother's Name & Mother's DOB -->
                     <div class="col-12 col-md-7">
-                        <label for="mother_name" class="form-label fw-semibold text-secondary small">Mother's Maiden Name (Pangalan sa Pagkadalaga)</label>
+                        <label for="mother_name" class="form-label fw-semibold text-secondary small">Mother's Maiden Name</label>
                         <input type="text" 
                                name="mother_name" 
                                id="mother_name" 

@@ -292,6 +292,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                    maxlength="14"
                                    value="<?= h($patient['philhealth_no'] ?? '') ?>">
                         </div>
+                        <div class="form-text small text-muted">Leave blank if not applicable.</div>
                     </div>
 
                     <div class="col-12 col-md-6">
@@ -375,12 +376,12 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- Row 3: Spouse's Name & Spouse's DOB -->
                     <div class="col-12 col-md-7">
-                        <label for="spouse_name" class="form-label fw-semibold text-secondary small">Spouse's Full Name</label>
+                        <label for="spouse_name" class="form-label fw-semibold text-secondary small">Spouse's Full Name (if married / live-in)</label>
                         <input type="text" 
                                name="spouse_name" 
                                id="spouse_name" 
                                class="form-control name-input" 
-                               placeholder="Full Name of Spouse (if married)" 
+                               placeholder="Full Name of Spouse" 
                                maxlength="150"
                                value="<?= h($patient['spouse_name'] ?? '') ?>">
                     </div>
