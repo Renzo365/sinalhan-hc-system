@@ -132,8 +132,8 @@ class Patient extends Model {
      * @return int|false The new patient ID, or false on failure
      */
     public function create($data) {
-        // Auto-generate patient number inside the create method
-        $data['patient_no'] = $this->generatePatientNo();
+        $maxRetries = 3;
+        $attempt = 0;
 
         $sql = "INSERT INTO patients (
                     patient_no, envelope_no, family_no, first_name, middle_name, last_name, suffix, dob, sex, 
@@ -148,43 +148,69 @@ class Patient extends Model {
                     :father_name, :father_dob, :mother_name, :mother_dob, :spouse_name, :spouse_dob,
                     :emergency_name, :emergency_relationship, :emergency_no, :created_by
                 )";
-        
-        $stmt = $this->db->prepare($sql);
-        $result = $stmt->execute([
-            'patient_no' => $data['patient_no'],
-            'envelope_no' => !empty($data['envelope_no']) ? trim($data['envelope_no']) : null,
-            'family_no' => !empty($data['family_no']) ? trim($data['family_no']) : null,
-            'first_name' => trim($data['first_name']),
-            'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
-            'last_name' => trim($data['last_name']),
-            'suffix' => !empty($data['suffix']) ? trim($data['suffix']) : null,
-            'dob' => $data['dob'],
-            'sex' => $data['sex'],
-            'civil_status' => $data['civil_status'],
-            'civil_status_other' => ($data['civil_status'] === 'Others' && !empty($data['civil_status_other'])) ? trim($data['civil_status_other']) : null,
-            'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : 'Unknown',
-            'religion' => !empty($data['religion']) ? trim($data['religion']) : null,
-            'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
-            'education_attainment' => !empty($data['education_attainment']) ? $data['education_attainment'] : null,
-            'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
-            'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
-            'address' => !empty($data['address']) ? trim($data['address']) : '',
-            'phic_status' => !empty($data['phic_status']) ? $data['phic_status'] : 'Non-Member',
-            'phic_type' => !empty($data['phic_type']) ? trim($data['phic_type']) : null,
-            'philhealth_no' => !empty($data['philhealth_no']) ? trim($data['philhealth_no']) : null,
-            'father_name' => !empty($data['father_name']) ? trim($data['father_name']) : null,
-            'father_dob' => !empty($data['father_dob']) ? $data['father_dob'] : null,
-            'mother_name' => !empty($data['mother_name']) ? trim($data['mother_name']) : null,
-            'mother_dob' => !empty($data['mother_dob']) ? $data['mother_dob'] : null,
-            'spouse_name' => !empty($data['spouse_name']) ? trim($data['spouse_name']) : null,
-            'spouse_dob' => !empty($data['spouse_dob']) ? $data['spouse_dob'] : null,
-            'emergency_name' => !empty($data['emergency_name']) ? trim($data['emergency_name']) : null,
-            'emergency_relationship' => !empty($data['emergency_relationship']) ? trim($data['emergency_relationship']) : null,
-            'emergency_no' => !empty($data['emergency_no']) ? trim($data['emergency_no']) : null,
-            'created_by' => $data['created_by']
-        ]);
 
-        return $result ? (int)$this->db->lastInsertId() : false;
+        while ($attempt < $maxRetries) {
+            $attempt++;
+            // Auto-generate patient number inside the create method
+            $data['patient_no'] = $this->generatePatientNo();
+
+            try {
+                $stmt = $this->db->prepare($sql);
+                $result = $stmt->execute([
+                    'patient_no' => $data['patient_no'],
+                    'envelope_no' => !empty($data['envelope_no']) ? trim($data['envelope_no']) : null,
+                    'family_no' => !empty($data['family_no']) ? trim($data['family_no']) : null,
+                    'first_name' => trim($data['first_name']),
+                    'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
+                    'last_name' => trim($data['last_name']),
+                    'suffix' => !empty($data['suffix']) ? trim($data['suffix']) : null,
+                    'dob' => $data['dob'],
+                    'sex' => $data['sex'],
+                    'civil_status' => $data['civil_status'],
+                    'civil_status_other' => ($data['civil_status'] === 'Others' && !empty($data['civil_status_other'])) ? trim($data['civil_status_other']) : null,
+                    'blood_type' => !empty($data['blood_type']) ? $data['blood_type'] : 'Unknown',
+                    'religion' => !empty($data['religion']) ? trim($data['religion']) : null,
+                    'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
+                    'education_attainment' => !empty($data['education_attainment']) ? $data['education_attainment'] : null,
+                    'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
+                    'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
+                    'address' => !empty($data['address']) ? trim($data['address']) : '',
+                    'phic_status' => !empty($data['phic_status']) ? $data['phic_status'] : 'Non-Member',
+                    'phic_type' => !empty($data['phic_type']) ? trim($data['phic_type']) : null,
+                    'philhealth_no' => !empty($data['philhealth_no']) ? trim($data['philhealth_no']) : null,
+                    'father_name' => !empty($data['father_name']) ? trim($data['father_name']) : null,
+                    'father_dob' => !empty($data['father_dob']) ? $data['father_dob'] : null,
+                    'mother_name' => !empty($data['mother_name']) ? trim($data['mother_name']) : null,
+                    'mother_dob' => !empty($data['mother_dob']) ? $data['mother_dob'] : null,
+                    'spouse_name' => !empty($data['spouse_name']) ? trim($data['spouse_name']) : null,
+                    'spouse_dob' => !empty($data['spouse_dob']) ? $data['spouse_dob'] : null,
+                    'emergency_name' => !empty($data['emergency_name']) ? trim($data['emergency_name']) : null,
+                    'emergency_relationship' => !empty($data['emergency_relationship']) ? trim($data['emergency_relationship']) : null,
+                    'emergency_no' => !empty($data['emergency_no']) ? trim($data['emergency_no']) : null,
+                    'created_by' => $data['created_by']
+                ]);
+
+                if ($result) {
+                    return (int)$this->db->lastInsertId();
+                }
+
+                $errorInfo = $stmt->errorInfo();
+                if (isset($errorInfo[1]) && $errorInfo[1] == 1062 && $attempt < $maxRetries) {
+                    usleep(50000); // 50ms pause before retrying
+                    continue;
+                }
+
+                return false;
+            } catch (\PDOException $e) {
+                if (($e->getCode() === '23000' || (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062)) && $attempt < $maxRetries) {
+                    usleep(50000); // 50ms pause before retrying
+                    continue;
+                }
+                throw $e;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -330,7 +356,7 @@ class Patient extends Model {
     public function isPhilHealthUnique($philhealthNo, $excludeId = null) {
         if (empty($philhealthNo)) return true;
         
-        $sql = "SELECT COUNT(*) FROM patients WHERE philhealth_no = :philhealth_no AND deleted_at IS NULL";
+        $sql = "SELECT COUNT(*) FROM patients WHERE philhealth_no = :philhealth_no";
         $params = ['philhealth_no' => $philhealthNo];
         
         if ($excludeId !== null) {

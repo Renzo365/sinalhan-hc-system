@@ -123,11 +123,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Inactivity Auto-Logout Monitor with Pre-Warning Modal (15 Minutes total, warning at 13 Minutes)
+    // Inactivity Auto-Logout Monitor with Pre-Warning Modal (Configurable via config/app.php)
     <?php if (isset($_SESSION['user_id'])): ?>
+    <?php
+        $idleTimeoutSec = (int)config('session.idle_timeout', 7200);
+        $warningThresholdSec = max(60, $idleTimeoutSec - 120); // Show warning 2 minutes before timeout
+    ?>
     (function() {
-        const TOTAL_TIMEOUT_MS = 15 * 60 * 1000;       // 15 minutes total
-        const WARNING_THRESHOLD_MS = 13 * 60 * 1000;     // 13 minutes (2 minutes before logout)
+        const TOTAL_TIMEOUT_MS = <?= $idleTimeoutSec ?> * 1000;
+        const WARNING_THRESHOLD_MS = <?= $warningThresholdSec ?> * 1000;
         const CHECK_INTERVAL_MS = 5 * 1000;             // Check wall-clock every 5 seconds
         const SERVER_SYNC_INTERVAL_MS = 4 * 60 * 1000;  // Sync server session every 4 minutes while user is active
         const PING_URL = <?= json_encode(url('/api/session-ping')) ?>;

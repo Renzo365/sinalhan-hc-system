@@ -555,7 +555,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editGrowthLogForm" method="POST" action="">
+            <form id="editGrowthLogForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
                 <div class="modal-body p-4 bg-white">

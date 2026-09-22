@@ -205,7 +205,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 </h5>
                 <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="resetPasswordForm" method="POST" action="">
+            <form id="resetPasswordForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <div class="modal-body p-4 bg-white">
                     <p class="text-secondary small mb-3">

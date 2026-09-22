@@ -243,6 +243,7 @@ class ReportController extends Controller {
                             FROM queue_entries q
                             JOIN patients p ON q.patient_id = p.id
                             WHERE q.queue_date BETWEEN :date_from AND :date_to
+                              AND p.deleted_at IS NULL
                             ORDER BY q.queue_date DESC, q.queue_no ASC";
                     $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
@@ -254,6 +255,9 @@ class ReportController extends Controller {
                             JOIN patients p ON c.patient_id = p.id
                             JOIN users u ON c.consulted_by = u.id
                             WHERE c.consulted_at >= :date_from AND c.consulted_at < :date_to_exclusive
+                              AND c.deleted_at IS NULL
+                              AND p.deleted_at IS NULL
+                              AND c.status != 'Cancelled'
                             ORDER BY c.consulted_at DESC";
                     $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
@@ -267,16 +271,18 @@ class ReportController extends Controller {
                     break;
                     
                 case 'queue_summary':
-                    $sql = "SELECT queue_date AS date, 
+                    $sql = "SELECT q.queue_date AS date, 
                                    COUNT(*) AS total,
-                                   SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed,
-                                   SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled,
-                                   SUM(CASE WHEN status = 'Waiting' THEN 1 ELSE 0 END) AS waiting,
-                                   SUM(CASE WHEN status IN ('Called', 'Serving') THEN 1 ELSE 0 END) AS called_serving
-                            FROM queue_entries
-                            WHERE queue_date BETWEEN :date_from AND :date_to
-                            GROUP BY queue_date
-                            ORDER BY queue_date DESC";
+                                   SUM(CASE WHEN q.status = 'Completed' THEN 1 ELSE 0 END) AS completed,
+                                   SUM(CASE WHEN q.status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled,
+                                   SUM(CASE WHEN q.status = 'Waiting' THEN 1 ELSE 0 END) AS waiting,
+                                   SUM(CASE WHEN q.status IN ('Called', 'Serving') THEN 1 ELSE 0 END) AS called_serving
+                            FROM queue_entries q
+                            JOIN patients p ON q.patient_id = p.id
+                            WHERE q.queue_date BETWEEN :date_from AND :date_to
+                              AND p.deleted_at IS NULL
+                            GROUP BY q.queue_date
+                            ORDER BY q.queue_date DESC";
                     $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
                     
@@ -287,6 +293,8 @@ class ReportController extends Controller {
                             JOIN patients p ON v.patient_id = p.id
                             JOIN users u ON v.recorded_by = u.id
                             WHERE v.recorded_at >= :date_from AND v.recorded_at < :date_to_exclusive
+                              AND v.deleted_at IS NULL
+                              AND p.deleted_at IS NULL
                             ORDER BY v.recorded_at DESC";
                     $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
@@ -310,19 +318,19 @@ class ReportController extends Controller {
                     $sql = "SELECT p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.dob, p.sex, p.barangay, p.mother_name,
                                    TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
                                    wb.birth_weight_kg, wb.birth_length_cm, wb.newborn_screening_done,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) = 'BCG' LIMIT 1) AS bcg_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%HEPATITIS%' LIMIT 1) AS hepb_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 1 LIMIT 1) AS penta1_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 2 LIMIT 1) AS penta2_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 3 LIMIT 1) AS penta3_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 1 LIMIT 1) AS opv1_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 2 LIMIT 1) AS opv2_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 3 LIMIT 1) AS opv3_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%IPV%' LIMIT 1) AS ipv_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MEASLES%') AND dose_number = 1 LIMIT 1) AS mcv1_date,
-                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MMR%') AND dose_number = 2 LIMIT 1) AS mcv2_date
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) = 'BCG' AND deleted_at IS NULL LIMIT 1) AS bcg_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%HEPATITIS%' AND deleted_at IS NULL LIMIT 1) AS hepb_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 1 AND deleted_at IS NULL LIMIT 1) AS penta1_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 2 AND deleted_at IS NULL LIMIT 1) AS penta2_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%PENTA%' AND dose_number = 3 AND deleted_at IS NULL LIMIT 1) AS penta3_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 1 AND deleted_at IS NULL LIMIT 1) AS opv1_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 2 AND deleted_at IS NULL LIMIT 1) AS opv2_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%OPV%' AND dose_number = 3 AND deleted_at IS NULL LIMIT 1) AS opv3_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) LIKE '%IPV%' AND deleted_at IS NULL LIMIT 1) AS ipv_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MEASLES%') AND dose_number = 1 AND deleted_at IS NULL LIMIT 1) AS mcv1_date,
+                                   (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MMR%') AND dose_number = 2 AND deleted_at IS NULL LIMIT 1) AS mcv2_date
                             FROM patients p
-                            LEFT JOIN wellbaby_records wb ON wb.patient_id = p.id
+                            LEFT JOIN wellbaby_records wb ON wb.patient_id = p.id AND wb.deleted_at IS NULL
                             WHERE p.deleted_at IS NULL AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5
                             ORDER BY p.dob DESC";
                     $params = [];
@@ -330,14 +338,20 @@ class ReportController extends Controller {
 
                 case 'chronic_morbidity':
                     $sql = "SELECT pmh.*, 
-                                   p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.sex, p.contact_no, p.barangay, p.philhealth_no,
-                                   TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age
-                            FROM patient_medical_histories pmh
-                            JOIN patients p ON pmh.patient_id = p.id
+                                   p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.sex, p.contact_no, p.barangay, p.philhealth_no,
+                                   TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
+                                   COALESCE((
+                                       SELECT CONCAT('{', GROUP_CONCAT(CONCAT('\"', REPLACE(condition_name, '\"', '\\\\\"'), '\":\"', REPLACE(COALESCE(remarks, ''), '\"', '\\\\\"'), '\"') SEPARATOR ','), '}')
+                                       FROM patient_conditions 
+                                       WHERE patient_id = p.id AND condition_type = 'Past' AND deleted_at IS NULL
+                                   ), '{}') AS past_medical_history
+                            FROM patients p
+                            LEFT JOIN patient_medical_histories pmh ON p.id = pmh.patient_id AND pmh.deleted_at IS NULL
                             WHERE p.deleted_at IS NULL 
-                              AND pmh.past_medical_history IS NOT NULL 
-                              AND pmh.past_medical_history != '' 
-                              AND pmh.past_medical_history != '[]'
+                              AND EXISTS (
+                                  SELECT 1 FROM patient_conditions 
+                                  WHERE patient_id = p.id AND condition_type = 'Past' AND deleted_at IS NULL
+                              )
                             ORDER BY p.last_name ASC, p.first_name ASC";
                     $params = [];
                     break;

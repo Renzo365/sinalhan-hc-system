@@ -27,8 +27,8 @@ class AuthMiddleware {
             exit;
         }
 
-        // Server-Side Inactivity Timeout (15 minutes = 900 seconds)
-        $idleTimeout = 900;
+        // Server-Side Inactivity Timeout (Configurable via config/app.php, default 2 hours = 7200 seconds)
+        $idleTimeout = (int)config('session.idle_timeout', 7200);
         if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $idleTimeout) {
             $username = $_SESSION['username'] ?? 'User';
 
@@ -65,6 +65,41 @@ class AuthMiddleware {
 
         // Update last activity timestamp
         $_SESSION['last_activity'] = time();
+
+        // Enforce Password Change Policy
+        if (!empty($_SESSION['must_change_password'])) {
+            $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+            $uri = '/';
+            if ($basePath !== '' && strpos($requestUri, $basePath) === 0) {
+                $uri = substr($requestUri, strlen($basePath));
+            } elseif ($basePath === '') {
+                $uri = $requestUri;
+            }
+            $uri = explode('?', $uri)[0];
+            if ($uri === '') {
+                $uri = '/';
+            } elseif ($uri !== '/' && substr($uri, -1) === '/') {
+                $uri = rtrim($uri, '/');
+            }
+
+            $allowedRoutes = ['/change-password', '/logout', '/api/session-ping'];
+            if (!in_array($uri, $allowedRoutes, true)) {
+                if ($isAjax) {
+                    http_response_code(403);
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'error' => 'Password Change Required',
+                        'message' => 'You must change your temporary password before accessing other features.',
+                        'redirect' => rtrim($basePath, '/') . '/change-password'
+                    ]);
+                    exit;
+                }
+
+                $redirectUrl = rtrim($basePath, '/') . '/change-password';
+                header("Location: {$redirectUrl}");
+                exit;
+            }
+        }
 
         return true;
     }

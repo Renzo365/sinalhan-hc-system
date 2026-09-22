@@ -3156,7 +3156,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editVitalsForm" method="POST" action="">
+            <form id="editVitalsForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
                 <div class="modal-body p-4 bg-white">
@@ -3224,7 +3224,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editPcbServiceForm" method="POST" action="">
+            <form id="editPcbServiceForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <div class="modal-body p-4 bg-white">
                     <div class="row g-3">
@@ -3412,7 +3412,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
-            <form action="" method="POST" id="editImmunizationForm">
+            <form action="#" method="POST" id="editImmunizationForm" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="redirect_to" value="<?= url('/patients/' . $patient['id'] . '#tab-immunizations') ?>">
 
@@ -3917,7 +3917,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // 'prenatal': routed to dedicated /maternal workstation,
             // 'wellbaby': routed to dedicated /well-baby workstation,
             'appointments': 'tab-appointments',
-            'queue': 'tab-appointments'
+            'appointment': 'tab-appointments',
+            'queue': 'tab-appointments',
+            'queue-tab': 'tab-appointments'
         };
 
         let targetTabId = aliasMap[cleanHash] || (cleanHash.startsWith('tab-') ? cleanHash : 'tab-' + cleanHash);

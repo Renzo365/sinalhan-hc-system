@@ -92,7 +92,7 @@ class QueueController extends Controller {
             // Redirect back to patient profile if enqueued from profile, otherwise back to queue board
             $referrer = $_SERVER['HTTP_REFERER'] ?? '';
             if (strpos($referrer, 'patients') !== false) {
-                $this->redirect("/patients/{$patientId}#queue-tab");
+                $this->redirect("/patients/{$patientId}#tab-appointments");
             } else {
                 $this->redirect('/queue');
             }

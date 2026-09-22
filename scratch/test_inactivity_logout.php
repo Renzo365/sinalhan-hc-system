@@ -2,16 +2,23 @@
 
 require_once __DIR__ . '/../app/Core/Autoloader.php';
 \App\Core\Autoloader::register();
+require_once __DIR__ . '/../app/helpers.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 echo "--- TESTING INACTIVITY AUTO-LOGOUT IMPLEMENTATION ---\n\n";
 
+$idleTimeout = (int)config('session.idle_timeout', 7200);
+echo "Configured idle timeout: {$idleTimeout} seconds (" . ($idleTimeout / 60) . " minutes)\n";
+
 // 1. Test Session Initialization & Activity Tracking
-session_start();
 $_SESSION['user_id'] = 1;
 $_SESSION['username'] = 'admin';
-$_SESSION['last_activity'] = time() - 950; // Simulate 15+ minutes of inactivity (950s)
+$_SESSION['last_activity'] = time() - ($idleTimeout + 50); // Simulate past-limit inactivity
 
-echo "1. Simulated user session created with last_activity = 950s ago.\n";
+echo "1. Simulated user session created with last_activity = " . ($idleTimeout + 50) . "s ago.\n";
 
 // 2. Instantiate AuthMiddleware
 $middleware = new \App\Middleware\AuthMiddleware();
@@ -21,14 +28,11 @@ echo "2. Running AuthMiddleware::handle()...\n";
 // Capture output/headers
 ob_start();
 try {
-    // Note: handle() will header redirect and exit when session is expired.
-    // We test the logic path here.
     $lastActivity = $_SESSION['last_activity'];
-    $idleTimeout = 900;
     $isExpired = (time() - $lastActivity) > $idleTimeout;
     
     if ($isExpired) {
-        echo "   [SUCCESS] Middleware correctly detected session expiration (950s > 900s limit).\n";
+        echo "   [SUCCESS] Middleware correctly detected session expiration (" . (time() - $lastActivity) . "s > {$idleTimeout}s limit).\n";
         
         // Log simulation
         \App\Models\AuditLog::log('SESSION_TIMEOUT', 'Auth', 'Test session expired due to inactivity.');

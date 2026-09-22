@@ -672,7 +672,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                <form action="" method="POST" id="editPrenatalVisitForm">
+                <form action="#" method="POST" id="editPrenatalVisitForm" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                     <?= csrf_field() ?>
 
                     <div class="modal-body p-4 bg-white">
@@ -1139,7 +1139,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
-            <form action="" method="POST" id="editPastObstetricForm">
+            <form action="#" method="POST" id="editPastObstetricForm" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
 

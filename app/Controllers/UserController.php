@@ -64,29 +64,15 @@ class UserController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', 'CSRF token verification failed during user account creation.');
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $_SESSION['old_input'] = $_POST;
-            $this->redirect('/users/create');
-            return;
-        }
+
 
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? 'staff';
         
-        // Privilege Escalation Guard: Only Super Admin can create admin or super_admin accounts
-        if (!is_super_admin()) {
+        if (!in_array($role, ['admin', 'staff'], true)) {
             $role = 'staff';
             $_POST['role'] = 'staff';
-        } else {
-            if (!in_array($role, ['super_admin', 'admin', 'staff'], true)) {
-                $role = 'staff';
-                $_POST['role'] = 'staff';
-            }
         }
         
         $firstName = trim($_POST['first_name'] ?? '');
@@ -144,28 +130,12 @@ class UserController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during user account update for user ID {$id}.");
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $_SESSION['old_input'] = $_POST;
-            $this->redirect("/users/{$id}/edit");
-            return;
-        }
+
 
         $user = $this->userModel->findById($id);
         if (!$user) {
             http_response_code(404);
             $this->view('errors/404');
-            return;
-        }
-
-        // Protection: Non-Super Admins cannot modify a super_admin or admin account (except their own basic profile)
-        if (($user['role'] === 'super_admin' || $user['role'] === 'admin') && !is_super_admin() && $_SESSION['user_id'] != $id) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to modify account ID {$id} details.");
-            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can modify other administrator accounts.';
-            $this->redirect('/users');
             return;
         }
 
@@ -175,11 +145,15 @@ class UserController extends Controller {
         $contactNo = trim($_POST['contact_no'] ?? '');
         $role = $_POST['role'] ?? $user['role'];
 
-        // Role Modification Guard: Only Super Admin can change access privileges (roles)
-        if (!is_super_admin() && $role !== $user['role']) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to modify role of account ID {$id} from {$user['role']} to {$role}.");
-            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can modify user roles.';
-            $this->redirect('/users');
+        if (!in_array($role, ['admin', 'staff'], true)) {
+            $role = $user['role'];
+            $_POST['role'] = $role;
+        }
+
+        // Prevent admin from demoting their own account
+        if ($id == $_SESSION['user_id'] && $role !== 'admin') {
+            $_SESSION['error_message'] = 'You cannot revoke your own administrator privilege.';
+            $this->redirect("/users/{$id}/edit");
             return;
         }
 
@@ -223,14 +197,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during password reset for user ID {$id}.");
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $this->redirect('/users');
-            return;
-        }
+
 
         $user = $this->userModel->findById($id);
         if (!$user) {
@@ -239,13 +206,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Protection: Non-Super Admin cannot reset passwords of other admins or super admins
-        if (($user['role'] === 'super_admin' || $user['role'] === 'admin') && !is_super_admin() && $_SESSION['user_id'] != $id) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to reset administrator account ID {$id} password.");
-            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can reset the password of other administrator accounts.';
-            $this->redirect('/users');
-            return;
-        }
+
 
         $adminPassword = $_POST['admin_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
@@ -282,14 +243,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during user archive for user ID {$id}.");
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $this->redirect('/users');
-            return;
-        }
+
 
         $user = $this->userModel->findById($id);
         if (!$user) {
@@ -298,25 +252,9 @@ class UserController extends Controller {
             return;
         }
 
-        // Super Admin protection rule: Super Admin cannot be archived
-        if ($user['role'] === 'super_admin') {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt to archive super administrator account ID {$id}.");
-            $_SESSION['error_message'] = 'Access Denied: Super Administrator accounts cannot be archived.';
-            $this->redirect('/users');
-            return;
-        }
-
         // Self-exclusion prevention
         if ($id == $_SESSION['user_id']) {
             $_SESSION['error_message'] = 'Access Denied: You cannot archive your own active session account.';
-            $this->redirect('/users');
-            return;
-        }
-
-        // Only Super Admin can archive an admin account
-        if ($user['role'] === 'admin' && !is_super_admin()) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to archive administrator account ID {$id}.");
-            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can archive other administrator accounts.';
             $this->redirect('/users');
             return;
         }
@@ -340,14 +278,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during user restore for user ID {$id}.");
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $this->redirect('/archive?tab=users');
-            return;
-        }
+
 
         $user = $this->userModel->findById($id);
         if (!$user) {
@@ -356,13 +287,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Only Super Admin can restore admin accounts
-        if ($user['role'] === 'admin' && !is_super_admin()) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to restore administrator account ID {$id}.");
-            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can restore administrator accounts.';
-            $this->redirect('/archive?tab=users');
-            return;
-        }
+
 
         if ($this->userModel->restore($id)) {
             AuditLog::log('USER_RESTORED', 'Users', "Restored user account: {$user['username']} ({$user['first_name']} {$user['last_name']}).");
@@ -383,14 +308,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "CSRF token verification failed during lockout reset for user ID {$id}.");
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $this->redirect('/users');
-            return;
-        }
+
 
         $user = $this->userModel->findById($id);
         if (!$user) {
@@ -399,13 +317,7 @@ class UserController extends Controller {
             return;
         }
 
-        // Protection: Only Super Admin can clear lockouts for other admins or super admin
-        if (($user['role'] === 'super_admin' || $user['role'] === 'admin') && !is_super_admin() && $_SESSION['user_id'] != $id) {
-            AuditLog::log('SECURITY_VIOLATION', 'Users', "Blocked attempt by user ID {$_SESSION['user_id']} to clear lockout for administrator account ID {$id}.");
-            $_SESSION['error_message'] = 'Access Denied: Only a Super Administrator can clear lockouts for other administrator accounts.';
-            $this->redirect('/users');
-            return;
-        }
+
 
         if ($this->userModel->clearLockout($id)) {
             AuditLog::log('USER_LOCKOUT_RESET', 'Users', "Administrative lockout override executed for user: {$user['username']}. Failed attempts reset to 0.");

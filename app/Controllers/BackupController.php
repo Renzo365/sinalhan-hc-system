@@ -93,12 +93,33 @@ class BackupController extends Controller {
                 $row = $stmt->fetch(PDO::FETCH_NUM);
                 $sqlDump .= $row[1] . ";\n\n";
                 
-                // Fetch data
-                $stmtData = $db->query("SELECT * FROM `{$table}`");
-                $columnCount = $stmtData->columnCount();
+                // Get non-generated column names to prevent Error 3105 on restore
+                $colStmt = $db->prepare("
+                    SELECT COLUMN_NAME 
+                    FROM INFORMATION_SCHEMA.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() 
+                      AND TABLE_NAME = :table 
+                      AND EXTRA NOT LIKE '%GENERATED%' 
+                    ORDER BY ORDINAL_POSITION
+                ");
+                $colStmt->execute(['table' => $table]);
+                $columns = $colStmt->fetchAll(PDO::FETCH_COLUMN);
+
+                if (empty($columns)) {
+                    continue;
+                }
+
+                $escapedColumns = array_map(function($col) {
+                    return '`' . str_replace('`', '``', $col) . '`';
+                }, $columns);
+                $columnList = implode(', ', $escapedColumns);
+
+                // Fetch data for non-generated columns only
+                $stmtData = $db->query("SELECT {$columnList} FROM `{$table}`");
+                $columnCount = count($columns);
                 
                 while ($rowData = $stmtData->fetch(PDO::FETCH_NUM)) {
-                    $sqlDump .= "INSERT INTO `{$table}` VALUES(";
+                    $sqlDump .= "INSERT INTO `{$table}` ({$columnList}) VALUES(";
                     for ($i = 0; $i < $columnCount; $i++) {
                         if (isset($rowData[$i])) {
                             // Escape values

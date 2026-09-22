@@ -93,14 +93,7 @@ class VitalSignsController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to delete vital signs #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $vital = $this->vitalsModel->findById($id);
         if (!$vital) {
@@ -146,14 +139,7 @@ class VitalSignsController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to update vital signs #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $vital = $this->vitalsModel->findById($id);
         if (!$vital) {

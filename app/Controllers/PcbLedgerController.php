@@ -33,13 +33,7 @@ class PcbLedgerController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['form_errors'] = ['Security validation failed (CSRF token mismatch). Please refresh and try again.'];
-            $this->redirect("/patients/{$patientId}#tab-pcb");
-            return;
-        }
+
 
         $year = !empty($_POST['service_year']) ? (int)$_POST['service_year'] : (int)date('Y');
         
@@ -169,13 +163,7 @@ class PcbLedgerController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to delete PCB service log #{$id}");
-            $_SESSION['form_errors'] = ['Security validation failed (invalid token). Please try again.'];
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $log = $this->pcbModel->findLogById($id);
         if (!$log) {
@@ -218,13 +206,7 @@ class PcbLedgerController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Patients', "CSRF mismatch while attempting to update PCB service log #{$id}");
-            $_SESSION['form_errors'] = ['Security validation failed (invalid token). Please try again.'];
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $log = $this->pcbModel->findLogById($id);
         if (!$log) {

@@ -101,17 +101,16 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                     <label for="role" class="form-label fw-semibold text-secondary small">Access Privilege <span class="text-danger">*</span></label>
                     <?php 
                     $currentRole = $old['role'] ?? $user['role'];
-                    $canChangeRole = is_super_admin() && ($user['id'] != $_SESSION['user_id']);
+                    $canChangeRole = is_admin() && ($user['id'] != $_SESSION['user_id']);
                     if (!$canChangeRole): 
                     ?>
                         <select id="role" class="form-select bg-light text-muted" disabled>
                             <option value="staff" <?= $currentRole === 'staff' ? 'selected' : '' ?>>Staff Personnel</option>
                             <option value="admin" <?= $currentRole === 'admin' ? 'selected' : '' ?>>Administrator</option>
-                            <option value="super_admin" <?= $currentRole === 'super_admin' ? 'selected' : '' ?>>Super Administrator</option>
                         </select>
                         <input type="hidden" name="role" value="<?= h($currentRole) ?>">
                         <div class="form-text small text-muted">
-                            <?= ($user['id'] == $_SESSION['user_id']) ? 'You cannot modify your own assigned role.' : 'Only Super Administrators can change user roles.' ?>
+                            <?= ($user['id'] == $_SESSION['user_id']) ? 'You cannot modify your own assigned role.' : 'You do not have permission to change user roles.' ?>
                         </div>
                     <?php else: ?>
                         <select name="role" id="role" class="form-select bg-light" required>

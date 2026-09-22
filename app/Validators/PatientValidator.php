@@ -114,7 +114,7 @@ class PatientValidator extends BaseValidator {
             if (!preg_match('/^\d{2}-\d{9}-\d{1}$/', $philhealthNo)) {
                 $this->addError('PhilHealth ID No. must follow the standard 12-digit format: XX-XXXXXXXXX-X (e.g. 12-345678901-2).');
             } elseif ($this->patientModel && !$this->patientModel->isPhilHealthUnique($philhealthNo, $excludePatientId)) {
-                $this->addError('PhilHealth ID number is already registered to another active patient.');
+                $this->addError('PhilHealth ID number is already registered to another patient record.');
             }
         }
 

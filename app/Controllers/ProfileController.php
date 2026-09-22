@@ -51,13 +51,7 @@ class ProfileController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $this->redirect('/profile');
-            return;
-        }
+
 
         $userId = (int)$_SESSION['user_id'];
         $firstName = trim($_POST['first_name'] ?? '');
@@ -120,13 +114,7 @@ class ProfileController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please refresh and try again.';
-            $this->redirect('/profile#password-settings');
-            return;
-        }
+
 
         $userId = (int)$_SESSION['user_id'];
         $currentPassword = $_POST['current_password'] ?? '';

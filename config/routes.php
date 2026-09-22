@@ -110,8 +110,8 @@ return function (\App\Core\Router $router) {
     $router->get('/queue', 'QueueController@index', [AuthMiddleware::class]);
     $router->post('/queue', 'QueueController@store', [AuthMiddleware::class]);
     $router->post('/queue/{id}/status', 'QueueController@updateStatus', [AuthMiddleware::class]);
-    $router->get('/queue/display', 'QueueController@display', [AuthMiddleware::class]);
-    $router->get('/queue/display-data', 'QueueController@displayData', [AuthMiddleware::class]);
+    $router->get('/queue/display', 'QueueController@display');
+    $router->get('/queue/display-data', 'QueueController@displayData');
 
     // Reports Routes
     $router->get('/reports', 'ReportController@index', [AuthMiddleware::class]);

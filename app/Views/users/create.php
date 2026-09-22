@@ -207,19 +207,11 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
             <div class="row g-3">
                 <div class="col-12 col-md-6">
                     <label for="role" class="form-label fw-semibold text-secondary small">Access Privilege <span class="text-danger">*</span></label>
-                    <?php if (is_super_admin()): ?>
-                        <select name="role" id="role" class="form-select bg-light" required>
-                            <option value="staff" <?= (isset($old['role']) && $old['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
-                            <option value="admin" <?= (isset($old['role']) && $old['role'] === 'admin') ? 'selected' : '' ?>>Administrator</option>
-                        </select>
-                        <div class="form-text small text-muted">Administrators have elevated operational and record-management rights.</div>
-                    <?php else: ?>
-                        <input type="hidden" name="role" value="staff">
-                        <select class="form-select bg-light text-muted" disabled>
-                            <option selected>Staff Personnel</option>
-                        </select>
-                        <div class="form-text small text-muted">Admins can only create Staff Personnel accounts.</div>
-                    <?php endif; ?>
+                    <select name="role" id="role" class="form-select bg-light" required>
+                        <option value="staff" <?= (isset($old['role']) && $old['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
+                        <option value="admin" <?= (isset($old['role']) && $old['role'] === 'admin') ? 'selected' : '' ?>>Administrator</option>
+                    </select>
+                    <div class="form-text small text-muted">Administrators have elevated operational and record-management rights.</div>
                 </div>
             </div>
         </div>

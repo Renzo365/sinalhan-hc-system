@@ -50,13 +50,7 @@ class AuthController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Auth', 'CSRF token mismatch on login attempt.');
-            $this->setLoginError('Invalid session token. Please refresh and try again.', trim($_POST['username'] ?? ''));
-            $this->redirect('/login');
-            return;
-        }
+
 
         $identifier = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -154,14 +148,7 @@ class AuthController extends Controller {
             session_start();
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $token = $_POST['csrf_token'] ?? '';
-            if (empty($token) || !hash_equals(csrf_token(), $token)) {
-                AuditLog::log('SECURITY_VIOLATION', 'Auth', 'CSRF token mismatch on logout attempt.');
-                $this->redirect('/login');
-                return;
-            }
-        }
+
 
         $isTimeout = isset($_GET['timeout']) || (isset($_GET['reason']) && $_GET['reason'] === 'timeout');
 
@@ -243,17 +230,7 @@ class AuthController extends Controller {
             return;
         }
 
-        // Verify CSRF Token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Auth', 'CSRF token mismatch on password change attempt.');
-            $this->view('auth/change_password', [
-                'user' => $user,
-                'errors' => ['Security validation failed (CSRF mismatch). Please try again.'],
-                'disable_layout' => true
-            ]);
-            return;
-        }
+
 
         $currentPassword = $_POST['current_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';

@@ -648,12 +648,7 @@ class WellbabyController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $log = $this->growthModel->findById($id);
         if (!$log) {
@@ -688,14 +683,7 @@ class WellbabyController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Pediatric Care', "CSRF mismatch while attempting to update growth log #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $log = $this->growthModel->findById($id);
         if (!$log) {
@@ -734,14 +722,7 @@ class WellbabyController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Immunization', "CSRF mismatch while attempting to delete immunization #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $imm = $this->immModel->findById($id);
         if (!$imm) {
@@ -782,14 +763,7 @@ class WellbabyController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Immunization', "CSRF mismatch while attempting to update immunization #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $imm = $this->immModel->findById($id);
         if (!$imm) {

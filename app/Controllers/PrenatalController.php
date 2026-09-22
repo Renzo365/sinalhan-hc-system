@@ -419,12 +419,7 @@ class PrenatalController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $record = $this->pohModel->findById($id);
         if (!$record) {
@@ -456,12 +451,7 @@ class PrenatalController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $record = $this->pohModel->findById($id);
         if (!$record) {
@@ -581,12 +571,7 @@ class PrenatalController extends Controller {
             session_start();
         }
 
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $episode = $this->prenatalModel->findById($id);
         if (!$episode) {
@@ -633,14 +618,7 @@ class PrenatalController extends Controller {
             session_start();
         }
 
-        // Validate CSRF token
-        $token = $_POST['csrf_token'] ?? '';
-        if (empty($token) || !hash_equals(csrf_token(), $token)) {
-            AuditLog::log('SECURITY_VIOLATION', 'Maternal Care', "CSRF mismatch while attempting to delete prenatal visit #{$id}");
-            $_SESSION['error_message'] = 'Security validation failed (invalid token). Please try again.';
-            $this->redirect('/patients');
-            return;
-        }
+
 
         $visit = $this->visitModel->findById($id);
         if (!$visit) {

@@ -58,3 +58,25 @@ if (!function_exists('is_super_admin')) {
     }
 }
 
+if (!function_exists('config')) {
+    function config($key = null, $default = null) {
+        static $config = null;
+        if ($config === null) {
+            $file = dirname(__DIR__) . '/config/app.php';
+            $config = file_exists($file) ? require $file : [];
+        }
+        if ($key === null) {
+            return $config;
+        }
+        $parts = explode('.', $key);
+        $value = $config;
+        foreach ($parts as $part) {
+            if (!is_array($value) || !isset($value[$part])) {
+                return $default;
+            }
+            $value = $value[$part];
+        }
+        return $value;
+    }
+}
+

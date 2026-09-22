@@ -291,8 +291,7 @@ class ConsultationController extends Controller {
 
         $patientId = (int)$consultation['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $userRole = $_SESSION['role'] ?? 'staff';
-        $canCancel = ($userRole === 'admin' || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by']);
+        $canCancel = is_admin() || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by'];
 
         if (!$canCancel) {
             $_SESSION['error_message'] = 'Unauthorized: You do not have permission to cancel this consultation.';
