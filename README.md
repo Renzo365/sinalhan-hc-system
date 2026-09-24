@@ -15,7 +15,7 @@ This system replaces traditional paper-based workflows with a secure, LAN-first 
 
 ### 📋 Patient Registry
 * **Intelligent ID Generation**: Automatically formats patient codes as `P-[YEAR]-[5-digit-sequence]` (e.g. `P-2026-00042`).
-* **Intake Duplicate Warnings**: Dynamic AJAX checker alerts staff of exact matching records on registration blur.
+* **Intake Duplicate Warnings**: Dynamic AJAX checker and server-side validation alert staff of potential duplicate records (matching Name or Last Name + Date of Birth) using a soft-warning modal prior to submission.
 * **Filterable Directory**: Search by key attributes and filter by Barangay, Sex, or calculated Age Groups.
 
 ### 🩺 Clinical Documentation

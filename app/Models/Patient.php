@@ -106,23 +106,43 @@ class Patient extends Model {
     }
 
     /**
-     * Find existing active patients with matching names to prevent duplicate creation.
+     * Find existing active patients with matching names or name + DOB to prevent duplicate creation.
      * 
      * @param string $firstName
      * @param string $lastName
+     * @param string|null $dob
+     * @param int|null $excludeId
      * @return array Matches
      */
-    public function findDuplicates($firstName, $lastName) {
-        $sql = "SELECT id, patient_no, envelope_no, first_name, last_name, dob, sex, barangay 
-                FROM patients 
-                WHERE first_name = :first_name AND last_name = :last_name AND deleted_at IS NULL";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
+    public function findDuplicates($firstName, $lastName, $dob = null, $excludeId = null) {
+        $params = [
             'first_name' => trim($firstName),
             'last_name' => trim($lastName)
-        ]);
-        return $stmt->fetchAll();
+        ];
+
+        $sql = "SELECT id, patient_no, envelope_no, first_name, middle_name, last_name, suffix, dob, sex, barangay 
+                FROM patients 
+                WHERE deleted_at IS NULL";
+
+        if (!empty($dob)) {
+            $sql .= " AND ((LOWER(first_name) = LOWER(:first_name) AND LOWER(last_name) = LOWER(:last_name))
+                       OR (LOWER(last_name) = LOWER(:last_name_dob) AND dob = :dob))";
+            $params['last_name_dob'] = trim($lastName);
+            $params['dob'] = $dob;
+        } else {
+            $sql .= " AND LOWER(first_name) = LOWER(:first_name) AND LOWER(last_name) = LOWER(:last_name)";
+        }
+
+        if ($excludeId !== null) {
+            $sql .= " AND id != :exclude_id";
+            $params['exclude_id'] = (int)$excludeId;
+        }
+
+        $sql .= " ORDER BY last_name ASC, first_name ASC LIMIT 10";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll() ?: [];
     }
 
     /**

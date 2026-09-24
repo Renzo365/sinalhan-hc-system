@@ -4199,10 +4199,49 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="card border rounded-3 bg-white">
                                 <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">P</span>
-                                    <span class="fw-bold text-dark small text-uppercase">Plan &mdash; Treatment, Prescriptions & Recommendations</span>
+                                    <span class="fw-bold text-dark small text-uppercase">Plan &mdash; Treatment & Recommendations</span>
                                 </div>
-                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan or prescriptions recorded.')}</div>
+                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan recorded.')}</div>
                             </div>
+
+                            <!-- Structured Prescriptions (Rx) -->
+                            ${data.prescriptions && data.prescriptions.length > 0 ? `
+                            <div class="card border rounded-3 bg-white">
+                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-capsule"></i> Rx</span>
+                                        <span class="fw-bold text-dark small text-uppercase">Prescribed Medications</span>
+                                    </div>
+                                    <span class="badge bg-success">${data.prescriptions.length} item${data.prescriptions.length > 1 ? 's' : ''}</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-striped align-middle mb-0 small">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Medicine</th>
+                                                    <th>Dosage</th>
+                                                    <th>Frequency</th>
+                                                    <th>Duration</th>
+                                                    <th>Instructions / Sig</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${data.prescriptions.map(p => `
+                                                    <tr>
+                                                        <td class="fw-semibold text-primary">${escapeHtml(p.medicine_name)}</td>
+                                                        <td>${escapeHtml(p.dosage || '—')}</td>
+                                                        <td>${escapeHtml(p.frequency || '—')}</td>
+                                                        <td>${escapeHtml(p.duration || '—')}</td>
+                                                        <td class="text-muted">${escapeHtml(p.instructions || '—')}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     `;
 

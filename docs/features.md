@@ -14,7 +14,7 @@ Upon successful registration, the system auto-generates a unique patient number 
 This value is computed atomically at the model level to prevent sequence gaps or collisions.
 
 ### 1.2 Duplicate Prevention
-When registering a new patient, an AJAX listener monitors first name and last name input fields on loss of focus (`blur`). If an exact matching active patient is found, a warning banner appears at the top of the form with a direct link to the matching patient's profile folder to prevent duplicate registrations.
+When registering a new patient, the system performs a real-time AJAX check on the `blur` event of the Last Name or Date of Birth fields, and a robust server-side check upon form submission. If an active patient with a matching exact Name OR matching (Last Name and Date of Birth) is found, a Bootstrap soft-warning modal appears, requiring staff to confirm whether to proceed or cancel.
 
 ### 1.3 Dual-Layer Input Validation & Formatting
 The Patient module enforces comprehensive client-side and server-side validation rules based on official **Annex A1: Individual Health Profile (IHP)** requirements:
@@ -65,7 +65,7 @@ Provides structured clinical documentation following the global medical **SOAP**
 * **Subjective (S)**: Patient's chief complaint, active symptoms, and history of present illness.
 * **Objective (O)**: Clinical measurements. Users can link the patient's latest recorded vital signs directly to the checkup.
 * **Assessment (A)**: Diagnosis, diagnostic impressions, and clinical findings.
-* **Plan (P)**: Recommendations, prescriptions, lab requests, or follow-up instructions.
+* **Plan (P)**: Recommendations, structured prescriptions, or follow-up instructions.
 
 ### 3.1 Asynchronous Detail Viewer
 A consultation history log is displayed on the patient's profile. Clicking **View Details** triggers an AJAX load, rendering the SOAP notes and linked vital signs within a clean modal popup without reloading the main profile.

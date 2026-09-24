@@ -30,16 +30,70 @@ require dirname(__DIR__) . '/layout/header.php';
         </div>
     <?php endif; ?>
 
-    <!-- Duplicate Name AJAX Warning Banner -->
+    <!-- Duplicate Warning Banner -->
     <div class="alert alert-warning mb-4 shadow-sm d-none" id="duplicateWarningBanner" role="alert">
-        <div class="fw-bold mb-2"><i class="bi bi-exclamation-circle-fill me-2"></i>Possible Duplicate Patient Found!</div>
-        <p class="small mb-2">The system detected existing active record(s) with the exact same name:</p>
-        <div id="duplicateList" class="small fw-semibold ps-3 mb-2"></div>
-        <p class="small mb-0 text-muted">Please confirm that you are registering a different individual before saving.</p>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Possible Duplicate Patient Detected</div>
+                <div class="small text-dark" id="duplicateBannerText">Matching records were found in the database.</div>
+            </div>
+            <button type="button" class="btn btn-warning btn-sm fw-semibold text-dark" id="btnViewDuplicates">
+                <i class="bi bi-eye me-1"></i> View Matches
+            </button>
+        </div>
+    </div>
+
+    <!-- Duplicate Patient Soft-Warning Modal -->
+    <div class="modal fade" id="duplicateWarningModal" tabindex="-1" aria-labelledby="duplicateWarningModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-warning-subtle text-dark border-bottom py-3">
+                    <h5 class="modal-title h6 fw-bold mb-0 d-flex align-items-center gap-2" id="duplicateWarningModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                        <span>Possible Duplicate Patient Record Detected</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary mb-3">
+                        The system found existing patient record(s) matching the <strong>Full Name</strong> or <strong>Last Name + Date of Birth</strong> entered. Please verify whether this patient is already registered before proceeding.
+                    </p>
+                    <div class="table-responsive border rounded-3 mb-3">
+                        <table class="table table-sm table-hover align-middle mb-0 small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient No.</th>
+                                    <th>Full Name</th>
+                                    <th>Date of Birth</th>
+                                    <th>Sex</th>
+                                    <th>Barangay</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="duplicateModalTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info py-2 px-3 small mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle-fill text-primary"></i>
+                        <span>If this is indeed the same person, click <strong>Cancel & Review</strong> and search for their existing record. If this is a different individual with a similar name, you may click <strong>Proceed with Registration</strong>.</span>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top py-2 px-3">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal" id="btnCancelDuplicate">
+                        <i class="bi bi-x-circle me-1"></i> Cancel & Review
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm px-3 fw-semibold text-dark" id="btnProceedDuplicate">
+                        <i class="bi bi-person-check-fill me-1"></i> Proceed with Registration
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <form action="<?= url('/patients') ?>" method="POST" id="patientForm" autocomplete="off">
         <?= csrf_field() ?>
+        <input type="hidden" name="duplicate_acknowledged" id="duplicate_acknowledged" value="0">
 
         <!-- CARD 1: Personal Identity -->
         <div class="card card-premium mb-4">
@@ -517,43 +571,197 @@ document.addEventListener('DOMContentLoaded', function() {
         civilStatusSelect.addEventListener('change', toggleCivilStatusOther);
     }
 
-    // 6. AJAX Duplicate Check Trigger
+    // Helper: HTML Escape
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Helper: Safe Bootstrap Modal Retrieval
+    function getDuplicateModal() {
+        const modalEl = document.getElementById('duplicateWarningModal');
+        if (!modalEl) return null;
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            return bootstrap.Modal.getOrCreateInstance(modalEl);
+        }
+        return null;
+    }
+
+    // 6. AJAX Duplicate Check & Soft-Warning Modal
     const firstName = document.getElementById('first_name');
     const lastName = document.getElementById('last_name');
+    const dobInput = document.getElementById('dob');
     const warningBanner = document.getElementById('duplicateWarningBanner');
-    const duplicateList = document.getElementById('duplicateList');
+    const duplicateBannerText = document.getElementById('duplicateBannerText');
+    const btnViewDuplicates = document.getElementById('btnViewDuplicates');
+    const duplicateModalTableBody = document.getElementById('duplicateModalTableBody');
+    const btnProceedDuplicate = document.getElementById('btnProceedDuplicate');
+    const patientForm = document.getElementById('patientForm');
+    const ackInput = document.getElementById('duplicate_acknowledged');
 
-    function checkDuplicates() {
-        const fn = firstName ? firstName.value.trim() : '';
-        const ln = lastName ? lastName.value.trim() : '';
+    let duplicateDetected = false;
+    let duplicateRecords = [];
 
-        if (fn.length >= 2 && ln.length >= 2) {
-            fetch(`<?= url('/patients/check-duplicate') ?>?first_name=${encodeURIComponent(fn)}&last_name=${encodeURIComponent(ln)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.length > 0) {
-                        let html = '<ul class="mb-0">';
-                        data.forEach(p => {
-                            html += `<li><strong>${p.first_name} ${p.last_name}</strong> (Patient No: ${p.patient_no}, DOB: ${p.dob}, Barangay: ${p.barangay})</li>`;
-                        });
-                        html += '</ul>';
-                        duplicateList.innerHTML = html;
-                        warningBanner.classList.remove('d-none');
-                    } else {
-                        warningBanner.classList.add('d-none');
-                    }
-                })
-                .catch(() => {
-                    warningBanner.classList.add('d-none');
-                });
-        } else {
-            warningBanner.classList.add('d-none');
+    function populateDuplicateModal(data) {
+        if (!duplicateModalTableBody) return;
+        let html = '';
+        data.forEach(p => {
+            const fullName = [p.first_name, p.middle_name, p.last_name, p.suffix].filter(Boolean).join(' ');
+            html += `
+                <tr>
+                    <td class="fw-bold text-primary font-monospace">${escapeHtml(p.patient_no)}</td>
+                    <td class="fw-semibold text-dark">${escapeHtml(fullName)}</td>
+                    <td>${escapeHtml(p.dob || '—')}</td>
+                    <td>${escapeHtml(p.sex || '—')}</td>
+                    <td>${escapeHtml(p.barangay || '—')}</td>
+                    <td class="text-center">
+                        <a href="<?= url('/patients/') ?>${p.id}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" title="Open record in new tab">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> View
+                        </a>
+                    </td>
+                </tr>
+            `;
+        });
+        duplicateModalTableBody.innerHTML = html;
+        if (duplicateBannerText) {
+            duplicateBannerText.textContent = `Found ${data.length} record(s) with matching name or birthdate.`;
+        }
+        if (warningBanner) {
+            warningBanner.classList.remove('d-none');
         }
     }
 
-    if (firstName && lastName) {
-        firstName.addEventListener('blur', checkDuplicates);
-        lastName.addEventListener('blur', checkDuplicates);
+    async function checkDuplicates() {
+        const fn = firstName ? firstName.value.trim() : '';
+        const ln = lastName ? lastName.value.trim() : '';
+        const dobVal = dobInput ? dobInput.value.trim() : '';
+
+        // Trigger if last name is at least 2 chars AND (first name is at least 2 chars OR DOB is set)
+        if (ln.length >= 2 && (fn.length >= 2 || dobVal.length > 0)) {
+            try {
+                const res = await fetch(`<?= url('/patients/check-duplicate') ?>?first_name=${encodeURIComponent(fn)}&last_name=${encodeURIComponent(ln)}&dob=${encodeURIComponent(dobVal)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        duplicateDetected = true;
+                        duplicateRecords = data;
+                        populateDuplicateModal(data);
+                        return data;
+                    }
+                }
+            } catch (err) {
+                console.error('Duplicate check error:', err);
+            }
+        }
+
+        duplicateDetected = false;
+        duplicateRecords = [];
+        if (warningBanner) {
+            warningBanner.classList.add('d-none');
+        }
+        return [];
+    }
+
+    // Trigger check on blur and change
+    if (firstName) firstName.addEventListener('blur', checkDuplicates);
+    if (lastName) lastName.addEventListener('blur', checkDuplicates);
+    if (dobInput) dobInput.addEventListener('change', checkDuplicates);
+
+    // Reset acknowledgment if user modifies personal identity fields
+    [firstName, lastName, dobInput].forEach(el => {
+        if (el) {
+            el.addEventListener('input', function() {
+                if (ackInput) ackInput.value = '0';
+            });
+        }
+    });
+
+    if (btnViewDuplicates) {
+        btnViewDuplicates.addEventListener('click', function() {
+            const modal = getDuplicateModal();
+            if (modal) {
+                modal.show();
+            }
+        });
+    }
+
+    // Intercept form submit to ensure duplicates are checked and warned before saving
+    if (patientForm) {
+        patientForm.addEventListener('submit', async function(e) {
+            if (ackInput && ackInput.value === '1') {
+                return; // User explicitly clicked "Proceed with Registration" in the modal
+            }
+
+            e.preventDefault();
+
+            const fn = firstName ? firstName.value.trim() : '';
+            const ln = lastName ? lastName.value.trim() : '';
+            const dobVal = dobInput ? dobInput.value.trim() : '';
+
+            if (ln.length >= 2 && (fn.length >= 2 || dobVal.length > 0)) {
+                const btnSubmit = document.getElementById('btnSubmitPatient');
+                const origHtml = btnSubmit ? btnSubmit.innerHTML : '';
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Checking...';
+                }
+
+                const data = await checkDuplicates();
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = origHtml;
+                }
+
+                if (data && data.length > 0) {
+                    const modal = getDuplicateModal();
+                    if (modal) {
+                        modal.show();
+                    }
+                    return false;
+                }
+            }
+
+            // No duplicate detected -> submit normally
+            if (ackInput) ackInput.value = '1';
+            if (patientForm.checkValidity()) {
+                patientForm.submit();
+            } else {
+                patientForm.reportValidity();
+            }
+        });
+    }
+
+    if (btnProceedDuplicate) {
+        btnProceedDuplicate.addEventListener('click', function() {
+            if (ackInput) {
+                ackInput.value = '1';
+            }
+            const modal = getDuplicateModal();
+            if (modal) {
+                modal.hide();
+            }
+            if (patientForm) {
+                if (patientForm.checkValidity()) {
+                    patientForm.submit();
+                } else {
+                    patientForm.reportValidity();
+                }
+            }
+        });
+    }
+
+    // Auto-open modal if server-side validation caught a duplicate
+    const serverDuplicates = <?= json_encode($duplicateWarnings ?? []) ?>;
+    if (Array.isArray(serverDuplicates) && serverDuplicates.length > 0) {
+        duplicateDetected = true;
+        duplicateRecords = serverDuplicates;
+        populateDuplicateModal(serverDuplicates);
+        const modal = getDuplicateModal();
+        if (modal) {
+            modal.show();
+        }
     }
 });
 </script>

@@ -109,6 +109,16 @@ Controllers receive user inputs from buttons or forms, perform necessary checks,
 
 ---
 
+## 🛡️ 3.5 Validators (`app/Validators/`)
+
+Validators extract complex form normalization and business validation logic out of controllers to keep them clean.
+
+| File Name | Purpose (Simple Explanation) |
+|---|---|
+| **`WellbabyValidator.php`** | Validates and sanitizes all inputs for the Well Baby module (birth history, growth logs, maternal CPAB). |
+
+---
+
 ## 🗄️ 4. Models (`app/Models/`)
 
 Models interact directly with MySQL database tables using secure prepared statements.
@@ -127,6 +137,7 @@ Models interact directly with MySQL database tables using secure prepared statem
 | **`Appointment.php`** | `appointments` | Manages appointment records with Program Type tagging, date/time conflict validation, status updates, and calendar listings. |
 | **`QueueEntry.php`** | `queue_entries` | Manages daily queue ticket numbering (e.g. `001`), Service Type tagging, queue status updates, and live display board data feeds. |
 | **`Consultation.php`** | `consultations` | Saves, updates, soft-deletes (archives), and restores clinical diagnosis notes, chief complaints, and SOAP plans (`archive()`, `restore()`, `allArchived()`). |
+| **`Prescription.php`** | `prescriptions` | Manages structured medication prescriptions linked to clinical consultations. |
 | **`VitalSigns.php`** | `vital_signs` | Saves patient triage measurements and enforces relational safety checking against active consultations before deletion (`isLinkedToActiveConsultation()`). |
 | **`AuditLog.php`** | `audit_logs` | Writes and queries immutable security audit logs (user, action name, IP address, timestamp, details) for accountability. |
 

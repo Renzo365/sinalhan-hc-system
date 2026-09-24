@@ -155,39 +155,19 @@ class WellbabyController extends Controller {
             return;
         }
 
+        $validator = new \App\Validators\WellbabyValidator();
+        $errors = $validator->validateBirthRecord($_POST, $patientId, $this->patientModel);
+        if (!empty($errors)) {
+            $_SESSION['error_message'] = $errors[0];
+            $this->redirect('/well-baby/register?patient_id=' . $patientId);
+            return;
+        }
+
         $birthWeight = !empty($_POST['birth_weight_kg']) ? (float)$_POST['birth_weight_kg'] : 0;
         $birthLength = !empty($_POST['birth_length_cm']) ? (float)$_POST['birth_length_cm'] : 0;
         $screeningDone = !empty($_POST['newborn_screening_done']) ? 1 : 0;
         $screeningDate = !empty($_POST['newborn_screening_date']) ? $_POST['newborn_screening_date'] : null;
-
-        if ($birthWeight <= 0 || $birthLength <= 0) {
-            $_SESSION['error_message'] = 'Valid birth weight (kg) and birth length (cm) are required.';
-            $this->redirect('/well-baby/register?patient_id=' . $patientId);
-            return;
-        }
-        if ($screeningDone && !$screeningDate) {
-            $_SESSION['error_message'] = 'A newborn screening date is required when screening is marked done.';
-            $this->redirect('/well-baby/register?patient_id=' . $patientId);
-            return;
-        }
-        if ($screeningDate) {
-            $screeningDateObject = \DateTime::createFromFormat('Y-m-d', $screeningDate);
-            if (!$screeningDateObject || $screeningDateObject->format('Y-m-d') !== $screeningDate || $screeningDate > date('Y-m-d')) {
-                $_SESSION['error_message'] = 'Newborn screening date must be a valid date that is not in the future.';
-                $this->redirect('/well-baby/register?patient_id=' . $patientId);
-                return;
-            }
-        }
-
         $motherPatientId = !empty($_POST['mother_patient_id']) ? (int)$_POST['mother_patient_id'] : null;
-        if ($motherPatientId !== null) {
-            $mother = $this->patientModel->findById($motherPatientId);
-            if (!$mother || strtolower($mother['sex']) !== 'female' || $motherPatientId === (int)$patientId) {
-                $_SESSION['error_message'] = 'The selected mother must be an existing female patient different from the child.';
-                $this->redirect('/well-baby/register?patient_id=' . $patientId);
-                return;
-            }
-        }
 
         $userId = $_SESSION['user_id'] ?? 1;
 
@@ -328,39 +308,19 @@ class WellbabyController extends Controller {
 
         $redirectErrorUrl = "/well-baby/{$patientId}/edit";
 
+        $validator = new \App\Validators\WellbabyValidator();
+        $errors = $validator->validateBirthRecord($_POST, $patientId, $this->patientModel);
+        if (!empty($errors)) {
+            $_SESSION['error_message'] = $errors[0];
+            $this->redirect($redirectErrorUrl);
+            return;
+        }
+
         $birthWeight = !empty($_POST['birth_weight_kg']) ? (float)$_POST['birth_weight_kg'] : 0;
         $birthLength = !empty($_POST['birth_length_cm']) ? (float)$_POST['birth_length_cm'] : 0;
         $screeningDone = !empty($_POST['newborn_screening_done']) ? 1 : 0;
         $screeningDate = !empty($_POST['newborn_screening_date']) ? $_POST['newborn_screening_date'] : null;
-
-        if ($birthWeight <= 0 || $birthLength <= 0) {
-            $_SESSION['error_message'] = 'Valid birth weight (kg) and birth length (cm) are required.';
-            $this->redirect($redirectErrorUrl);
-            return;
-        }
-        if ($screeningDone && !$screeningDate) {
-            $_SESSION['error_message'] = 'A newborn screening date is required when screening is marked done.';
-            $this->redirect($redirectErrorUrl);
-            return;
-        }
-        if ($screeningDate) {
-            $screeningDateObject = \DateTime::createFromFormat('Y-m-d', $screeningDate);
-            if (!$screeningDateObject || $screeningDateObject->format('Y-m-d') !== $screeningDate || $screeningDate > date('Y-m-d')) {
-                $_SESSION['error_message'] = 'Newborn screening date must be a valid date that is not in the future.';
-                $this->redirect($redirectErrorUrl);
-                return;
-            }
-        }
-
         $motherPatientId = !empty($_POST['mother_patient_id']) ? (int)$_POST['mother_patient_id'] : null;
-        if ($motherPatientId !== null) {
-            $mother = $this->patientModel->findById($motherPatientId);
-            if (!$mother || strtolower($mother['sex']) !== 'female' || $motherPatientId === (int)$patientId) {
-                $_SESSION['error_message'] = 'The selected mother must be an existing female patient different from the child.';
-                $this->redirect($redirectErrorUrl);
-                return;
-            }
-        }
 
         $userId = $_SESSION['user_id'] ?? 1;
 
@@ -430,22 +390,18 @@ class WellbabyController extends Controller {
             return;
         }
 
+        $validator = new \App\Validators\WellbabyValidator();
+        $errors = $validator->validateGrowthLog($_POST);
+        if (!empty($errors)) {
+            $_SESSION['error_message'] = $errors[0];
+            $this->redirect("/well-baby/{$wbRecord['patient_id']}");
+            return;
+        }
+
         $logDate = $_POST['log_date'] ?? date('Y-m-d');
         $weight = !empty($_POST['weight_kg']) ? (float)$_POST['weight_kg'] : 0;
         $height = !empty($_POST['height_cm']) ? (float)$_POST['height_cm'] : 0;
         $ageMonths = isset($_POST['age_months']) ? (float)$_POST['age_months'] : 0;
-
-        $logDateObject = \DateTime::createFromFormat('Y-m-d', $logDate);
-        if (!$logDateObject || $logDateObject->format('Y-m-d') !== $logDate || $logDate > date('Y-m-d')) {
-            $_SESSION['error_message'] = 'Growth visit date must be a valid date that is not in the future.';
-            $this->redirect("/well-baby/{$wbRecord['patient_id']}");
-            return;
-        }
-        if ($weight <= 0 || $height <= 0 || $ageMonths < 0 || $ageMonths > 60) {
-            $_SESSION['error_message'] = 'Valid weight, height, and age in months (0 to 60) are required.';
-            $this->redirect("/well-baby/{$wbRecord['patient_id']}");
-            return;
-        }
 
         $userId = $_SESSION['user_id'] ?? 1;
 

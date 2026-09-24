@@ -25,8 +25,6 @@ DROP TABLE IF EXISTS `patient_conditions`;
 DROP TABLE IF EXISTS `patient_medical_histories`;
 DROP TABLE IF EXISTS `child_health_records`;
 DROP TABLE IF EXISTS `maternal_records`;
-DROP TABLE IF EXISTS `lab_results`;
-DROP TABLE IF EXISTS `lab_requests`;
 DROP TABLE IF EXISTS `settings`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `immunizations`;
@@ -532,48 +530,7 @@ CREATE TABLE `child_growth_logs` (
   CONSTRAINT `fk_cgl_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 15. Lab Requests Table
-CREATE TABLE `lab_requests` (
-  `id` INT AUTO_INCREMENT,
-  `consultation_id` INT NOT NULL,
-  `patient_id` INT NOT NULL,
-  `test_name` VARCHAR(100) NOT NULL,
-  `status` ENUM('Pending', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Pending',
-  `notes` TEXT DEFAULT NULL,
-  `requested_by` INT NOT NULL,
-  `requested_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `deleted_by` INT DEFAULT NULL,
-  `archive_reason` TEXT DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `idx_lab_requests_deleted` (`deleted_at`),
-  CONSTRAINT `fk_lab_request_consultation` FOREIGN KEY (`consultation_id`) REFERENCES `consultations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_request_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_request_requested_by` FOREIGN KEY (`requested_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_requests_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 16. Lab Results Table
-CREATE TABLE `lab_results` (
-  `id` INT AUTO_INCREMENT,
-  `lab_request_id` INT NOT NULL,
-  `patient_id` INT NOT NULL,
-  `result_details` TEXT NOT NULL,
-  `file_path` VARCHAR(255) DEFAULT NULL,
-  `recorded_by` INT NOT NULL,
-  `recorded_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `deleted_by` INT DEFAULT NULL,
-  `archive_reason` TEXT DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `idx_lab_results_deleted` (`deleted_at`),
-  CONSTRAINT `fk_lab_result_request` FOREIGN KEY (`lab_request_id`) REFERENCES `lab_requests` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_result_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_result_recorded_by` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `fk_lab_results_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 17. Settings Table
+-- 15. Settings Table
 CREATE TABLE `settings` (
   `setting_key` VARCHAR(50) NOT NULL,
   `setting_value` TEXT DEFAULT NULL,
@@ -584,7 +541,7 @@ CREATE TABLE `settings` (
   CONSTRAINT `fk_settings_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 18. Audit Logs Table
+-- 16. Audit Logs Table
 CREATE TABLE `audit_logs` (
   `id` INT AUTO_INCREMENT,
   `user_id` INT DEFAULT NULL,
@@ -599,7 +556,7 @@ CREATE TABLE `audit_logs` (
   CONSTRAINT `fk_audit_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 19. PCB Obligated Services Table (PhilHealth Page 3 Annual Surveillance)
+-- 17. PCB Obligated Services Table (PhilHealth Page 3 Annual Surveillance)
 CREATE TABLE `pcb_obligated_services` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
@@ -628,7 +585,7 @@ CREATE TABLE `pcb_obligated_services` (
   CONSTRAINT `fk_pcb_obligated_updater` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 20. PCB Service Logs Table (PhilHealth Page 3 Encounter Ledger)
+-- 18. PCB Service Logs Table (PhilHealth Page 3 Encounter Ledger)
 CREATE TABLE `pcb_service_logs` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,

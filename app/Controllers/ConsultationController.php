@@ -112,6 +112,16 @@ class ConsultationController extends Controller {
         $newId = $this->consultationModel->create($data);
 
         if ($newId) {
+            if (!empty($_POST['prescriptions']) && is_array($_POST['prescriptions'])) {
+                (new \App\Models\Prescription())->syncForConsultation(
+                    $newId,
+                    $patientId,
+                    $_SESSION['user_id'],
+                    $_POST['prescriptions'],
+                    $data['consulted_at'] ?? null
+                );
+            }
+
             AuditLog::log('CONSULTATION_CREATED', 'Clinical', "Recorded new consultation SOAP note for patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})");
             
             $_SESSION['success_message'] = 'Consultation record saved successfully!';
@@ -185,6 +195,8 @@ class ConsultationController extends Controller {
         unset($_SESSION['form_errors']);
         unset($_SESSION['form_input']);
 
+        $prescriptions = (new \App\Models\Prescription())->findByConsultationId($id);
+
         $this->view('consultations/edit', [
             'consultation' => $consultation,
             'patient' => $patient,
@@ -194,6 +206,7 @@ class ConsultationController extends Controller {
             'activePrenatal' => $activePrenatal,
             'cdsAlerts' => $cdsAlerts,
             'clinicians' => $clinicians,
+            'prescriptions' => $prescriptions,
             'errors' => $errors,
             'input' => $input
         ]);
@@ -249,6 +262,15 @@ class ConsultationController extends Controller {
         $updated = $this->consultationModel->update($id, $data);
 
         if ($updated) {
+            $prescriptionItems = !empty($_POST['prescriptions']) && is_array($_POST['prescriptions']) ? $_POST['prescriptions'] : [];
+            (new \App\Models\Prescription())->syncForConsultation(
+                $id,
+                $patientId,
+                $currentUserId,
+                $prescriptionItems,
+                $data['consulted_at'] ?? $consultation['consulted_at'] ?? null
+            );
+
             $patientLabel = $patient ? "{$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})" : "Patient #{$patientId}";
             AuditLog::log('CONSULTATION_UPDATED', 'Clinical', "Updated consultation SOAP note (#{$id}) for patient: {$patientLabel}");
 
@@ -340,6 +362,8 @@ class ConsultationController extends Controller {
         } else {
             $consultation['formatted_updated'] = null;
         }
+
+        $consultation['prescriptions'] = (new \App\Models\Prescription())->findByConsultationId($id);
 
         $this->json($consultation);
     }

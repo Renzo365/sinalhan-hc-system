@@ -57,9 +57,6 @@ erDiagram
 
     vital_signs ||--o| consultations : "linked_to"
     consultations ||--o{ prescriptions : "contains"
-    consultations ||--o{ lab_requests : "triggers"
-    patients ||--o{ lab_requests : "requests"
-    lab_requests ||--o| lab_results : "produces"
 ```
 
 For the authoritative source of each clinical data category and the relationships between
@@ -233,7 +230,7 @@ Tracks patient routing, status, and processing times for the day's clinic queue.
 
 ---
 
-### 3.7 `prescriptions` Table *(Supporting Feature)*
+### 3.7 `prescriptions` Table
 Prescription details associated with a specific consultation.
 
 | Column Name | Data Type | Constraints | Default | Description |
@@ -300,36 +297,6 @@ Key-value configuration items (e.g., Health center name, operating hours, public
 
 ---
 
-### 3.11 `lab_requests` Table *(Could-Have Enhancement)*
-Tracks laboratory test requests made during consultations.
-
-| Column Name | Data Type | Constraints | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique laboratory request identifier. |
-| `consultation_id` | INT | FK (`consultations.id`) ON DELETE CASCADE | | Associated clinical consultation. |
-| `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Patient requesting test. |
-| `test_name` | VARCHAR(100) | NOT NULL | | Name of test (e.g., 'Fasting Blood Sugar', 'Urinalysis'). |
-| `status` | ENUM('Pending', 'Completed', 'Cancelled') | NOT NULL | 'Pending' | Current status. |
-| `notes` | TEXT | | NULL | Clinic clinical reasons, indicators. |
-| `requested_by` | INT | FK (`users.id`), NOT NULL | | Referring doctor or healthcare worker. |
-| `requested_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Creation timestamp. |
-
----
-
-### 3.12 `lab_results` Table *(Could-Have Enhancement)*
-Stores lab results details and references physical diagnostic upload files.
-
-| Column Name | Data Type | Constraints | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `id` | INT | PRIMARY KEY, AUTO_INCREMENT | | Unique laboratory result identifier. |
-| `lab_request_id` | INT | FK (`lab_requests.id`) ON DELETE CASCADE | | Related laboratory request. |
-| `patient_id` | INT | FK (`patients.id`) ON DELETE RESTRICT | | Linked patient. |
-| `result_details` | TEXT | NOT NULL | | Medical readings and findings. |
-| `file_path` | VARCHAR(255) | | NULL | Local path of the scan report file in XAMPP filesystem. |
-| `recorded_by` | INT | FK (`users.id`), NOT NULL | | Medical lab tech or records personnel who uploaded. |
-| `recorded_at` | TIMESTAMP | NOT NULL | CURRENT_TIMESTAMP | Time recorded in database. |
-
----
 
 ### 3.13 `patient_medical_histories` Table
 Stores comprehensive Annex A1 Individual Health Profile (IHP) medical background, past surgical operations, family hereditary diseases, personal/social habits, and female menstrual history.
@@ -568,8 +535,7 @@ DROP TABLE IF EXISTS `prenatal_records`;
 DROP TABLE IF EXISTS `patient_medical_histories`;
 DROP TABLE IF EXISTS `child_health_records`;
 DROP TABLE IF EXISTS `maternal_records`;
-DROP TABLE IF EXISTS `lab_results`;
-DROP TABLE IF EXISTS `lab_requests`;
+
 DROP TABLE IF EXISTS `settings`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `immunizations`;

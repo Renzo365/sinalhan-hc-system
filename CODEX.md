@@ -77,7 +77,6 @@ These features can be documented as future improvements:
 5. Direct PhilHealth or DOH electronic API integration
 6. Offline-first synchronization across multiple health center satellite stations
 
-These features can be documented as future improvements:
 
 1. Data migration from an existing system
 2. Full database restore workflow through the web interface
@@ -509,8 +508,6 @@ Should-have tables:
 
 Could-have tables:
 
-- `lab_requests`
-- `lab_results`
 - `maternal_records`
 - `child_health_records`
 - `senior_citizen_records`

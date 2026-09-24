@@ -369,18 +369,56 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Plan (P) -->
-            <div class="mb-2">
+            <div class="mb-4">
                 <label for="plan" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-1">
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">P</span>
-                    <span>Plan &mdash; Treatment, Prescriptions & Recommendations <span class="text-danger">*</span></span>
+                    <span>Plan &mdash; General Treatment Plan & Recommendations <span class="text-danger">*</span></span>
                 </label>
-                <div class="form-text text-muted small mb-2">Prescribed medications (dosage/frequency), non-pharmacological advice, lab requests, and follow-up return schedule.</div>
+                <div class="form-text text-muted small mb-2">Non-pharmacological advice, lab recommendations, patient instructions, and follow-up return schedule.</div>
                 <textarea name="plan" 
                           id="plan" 
                           rows="3" 
                           class="form-control" 
-                          placeholder="e.g. Paracetamol 500mg tab TID PRN for fever. Increase oral fluid intake. Return if symptoms persist after 3 days." 
+                          placeholder="e.g. Increase oral fluid intake. Return if symptoms persist after 3 days. Follow up next week for re-evaluation." 
                           required><?= h($input['plan'] ?? '') ?></textarea>
+            </div>
+
+            <!-- Structured Prescriptions (Medications) -->
+            <div class="mt-4 pt-3 border-top">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <label class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-0">
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-capsule"></i> Rx</span>
+                            <span>Prescribed Medications (Structured)</span>
+                        </label>
+                        <div class="form-text text-muted small">Add individual medications dispensed or prescribed for this consultation.</div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddPrescription">
+                        <i class="bi bi-plus-circle me-1"></i> Add Medication
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-1" id="prescriptionsTable">
+                        <thead class="table-light small text-muted">
+                            <tr>
+                                <th style="width: 28%;">Medicine Name <span class="text-danger">*</span></th>
+                                <th style="width: 18%;">Dosage</th>
+                                <th style="width: 18%;">Frequency</th>
+                                <th style="width: 16%;">Duration</th>
+                                <th style="width: 15%;">Instructions / Sig</th>
+                                <th style="width: 5%;" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prescriptionsTableBody">
+                            <tr id="noPrescriptionsRow">
+                                <td colspan="6" class="text-center text-muted py-3 small">
+                                    No structured medications added yet. Click <strong>Add Medication</strong> to attach prescriptions.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -632,6 +670,61 @@ document.addEventListener('DOMContentLoaded', function() {
     if (vitalsSelect) {
         vitalsSelect.addEventListener('change', updateVitalsPreview);
         updateVitalsPreview();
+    }
+
+    // Dynamic Structured Prescriptions
+    let prescriptionIndex = 0;
+    const btnAddPrescription = document.getElementById('btnAddPrescription');
+    const prescriptionsTableBody = document.getElementById('prescriptionsTableBody');
+    const noPrescriptionsRow = document.getElementById('noPrescriptionsRow');
+
+    function addPrescriptionRow(med = {}) {
+        if (noPrescriptionsRow) {
+            noPrescriptionsRow.style.display = 'none';
+        }
+        const idx = prescriptionIndex++;
+        const tr = document.createElement('tr');
+        tr.id = `prescription_row_${idx}`;
+        tr.innerHTML = `
+            <td>
+                <input type="text" name="prescriptions[${idx}][medicine_name]" class="form-control form-control-sm" placeholder="e.g. Amoxicillin" value="${escapeHtml(med.medicine_name || '')}" required>
+            </td>
+            <td>
+                <input type="text" name="prescriptions[${idx}][dosage]" class="form-control form-control-sm" placeholder="e.g. 500mg capsule" value="${escapeHtml(med.dosage || '')}">
+            </td>
+            <td>
+                <input type="text" name="prescriptions[${idx}][frequency]" class="form-control form-control-sm" placeholder="e.g. 3x a day (every 8 hrs)" value="${escapeHtml(med.frequency || '')}">
+            </td>
+            <td>
+                <input type="text" name="prescriptions[${idx}][duration]" class="form-control form-control-sm" placeholder="e.g. 7 days" value="${escapeHtml(med.duration || '')}">
+            </td>
+            <td>
+                <input type="text" name="prescriptions[${idx}][instructions]" class="form-control form-control-sm" placeholder="e.g. Take after meals" value="${escapeHtml(med.instructions || '')}">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger p-1 border-0" title="Remove" onclick="window.removePrescriptionRow(${idx})">
+                    <i class="bi bi-trash fs-6"></i>
+                </button>
+            </td>
+        `;
+        prescriptionsTableBody.appendChild(tr);
+    }
+
+    window.removePrescriptionRow = function(idx) {
+        const row = document.getElementById(`prescription_row_${idx}`);
+        if (row) {
+            row.remove();
+        }
+        const activeRows = prescriptionsTableBody.querySelectorAll('tr:not(#noPrescriptionsRow)');
+        if (activeRows.length === 0 && noPrescriptionsRow) {
+            noPrescriptionsRow.style.display = '';
+        }
+    };
+
+    if (btnAddPrescription) {
+        btnAddPrescription.addEventListener('click', function() {
+            addPrescriptionRow();
+        });
     }
 });
 </script>

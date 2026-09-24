@@ -11,7 +11,7 @@ The system is built on a custom, lightweight **Model-View-Controller (MVC)** fra
 ### Key Architectural Constraints
 * **Framework-Free**: Avoids complex external frameworks (like Laravel or Symfony) to prevent deployment and compilation overhead on LAN workstations, making it easier to audit and defend during the capstone review.
 * **Zero CDN Dependency**: All styling, script assets, and libraries are stored locally in the public folder to ensure uninterrupted operation during internet outages.
-* **Layered MVC boundaries**: Controllers handle HTTP/session concerns and workflow validation, while Models own SQL, persistence, and record-level integrity checks. The current codebase is not a strict thin-controller/thick-model architecture; complex form normalization remains in a few controllers and is tracked for future extraction.
+* **Layered MVC boundaries**: Controllers handle HTTP/session concerns, while Models own SQL, persistence, and record-level integrity checks. To prevent controller bloat, complex form normalization and business validation logic is extracted into dedicated Validator classes (e.g., `App\Validators\WellbabyValidator`).
 
 ---
 
@@ -26,6 +26,7 @@ sequenceDiagram
     participant Router as App\Core\Router
     participant Auth as App\Middleware (Auth/Admin/Guest)
     participant Controller as App\Controllers (UserController, PatientController, etc.)
+    participant Validator as App\Validators (WellbabyValidator, etc.)
     participant Model as App\Models (User, Patient, etc.)
     participant View as App\Views (HTML/PHP templates)
     participant DB as MySQL Database
@@ -44,6 +45,10 @@ sequenceDiagram
         Auth->>Controller: Invoke controller action (e.g. index())
         deactivate Auth
         activate Controller
+        Controller->>Validator: Validate Request Data
+        activate Validator
+        Validator-->>Controller: Return Validation Result
+        deactivate Validator
         Controller->>Model: Query database data
         activate Model
         Model->>DB: execute SQL query with prepared parameters

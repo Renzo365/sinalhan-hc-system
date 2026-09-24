@@ -63,13 +63,16 @@ class PatientController extends Controller {
         // Retrieve flashed input/errors
         $errors = $_SESSION['form_errors'] ?? [];
         $input = $_SESSION['form_input'] ?? [];
+        $duplicateWarnings = $_SESSION['duplicate_found_records'] ?? [];
         
         unset($_SESSION['form_errors']);
         unset($_SESSION['form_input']);
+        unset($_SESSION['duplicate_found_records']);
 
         $this->view('patients/create', [
             'errors' => $errors,
-            'input' => $input
+            'input' => $input,
+            'duplicateWarnings' => $duplicateWarnings
         ]);
     }
 
@@ -88,6 +91,22 @@ class PatientController extends Controller {
             $_SESSION['form_input'] = $_POST;
             $this->redirect('/patients/create');
             return;
+        }
+
+        // Server-Side Duplicate Patient Safety Net
+        $acknowledged = !empty($_POST['duplicate_acknowledged']) && $_POST['duplicate_acknowledged'] === '1';
+        if (!$acknowledged) {
+            $firstName = $_POST['first_name'] ?? '';
+            $lastName = $_POST['last_name'] ?? '';
+            $dob = !empty($_POST['dob']) ? $_POST['dob'] : null;
+
+            $duplicates = $this->patientModel->findDuplicates($firstName, $lastName, $dob);
+            if (!empty($duplicates)) {
+                $_SESSION['duplicate_found_records'] = $duplicates;
+                $_SESSION['form_input'] = $_POST;
+                $this->redirect('/patients/create');
+                return;
+            }
         }
 
         // Save
@@ -115,14 +134,22 @@ class PatientController extends Controller {
      * AJAX action to inspect duplicate patient names.
      */
     public function checkDuplicate() {
-        $firstName = $_GET['first_name'] ?? '';
-        $lastName = $_GET['last_name'] ?? '';
+        $firstName = trim($_GET['first_name'] ?? '');
+        $lastName = trim($_GET['last_name'] ?? '');
+        $dob = trim($_GET['dob'] ?? '');
+        $excludeId = !empty($_GET['exclude_id']) ? (int)$_GET['exclude_id'] : null;
 
-        if (empty($firstName) || empty($lastName)) {
+        if (empty($firstName) && empty($lastName)) {
             $this->json([]);
+            return;
         }
 
-        $duplicates = $this->patientModel->findDuplicates($firstName, $lastName);
+        if (empty($lastName)) {
+            $this->json([]);
+            return;
+        }
+
+        $duplicates = $this->patientModel->findDuplicates($firstName, $lastName, $dob, $excludeId);
         $this->json($duplicates);
     }
 
