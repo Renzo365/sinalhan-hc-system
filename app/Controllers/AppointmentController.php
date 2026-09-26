@@ -29,6 +29,7 @@ class AppointmentController extends Controller {
             'date_from' => trim($_GET['date_from'] ?? ''),
             'date_to' => trim($_GET['date_to'] ?? ''),
             'status' => trim($_GET['status'] ?? ''),
+            'program_type' => trim($_GET['program_type'] ?? ''),
             'search' => trim($_GET['search'] ?? '')
         ];
 
@@ -122,7 +123,18 @@ class AppointmentController extends Controller {
         }
 
         $programType = trim($_POST['program_type'] ?? 'General OPD');
-        $validPrograms = ['General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care', 'Family Planning', 'Dental Care', 'NCD / Hypertension'];
+        $validPrograms = [
+            'General OPD',
+            'Consultation',
+            'Prenatal Care',
+            'Maternal Care',
+            'Well Baby Immunization',
+            'Well-Baby Care',
+            'Senior Care',
+            'Family Planning',
+            'Dental Care',
+            'NCD / Hypertension'
+        ];
         if (!in_array($programType, $validPrograms)) {
             $programType = 'General OPD';
         }
@@ -214,7 +226,18 @@ class AppointmentController extends Controller {
         }
 
         $programType = trim($_POST['program_type'] ?? 'General OPD');
-        $validPrograms = ['General OPD', 'Prenatal Care', 'Well Baby Immunization', 'Senior Care', 'Family Planning', 'Dental Care', 'NCD / Hypertension'];
+        $validPrograms = [
+            'General OPD',
+            'Consultation',
+            'Prenatal Care',
+            'Maternal Care',
+            'Well Baby Immunization',
+            'Well-Baby Care',
+            'Senior Care',
+            'Family Planning',
+            'Dental Care',
+            'NCD / Hypertension'
+        ];
         if (!in_array($programType, $validPrograms)) {
             $programType = 'General OPD';
         }
@@ -315,6 +338,29 @@ class AppointmentController extends Controller {
 
         $hasConflict = $this->appointmentModel->hasConflict($date, $time, $excludeId);
         $this->json(['conflict' => $hasConflict]);
+    }
+
+    /**
+     * AJAX endpoint to retrieve slot capacities for a specific date.
+     */
+    public function getDayCapacity() {
+        $date = $_GET['date'] ?? '';
+        $excludeId = isset($_GET['exclude_id']) ? (int)$_GET['exclude_id'] : null;
+
+        if (empty($date)) {
+            $this->json(['capacities' => []]);
+            return;
+        }
+
+        $capacities = $this->appointmentModel->getDayCapacity($date, $excludeId);
+        
+        // Format times to H:i for easier JS matching (e.g. "08:30:00" -> "08:30")
+        $formattedCapacities = [];
+        foreach ($capacities as $time => $count) {
+            $formattedCapacities[date('H:i', strtotime($time))] = (int)$count;
+        }
+
+        $this->json(['capacities' => $formattedCapacities]);
     }
 
     /**

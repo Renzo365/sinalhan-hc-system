@@ -102,6 +102,7 @@ return function (\App\Core\Router $router) {
     $router->get('/appointments/create', 'AppointmentController@create', [AuthMiddleware::class]);
     $router->post('/appointments', 'AppointmentController@store', [AuthMiddleware::class]);
     $router->get('/appointments/check-conflict', 'AppointmentController@checkConflict', [AuthMiddleware::class]);
+    $router->get('/appointments/day-capacity', 'AppointmentController@getDayCapacity', [AuthMiddleware::class]);
     $router->get('/appointments/{id}/edit', 'AppointmentController@edit', [AuthMiddleware::class]);
     $router->post('/appointments/{id}', 'AppointmentController@update', [AuthMiddleware::class]);
     $router->post('/appointments/{id}/status', 'AppointmentController@updateStatus', [AuthMiddleware::class]);

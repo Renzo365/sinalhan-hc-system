@@ -60,8 +60,23 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
             </div>
 
+            <!-- Category Filter -->
+            <div class="col-12 col-sm-6 col-md-2">
+                <label for="program_type" class="form-label fw-semibold text-secondary small">Category</label>
+                <select name="program_type" id="program_type" class="form-select bg-light">
+                    <option value="">-- All Categories --</option>
+                    <option value="General OPD" <?= ($filters['program_type'] ?? '') === 'General OPD' ? 'selected' : '' ?>>General OPD</option>
+                    <option value="Maternal Care" <?= ($filters['program_type'] ?? '') === 'Maternal Care' ? 'selected' : '' ?>>Maternal Care</option>
+                    <option value="Well-Baby Care" <?= ($filters['program_type'] ?? '') === 'Well-Baby Care' ? 'selected' : '' ?>>Well-Baby Care</option>
+                    <option value="Senior Care" <?= ($filters['program_type'] ?? '') === 'Senior Care' ? 'selected' : '' ?>>Senior Care</option>
+                    <option value="Family Planning" <?= ($filters['program_type'] ?? '') === 'Family Planning' ? 'selected' : '' ?>>Family Planning</option>
+                    <option value="NCD / Hypertension" <?= ($filters['program_type'] ?? '') === 'NCD / Hypertension' ? 'selected' : '' ?>>NCD / Hypertension</option>
+                    <option value="Dental Care" <?= ($filters['program_type'] ?? '') === 'Dental Care' ? 'selected' : '' ?>>Dental Care</option>
+                </select>
+            </div>
+
             <!-- Status Filter -->
-            <div class="col-12 col-sm-6 col-md-3">
+            <div class="col-12 col-sm-6 col-md-2">
                 <label for="status" class="form-label fw-semibold text-secondary small">Status</label>
                 <select name="status" id="status" class="form-select bg-light">
                     <option value="">-- All Statuses --</option>
@@ -73,9 +88,9 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Action Buttons -->
-            <div class="col-12 col-sm-6 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-funnel"></i> Filter
+            <div class="col-12 col-sm-6 col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-primary flex-grow-1" title="Filter Records">
+                    <i class="bi bi-funnel"></i>
                 </button>
                 <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary" title="Clear Filters">
                     <i class="bi bi-arrow-counterclockwise"></i>
@@ -94,6 +109,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <tr>
                         <th class="text-start ps-4">Scheduled Date</th>
                         <th>Time</th>
+                        <th>Category</th>
                         <th class="text-start">Patient Name</th>
                         <th class="text-start">Purpose</th>
                         <th>Status</th>
@@ -103,7 +119,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <tbody>
                     <?php if (empty($appointments)): ?>
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
+                            <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-calendar-x d-block fs-3 mb-2 text-muted"></i>
                                 No appointments found matching the selected filters.
                             </td>
@@ -116,6 +132,21 @@ require dirname(__DIR__) . '/layout/header.php';
                             elseif ($a['status'] === 'Completed') $badgeClass = 'bg-success text-white';
                             elseif ($a['status'] === 'Cancelled') $badgeClass = 'bg-danger text-white';
                             elseif ($a['status'] === 'Missed') $badgeClass = 'bg-dark text-white';
+
+                            // Format category badges
+                            $catBadge = 'bg-light text-dark border';
+                            $prog = $a['program_type'] ?? 'General OPD';
+                            if ($prog === 'Prenatal Care' || $prog === 'Maternal Care') {
+                                $catBadge = 'bg-pink text-white';
+                            } elseif ($prog === 'Well Baby Immunization' || $prog === 'Well-Baby Care') {
+                                $catBadge = 'bg-success text-white';
+                            } elseif ($prog === 'Senior Care') {
+                                $catBadge = 'bg-purple text-white';
+                            } elseif ($prog === 'NCD / Hypertension') {
+                                $catBadge = 'bg-warning text-dark';
+                            } elseif ($prog === 'Dental Care') {
+                                $catBadge = 'bg-info text-dark';
+                            }
                         ?>
                             <tr>
                                 <td class="text-start ps-4 text-secondary fw-semibold" style="white-space: nowrap;">
@@ -123,6 +154,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </td>
                                 <td class="fw-semibold text-dark" style="white-space: nowrap;">
                                     <?= date('h:i A', strtotime($a['appointment_time'])) ?>
+                                </td>
+                                <td>
+                                    <span class="badge <?= $catBadge ?> px-2 py-1"><?= h($prog) ?></span>
                                 </td>
                                 <td class="text-start text-dark fw-bold">
                                     <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="link-primary-dark">
@@ -200,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "responsive": true,
             "order": [[0, "asc"], [1, "asc"]], // Order by date then time ascending
             "columnDefs": [
-                { "orderable": false, "targets": 5 } // Disable sorting on action buttons (index 5)
+                { "orderable": false, "targets": 6 } // Disable sorting on action buttons (index 6)
             ],
             "language": {
                 "paginate": {

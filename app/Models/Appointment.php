@@ -33,6 +33,10 @@ class Appointment extends Model {
             $sql .= " AND a.status = :status";
             $params['status'] = $filters['status'];
         }
+        if (!empty($filters['program_type'])) {
+            $sql .= " AND a.program_type = :program_type";
+            $params['program_type'] = $filters['program_type'];
+        }
         if (!empty($filters['search'])) {
             $sql .= " AND (p.first_name LIKE :search_first 
                            OR p.last_name LIKE :search_last 
@@ -202,6 +206,32 @@ class Appointment extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Get the capacity (booked count) for all time slots on a given date.
+     * 
+     * @param string $date Date string
+     * @param int|null $excludeId Exclude specific appointment ID (for edits)
+     * @return array Associative array of time => count (e.g., ['09:00:00' => 3])
+     */
+    public function getDayCapacity($date, $excludeId = null) {
+        $sql = "SELECT appointment_time, COUNT(*) as booked_count 
+                FROM appointments 
+                WHERE appointment_date = :date 
+                  AND status = 'Scheduled'";
+        
+        $params = ['date' => $date];
+        if ($excludeId) {
+            $sql .= " AND id != :exclude_id";
+            $params['exclude_id'] = (int)$excludeId;
+        }
+        
+        $sql .= " GROUP BY appointment_time";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
     }
 
     /**

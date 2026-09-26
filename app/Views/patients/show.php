@@ -2749,6 +2749,7 @@ $hasBloodType = (!empty($patient['blood_type']) && strtolower(trim($patient['blo
                                                 <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
                                                     <div>
                                                         <strong><?= date('M d, Y', strtotime($a['appointment_date'])) ?></strong> at <?= date('h:i A', strtotime($a['appointment_time'])) ?>
+                                                        <span class="badge bg-secondary-subtle text-secondary border px-1.5 py-0.5 ms-1" style="font-size: 0.7rem;"><?= h($a['program_type'] ?? 'General OPD') ?></span>
                                                         <span class="text-muted d-block" style="font-size: 0.75rem;"><?= h($a['purpose']) ?></span>
                                                     </div>
                                                     <div class="d-flex align-items-center gap-2">

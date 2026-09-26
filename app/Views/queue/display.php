@@ -126,6 +126,23 @@
 </head>
 <body class="queue-display-body">
 
+    <!-- Start Monitor / Unlock Audio Overlay -->
+    <div id="startOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #0d7377 0%, #0A3D40 100%); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
+        <div class="mb-4">
+            <i class="bi bi-display text-info" style="font-size: 5rem;"></i>
+        </div>
+        <h2 class="text-white fw-bold mb-2">Barangay Sinalhan Health Center</h2>
+        <p class="text-white-50 fs-5 mb-4" style="max-width: 500px;">
+            Lobby Waiting Room Monitor is ready. Click below to start live queue updates and enable audio chimes.
+        </p>
+        <button id="btnStartMonitor" class="btn btn-info btn-lg px-5 py-3 fw-bold fs-4 rounded-pill shadow-lg text-dark">
+            <i class="bi bi-play-circle-fill me-2"></i> Start Monitor & Enable Audio
+        </button>
+        <div class="mt-4 text-white-50 small">
+            <i class="bi bi-shield-check me-1"></i> Required by browser autoplay security policies
+        </div>
+    </div>
+
     <!-- Header Section -->
     <header class="display-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3">
@@ -135,9 +152,14 @@
                 <span class="text-info small fw-semibold tracking-wider text-uppercase" style="font-size: 0.75rem;">Public Waiting Room Monitor</span>
             </div>
         </div>
-        <div class="text-end">
-            <h5 class="h6 mb-0 text-white" id="liveTime">Loading time...</h5>
-            <span class="text-muted small" id="liveDate"><?= date('F d, Y') ?></span>
+        <div class="d-flex align-items-center gap-4">
+            <div id="audioStatusBadge" class="badge bg-success bg-opacity-25 text-white border border-success px-3 py-2" style="display: none;">
+                <i class="bi bi-volume-up-fill text-info me-1"></i> Audio Active
+            </div>
+            <div class="text-end">
+                <h5 class="h6 mb-0 text-white" id="liveTime">Loading time...</h5>
+                <span class="text-muted small" id="liveDate"><?= date('F d, Y') ?></span>
+            </div>
         </div>
     </header>
 
@@ -195,6 +217,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         let currentServing = '000';
         let initialLoad = true;
+        let audioCtx = null;
+        let pollInterval = null;
 
         // 1. Live Clock
         function updateClock() {
@@ -215,12 +239,31 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 2. Beep Notification audio chimes (Web Audio API)
-        function playCallChime() {
+        // 2. Audio Engine Setup & Unlock
+        function initAudio() {
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Double chime: low then high
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (e) {
+                console.error('AudioContext initialization error:', e);
+            }
+        }
+
+        // Double chime: low then high
+        function playCallChime() {
+            if (!audioCtx) {
+                initAudio();
+            }
+            if (!audioCtx) return;
+
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
                 playNote(audioCtx, 587.33, 0.15, 0); // D5
                 playNote(audioCtx, 880.00, 0.30, 0.15); // A5
             } catch (e) {
@@ -264,7 +307,7 @@
                     if (data.serving !== currentServing) {
                         servingEl.textContent = data.serving;
                         
-                        // Don't chime on page initial load
+                        // Don't chime on initial page load
                         if (!initialLoad && data.serving !== '000') {
                             playCallChime();
                         }
@@ -303,9 +346,42 @@
                 });
         }
 
-        // Poll every 5 seconds
-        setInterval(pollQueueData, 5000);
-        pollQueueData();
+        // 4. Start Button Interaction Trigger
+        const btnStart = document.getElementById('btnStartMonitor');
+        const overlay = document.getElementById('startOverlay');
+        const audioBadge = document.getElementById('audioStatusBadge');
+
+        if (btnStart) {
+            btnStart.addEventListener('click', function() {
+                initAudio();
+                // Play subtle confirmation chime on unlock
+                try {
+                    if (audioCtx) {
+                        playNote(audioCtx, 523.25, 0.08, 0); // C5 quick confirmation tone
+                    }
+                } catch (err) {}
+
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 400);
+
+                if (audioBadge) {
+                    audioBadge.style.display = 'inline-block';
+                }
+
+                // Start polling immediately and then every 5 seconds
+                pollQueueData();
+                if (!pollInterval) {
+                    pollInterval = setInterval(pollQueueData, 5000);
+                }
+            });
+        } else {
+            // Fallback if overlay button not found
+            pollQueueData();
+            pollInterval = setInterval(pollQueueData, 5000);
+        }
     });
     </script>
 </body>
