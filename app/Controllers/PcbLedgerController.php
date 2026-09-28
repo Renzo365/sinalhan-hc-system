@@ -120,7 +120,7 @@ class PcbLedgerController extends Controller {
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
-            $this->redirect("/patients/{$patientId}#tab-pcb");
+            $this->redirectPcbTab($patientId);
             return;
         }
 
@@ -150,7 +150,7 @@ class PcbLedgerController extends Controller {
             $_SESSION['form_errors'] = ['Failed to record PhilHealth PCB service entry. Please try again.'];
         }
 
-        $this->redirect("/patients/{$patientId}#tab-pcb");
+        $this->redirectPcbTab($patientId);
     }
 
     /**
@@ -163,8 +163,6 @@ class PcbLedgerController extends Controller {
             session_start();
         }
 
-
-
         $log = $this->pcbModel->findLogById($id);
         if (!$log) {
             $_SESSION['form_errors'] = ['Service log entry not found.'];
@@ -176,7 +174,7 @@ class PcbLedgerController extends Controller {
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
         if (!is_admin()) {
             $_SESSION['form_errors'] = ['Unauthorized: Only administrators can delete PCB service entries.'];
-            $this->redirect("/patients/{$patientId}#tab-pcb");
+            $this->redirectPcbTab($patientId);
             return;
         }
 
@@ -193,7 +191,7 @@ class PcbLedgerController extends Controller {
             $_SESSION['form_errors'] = ['Failed to remove service log entry.'];
         }
 
-        $this->redirect("/patients/{$patientId}#tab-pcb");
+        $this->redirectPcbTab($patientId);
     }
 
     /**
@@ -206,8 +204,6 @@ class PcbLedgerController extends Controller {
             session_start();
         }
 
-
-
         $log = $this->pcbModel->findLogById($id);
         if (!$log) {
             $_SESSION['form_errors'] = ['Service log entry not found.'];
@@ -217,9 +213,10 @@ class PcbLedgerController extends Controller {
 
         $patientId = (int)$log['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        if (!is_admin() && $currentUserId !== (int)$log['recorded_by']) {
-            $_SESSION['form_errors'] = ['Unauthorized: you may only update PCB service entries you recorded.'];
-            $this->redirect("/patients/{$patientId}#tab-pcb");
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
+            $_SESSION['form_errors'] = ['Unauthorized: You do not have permission to update PCB service entries.'];
+            $this->redirectPcbTab($patientId);
             return;
         }
 
@@ -231,6 +228,18 @@ class PcbLedgerController extends Controller {
             $_SESSION['form_errors'] = ['Failed to update service log entry.'];
         }
 
-        $this->redirect("/patients/{$patientId}#tab-pcb");
+        $this->redirectPcbTab($patientId);
+    }
+
+    /**
+     * Redirect back to patient PCB tab while preserving active service year filter.
+     *
+     * @param int $patientId
+     * @param int|null $serviceYear
+     */
+    private function redirectPcbTab(int $patientId, $serviceYear = null) {
+        $year = $serviceYear !== null ? (int)$serviceYear : (!empty($_POST['service_year']) ? (int)$_POST['service_year'] : (!empty($_GET['pcb_year']) ? (int)$_GET['pcb_year'] : 0));
+        $query = $year > 0 ? "?pcb_year={$year}" : "";
+        $this->redirect("/patients/{$patientId}{$query}#tab-pcb");
     }
 }

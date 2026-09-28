@@ -115,25 +115,18 @@ class User extends Model {
         $params = [];
 
         if (!empty($filters['search'])) {
-            $sql .= " AND (username LIKE :search_user OR first_name LIKE :search_first OR last_name LIKE :search_last OR email LIKE :search_email OR employee_id LIKE :search_emp OR department LIKE :search_dept)";
+            $sql .= " AND (username LIKE :search_user OR first_name LIKE :search_first OR last_name LIKE :search_last OR email LIKE :search_email OR job_title LIKE :search_job)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_user'] = $searchTerm;
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
             $params['search_email'] = $searchTerm;
-            $params['search_emp'] = $searchTerm;
-            $params['search_dept'] = $searchTerm;
+            $params['search_job'] = $searchTerm;
         }
 
         if (!empty($filters['role'])) {
-            if ($filters['role'] === 'super_admin' || $filters['role'] === 'main_admin') {
-                $sql .= " AND role = 'super_admin'";
-            } elseif ($filters['role'] === 'admin' || $filters['role'] === 'co_admin') {
-                $sql .= " AND role = 'admin'";
-            } else {
-                $sql .= " AND role = :role";
-                $params['role'] = $filters['role'];
-            }
+            $sql .= " AND role = :role";
+            $params['role'] = $filters['role'];
         }
 
         $sql .= " ORDER BY id DESC";
@@ -154,25 +147,18 @@ class User extends Model {
         $params = [];
 
         if (!empty($filters['search'])) {
-            $sql .= " AND (username LIKE :search_user OR first_name LIKE :search_first OR last_name LIKE :search_last OR email LIKE :search_email OR employee_id LIKE :search_emp OR department LIKE :search_dept)";
+            $sql .= " AND (username LIKE :search_user OR first_name LIKE :search_first OR last_name LIKE :search_last OR email LIKE :search_email OR job_title LIKE :search_job)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_user'] = $searchTerm;
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
             $params['search_email'] = $searchTerm;
-            $params['search_emp'] = $searchTerm;
-            $params['search_dept'] = $searchTerm;
+            $params['search_job'] = $searchTerm;
         }
 
         if (!empty($filters['role'])) {
-            if ($filters['role'] === 'super_admin' || $filters['role'] === 'main_admin') {
-                $sql .= " AND role = 'super_admin'";
-            } elseif ($filters['role'] === 'admin' || $filters['role'] === 'co_admin') {
-                $sql .= " AND role = 'admin'";
-            } else {
-                $sql .= " AND role = :role";
-                $params['role'] = $filters['role'];
-            }
+            $sql .= " AND role = :role";
+            $params['role'] = $filters['role'];
         }
 
         $sql .= " ORDER BY deleted_at DESC";

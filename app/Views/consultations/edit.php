@@ -40,29 +40,69 @@ require dirname(__DIR__) . '/layout/header.php';
     $pmh = $medicalHistory['past_medical_history'] ?? [];
     $surg = $medicalHistory['surgical_history'] ?? [];
     $fam = $medicalHistory['family_history'] ?? [];
+
+    $pLastName = trim($patient['last_name'] ?? '');
+    $pFirstName = trim($patient['first_name'] ?? '');
+    $pMiddleName = trim($patient['middle_name'] ?? '');
+    $pSuffix = trim($patient['suffix'] ?? '');
+
+    $pFullName = $pLastName . ', ' . $pFirstName;
+    if (!empty($pMiddleName)) {
+        $pFullName .= ' ' . mb_substr($pMiddleName, 0, 1) . '.';
+    }
+    if (!empty($pSuffix)) {
+        $pFullName .= ' ' . $pSuffix;
+    }
+
+    $pInitials = strtoupper(
+        (!empty($pFirstName) ? mb_substr($pFirstName, 0, 1) : '') .
+        (!empty($pLastName) ? mb_substr($pLastName, 0, 1) : '')
+    );
+    $pDobFormatted = (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified';
+    $hasBlood = (!empty($patient['blood_type']) && strtolower(trim($patient['blood_type'])) !== 'unknown');
 ?>
 
 <!-- 1. Patient Clinical Profile & Safety Card -->
 <div class="card card-premium mb-4 bg-white border">
     <div class="card-body p-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-3 min-w-0">
                 <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.1rem;">
-                    <?= strtoupper(substr($patient['first_name'], 0, 1) . substr($patient['last_name'], 0, 1)) ?>
+                    <?= !empty($pInitials) ? h($pInitials) : '<i class="bi bi-person-fill"></i>' ?>
                 </div>
-                <div>
-                    <div class="d-flex align-items-center gap-2">
-                        <strong class="text-dark fs-6"><?= h($patient['last_name']) ?>, <?= h($patient['first_name']) ?><?= !empty($patient['suffix']) ? ' ' . h($patient['suffix']) : '' ?></strong>
-                        <span class="badge bg-light text-secondary border font-monospace"><?= h($patient['patient_no']) ?></span>
+                <div class="min-w-0">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <strong class="text-dark fs-6 mb-0 lh-1"><?= h($pFullName) ?></strong>
+                        <span class="badge bg-light text-dark border font-monospace fs-7"><?= h($patient['patient_no']) ?></span>
+                        <?php if (!empty($patient['envelope_no'])): ?>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
+                                <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($patient['family_no'])): ?>
+                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
+                                <i class="bi bi-house-door-fill me-1"></i>Fam #<?= h($patient['family_no']) ?>
+                            </a>
+                        <?php endif; ?>
                     </div>
-                    <div class="text-muted small">
-                        <?= h($patient['age']) ?> yrs &bull; <?= h($patient['sex']) ?> &bull; Brgy. <?= h($patient['barangay']) ?>
-                        <?php if (!empty($patient['blood_type'])): ?>
-                            &bull; Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong>
+                    <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
+                        <span><strong><?= h($patient['age']) ?></strong> yrs &bull; <?= h($patient['sex']) ?></span>
+                        <span class="text-muted">&bull;</span>
+                        <span>DOB: <strong class="text-dark"><?= h($pDobFormatted) ?></strong></span>
+                        <span class="text-muted">&bull;</span>
+                        <?php if ($hasBlood): ?>
+                            <span>Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong></span>
+                        <?php else: ?>
+                            <span>Blood: <span class="text-muted">Unknown</span></span>
                         <?php endif; ?>
                         <?php if (!empty($patient['philhealth_no'])): ?>
-                            &bull; PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span>
+                            <span class="text-muted">&bull;</span>
+                            <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
                         <?php endif; ?>
+                    </div>
+                    <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
+                        <i class="bi bi-geo-alt text-muted flex-shrink-0"></i>
+                        <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
                     </div>
                 </div>
             </div>
@@ -215,22 +255,34 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="row g-3 mb-3">
                 <!-- Consulting Provider -->
                 <div class="col-12 col-md-6">
-                    <label for="consulted_by" class="form-label fw-semibold text-secondary small">Consulting Provider <span class="text-danger">*</span></label>
-                    <select name="consulted_by" id="consulted_by" class="form-select bg-light" required>
-                        <option value="" disabled>Select Provider</option>
+                    <label for="consulting_provider" class="form-label fw-semibold text-secondary small">
+                        Consulting Provider <span class="text-danger">*</span>
+                    </label>
+                    <?php 
+                        $currentProvider = $input['consulting_provider'] ?? $consultation['consulting_provider'] ?? $consultation['clinician_name'] ?? '';
+                    ?>
+                    <input type="text" 
+                           name="consulting_provider" 
+                           id="consulting_provider" 
+                           class="form-control bg-light" 
+                           list="providerSuggestions" 
+                           value="<?= h($currentProvider) ?>" 
+                           placeholder="e.g. Juana Dela Cruz, RM or Dr. Juan Dela Cruz, MD" 
+                           required>
+                    <datalist id="providerSuggestions">
+                        <option value="Juana Dela Cruz, RM">
                         <?php foreach ($clinicians as $c): 
                             $cName = $c['first_name'] . ' ' . $c['last_name'];
                             if (!empty($c['job_title'])) {
                                 $cName .= " ({$c['job_title']})";
                             }
-                            $currentConsultedBy = isset($input['consulted_by']) ? (int)$input['consulted_by'] : (int)$consultation['consulted_by'];
-                            $selected = ($c['id'] == $currentConsultedBy) ? 'selected' : '';
                         ?>
-                            <option value="<?= $c['id'] ?>" <?= $selected ?>>
-                                <?= h($cName) ?>
-                            </option>
+                            <option value="<?= h($cName) ?>">
                         <?php endforeach; ?>
-                    </select>
+                    </datalist>
+                    <div class="form-text text-muted" style="font-size: 0.75rem;">
+                        <i class="bi bi-info-circle me-1"></i>Enter the clinician or midwife who conducted the consultation.
+                    </div>
                 </div>
 
                 <!-- Consultation Date & Time -->
@@ -406,7 +458,21 @@ require dirname(__DIR__) . '/layout/header.php';
         </div>
     </div>
 
-    <!-- 5. Bottom Form Actions -->
+    <!-- 5. Audit Attribution & Bottom Form Actions -->
+    <div class="card border rounded-3 bg-light p-3 mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center text-muted small gap-2">
+            <div>
+                <i class="bi bi-person-fill text-secondary me-1"></i>
+                <strong>Originally Recorded By:</strong> <?= h($consultation['creator_name'] ?? 'Staff') ?>
+                <span class="text-secondary">(<?= date('M d, Y h:i A', strtotime($consultation['created_at'])) ?>)</span>
+            </div>
+            <div>
+                <i class="bi bi-pencil-square text-primary me-1"></i>
+                <strong>This Update Will Be Recorded By:</strong> <?= h($_SESSION['user_name'] ?? 'Current User') ?>
+            </div>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-end align-items-center gap-2 mb-5">
         <a href="<?= url('/patients/' . $patient['id'] . '#tab-consultations') ?>" class="btn btn-outline-secondary px-4 py-2">
             Cancel

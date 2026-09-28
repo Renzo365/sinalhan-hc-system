@@ -44,17 +44,17 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
 <form action="<?= url('/users') ?>" method="POST" id="createUserForm">
     <?= csrf_field() ?>
 
-    <!-- Section 1: Account Credentials -->
+    <!-- Section 1: Account Credentials & Privileges -->
     <div class="card card-premium mb-4">
         <div class="card-header bg-white py-3 border-bottom">
             <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Account Credentials
+                <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Credentials & Access Privileges
             </h5>
         </div>
         <div class="card-body p-4">
             <div class="row g-3">
-                <div class="col-12 col-md-6">
-                    <label for="username" class="form-label fw-semibold text-secondary small">Username <span class="text-danger">*</span> <span class="text-muted fw-normal">(Unique account handle)</span></label>
+                <div class="col-12 col-md-4">
+                    <label for="username" class="form-label fw-semibold text-secondary small">Username <span class="text-danger">*</span></label>
                     <input type="text" 
                            name="username" 
                            id="username" 
@@ -65,16 +65,17 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                            autocomplete="username"
                            pattern="^[a-zA-Z0-9_]{3,20}$" 
                            title="Username must be alphanumeric, between 3 to 20 characters.">
+                    <div class="form-text small text-muted">Unique account handle (3-20 chars).</div>
                 </div>
                 
-                <div class="col-12 col-md-6">
-                    <label for="password" class="form-label fw-semibold text-secondary small">Initial Password <span class="text-danger">*</span> <span class="text-muted fw-normal">(Minimum 8 characters)</span></label>
+                <div class="col-12 col-md-4">
+                    <label for="password" class="form-label fw-semibold text-secondary small">Initial Password <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <input type="password" 
                                name="password" 
                                id="password" 
                                class="form-control border-end-0" 
-                               placeholder="Enter initial secure password" 
+                               placeholder="Min 8 characters" 
                                required 
                                autocomplete="new-password"
                                data-lpignore="true"
@@ -82,6 +83,24 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                         <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
                             <i class="bi bi-eye"></i>
                         </button>
+                    </div>
+                    <div class="form-text small text-muted">Minimum 8 characters.</div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <label for="role" class="form-label fw-semibold text-secondary small">Access Privilege <span class="text-danger">*</span></label>
+                    <select name="role" id="role" class="form-select bg-light" required>
+                        <option value="staff" <?= (isset($old['role']) && $old['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
+                        <?php if (is_super_admin()): ?>
+                            <option value="admin" <?= (isset($old['role']) && $old['role'] === 'admin') ? 'selected' : '' ?>>Administrator</option>
+                        <?php endif; ?>
+                    </select>
+                    <div class="form-text small text-muted">
+                        <?php if (is_super_admin()): ?>
+                            Admins have elevated record rights.
+                        <?php else: ?>
+                            Only Super Admin can assign Admin.
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -152,16 +171,16 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
         </div>
     </div>
 
-    <!-- Section 3: Professional & Organizational Details -->
+    <!-- Section 3: Professional Information -->
     <div class="card card-premium mb-4">
         <div class="card-header bg-white py-3 border-bottom">
             <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                <i class="bi bi-briefcase-fill me-2 text-primary"></i>Employment & Assignment Details
+                <i class="bi bi-briefcase-fill me-2 text-primary"></i>Professional Information
             </h5>
         </div>
         <div class="card-body p-4">
             <div class="row g-3">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <label for="job_title" class="form-label fw-semibold text-secondary small">Clinic Job Title</label>
                     <input type="text" 
                            name="job_title" 
@@ -169,49 +188,7 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                            class="form-control" 
                            placeholder="e.g. Midwife, Nurse, BHW, Doctor" 
                            value="<?= h($old['job_title'] ?? '') ?>">
-                </div>
-                
-                <div class="col-12 col-md-4">
-                    <label for="employee_id" class="form-label fw-semibold text-secondary small">Employee ID / PRC License No.</label>
-                    <input type="text" 
-                           name="employee_id" 
-                           id="employee_id" 
-                           class="form-control" 
-                           placeholder="e.g. EMP-2026-004 or PRC-09823" 
-                           value="<?= h($old['employee_id'] ?? '') ?>">
-                </div>
-                
-                <div class="col-12 col-md-4">
-                    <label for="department" class="form-label fw-semibold text-secondary small">Department / Clinic Unit</label>
-                    <select name="department" id="department" class="form-select bg-light">
-                        <option value="">-- Select Clinic Unit --</option>
-                        <option value="General Consultation" <?= (isset($old['department']) && $old['department'] === 'General Consultation') ? 'selected' : '' ?>>General Consultation</option>
-                        <option value="Maternal & Child Health" <?= (isset($old['department']) && $old['department'] === 'Maternal & Child Health') ? 'selected' : '' ?>>Maternal & Child Health</option>
-                        <option value="Vaccination & Immunization" <?= (isset($old['department']) && $old['department'] === 'Vaccination & Immunization') ? 'selected' : '' ?>>Vaccination & Immunization</option>
-                        <option value="Records & Administrative Office" <?= (isset($old['department']) && $old['department'] === 'Records & Administrative Office') ? 'selected' : '' ?>>Records & Administrative Office</option>
-                        <option value="Laboratory & Diagnostics" <?= (isset($old['department']) && $old['department'] === 'Laboratory & Diagnostics') ? 'selected' : '' ?>>Laboratory & Diagnostics</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 4: System Privileges -->
-    <div class="card card-premium mb-4">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                <i class="bi bi-sliders me-2 text-primary"></i>System Privileges
-            </h5>
-        </div>
-        <div class="card-body p-4">
-            <div class="row g-3">
-                <div class="col-12 col-md-6">
-                    <label for="role" class="form-label fw-semibold text-secondary small">Access Privilege <span class="text-danger">*</span></label>
-                    <select name="role" id="role" class="form-select bg-light" required>
-                        <option value="staff" <?= (isset($old['role']) && $old['role'] === 'staff') ? 'selected' : '' ?>>Staff Personnel</option>
-                        <option value="admin" <?= (isset($old['role']) && $old['role'] === 'admin') ? 'selected' : '' ?>>Administrator</option>
-                    </select>
-                    <div class="form-text small text-muted">Administrators have elevated operational and record-management rights.</div>
+                    <div class="form-text small text-muted">Designation or healthcare role within Barangay Sinalhan Health Center.</div>
                 </div>
             </div>
         </div>

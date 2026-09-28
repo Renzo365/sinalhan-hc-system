@@ -89,6 +89,11 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
                                 </span>
                             <?php endif; ?>
+                            <?php if (!empty($patient['family_no'])): ?>
+                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
+                                    <i class="bi bi-house-door-fill me-1"></i>Fam #<?= h($patient['family_no']) ?>
+                                </a>
+                            <?php endif; ?>
                             <?php if ($wellbabyRecord): ?>
                                 <span class="badge bg-success text-white font-monospace fs-7">Registered Infant</span>
                             <?php else: ?>
@@ -98,16 +103,26 @@ require dirname(__DIR__) . '/layout/header.php';
 
                         <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
                             <span><strong><?= h($patient['age'] ?? 'Infant') ?></strong> yrs &bull; <?= h($patient['gender'] ?? $patient['sex'] ?? 'Child') ?></span>
-                            <span>DOB: <strong class="text-dark"><?= !empty($patient['dob']) ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
+                            <span class="text-muted">&bull;</span>
+                            <span>DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
+                            <span class="text-muted">&bull;</span>
                             <?php if (!empty($patient['blood_type']) && strtolower(trim($patient['blood_type'])) !== 'unknown'): ?>
                                 <span>Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong></span>
+                            <?php else: ?>
+                                <span>Blood: <span class="text-muted">Unknown</span></span>
+                            <?php endif; ?>
+                            <?php if (!empty($patient['philhealth_no'])): ?>
+                                <span class="text-muted">&bull;</span>
+                                <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
                             <?php endif; ?>
                             <?php if (!empty($patient['mother_name'])): ?>
+                                <span class="text-muted">&bull;</span>
                                 <span><i class="bi bi-person-heart text-muted me-1"></i>Mother: <?= h($patient['mother_name']) ?></span>
                             <?php endif; ?>
-                            <?php if (!empty($patient['barangay'])): ?>
-                                <span><i class="bi bi-geo-alt text-muted me-1"></i>Brgy. <?= h($patient['barangay']) ?></span>
-                            <?php endif; ?>
+                        </div>
+                        <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
+                            <i class="bi bi-geo-alt text-muted flex-shrink-0"></i>
+                            <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
                         </div>
                     </div>
                 </div>
@@ -395,8 +410,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     data-feeding="<?= h($gl['feeding_method']) ?>"
                                                     data-vita="<?= !empty($gl['vitamin_a_dose']) ? '1' : '0' ?>"
                                                     data-deworm="<?= !empty($gl['deworming_dose']) ? '1' : '0' ?>"
+                                                    data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>"
                                                     data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>"
-                                                    title="Edit Growth Checkup">
+                                                    title="Edit Growth Visit">
                                                     <i class="bi bi-pencil-square fs-6"></i>
                                                 </button>
                                             <?php if ($canDeleteGrowth): ?>
@@ -549,75 +565,100 @@ require dirname(__DIR__) . '/layout/header.php';
 <div class="modal fade" id="editGrowthLogModal" tabindex="-1" aria-labelledby="editGrowthLogModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="editGrowthLogModalLabel">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Growth Monitoring Checkup
+                    <i class="bi bi-pencil-square me-2"></i>Edit Pediatric Anthropometrics & Growth Visit
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editGrowthLogForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
                 <?= csrf_field() ?>
                 <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                <div class="modal-body p-4 bg-white">
+
+                <div class="modal-body p-4 bg-white small">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Date of Visit *</label>
-                            <input type="date" name="log_date" id="editGrowthDate" class="form-control" required>
+                        <!-- Checkup Date -->
+                        <div class="col-12 col-sm-6">
+                            <label for="editGrowthDate" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
+                            <input type="date" name="log_date" id="editGrowthDate" class="form-control bg-white" required>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Age in Months *</label>
-                            <input type="number" step="0.1" name="age_months" id="editGrowthAge" class="form-control" required>
+
+                        <!-- Age in Months -->
+                        <div class="col-12 col-sm-6">
+                            <label for="editGrowthAge" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
+                            <input type="number" step="0.1" name="age_months" id="editGrowthAge" class="form-control font-monospace" placeholder="e.g. 1.5" required>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Weight (kg) *</label>
-                            <input type="number" step="0.01" name="weight_kg" id="editGrowthWeight" class="form-control" required>
+
+                        <!-- Weight (kg) -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="editGrowthWeight" class="form-label fw-semibold text-secondary">Weight (kg) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="weight_kg" id="editGrowthWeight" class="form-control" placeholder="e.g. 4.5" required>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Length / Height (cm) *</label>
-                            <input type="number" step="0.1" name="height_cm" id="editGrowthHeight" class="form-control" required>
+
+                        <!-- Height / Length (cm) -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="editGrowthHeight" class="form-label fw-semibold text-secondary">Height / Length (cm) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.1" name="height_cm" id="editGrowthHeight" class="form-control" placeholder="e.g. 54.0" required>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Head Circ. (cm)</label>
-                            <input type="number" step="0.1" name="head_circumference_cm" id="editGrowthHead" class="form-control">
+
+                        <!-- Head Circumference (cm) -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="editGrowthHead" class="form-label fw-semibold text-secondary">Head Circumference (cm)</label>
+                            <input type="number" step="0.1" name="head_circumference_cm" id="editGrowthHead" class="form-control" placeholder="e.g. 37.5">
                         </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label fw-semibold text-secondary">Chest Circ. (cm)</label>
-                            <input type="number" step="0.1" name="chest_circumference_cm" id="editGrowthChest" class="form-control">
+
+                        <!-- Chest Circumference (cm) -->
+                        <div class="col-12 col-sm-6 col-md-3">
+                            <label for="editGrowthChest" class="form-label fw-semibold text-secondary">Chest Circumference (cm)</label>
+                            <input type="number" step="0.1" name="chest_circumference_cm" id="editGrowthChest" class="form-control" placeholder="e.g. 37.0">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Temperature (°C)</label>
-                            <input type="number" step="0.1" name="temperature" id="editGrowthTemp" class="form-control">
+
+                        <!-- Body Temp -->
+                        <div class="col-12 col-sm-6">
+                            <label for="editGrowthTemp" class="form-label fw-semibold text-secondary">Body Temperature (°C)</label>
+                            <input type="number" step="0.1" name="temperature" id="editGrowthTemp" class="form-control" placeholder="36.5">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Feeding Method</label>
+
+                        <!-- Feeding Practice -->
+                        <div class="col-12 col-sm-6">
+                            <label for="editGrowthFeeding" class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
                             <select name="feeding_method" id="editGrowthFeeding" class="form-select">
                                 <option value="LAM / Exclusive Breastfeeding">LAM / Exclusive Breastfeeding</option>
                                 <option value="Bottle Feed">Bottle Feeding (Formula)</option>
                                 <option value="Mixed">Mixed Feeding</option>
                             </select>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold text-secondary d-block">Supplements Given</label>
-                            <div class="d-flex gap-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="vitamin_a_dose" value="1" id="edit_vit_a_check">
-                                    <label class="form-check-label text-dark fw-semibold" for="edit_vit_a_check">Vitamin A Capsule</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="deworming_dose" value="1" id="edit_deworming_check">
-                                    <label class="form-check-label text-dark fw-semibold" for="edit_deworming_check">Deworming Tablet</label>
-                                </div>
+
+                        <hr class="my-2 text-muted opacity-25">
+
+                        <!-- Vaccines Administered Today -->
+                        <div class="col-12 col-sm-6">
+                            <label for="editGrowthVaccines" class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
+                            <input type="text" name="vaccines_administered" id="editGrowthVaccines" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization Schedule above">
+                        </div>
+
+                        <!-- Supplementation Toggles -->
+                        <div class="col-12 col-sm-6 d-flex align-items-center gap-4 mt-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="vitamin_a_dose" value="1" id="edit_vit_a_check">
+                                <label class="form-check-label text-dark fw-semibold" for="edit_vit_a_check">Vitamin A Capsule Given</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="deworming_dose" value="1" id="edit_deworming_check">
+                                <label class="form-check-label text-dark fw-semibold" for="edit_deworming_check">Deworming Tablet Given</label>
                             </div>
                         </div>
+
+                        <!-- TCB / Developmental Notes -->
                         <div class="col-12">
-                            <label class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
-                            <textarea name="tcb_notes" id="editGrowthTcb" rows="2" class="form-control"></textarea>
+                            <label for="editGrowthTcb" class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
+                            <textarea name="tcb_notes" id="editGrowthTcb" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months..."></textarea>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
+                    <button type="submit" class="btn btn-success text-white px-4 fw-semibold">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -779,6 +820,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.getElementById('edit_vit_a_check').checked = (this.getAttribute('data-vita') === '1');
             document.getElementById('edit_deworming_check').checked = (this.getAttribute('data-deworm') === '1');
+            document.getElementById('editGrowthVaccines').value = this.getAttribute('data-vaccines') || '';
             document.getElementById('editGrowthTcb').value = this.getAttribute('data-tcb') || '';
 
             if (editGrowthLogModal) {

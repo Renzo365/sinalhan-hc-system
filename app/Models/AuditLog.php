@@ -83,13 +83,8 @@ class AuditLog extends Model {
         }
 
         if (!empty($filters['role'])) {
-            if ($filters['role'] === 'super_admin' || $filters['role'] === 'main_admin') {
-                $sql .= " AND (u.role = 'super_admin' OR (u.role = 'admin' AND u.id = 1))";
-            } elseif ($filters['role'] === 'admin' || $filters['role'] === 'co_admin') {
-                $sql .= " AND (u.role = 'admin' AND u.id != 1)";
-            } elseif ($filters['role'] === 'staff') {
-                $sql .= " AND u.role = 'staff'";
-            }
+            $sql .= " AND u.role = :role";
+            $params['role'] = $filters['role'];
         }
 
         if (!empty($filters['action'])) {

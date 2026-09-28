@@ -52,12 +52,12 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
     
     <div class="col-12 col-sm-6 col-md-3">
         <div class="card card-premium bg-white p-3 h-100">
-            <div class="text-muted small fw-semibold">Current Status</div>
+            <div class="text-muted small fw-semibold">Account Status</div>
             <div class="mt-1">
-                <?php if ($user['status'] === 'active'): ?>
-                    <span class="badge bg-success-bg text-success border border-success-subtle px-3 py-1.5"><i class="bi bi-check-circle-fill me-1"></i> Active</span>
+                <?php if (!empty($user['deleted_at'])): ?>
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1.5"><i class="bi bi-archive-fill me-1"></i> Archived</span>
                 <?php else: ?>
-                    <span class="badge bg-secondary text-white px-3 py-1.5"><i class="bi bi-pause-circle-fill me-1"></i> Inactive</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5"><i class="bi bi-check-circle-fill me-1"></i> Active</span>
                 <?php endif; ?>
             </div>
         </div>
@@ -101,16 +101,25 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                     <label for="role" class="form-label fw-semibold text-secondary small">Access Privilege <span class="text-danger">*</span></label>
                     <?php 
                     $currentRole = $old['role'] ?? $user['role'];
-                    $canChangeRole = is_admin() && ($user['id'] != $_SESSION['user_id']);
+                    $canChangeRole = is_super_admin() && ($user['id'] != $_SESSION['user_id']) && ($user['role'] !== 'super_admin');
                     if (!$canChangeRole): 
                     ?>
                         <select id="role" class="form-select bg-light text-muted" disabled>
+                            <?php if ($currentRole === 'super_admin'): ?>
+                                <option value="super_admin" selected>Super Admin</option>
+                            <?php endif; ?>
                             <option value="staff" <?= $currentRole === 'staff' ? 'selected' : '' ?>>Staff Personnel</option>
                             <option value="admin" <?= $currentRole === 'admin' ? 'selected' : '' ?>>Administrator</option>
                         </select>
                         <input type="hidden" name="role" value="<?= h($currentRole) ?>">
                         <div class="form-text small text-muted">
-                            <?= ($user['id'] == $_SESSION['user_id']) ? 'You cannot modify your own assigned role.' : 'You do not have permission to change user roles.' ?>
+                            <?php if ($user['id'] == $_SESSION['user_id']): ?>
+                                You cannot modify your own assigned role.
+                            <?php elseif ($user['role'] === 'super_admin'): ?>
+                                The Super Admin role cannot be changed.
+                            <?php else: ?>
+                                Only the Super Admin can change user roles.
+                            <?php endif; ?>
                         </div>
                     <?php else: ?>
                         <select name="role" id="role" class="form-select bg-light" required>
@@ -160,36 +169,19 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
         </div>
     </div>
 
-    <!-- Section 3: Professional & Employment Details -->
+    <!-- Section 3: Professional Information -->
     <div class="card card-premium mb-4">
         <div class="card-header bg-white py-3 border-bottom">
             <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                <i class="bi bi-briefcase-fill me-2 text-primary"></i>Employment & Assignment Details
+                <i class="bi bi-briefcase-fill me-2 text-primary"></i>Professional Information
             </h5>
         </div>
         <div class="card-body p-4">
             <div class="row g-3">
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
                     <label for="job_title" class="form-label fw-semibold text-secondary small">Clinic Job Title</label>
                     <input type="text" name="job_title" id="job_title" class="form-control" value="<?= h($old['job_title'] ?? $user['job_title'] ?? '') ?>" placeholder="e.g. Nurse, BHW, Midwife">
-                </div>
-                
-                <div class="col-12 col-md-4">
-                    <label for="employee_id" class="form-label fw-semibold text-secondary small">Employee ID / PRC License No.</label>
-                    <input type="text" name="employee_id" id="employee_id" class="form-control" value="<?= h($old['employee_id'] ?? $user['employee_id'] ?? '') ?>" placeholder="e.g. EMP-2026-004 or PRC-09823">
-                </div>
-                
-                <div class="col-12 col-md-4">
-                    <label for="department" class="form-label fw-semibold text-secondary small">Department / Clinic Unit</label>
-                    <?php $currentDept = $old['department'] ?? $user['department'] ?? ''; ?>
-                    <select name="department" id="department" class="form-select bg-light">
-                        <option value="">-- Select Clinic Unit --</option>
-                        <option value="General Consultation" <?= $currentDept === 'General Consultation' ? 'selected' : '' ?>>General Consultation</option>
-                        <option value="Maternal & Child Health" <?= $currentDept === 'Maternal & Child Health' ? 'selected' : '' ?>>Maternal & Child Health</option>
-                        <option value="Vaccination & Immunization" <?= $currentDept === 'Vaccination & Immunization' ? 'selected' : '' ?>>Vaccination & Immunization</option>
-                        <option value="Records & Administrative Office" <?= $currentDept === 'Records & Administrative Office' ? 'selected' : '' ?>>Records & Administrative Office</option>
-                        <option value="Laboratory & Diagnostics" <?= $currentDept === 'Laboratory & Diagnostics' ? 'selected' : '' ?>>Laboratory & Diagnostics</option>
-                    </select>
+                    <div class="form-text small text-muted">Designation or healthcare role within Barangay Sinalhan Health Center.</div>
                 </div>
             </div>
         </div>

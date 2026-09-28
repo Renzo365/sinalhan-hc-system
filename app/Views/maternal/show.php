@@ -90,6 +90,11 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
                                 </span>
                             <?php endif; ?>
+                            <?php if (!empty($patient['family_no'])): ?>
+                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
+                                    <i class="bi bi-house-door-fill me-1"></i>Fam #<?= h($patient['family_no']) ?>
+                                </a>
+                            <?php endif; ?>
                             <?php if ($activePrenatal): ?>
                                 <span class="badge bg-pink text-white font-monospace fs-7">Active Pregnancy</span>
                             <?php endif; ?>
@@ -97,16 +102,26 @@ require dirname(__DIR__) . '/layout/header.php';
 
                         <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
                             <span><strong><?= h($patient['age'] ?? 'Adult') ?></strong> yrs &bull; <?= h($patient['sex'] ?? 'Female') ?></span>
-                            <span>DOB: <strong class="text-dark"><?= !empty($patient['dob']) ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
+                            <span class="text-muted">&bull;</span>
+                            <span>DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
+                            <span class="text-muted">&bull;</span>
                             <?php if (!empty($patient['blood_type']) && strtolower(trim($patient['blood_type'])) !== 'unknown'): ?>
                                 <span>Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong></span>
+                            <?php else: ?>
+                                <span>Blood: <span class="text-muted">Unknown</span></span>
+                            <?php endif; ?>
+                            <?php if (!empty($patient['philhealth_no'])): ?>
+                                <span class="text-muted">&bull;</span>
+                                <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
                             <?php endif; ?>
                             <?php if (!empty($patient['contact_no'])): ?>
+                                <span class="text-muted">&bull;</span>
                                 <span><i class="bi bi-telephone text-muted me-1"></i><?= h($patient['contact_no']) ?></span>
                             <?php endif; ?>
-                            <?php if (!empty($patient['barangay'])): ?>
-                                <span><i class="bi bi-geo-alt text-muted me-1"></i>Brgy. <?= h($patient['barangay']) ?></span>
-                            <?php endif; ?>
+                        </div>
+                        <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
+                            <i class="bi bi-geo-alt text-muted flex-shrink-0"></i>
+                            <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
                         </div>
                     </div>
                 </div>

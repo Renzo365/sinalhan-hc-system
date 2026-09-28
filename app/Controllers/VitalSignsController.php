@@ -150,8 +150,9 @@ class VitalSignsController extends Controller {
 
         $patientId = (int)$vital['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        if (!is_admin() && $currentUserId !== (int)$vital['recorded_by']) {
-            $_SESSION['error_message'] = 'Unauthorized: you may only update vital signs you recorded.';
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update vital signs records.';
             $this->redirect("/patients/{$patientId}#tab-vitals");
             return;
         }

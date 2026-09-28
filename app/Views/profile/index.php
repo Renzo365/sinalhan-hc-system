@@ -61,41 +61,23 @@ if ($user['role'] === 'super_admin') {
                 <!-- Read-only Details List -->
                 <div class="text-start small">
                     <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="bi bi-hash me-2 text-primary"></i>Account ID</span>
+                        <span class="fw-bold font-monospace text-dark">#<?= h($user['id']) ?></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between py-2 border-bottom">
                         <span class="text-muted"><i class="bi bi-person-badge me-2 text-primary"></i>Username</span>
                         <span class="fw-semibold text-dark"><?= h($user['username']) ?></span>
                     </div>
 
                     <div class="d-flex justify-content-between py-2 border-bottom">
-                        <span class="text-muted"><i class="bi bi-card-heading me-2 text-primary"></i>Employee ID</span>
-                        <span class="fw-semibold text-dark"><?= !empty($user['employee_id']) ? h($user['employee_id']) : '<span class="text-muted fst-italic">Not Assigned</span>' ?></span>
-                    </div>
-
-                    <div class="d-flex justify-content-between py-2 border-bottom">
-                        <span class="text-muted"><i class="bi bi-building me-2 text-primary"></i>Department</span>
-                        <span class="fw-semibold text-dark"><?= !empty($user['department']) ? h($user['department']) : 'Health Center Staff' ?></span>
-                    </div>
-
-                    <div class="d-flex justify-content-between py-2 border-bottom">
                         <span class="text-muted"><i class="bi bi-briefcase me-2 text-primary"></i>Job Title</span>
-                        <span class="fw-semibold text-dark"><?= !empty($user['job_title']) ? h($user['job_title']) : 'Health Worker' ?></span>
-                    </div>
-
-                    <div class="d-flex justify-content-between py-2 border-bottom">
-                        <span class="text-muted"><i class="bi bi-shield-check me-2 text-primary"></i>Status</span>
-                        <?php if ($user['status'] === 'active'): ?>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                <i class="bi bi-check-circle-fill me-1"></i>Active
-                            </span>
-                        <?php else: ?>
-                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
-                                <i class="bi bi-x-circle-fill me-1"></i>Inactive
-                            </span>
-                        <?php endif; ?>
+                        <span class="fw-semibold text-dark"><?= !empty($user['job_title']) ? h($user['job_title']) : '<span class="text-muted fst-italic">Staff Member</span>' ?></span>
                     </div>
 
                     <div class="d-flex justify-content-between py-2 border-bottom">
                         <span class="text-muted"><i class="bi bi-calendar3 me-2 text-primary"></i>Member Since</span>
-                        <span class="fw-semibold text-dark"><?= date('M d, Y', strtotime($user['created_at'])) ?></span>
+                        <span class="fw-semibold text-dark"><?= date('M d, Y h:i A', strtotime($user['created_at'])) ?></span>
                     </div>
 
                     <div class="d-flex justify-content-between py-2">
@@ -109,7 +91,7 @@ if ($user['role'] === 'super_admin') {
                     <div class="d-flex">
                         <i class="bi bi-info-circle text-primary fs-5 me-2 flex-shrink-0"></i>
                         <div>
-                            <strong>Administrative Access:</strong> System role, username, department, and employee ID are managed directly by administrative personnel.
+                            <strong>Administrative Access:</strong> System role, username, and job title are managed directly by administrative personnel.
                         </div>
                     </div>
                 </div>

@@ -931,3 +931,165 @@ a:hover {
   box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.14), 0 6px 12px -4px rgba(0, 0, 0, 0.08) !important;
   border-radius: 14px !important;
 }
+
+/* ==========================================================================
+   PROFESSIONAL HEALTHCARE PRINT STYLESHEET (@media print)
+   ========================================================================== */
+@media print {
+  @page {
+    size: auto;
+    margin: 12mm 15mm;
+  }
+
+  /* Reset base styling */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide navigation, sidebar, topbar, scroll buttons, and interactive actions */
+  .app-sidebar,
+  .app-topbar,
+  .sidebar,
+  .topbar,
+  .breadcrumb,
+  .btn,
+  .no-print,
+  .workstation-tab-scroll-btn,
+  .nav-tabs,
+  .workstation-tabs-wrapper,
+  .dataTables_filter,
+  .dataTables_length,
+  .dataTables_info,
+  .dataTables_paginate,
+  .pagination,
+  footer,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  /* Flatten layout structure for full-width paper output */
+  .app-wrapper,
+  .app-main,
+  .app-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Printable Cards & Panels */
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    margin-bottom: 12pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .card-header {
+    background-color: #f3f4f6 !important;
+    border-bottom: 1px solid #d1d5db !important;
+    color: #111827 !important;
+    font-weight: 700 !important;
+    padding: 6pt 10pt !important;
+  }
+
+  .card-body {
+    padding: 8pt 10pt !important;
+  }
+
+  /* Badges in print */
+  .badge {
+    border: 1px solid #9ca3af !important;
+    color: #111827 !important;
+    background: #f9fafb !important;
+    font-size: 8pt !important;
+    padding: 2pt 4pt !important;
+  }
+
+  /* Tables in print */
+  .table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .table th,
+  .table td {
+    padding: 4pt 6pt !important;
+    border: 1px solid #e5e7eb !important;
+    font-size: 9.5pt !important;
+  }
+
+  .table-light,
+  thead.table-light th {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+    font-weight: 600 !important;
+  }
+
+  /* Links */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* Support Printing Active Modal (e.g., SOAP Consultation Note) */
+  body.modal-open .app-wrapper {
+    display: none !important;
+  }
+
+  body.modal-open .modal {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  body.modal-open .modal-dialog {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  body.modal-open .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  body.modal-open .modal-header {
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+    border-bottom: 2px solid #0D7377 !important;
+    padding: 8pt 12pt !important;
+  }
+
+  body.modal-open .modal-header .modal-title {
+    color: #0D7377 !important;
+    font-size: 14pt !important;
+    font-weight: bold !important;
+  }
+
+  body.modal-open .modal-header .btn-close,
+  body.modal-open .modal-footer {
+    display: none !important;
+  }
+
+  body.modal-open .modal-body {
+    padding: 10pt 0 !important;
+  }
+}

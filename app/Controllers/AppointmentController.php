@@ -156,7 +156,7 @@ class AppointmentController extends Controller {
             AuditLog::log('APPOINTMENT_CREATED', 'Appointments', "Scheduled [{$programType}] appointment for patient: " . $patient['first_name'] . ' ' . $patient['last_name'] . " on " . date('M d, Y', strtotime($data['appointment_date'])) . " at " . date('h:i A', strtotime($data['appointment_time'])));
             
             $_SESSION['success_message'] = 'Appointment scheduled successfully!';
-            $this->redirect("/patients/{$patientId}#appointments-tab");
+            $this->redirect("/patients/{$patientId}#tab-appointments");
         } else {
             $_SESSION['form_errors'] = ['Database transaction failed. Please try again.'];
             $_SESSION['form_input'] = $_POST;
@@ -256,7 +256,7 @@ class AppointmentController extends Controller {
             AuditLog::log('APPOINTMENT_UPDATED', 'Appointments', "Updated [{$programType}] appointment ID: {$id} for patient ID: " . $appointment['patient_id'] . " to " . date('M d, Y', strtotime($data['appointment_date'])) . " (" . $data['status'] . ")");
             
             $_SESSION['success_message'] = 'Appointment details updated successfully!';
-            $this->redirect("/patients/{$appointment['patient_id']}#appointments-tab");
+            $this->redirect("/patients/{$appointment['patient_id']}#tab-appointments");
         } else {
             $_SESSION['form_errors'] = ['Database transaction failed. Please try again.'];
             $this->redirect("/appointments/{$id}/edit");
@@ -296,6 +296,18 @@ class AppointmentController extends Controller {
             return;
         }
 
+        // State transition guards: Completed and Missed appointments cannot be cancelled or rescheduled
+        if (in_array($appointment['status'], ['Completed', 'Missed'], true) && in_array($status, ['Cancelled', 'Scheduled'], true)) {
+            $msg = "An appointment already marked as '{$appointment['status']}' cannot be changed to '{$status}'.";
+            if ($this->isAjax()) {
+                $this->json(['error' => $msg], 422);
+            } else {
+                $_SESSION['error_message'] = $msg;
+                $this->redirect("/patients/{$appointment['patient_id']}#tab-appointments");
+            }
+            return;
+        }
+
         $userId = $_SESSION['user_id'];
 
         if ($this->appointmentModel->updateStatus($id, $status, $userId)) {
@@ -308,7 +320,7 @@ class AppointmentController extends Controller {
                 // Redirect back to profile page tab if possible, otherwise to lists
                 $referrer = $_SERVER['HTTP_REFERER'] ?? '';
                 if (strpos($referrer, 'patients') !== false) {
-                    $this->redirect("/patients/{$appointment['patient_id']}#appointments-tab");
+                    $this->redirect("/patients/{$appointment['patient_id']}#tab-appointments");
                 } else {
                     $this->redirect("/appointments");
                 }

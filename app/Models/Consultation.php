@@ -15,7 +15,7 @@ class Consultation extends Model {
      */
     public function findByPatientId($patientId) {
         $sql = "SELECT c.*, 
-                       CONCAT(u.first_name, ' ', u.last_name) AS clinician_name
+                       COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name
                 FROM consultations c
                 LEFT JOIN users u ON c.consulted_by = u.id
                 WHERE c.patient_id = :patient_id AND c.deleted_at IS NULL
@@ -27,19 +27,25 @@ class Consultation extends Model {
     }
 
     /**
-     * Fetch a single consultation record by ID, joining details for patients, clinicians, and vitals.
+     * Fetch a single consultation record by ID, joining details for patients, clinicians, creators, and vitals.
      * 
      * @param int $id
      * @return array|false Consultation details, or false if not found
      */
     public function findById($id) {
         $sql = "SELECT c.*, 
-                       CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                       COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name,
+                       CONCAT(creator.first_name, ' ', creator.last_name) AS creator_name,
+                       creator.role AS creator_role,
+                       creator.job_title AS creator_job_title,
                        CONCAT(updater.first_name, ' ', updater.last_name) AS updater_name,
+                       updater.role AS updater_role,
+                       updater.job_title AS updater_job_title,
                        p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last, p.dob AS pat_dob, p.sex AS pat_sex,
                        vs.bp_systolic, vs.bp_diastolic, vs.heart_rate, vs.respiratory_rate, vs.temperature, vs.weight, vs.height, vs.bmi, vs.oxygen_saturation, vs.waist_circumference, vs.notes AS vital_notes, vs.recorded_at AS vital_recorded_at
                 FROM consultations c
                 LEFT JOIN users u ON c.consulted_by = u.id
+                LEFT JOIN users creator ON c.created_by = creator.id
                 LEFT JOIN users updater ON c.updated_by = updater.id
                 LEFT JOIN patients p ON c.patient_id = p.id
                 LEFT JOIN vital_signs vs ON c.vital_signs_id = vs.id
@@ -65,11 +71,11 @@ class Consultation extends Model {
 
         $sql = "INSERT INTO consultations (
                     patient_id, vital_signs_id, subjective, objective, 
-                    assessment, plan, status, consulted_by, 
+                    assessment, plan, status, consulting_provider, consulted_by, 
                     consulted_at, created_by
                 ) VALUES (
                     :patient_id, :vital_signs_id, :subjective, :objective, 
-                    :assessment, :plan, :status, :consulted_by, 
+                    :assessment, :plan, :status, :consulting_provider, :consulted_by, 
                     :consulted_at, :created_by
                 )";
         
@@ -86,7 +92,8 @@ class Consultation extends Model {
             'assessment' => trim($data['assessment']),
             'plan' => trim($data['plan']),
             'status' => $status,
-            'consulted_by' => $data['consulted_by'],
+            'consulting_provider' => !empty($data['consulting_provider']) ? trim($data['consulting_provider']) : null,
+            'consulted_by' => !empty($data['consulted_by']) ? (int)$data['consulted_by'] : null,
             'consulted_at' => $consultedAt,
             'created_by' => $data['created_by']
         ]);
@@ -119,6 +126,7 @@ class Consultation extends Model {
                     assessment = :assessment,
                     plan = :plan,
                     status = :status,
+                    consulting_provider = :consulting_provider,
                     consulted_by = :consulted_by,
                     consulted_at = :consulted_at,
                     updated_by = :updated_by,
@@ -137,7 +145,8 @@ class Consultation extends Model {
             'assessment' => trim($data['assessment']),
             'plan' => trim($data['plan']),
             'status' => $status,
-            'consulted_by' => (int)$data['consulted_by'],
+            'consulting_provider' => !empty($data['consulting_provider']) ? trim($data['consulting_provider']) : null,
+            'consulted_by' => !empty($data['consulted_by']) ? (int)$data['consulted_by'] : null,
             'consulted_at' => $consultedAt,
             'updated_by' => (int)$data['updated_by']
         ]);
@@ -230,7 +239,7 @@ class Consultation extends Model {
      */
     public function allArchived($filters = []) {
         $sql = "SELECT c.*, p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last,
-                       CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                       COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name,
                        CONCAT(archiver.first_name, ' ', archiver.last_name) AS archiver_name
                 FROM consultations c
                 JOIN patients p ON c.patient_id = p.id
@@ -265,7 +274,7 @@ class Consultation extends Model {
      */
     public function findWithArchivedById($id) {
         $sql = "SELECT c.*, 
-                       CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                       COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name,
                        p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last
                 FROM consultations c
                 LEFT JOIN users u ON c.consulted_by = u.id

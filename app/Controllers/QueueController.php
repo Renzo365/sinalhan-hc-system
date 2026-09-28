@@ -89,9 +89,11 @@ class QueueController extends Controller {
             
             $_SESSION['success_message'] = "Patient successfully enqueued! Queue No: {$queueNoStr}";
             
-            // Redirect back to patient profile if enqueued from profile, otherwise back to queue board
+            // Redirect back to designated URL or patient profile if enqueued from profile, otherwise back to queue board
             $referrer = $_SERVER['HTTP_REFERER'] ?? '';
-            if (strpos($referrer, 'patients') !== false) {
+            if (!empty($_POST['redirect_to'])) {
+                $this->redirect($_POST['redirect_to']);
+            } elseif (strpos($referrer, 'patients') !== false) {
                 $this->redirect("/patients/{$patientId}#tab-appointments");
             } else {
                 $this->redirect('/queue');

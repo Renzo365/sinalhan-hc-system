@@ -651,8 +651,9 @@ class WellbabyController extends Controller {
         $wellbaby = $this->wbModel->findById($log['wellbaby_id']);
         $patientId = $wellbaby ? (int)$wellbaby['patient_id'] : (int)($_POST['patient_id'] ?? 0);
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        if (!is_admin() && $currentUserId !== (int)$log['recorded_by']) {
-            $_SESSION['error_message'] = 'Unauthorized: you may only update growth records you recorded.';
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update growth visit records.';
             $this->redirect($patientId ? "/well-baby/{$patientId}" : '/patients');
             return;
         }
@@ -720,6 +721,13 @@ class WellbabyController extends Controller {
         }
 
 
+
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update immunization records.';
+            $this->redirect('/patients');
+            return;
+        }
 
         $imm = $this->immModel->findById($id);
         if (!$imm) {

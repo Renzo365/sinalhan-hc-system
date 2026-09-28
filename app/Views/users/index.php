@@ -23,7 +23,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <label for="search" class="form-label text-secondary small fw-semibold">Search Directory</label>
                 <div class="input-group">
                     <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" id="search" class="form-control border-start-0 bg-light" placeholder="Search by username, name, email, employee ID, or department..." value="<?= h($filters['search']) ?>">
+                    <input type="text" name="search" id="search" class="form-control border-start-0 bg-light" placeholder="Search by username, name, email, or job title..." value="<?= h($filters['search']) ?>">
                 </div>
             </div>
             
@@ -59,7 +59,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <th class="text-start ps-4">Username</th>
                         <th class="text-start">Full Name</th>
                         <th>Role</th>
-                        <th>Job Title & Unit</th>
+                        <th>Job Title</th>
                         <th>Last Login</th>
                         <th class="pe-4 text-end">Actions</th>
                     </tr>
@@ -106,9 +106,6 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <td class="text-start ps-4 fw-bold font-monospace text-dark"><?= h($u['username']) ?></td>
                                 <td class="text-start">
                                     <span class="fw-bold text-dark"><?= h($u['last_name']) ?>, <?= h($u['first_name']) ?></span>
-                                    <?php if (!empty($u['employee_id'])): ?>
-                                        <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-size: 0.68rem;"><?= h($u['employee_id']) ?></span>
-                                    <?php endif; ?>
                                     <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['email'] ?: '-') ?></div>
                                     <?php if ($isLocked): ?>
                                         <div class="mt-1">
@@ -120,10 +117,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </td>
                                 <td><span class="badge <?= $roleBadge ?>"><?= $roleDisplay ?></span></td>
                                 <td>
-                                    <div class="fw-medium"><?= h($u['job_title'] ?: '-') ?></div>
-                                    <?php if (!empty($u['department'])): ?>
-                                        <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['department']) ?></div>
-                                    <?php endif; ?>
+                                    <span class="fw-medium text-dark"><?= h($u['job_title'] ?: 'Staff Member') ?></span>
                                 </td>
                                  <td data-order="<?= $u['last_login_at'] ? h($u['last_login_at']) : '1970-01-01 00:00:00' ?>">
                                      <?= $u['last_login_at'] ? date('Y-m-d h:i A', strtotime($u['last_login_at'])) : '<span class="text-muted small">Never</span>' ?>
@@ -131,9 +125,35 @@ require dirname(__DIR__) . '/layout/header.php';
                                  <td class="pe-4 text-end">
                                      <div class="d-inline-flex gap-2 align-items-center">
                                          <?php if (!$canManage): ?>
-                                             <!-- Protected Account Badge -->
-                                             <span class="badge bg-light text-secondary border py-2 px-2.5" title="This account is system-protected.">
-                                                 <i class="bi bi-lock-fill text-muted me-1"></i> Protected
+                                             <!-- Disabled Action Buttons with Tooltip for Protected Accounts -->
+                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="You do not have permission to edit this protected account.">
+                                                 <button type="button" 
+                                                         class="btn btn-sm btn-light border text-muted opacity-50 d-inline-flex align-items-center justify-content-center" 
+                                                         style="min-width: 34px; min-height: 34px; padding: 0.25rem; pointer-events: none;" 
+                                                         tabindex="-1"
+                                                         disabled>
+                                                     <i class="bi bi-pencil-square fs-6"></i>
+                                                 </button>
+                                             </span>
+
+                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="You do not have permission to reset this protected account's password.">
+                                                 <button type="button" 
+                                                         class="btn btn-sm btn-light border text-muted opacity-50 d-inline-flex align-items-center justify-content-center" 
+                                                         style="min-width: 34px; min-height: 34px; padding: 0.25rem; pointer-events: none;" 
+                                                         tabindex="-1"
+                                                         disabled>
+                                                     <i class="bi bi-key-fill fs-6"></i>
+                                                 </button>
+                                             </span>
+
+                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="You do not have permission to archive this protected account.">
+                                                 <button type="button" 
+                                                         class="btn btn-sm btn-light border text-muted opacity-50 d-inline-flex align-items-center justify-content-center" 
+                                                         style="min-width: 34px; min-height: 34px; padding: 0.25rem; pointer-events: none;" 
+                                                         tabindex="-1"
+                                                         disabled>
+                                                     <i class="bi bi-archive-fill fs-6"></i>
+                                                 </button>
                                              </span>
                                          <?php else: ?>
                                              <!-- Clear Lockout Button -->
@@ -261,8 +281,17 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    function initTooltips() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            if (!bootstrap.Tooltip.getInstance(tooltipTriggerEl)) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            }
+        });
+    }
+
     <?php if (!empty($users)): ?>
-        $('#usersTable').DataTable({
+        const usersTable = $('#usersTable').DataTable({
             "paging": true,
             "lengthChange": true,
             "searching": true,
@@ -281,7 +310,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+
+        usersTable.on('draw', function() {
+            initTooltips();
+        });
     <?php endif; ?>
+
+    initTooltips();
 
     // Handle Reset Password Modal data population
     const resetModal = document.getElementById('resetPasswordModal');

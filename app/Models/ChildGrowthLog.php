@@ -144,6 +144,7 @@ class ChildGrowthLog extends Model {
                     chest_circumference_cm = :chest_circumference_cm,
                     temperature = :temperature,
                     feeding_method = :feeding_method,
+                    vaccines_administered = :vaccines_administered,
                     vitamin_a_dose = :vitamin_a_dose,
                     deworming_dose = :deworming_dose,
                     tcb_notes = :tcb_notes
@@ -160,6 +161,7 @@ class ChildGrowthLog extends Model {
             'chest_circumference_cm' => !empty($data['chest_circumference_cm']) ? (float)$data['chest_circumference_cm'] : null,
             'temperature' => !empty($data['temperature']) ? (float)$data['temperature'] : null,
             'feeding_method' => $this->normalizeFeedingMethod($data['feeding_method'] ?? ''),
+            'vaccines_administered' => !empty($data['vaccines_administered']) ? trim($data['vaccines_administered']) : null,
             'vitamin_a_dose' => !empty($data['vitamin_a_dose']) ? 1 : 0,
             'deworming_dose' => !empty($data['deworming_dose']) ? 1 : 0,
             'tcb_notes' => !empty($data['tcb_notes']) ? trim($data['tcb_notes']) : null

@@ -191,19 +191,13 @@ class PatientController extends Controller {
             ? $this->patientModel->familyMembers($patient['family_no'], $id) 
             : [];
 
-        // Get Active Maternal Prenatal Episode, Visits & Past Obstetric History (if female)
+        // Get Active Maternal Prenatal Episode (if female)
         $activePrenatal = false;
-        $prenatalVisits = [];
-        $pastDeliveries = [];
         $allPrenatalEpisodes = [];
 
         if (strtolower($patient['sex']) === 'female') {
             $prenatalModel = new \App\Models\PrenatalRecord();
             $activePrenatal = $prenatalModel->findActiveByPatientId($id);
-            if ($activePrenatal) {
-                $prenatalVisits = (new \App\Models\PrenatalVisit())->findByPrenatalId($activePrenatal['id']);
-            }
-            $pastDeliveries = (new \App\Models\PastObstetricHistory())->findByPatientId($id);
             $allPrenatalEpisodes = $prenatalModel->findAllByPatientId($id);
         }
 
@@ -214,14 +208,9 @@ class PatientController extends Controller {
             $growthLogs = (new \App\Models\ChildGrowthLog())->findByWellbabyId($wellbabyRecord['id']);
         }
 
-        // Get Immunization records & map for this patient
+        // Get Immunization records for this patient
         $immModel = new \App\Models\Immunization();
         $patientImmunizations = $immModel->findByPatientId($id);
-        $vaccineMap = $immModel->getVaccineMap($id);
-
-        // Fetch potential registered mothers for linking
-        $potentialMothers = $this->patientModel->findPotentialMothers(100);
-
 
         // Fetch PhilHealth PCB Obligated Services & Service Encounter Logs (Page 3)
         $pcbModel = new \App\Models\PcbLedger();
@@ -240,14 +229,10 @@ class PatientController extends Controller {
             'cdsAlerts' => $cdsAlerts,
             'familyMembers' => $familyMembers,
             'activePrenatal' => $activePrenatal,
-            'prenatalVisits' => $prenatalVisits,
-            'pastDeliveries' => $pastDeliveries,
             'allPrenatalEpisodes' => $allPrenatalEpisodes,
             'wellbabyRecord' => $wellbabyRecord,
             'growthLogs' => $growthLogs,
             'patientImmunizations' => $patientImmunizations,
-            'vaccineMap' => $vaccineMap,
-
             'pcbObligated' => $pcbObligated,
             'pcbServiceLogs' => $pcbServiceLogs,
             'pcbYear' => $pcbYear

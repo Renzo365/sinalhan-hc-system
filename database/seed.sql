@@ -12,7 +12,7 @@ VALUES
 (
   'admin', 
   '$2y$10$Mp8OmLNojA8jzqN.PPLyBOUmHAuRNkqD0X6XCmDGB/4LfLJEc75rm', -- bcrypt hash for: admin1234
-  'admin', 
+  'super_admin', 
   'System', 
   'Administrator', 
   'IT Support / Records Head', 

@@ -106,6 +106,7 @@ class ConsultationController extends Controller {
         // Save Consultation
         $data = $_POST;
         $data['vital_signs_id'] = $vitalSignsId;
+        $data['consulting_provider'] = trim($_POST['consulting_provider'] ?? '');
         $data['status'] = !empty($_POST['status']) ? $_POST['status'] : 'Completed';
         $data['created_by'] = $_SESSION['user_id'];
 
@@ -164,9 +165,9 @@ class ConsultationController extends Controller {
             return;
         }
 
-        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        if (!is_admin() && $currentUserId !== (int)$consultation['created_by'] && $currentUserId !== (int)$consultation['consulted_by']) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to edit this consultation.';
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to edit consultations.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
@@ -240,8 +241,9 @@ class ConsultationController extends Controller {
             return;
         }
 
-        if (!is_admin() && $currentUserId !== (int)$consultation['created_by'] && $currentUserId !== (int)$consultation['consulted_by']) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update this consultation.';
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
+        if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
+            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update consultations.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
@@ -256,6 +258,7 @@ class ConsultationController extends Controller {
         }
 
         $data = $_POST;
+        $data['consulting_provider'] = trim($_POST['consulting_provider'] ?? '');
         $data['status'] = !empty($_POST['status']) ? $_POST['status'] : ($consultation['status'] ?: 'Completed');
         $data['updated_by'] = $currentUserId;
 
@@ -313,10 +316,10 @@ class ConsultationController extends Controller {
 
         $patientId = (int)$consultation['patient_id'];
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $canCancel = is_admin() || $currentUserId === (int)$consultation['created_by'] || $currentUserId === (int)$consultation['consulted_by'];
+        $canCancel = is_admin();
 
         if (!$canCancel) {
-            $_SESSION['error_message'] = 'Unauthorized: You do not have permission to cancel this consultation.';
+            $_SESSION['error_message'] = 'Unauthorized: Only administrators can cancel or void consultation records.';
             $this->redirect("/patients/{$patientId}#tab-consultations");
             return;
         }
@@ -347,16 +350,15 @@ class ConsultationController extends Controller {
             return;
         }
 
-        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
+        $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
 
-        // Only the author, the attending clinician, or an administrator can edit.
+        // Authorized staff and admins can edit active consultations.
         $consultation['can_edit'] = $consultation['status'] !== 'Cancelled'
-            && (is_admin()
-                || $currentUserId === (int)$consultation['created_by']
-                || $currentUserId === (int)$consultation['consulted_by']);
+            && in_array($userRole, ['admin', 'super_admin', 'staff'], true);
         
         // Formatting date helpers
         $consultation['formatted_date'] = date('F d, Y h:i A', strtotime($consultation['consulted_at']));
+        $consultation['formatted_created'] = date('F d, Y h:i A', strtotime($consultation['created_at']));
         if (!empty($consultation['updated_at']) && $consultation['updated_at'] !== $consultation['created_at']) {
             $consultation['formatted_updated'] = date('F d, Y h:i A', strtotime($consultation['updated_at']));
         } else {

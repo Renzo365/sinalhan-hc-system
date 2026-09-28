@@ -70,7 +70,8 @@ class UserController extends Controller {
         $password = $_POST['password'] ?? '';
         $role = $_POST['role'] ?? 'staff';
         
-        if (!in_array($role, ['admin', 'staff'], true)) {
+        // Only super_admin can assign the 'admin' role; everyone else is forced to 'staff'
+        if (!in_array($role, ['admin', 'staff'], true) || ($role === 'admin' && !is_super_admin())) {
             $role = 'staff';
             $_POST['role'] = 'staff';
         }
@@ -79,8 +80,6 @@ class UserController extends Controller {
         $lastName = trim($_POST['last_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $contactNo = trim($_POST['contact_no'] ?? '');
-        $employeeId = trim($_POST['employee_id'] ?? '');
-        $department = trim($_POST['department'] ?? '');
 
         $validator = new \App\Validators\UserValidator($this->userModel);
         $errors = $validator->validateCreate($_POST);
@@ -116,6 +115,13 @@ class UserController extends Controller {
             return;
         }
 
+        // Block non-super_admin from editing super_admin accounts
+        if ($user['role'] === 'super_admin' && !is_super_admin()) {
+            $_SESSION['error_message'] = 'Access Denied: You do not have permission to modify this account.';
+            $this->redirect('/users');
+            return;
+        }
+
         $this->view('users/edit', [
             'user' => $user
         ]);
@@ -139,19 +145,30 @@ class UserController extends Controller {
             return;
         }
 
+        // Block non-super_admin from modifying a super_admin account
+        if ($user['role'] === 'super_admin' && !is_super_admin()) {
+            $_SESSION['error_message'] = 'Access Denied: You do not have permission to modify this account.';
+            $this->redirect('/users');
+            return;
+        }
+
         $firstName = trim($_POST['first_name'] ?? '');
         $lastName = trim($_POST['last_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $contactNo = trim($_POST['contact_no'] ?? '');
         $role = $_POST['role'] ?? $user['role'];
 
-        if (!in_array($role, ['admin', 'staff'], true)) {
+        // Only super_admin can change roles; non-super_admin retains existing target role
+        if (!is_super_admin()) {
+            $role = $user['role'];
+            $_POST['role'] = $role;
+        } elseif (!in_array($role, ['admin', 'staff'], true)) {
             $role = $user['role'];
             $_POST['role'] = $role;
         }
 
         // Prevent admin from demoting their own account
-        if ($id == $_SESSION['user_id'] && $role !== 'admin') {
+        if ($id == $_SESSION['user_id'] && $role !== $_SESSION['user_role']) {
             $_SESSION['error_message'] = 'You cannot revoke your own administrator privilege.';
             $this->redirect("/users/{$id}/edit");
             return;
@@ -206,7 +223,12 @@ class UserController extends Controller {
             return;
         }
 
-
+        // Block non-super_admin from resetting a super_admin's password
+        if ($user['role'] === 'super_admin' && !is_super_admin()) {
+            $_SESSION['error_message'] = "Access Denied: You do not have permission to reset this account's password.";
+            $this->redirect('/users');
+            return;
+        }
 
         $adminPassword = $_POST['admin_password'] ?? '';
         $newPassword = $_POST['new_password'] ?? '';
@@ -259,6 +281,20 @@ class UserController extends Controller {
             return;
         }
 
+        // Super admin accounts cannot be archived by anyone
+        if ($user['role'] === 'super_admin') {
+            $_SESSION['error_message'] = 'Access Denied: The Super Admin account cannot be archived.';
+            $this->redirect('/users');
+            return;
+        }
+
+        // Regular admins cannot archive other admin accounts
+        if ($user['role'] === 'admin' && !is_super_admin()) {
+            $_SESSION['error_message'] = 'Access Denied: Only the Super Admin can archive administrator accounts.';
+            $this->redirect('/users');
+            return;
+        }
+
         if ($this->userModel->archive($id)) {
             AuditLog::log('USER_ARCHIVED', 'Users', "Archived user account: {$user['username']} ({$user['first_name']} {$user['last_name']}).");
             $_SESSION['success_message'] = "User account {$user['username']} has been archived and moved to the Archived Records Hub.";
@@ -284,6 +320,13 @@ class UserController extends Controller {
         if (!$user) {
             http_response_code(404);
             $this->view('errors/404');
+            return;
+        }
+
+        // Regular admins cannot restore administrator accounts
+        if ($user['role'] === 'admin' && !is_super_admin()) {
+            $_SESSION['error_message'] = 'Access Denied: Only the Super Admin can restore administrator accounts.';
+            $this->redirect('/archive?tab=users');
             return;
         }
 

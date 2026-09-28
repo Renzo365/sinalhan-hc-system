@@ -19,7 +19,6 @@ class ConsultationValidator extends BaseValidator {
             'objective' => 'Objective Notes (Physical Findings)',
             'assessment' => 'Assessment (Diagnosis)',
             'plan' => 'Plan (Treatment/Prescriptions)',
-            'consulted_by' => 'Consulting Provider',
             'consulted_at' => 'Date & Time of Consultation'
         ];
 
@@ -27,6 +26,13 @@ class ConsultationValidator extends BaseValidator {
             if (empty($input[$field]) || trim((string)$input[$field]) === '') {
                 $this->addError("{$label} is required.");
             }
+        }
+
+        $provider = trim((string)($input['consulting_provider'] ?? $input['consulted_by'] ?? ''));
+        if ($provider === '') {
+            $this->addError('Consulting Provider is required.');
+        } elseif (mb_strlen($provider) < 2) {
+            $this->addError('Consulting Provider name must be at least 2 characters.');
         }
 
         $status = $input['status'] ?? 'Completed';

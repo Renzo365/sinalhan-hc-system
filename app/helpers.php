@@ -80,3 +80,59 @@ if (!function_exists('config')) {
     }
 }
 
+if (!function_exists('classify_bmi')) {
+    /**
+     * Classify Body Mass Index (BMI) using Philippine DOH & WHO Asia-Pacific Guidelines.
+     * Cutoffs:
+     * - Underweight: < 18.5
+     * - Normal: 18.5 - 22.9
+     * - Overweight: 23.0 - 27.4
+     * - Obese: >= 27.5
+     *
+     * @param float|int|string|null $bmi
+     * @return array ['label' => string, 'class' => string, 'badge' => string, 'category' => string]
+     */
+    function classify_bmi($bmi): array {
+        if ($bmi === null || $bmi === '' || (float)$bmi <= 0) {
+            return [
+                'label' => '—',
+                'class' => 'text-muted',
+                'badge' => 'bg-light text-muted border',
+                'category' => 'Unknown'
+            ];
+        }
+
+        $val = (float)$bmi;
+        if ($val < 18.5) {
+            return [
+                'label' => 'Underweight',
+                'class' => 'text-info',
+                'badge' => 'bg-info-subtle text-info border border-info-subtle',
+                'category' => 'Underweight'
+            ];
+        } elseif ($val <= 22.9) {
+            return [
+                'label' => 'Normal',
+                'class' => 'text-success',
+                'badge' => 'bg-success-subtle text-success border border-success-subtle',
+                'category' => 'Normal'
+            ];
+        } elseif ($val <= 27.4) {
+            return [
+                'label' => 'Overweight',
+                'class' => 'text-warning',
+                'badge' => 'bg-warning-subtle text-dark border border-warning-subtle',
+                'category' => 'Overweight'
+            ];
+        } else {
+            return [
+                'label' => 'Obese',
+                'class' => 'text-danger',
+                'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'category' => 'Obese'
+            ];
+        }
+    }
+}
+
+
