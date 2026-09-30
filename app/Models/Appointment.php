@@ -250,7 +250,7 @@ class Appointment extends Model {
      */
     public function getTodayAppointments() {
         $sql = "SELECT a.*, 
-                       p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last, p.middle_name AS patient_middle
+                       p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last, p.middle_name AS patient_middle, p.contact_no
                 FROM appointments a
                 JOIN patients p ON a.patient_id = p.id
                 WHERE a.appointment_date = CURRENT_DATE() 

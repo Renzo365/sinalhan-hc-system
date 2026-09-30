@@ -9,7 +9,15 @@
         </h1>
     </div>
     
-    <div class="d-flex align-items-center">
+    <div class="d-flex align-items-center gap-3">
+        <!-- Live PST Date & Clock -->
+        <div class="d-none d-md-flex align-items-center bg-white border rounded-pill px-3 py-1 text-muted small shadow-xs" style="font-size: 0.8125rem;">
+            <i class="bi bi-calendar3 text-primary me-1.5"></i>
+            <span id="topbarLiveDate"><?= date('l, F j, Y') ?></span>
+            <span class="mx-2 text-secondary opacity-50">&bull;</span>
+            <i class="bi bi-clock text-primary me-1.5"></i>
+            <span id="topbarClock" class="font-monospace fw-semibold text-dark"><?= date('h:i:s A') ?> PST</span>
+        </div>
         <?php 
         $userFullName = $_SESSION['user_fullname'] ?? 'User';
         $userRole = $_SESSION['user_role'] ?? 'staff';
@@ -115,6 +123,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 appSidebar.classList.remove('show');
             }
         });
+    }
+
+    // Live Topbar PST Clock
+    const topbarClockEl = document.getElementById('topbarClock');
+    if (topbarClockEl) {
+        function updateTopbarPstClock() {
+            try {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', {
+                    timeZone: 'Asia/Manila',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+                topbarClockEl.textContent = timeStr + ' PST';
+            } catch (e) {
+                const d = new Date();
+                topbarClockEl.textContent = d.toLocaleTimeString() + ' PST';
+            }
+        }
+        setInterval(updateTopbarPstClock, 1000);
     }
 });
 </script>
