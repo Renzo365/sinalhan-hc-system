@@ -6,9 +6,9 @@ use App\Core\Model;
 use PDO;
 
 class QueueEntry extends Model {
-    private const STATUS_TRANSITIONS = [
+    public const STATUS_TRANSITIONS = [
         'Waiting' => ['Called', 'Cancelled'],
-        'Called' => ['Serving', 'Cancelled'],
+        'Called' => ['Called', 'Serving', 'Cancelled'],
         'Serving' => ['Completed', 'Cancelled'],
         'Completed' => [],
         'Cancelled' => []
@@ -199,34 +199,48 @@ class QueueEntry extends Model {
      */
     public function getTodayStats() {
         $stats = [
+            'total_today' => 0,
             'waiting' => 0,
             'called' => 0,
+            'serving' => 0,
             'completed' => 0,
-            'serving_no' => 0
+            'serving_no' => 0,
+            'serving_service' => ''
         ];
 
-        $sqlWaiting = "SELECT COUNT(*) FROM queue_entries WHERE queue_date = CURRENT_DATE() AND status = 'Waiting'";
-        $sqlCalled = "SELECT COUNT(*) FROM queue_entries WHERE queue_date = CURRENT_DATE() AND status IN ('Called', 'Serving')";
-        $sqlCompleted = "SELECT COUNT(*) FROM queue_entries WHERE queue_date = CURRENT_DATE() AND status = 'Completed'";
+        $sqlCounts = "SELECT 
+            COUNT(*) AS total_today,
+            COUNT(CASE WHEN status = 'Waiting' THEN 1 END) AS waiting,
+            COUNT(CASE WHEN status = 'Called' THEN 1 END) AS called,
+            COUNT(CASE WHEN status = 'Serving' THEN 1 END) AS serving,
+            COUNT(CASE WHEN status = 'Completed' THEN 1 END) AS completed
+            FROM queue_entries WHERE queue_date = CURRENT_DATE()";
         
-        // Find the current serving queue number (Serving, or Called if none is serving)
-        $sqlServing = "SELECT queue_no FROM queue_entries 
+        $counts = $this->db->query($sqlCounts)->fetch(PDO::FETCH_ASSOC);
+        if ($counts) {
+            $stats['total_today'] = (int)$counts['total_today'];
+            $stats['waiting'] = (int)$counts['waiting'];
+            $stats['called'] = (int)$counts['called'];
+            $stats['serving'] = (int)$counts['serving'];
+            $stats['completed'] = (int)$counts['completed'];
+        }
+
+        // Find the current serving queue number & service (Serving, or Called if none is serving)
+        $sqlServing = "SELECT queue_no, service_type FROM queue_entries 
                        WHERE queue_date = CURRENT_DATE() AND status = 'Serving' 
                        LIMIT 1";
-        
-        $sqlLastCalled = "SELECT queue_no FROM queue_entries 
-                          WHERE queue_date = CURRENT_DATE() AND status = 'Called' 
-                          ORDER BY time_called DESC LIMIT 1";
-
-        $stats['waiting'] = (int)$this->db->query($sqlWaiting)->fetchColumn();
-        $stats['called'] = (int)$this->db->query($sqlCalled)->fetchColumn();
-        $stats['completed'] = (int)$this->db->query($sqlCompleted)->fetchColumn();
-        
-        $servingNo = $this->db->query($sqlServing)->fetchColumn();
-        if (!$servingNo) {
-            $servingNo = $this->db->query($sqlLastCalled)->fetchColumn();
+        $servingRow = $this->db->query($sqlServing)->fetch(PDO::FETCH_ASSOC);
+        if (!$servingRow) {
+            $sqlLastCalled = "SELECT queue_no, service_type FROM queue_entries 
+                              WHERE queue_date = CURRENT_DATE() AND status = 'Called' 
+                              ORDER BY time_called DESC LIMIT 1";
+            $servingRow = $this->db->query($sqlLastCalled)->fetch(PDO::FETCH_ASSOC);
         }
-        $stats['serving_no'] = $servingNo ? (int)$servingNo : 0;
+
+        if ($servingRow) {
+            $stats['serving_no'] = (int)$servingRow['queue_no'];
+            $stats['serving_service'] = $servingRow['service_type'] ?: 'General OPD';
+        }
 
         return $stats;
     }

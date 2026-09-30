@@ -28,8 +28,7 @@ $breadcrumbs = [
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
-$addrParts = array_filter([$patient['address'] ?? '', $patient['barangay'] ?? '', 'Santa Rosa, Laguna']);
-$fullAddress = implode(', ', $addrParts) ?: 'Barangay Sinalhan, Santa Rosa, Laguna';
+$fullAddress = !empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
 
 $initials = '';
 if (!empty($firstName)) $initials .= mb_substr($firstName, 0, 1);

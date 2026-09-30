@@ -41,7 +41,7 @@ class PatientMedicalHistory extends Model {
 
         // Fetch relational conditions (Past Medical & Family Hereditary)
         $cStmt = $this->db->prepare("
-            SELECT condition_type, lineage, condition_name, remarks 
+            SELECT condition_type, condition_name, remarks 
             FROM patient_conditions 
             WHERE patient_id = :patient_id AND deleted_at IS NULL
             ORDER BY id ASC
@@ -51,21 +51,18 @@ class PatientMedicalHistory extends Model {
 
         $pmh = [];
         $fam = [];
-        $famLineage = [];
         foreach ($conditionRows as $c) {
             $name = MedicalDictionaryService::normalizeCondition($c['condition_name']);
             if ($name === '') continue;
             $remarks = trim((string)($c['remarks'] ?? ''));
             if ($c['condition_type'] === 'Family') {
                 $fam[$name] = $remarks;
-                $famLineage[$name] = !empty($c['lineage']) ? $c['lineage'] : 'Unknown';
             } else {
                 $pmh[$name] = $remarks;
             }
         }
         $row['past_medical_history'] = $pmh;
         $row['family_history'] = $fam;
-        $row['family_history_lineage'] = $famLineage;
 
         // Fetch relational surgeries
         $sStmt = $this->db->prepare("
@@ -422,8 +419,8 @@ class PatientMedicalHistory extends Model {
             $delCond->execute(['patient_id' => $patientId, 'user_id' => $userId]);
 
             $insCond = $this->db->prepare("
-                INSERT INTO patient_conditions (patient_id, condition_type, lineage, condition_name, remarks)
-                VALUES (:patient_id, :condition_type, :lineage, :condition_name, :remarks)
+                INSERT INTO patient_conditions (patient_id, condition_type, condition_name, remarks)
+                VALUES (:patient_id, :condition_type, :condition_name, :remarks)
             ");
 
             $cleanPmh = self::normalizePastMedicalHistory($data['past_medical_history'] ?? []);
@@ -431,23 +428,16 @@ class PatientMedicalHistory extends Model {
                 $insCond->execute([
                     'patient_id' => $patientId,
                     'condition_type' => 'Past',
-                    'lineage' => null,
                     'condition_name' => $cond,
                     'remarks' => !empty($remarks) ? $remarks : null
                 ]);
             }
 
             $cleanFam = self::normalizeFamilyHistory($data['family_history'] ?? []);
-            $famLineages = $data['family_history_lineage'] ?? [];
             foreach ($cleanFam as $cond => $remarks) {
-                $lin = $famLineages[$cond] ?? null;
-                if (!in_array($lin, ['Mother', 'Father', 'Both', 'Unknown'], true)) {
-                    $lin = null;
-                }
                 $insCond->execute([
                     'patient_id' => $patientId,
                     'condition_type' => 'Family',
-                    'lineage' => $lin,
                     'condition_name' => $cond,
                     'remarks' => !empty($remarks) ? $remarks : null
                 ]);

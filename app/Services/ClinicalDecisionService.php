@@ -23,7 +23,7 @@ class ClinicalDecisionService {
         $stmt = $db->prepare("
             SELECT condition_name, remarks 
             FROM patient_conditions 
-            WHERE patient_id = :patient_id AND condition_type = 'Past'
+            WHERE patient_id = :patient_id AND condition_type = 'Past' AND deleted_at IS NULL
         ");
         $stmt->execute(['patient_id' => $patientId]);
         $conditions = $stmt->fetchAll(PDO::FETCH_ASSOC);

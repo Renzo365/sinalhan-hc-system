@@ -1,5 +1,5 @@
                     <!-- ==============================================================
-                       TAB 5: UNIVERSAL IMMUNIZATIONS
+                       TAB 6: UNIVERSAL IMMUNIZATIONS
                        ============================================================== -->
                     <div class="tab-pane fade" id="tab-immunizations" role="tabpanel">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -40,6 +40,7 @@
                                         ?>
                                         <?php foreach ($patientImmunizations as $imm): 
                                             $canDeleteImm = is_admin();
+                                            $docStatus = $imm['documentation_status'] ?? 'Administered';
                                         ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-bold text-primary">
@@ -48,14 +49,18 @@
                                                 <td><span class="badge bg-light text-dark border">Dose <?= h($imm['dose_number']) ?></span></td>
                                                 <td class="fw-medium text-dark"><?= date('M d, Y', strtotime($imm['administered_date'])) ?></td>
                                                 <td class="text-muted small">
-                                                    <?= h($imm['source'] ?? 'Health Center') ?>
-                                                    <span class="badge bg-light text-dark border"><?= h($imm['documentation_status'] ?? 'Administered') ?></span>
+                                                    <div><?= h($imm['source'] ?? 'Health Center') ?></div>
+                                                    <?php if ($docStatus === 'Administered'): ?>
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Administered</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Reported</span>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td class="text-muted small"><?= h($imm['remarks'] ?? 'Routine') ?></td>
                                                 <td class="text-muted"><?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?></td>
                                                 <td class="pe-3 text-end text-nowrap">
                                                     <div class="d-inline-flex gap-1 justify-content-end align-items-center">
-                                                        <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-immunization"
+                                                        <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-primary shadow-2xs btn-view-immunization"
                                                             data-id="<?= $imm['id'] ?>"
                                                             data-vaccine="<?= h($imm['vaccine_name']) ?>"
                                                             data-dose="Dose <?= h($imm['dose_number']) ?>"
@@ -64,10 +69,11 @@
                                                             data-status="<?= h($imm['documentation_status'] ?? 'Administered') ?>"
                                                             data-remarks="<?= h($imm['remarks'] ?? 'Routine immunisation protocol') ?>"
                                                             data-vaccinator="<?= h($imm['vaccinator_name'] ?? 'Healthcare Staff') ?>"
-                                                            title="View Immunization Details">
-                                                            <i class="bi bi-eye fs-6"></i>
+                                                            title="View Immunization Details"
+                                                            aria-label="View immunization details">
+                                                            <i class="bi bi-eye"></i>
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-immunization"
+                                                        <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-secondary shadow-2xs btn-edit-immunization"
                                                             data-id="<?= $imm['id'] ?>"
                                                             data-vaccine="<?= h($imm['vaccine_name']) ?>"
                                                             data-dose="<?= h($imm['dose_number']) ?>"
@@ -75,12 +81,13 @@
                                                             data-source="<?= h($imm['source'] ?? 'Health Center') ?>"
                                                             data-status="<?= h($imm['documentation_status'] ?? 'Administered') ?>"
                                                             data-remarks="<?= h($imm['remarks'] ?? '') ?>"
-                                                            title="Edit Immunization">
-                                                            <i class="bi bi-pencil-square fs-6"></i>
+                                                            title="Edit Immunization"
+                                                            aria-label="Edit immunization">
+                                                            <i class="bi bi-pencil-square"></i>
                                                         </button>
                                                         <?php if ($canDeleteImm): ?>
-                                                            <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-immunization" data-id="<?= $imm['id'] ?>" data-vaccine="<?= h($imm['vaccine_name']) ?>" data-dose="<?= h($imm['dose_number']) ?>" title="Delete Record">
-                                                                <i class="bi bi-trash fs-6"></i>
+                                                            <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-danger shadow-2xs btn-delete-immunization" data-id="<?= $imm['id'] ?>" data-vaccine="<?= h($imm['vaccine_name']) ?>" data-dose="<?= h($imm['dose_number']) ?>" title="Delete Record" aria-label="Delete immunization record">
+                                                                <i class="bi bi-trash"></i>
                                                             </button>
                                                         <?php endif; ?>
                                                     </div>

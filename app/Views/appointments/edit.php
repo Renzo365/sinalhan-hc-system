@@ -35,7 +35,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
                 <h3 class="card-title h5 mb-0 fw-bold text-primary-dark">
-                    <i class="bi bi-pencil-square me-2"></i>Reschedule / Edit Appointment
+                    <i class="bi bi-calendar2-range me-2 text-primary"></i>Appointment Update Details
                 </h3>
             </div>
             
@@ -67,7 +67,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div>
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 border-bottom pb-2 gap-2">
                             <h4 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger">*</span></h4>
-                            <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #e6fffa; color: #0d9488; border: 1px solid #b2f5ea;">
+                            <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
                                 <i class="bi bi-clock me-1"></i>Select a Time Slot
                             </span>
                         </div>
@@ -158,12 +158,38 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </span>
                             </div>
 
+                            <!-- Slot Capacity Visual Legend -->
+                            <div class="d-flex flex-wrap align-items-center gap-3 p-2 px-3 mb-2 bg-light rounded-2 border small" style="font-size: 0.75rem;">
+                                <span class="text-muted fw-semibold me-1"><i class="bi bi-info-circle me-1"></i>Capacity Guide:</span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-success" style="width: 8px; height: 8px;"> </span> Available
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-warning" style="width: 8px; height: 8px;"> </span> 1 Booked (Concurrent OK)
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-danger" style="width: 8px; height: 8px;"> </span> 2+ Booked (High Volume)
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-primary" style="width: 8px; height: 8px;"> </span> Selected
+                                </span>
+                            </div>
+
+                            <!-- Overbooking / Concurrent Capacity Notice -->
+                            <div id="slotCapacityAdvisory" class="alert alert-warning py-2 px-3 mb-3 small align-items-center gap-2" style="display: none;" role="note">
+                                <i class="bi bi-exclamation-triangle-fill text-warning flex-shrink-0 fs-5"></i>
+                                <div id="slotCapacityAdvisoryText">
+                                    <strong>Concurrent Booking Advisory:</strong> This time slot already has scheduled appointments.
+                                </div>
+                            </div>
+
+
                             <!-- Morning OPD Session -->
                             <div class="mb-3 p-3 bg-light rounded-3 border">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold small text-dark"><i class="bi bi-brightness-alt-high-fill text-warning me-1"></i> Morning OPD (08:30 AM - 12:00 PM)</span>
                                 </div>
-                                <div class="row g-2" id="morningSlotsContainer">
+                                <div class="row g-2" id="morningSlotsContainer" role="radiogroup" aria-label="Morning OPD Time Slots">
                                     <?php
                                     $morningSlots = [
                                         ['slot' => 1, 'time' => '08:30', 'label' => '08:30 AM'],
@@ -179,7 +205,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                         $isSelected = ($selectedTime === $slotTime);
                                     ?>
                                     <div class="col-6 col-sm-4 col-md-3">
-                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" data-time="<?= $slotTime ?>" data-slot="<?= $s['slot'] ?>" data-session="Morning OPD (08:30 AM - 12:00 PM)">
+                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" 
+                                             tabindex="0" 
+                                             role="radio" 
+                                             aria-checked="<?= $isSelected ? 'true' : 'false' ?>" 
+                                             aria-label="<?= $s['label'] ?> (Slot #<?= $s['slot'] ?>), <?= $isSelected ? 'Selected' : 'Available' ?>" 
+                                             data-time="<?= $slotTime ?>" 
+                                             data-slot="<?= $s['slot'] ?>" 
+                                             data-session="Morning OPD (08:30 AM - 12:00 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
@@ -198,7 +231,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold small text-dark"><i class="bi bi-sunset-fill text-danger me-1"></i> Afternoon OPD (01:00 PM - 04:30 PM)</span>
                                 </div>
-                                <div class="row g-2" id="afternoonSlotsContainer">
+                                <div class="row g-2" id="afternoonSlotsContainer" role="radiogroup" aria-label="Afternoon OPD Time Slots">
                                     <?php
                                     $afternoonSlots = [
                                         ['slot' => 8, 'time' => '13:00', 'label' => '01:00 PM'],
@@ -214,7 +247,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                         $isSelected = ($selectedTime === $slotTime);
                                     ?>
                                     <div class="col-6 col-sm-4 col-md-3">
-                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" data-time="<?= $slotTime ?>" data-slot="<?= $s['slot'] ?>" data-session="Afternoon OPD (01:00 PM - 04:30 PM)">
+                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" 
+                                             tabindex="0" 
+                                             role="radio" 
+                                             aria-checked="<?= $isSelected ? 'true' : 'false' ?>" 
+                                             aria-label="<?= $s['label'] ?> (Slot #<?= $s['slot'] ?>), <?= $isSelected ? 'Selected' : 'Available' ?>" 
+                                             data-time="<?= $slotTime ?>" 
+                                             data-slot="<?= $s['slot'] ?>" 
+                                             data-session="Afternoon OPD (01:00 PM - 04:30 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
@@ -261,6 +301,11 @@ require dirname(__DIR__) . '/layout/header.php';
     border-color: #0d9488;
     background-color: #f0fdfa;
     transform: translateY(-1px);
+}
+.time-slot-card:focus-visible {
+    outline: 2px solid #0d9488 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.25) !important;
 }
 .time-slot-card.active {
     border-color: #0d9488 !important;
@@ -338,27 +383,62 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function updateSlotAdvisory() {
+        const activeCard = document.querySelector('.time-slot-card.active');
+        const advisoryBox = document.getElementById('slotCapacityAdvisory');
+        const advisoryText = document.getElementById('slotCapacityAdvisoryText');
+        if (!advisoryBox || !advisoryText) return;
+
+        if (activeCard && activeCard.dataset.time) {
+            const time = activeCard.dataset.time;
+            const count = currentCapacities[time] || 0;
+            if (count > 0) {
+                const timeLabel = activeCard.querySelector('.fs-6')?.textContent.trim() || time;
+                advisoryText.innerHTML = `<strong>Concurrent Booking Notice:</strong> <strong>${count} other patient${count > 1 ? 's are' : ' is'}</strong> scheduled for <strong>${timeLabel}</strong>. Rescheduling into this slot will share this 30-minute consultation window.`;
+                advisoryBox.style.display = 'flex';
+                return;
+            }
+        }
+        advisoryBox.style.display = 'none';
+    }
+
     function applyCapacities(capacities) {
         slotCards.forEach(card => {
             const time = card.dataset.time;
             const slotNum = card.dataset.slot;
+            const slotLabel = card.querySelector('.fs-6')?.textContent.trim() || time;
             const statusLabel = card.querySelector('.slot-status-label');
             const count = capacities[time] || 0;
 
+            card.classList.remove('has-booked', 'high-booked');
+
             if (card.classList.contains('active')) {
+                card.setAttribute('aria-checked', 'true');
                 if (count > 0) {
-                    statusLabel.textContent = `Selected (${count} other Booked)`;
+                    statusLabel.innerHTML = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-1">Selected (${count} other Booked)</span>`;
+                    card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), Selected, ${count} other booked`);
                 } else {
-                    statusLabel.textContent = 'Selected';
+                    statusLabel.innerHTML = `<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-1">Selected</span>`;
+                    card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), Selected, Available`);
                 }
-            } else if (count > 0) {
+            } else if (count >= 2) {
+                card.classList.add('high-booked');
+                card.setAttribute('aria-checked', 'false');
+                statusLabel.innerHTML = `<span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-1">${count} Booked</span>`;
+                card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), ${count} booked, High Volume`);
+            } else if (count === 1) {
                 card.classList.add('has-booked');
-                statusLabel.textContent = `${count} Booked`;
+                card.setAttribute('aria-checked', 'false');
+                statusLabel.innerHTML = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-1">1 Booked</span>`;
+                card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), 1 booked`);
             } else {
-                card.classList.remove('has-booked');
-                statusLabel.textContent = 'Available';
+                card.setAttribute('aria-checked', 'false');
+                statusLabel.innerHTML = `<span class="text-success fw-medium">Available</span>`;
+                card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), Available`);
             }
         });
+
+        updateSlotAdvisory();
     }
 
     function loadDayCapacity() {
@@ -395,19 +475,73 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Time slot selection
+    function showTimeSlotError(msg) {
+        let errBanner = document.getElementById('timeSlotErrorAlert');
+        if (!errBanner) {
+            errBanner = document.createElement('div');
+            errBanner.id = 'timeSlotErrorAlert';
+            errBanner.className = 'alert alert-danger d-flex align-items-center gap-2 py-2 px-3 mb-3 shadow-xs';
+            errBanner.setAttribute('role', 'alert');
+            const slotsSection = document.getElementById('morningSlotsContainer')?.closest('.mb-4');
+            if (slotsSection) {
+                slotsSection.parentNode.insertBefore(errBanner, slotsSection);
+            }
+        }
+        errBanner.innerHTML = `<i class="bi bi-exclamation-triangle-fill fs-5 text-danger flex-shrink-0"></i> <div><strong>Please select a time slot:</strong> ${msg}</div>`;
+        errBanner.style.display = 'flex';
+        errBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true
+            });
+            Toast.fire({
+                icon: 'warning',
+                title: 'Please select an appointment time slot.'
+            });
+        }
+    }
+
+    function clearTimeSlotError() {
+        const errBanner = document.getElementById('timeSlotErrorAlert');
+        if (errBanner) {
+            errBanner.style.display = 'none';
+        }
+    }
+
+    function selectSlotCard(card) {
+        slotCards.forEach(c => {
+            c.classList.remove('active');
+            c.setAttribute('aria-checked', 'false');
+        });
+        card.classList.add('active');
+        card.setAttribute('aria-checked', 'true');
+        timeInput.value = card.dataset.time;
+
+        const sessionName = card.dataset.session || '';
+        if (sessionIndicator && sessionName) {
+            sessionIndicator.innerHTML = `<i class="bi bi-clock-fill me-1"></i>Session: ${sessionName}`;
+        }
+
+        clearTimeSlotError();
+        applyCapacities(currentCapacities);
+    }
+
+    // Time slot selection (click and keyboard)
     slotCards.forEach(card => {
         card.addEventListener('click', function() {
-            slotCards.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            timeInput.value = this.dataset.time;
+            selectSlotCard(this);
+        });
 
-            const sessionName = this.dataset.session || '';
-            if (sessionIndicator && sessionName) {
-                sessionIndicator.innerHTML = `<i class="bi bi-clock-fill me-1"></i>Session: ${sessionName}`;
+        card.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                selectSlotCard(this);
             }
-
-            applyCapacities(currentCapacities);
         });
     });
 
@@ -419,13 +553,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Form submit validation
+    // Form submit validation with accessible inline feedback & concurrent reschedule confirmation
+    let doubleBookingConfirmed = false;
+
     if (form) {
         form.addEventListener('submit', function(e) {
             if (!timeInput.value) {
                 e.preventDefault();
-                alert('Please select an available time slot for the appointment.');
-                document.getElementById('morningSlotsContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showTimeSlotError('An available morning or afternoon consultation time slot is required.');
+                const firstCard = document.querySelector('.time-slot-card');
+                if (firstCard) firstCard.focus();
+                return;
+            }
+
+            const time = timeInput.value;
+            const count = currentCapacities[time] || 0;
+
+            if (count > 0 && !doubleBookingConfirmed) {
+                e.preventDefault();
+                const activeCard = document.querySelector('.time-slot-card.active');
+                const slotLabel = activeCard?.querySelector('.fs-6')?.textContent.trim() || time;
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Concurrent Reschedule Warning',
+                        html: `The <strong>${slotLabel}</strong> time slot already has <strong>${count} other patient${count > 1 ? 's' : ''}</strong> booked.<br><br>Are you sure you want to reschedule into this concurrent time slot?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0D7377',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Confirm Reschedule',
+                        cancelButtonText: 'Choose Another Slot'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            doubleBookingConfirmed = true;
+                            form.submit();
+                        }
+                    });
+                } else {
+                    if (confirm(`Notice: ${slotLabel} already has ${count} other booked appointment(s). Do you wish to proceed?`)) {
+                        doubleBookingConfirmed = true;
+                        form.submit();
+                    }
+                }
             }
         });
     }

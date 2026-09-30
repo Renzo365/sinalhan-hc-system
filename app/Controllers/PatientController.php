@@ -28,27 +28,21 @@ class PatientController extends Controller {
         // Get filters
         $filters = [
             'search' => trim($_GET['search'] ?? ''),
-            'barangay' => trim($_GET['barangay'] ?? ''),
             'sex' => trim($_GET['sex'] ?? ''),
-            'age_group' => trim($_GET['age_group'] ?? '')
+            'age_group' => trim($_GET['age_group'] ?? ''),
+            'phic_status' => trim($_GET['phic_status'] ?? '')
         ];
+
+        // Fetch demographic census metrics
+        $censusMetrics = $this->patientModel->getCensusMetrics();
 
         // Fetch patients
         $patients = $this->patientModel->allActive($filters);
 
-        // Fetch list of unique barangays for filter dropdown
-        try {
-            $db = \App\Core\Database::getInstance()->getConnection();
-            $stmt = $db->query("SELECT DISTINCT barangay FROM patients WHERE deleted_at IS NULL ORDER BY barangay ASC");
-            $barangays = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: ['Sinalhan'];
-        } catch (\Exception $e) {
-            $barangays = ['Sinalhan'];
-        }
-
         $this->view('patients/index', [
             'patients' => $patients,
             'filters' => $filters,
-            'barangays' => $barangays
+            'censusMetrics' => $censusMetrics
         ]);
     }
 
@@ -173,8 +167,10 @@ class PatientController extends Controller {
         $vitalsHistory = $this->vitalsModel->findByPatientId($id);
         $latestVitals = $this->vitalsModel->latestByPatientId($id);
 
-        // Get consultation history
+        // Get consultation history & latest encounter
         $consultationsHistory = (new \App\Models\Consultation())->findByPatientId($id);
+        $latestConsultation = !empty($consultationsHistory) ? $consultationsHistory[0] : null;
+        $latestConsultationPrescriptions = $latestConsultation ? (new \App\Models\Prescription())->findByConsultationId($latestConsultation['id']) : [];
 
         // Get appointment history
         $appointmentsHistory = (new \App\Models\Appointment())->findByPatientId($id);
@@ -223,6 +219,8 @@ class PatientController extends Controller {
             'vitalsHistory' => $vitalsHistory,
             'latestVitals' => $latestVitals,
             'consultationsHistory' => $consultationsHistory,
+            'latestConsultation' => $latestConsultation,
+            'latestConsultationPrescriptions' => $latestConsultationPrescriptions,
             'appointmentsHistory' => $appointmentsHistory,
             'queueHistory' => $queueHistory,
             'medicalHistory' => $medicalHistory,
@@ -257,7 +255,14 @@ class PatientController extends Controller {
 
         // Retrieve flashed inputs/errors
         $errors = $_SESSION['form_errors'] ?? [];
+        $formInput = $_SESSION['form_input'] ?? [];
         unset($_SESSION['form_errors']);
+        unset($_SESSION['form_input']);
+
+        // Merge flashed user input over patient record so corrections are preserved upon validation error
+        if (!empty($formInput)) {
+            $patient = array_merge($patient, $formInput);
+        }
 
         $this->view('patients/edit', [
             'patient' => $patient,
@@ -284,6 +289,7 @@ class PatientController extends Controller {
 
         if (!empty($errors)) {
             $_SESSION['form_errors'] = $errors;
+            $_SESSION['form_input'] = $_POST;
             $this->redirect("/patients/{$id}/edit");
             return;
         }
@@ -298,6 +304,7 @@ class PatientController extends Controller {
             $this->redirect("/patients/{$id}");
         } else {
             $_SESSION['form_errors'] = ['Database update failed. Please try again.'];
+            $_SESSION['form_input'] = $_POST;
             $this->redirect("/patients/{$id}/edit");
         }
     }
@@ -465,8 +472,7 @@ class PatientController extends Controller {
 
         $data = array_map(function($p) {
             $name = trim($p['last_name'] . ', ' . $p['first_name'] . ' ' . (!empty($p['middle_name']) ? mb_substr($p['middle_name'], 0, 1) . '.' : '') . ' ' . ($p['suffix'] ?? ''));
-            $addressParts = array_filter([$p['address'] ?? '', $p['barangay'] ?? '', 'Santa Rosa, Laguna']);
-            $address = implode(', ', $addressParts);
+            $address = !empty(trim($p['address'] ?? '')) ? trim($p['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
             
             return [
                 'id' => (int)$p['id'],
@@ -484,6 +490,71 @@ class PatientController extends Controller {
                 'civil_status' => $p['civil_status'] ?: 'Single',
                 'has_active_episode' => !empty($p['active_episode_id']),
                 'active_episode_id' => $p['active_episode_id']
+            ];
+        }, $results);
+
+        $this->json(['results' => $data]);
+    }
+
+    /**
+     * AJAX endpoint to search all active patients (male and female, all ages) for appointments and general lookups.
+     */
+    public function searchAll() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $query = trim($_GET['q'] ?? $_GET['search'] ?? '');
+        $db = \App\Core\Database::getInstance()->getConnection();
+
+        $sql = "SELECT p.id, p.patient_no, p.envelope_no, p.first_name, p.last_name, p.middle_name, p.suffix,
+                       p.sex, p.dob, p.civil_status, p.contact_no, p.address, p.barangay,
+                       TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age
+                FROM patients p
+                WHERE p.deleted_at IS NULL";
+        
+        $params = [];
+        if (!empty($query)) {
+            $sql .= " AND (p.first_name LIKE :q1 
+                        OR p.last_name LIKE :q2 
+                        OR p.patient_no LIKE :q3 
+                        OR p.envelope_no LIKE :q4
+                        OR CONCAT(p.first_name, ' ', p.last_name) LIKE :q5
+                        OR CONCAT(p.last_name, ', ', p.first_name) LIKE :q6)";
+            $param = '%' . $query . '%';
+            $params['q1'] = $param;
+            $params['q2'] = $param;
+            $params['q3'] = $param;
+            $params['q4'] = $param;
+            $params['q5'] = $param;
+            $params['q6'] = $param;
+        }
+
+        $sql .= " ORDER BY p.last_name ASC, p.first_name ASC LIMIT 25";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll() ?: [];
+
+        $data = array_map(function($p) {
+            $name = trim($p['last_name'] . ', ' . $p['first_name'] . ' ' . (!empty($p['middle_name']) ? mb_substr($p['middle_name'], 0, 1) . '.' : '') . ' ' . ($p['suffix'] ?? ''));
+            $address = !empty(trim($p['address'] ?? '')) ? trim($p['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
+            
+            return [
+                'id' => (int)$p['id'],
+                'patient_no' => $p['patient_no'],
+                'envelope_no' => $p['envelope_no'],
+                'name' => $name,
+                'first_name' => $p['first_name'],
+                'last_name' => $p['last_name'],
+                'middle_name' => $p['middle_name'],
+                'suffix' => $p['suffix'],
+                'sex' => !empty($p['sex']) ? ucfirst(strtolower($p['sex'])) : 'N/A',
+                'dob' => $p['dob'],
+                'dob_formatted' => !empty($p['dob']) ? date('M d, Y', strtotime($p['dob'])) : 'N/A',
+                'age' => $p['age'] !== null ? (int)$p['age'] : 0,
+                'address' => $address ?: 'Barangay Sinalhan, Santa Rosa, Laguna',
+                'contact_no' => $p['contact_no'] ?: 'N/A',
+                'civil_status' => $p['civil_status'] ?: 'Single'
             ];
         }, $results);
 
@@ -511,8 +582,7 @@ class PatientController extends Controller {
         $ihp = $pmhModel->findByPatientId($id);
 
         $name = trim($patient['last_name'] . ', ' . $patient['first_name'] . ' ' . (!empty($patient['middle_name']) ? mb_substr($patient['middle_name'], 0, 1) . '.' : '') . ' ' . ($patient['suffix'] ?? ''));
-        $addressParts = array_filter([$patient['address'] ?? '', $patient['barangay'] ?? '', 'Santa Rosa, Laguna']);
-        $address = implode(', ', $addressParts);
+        $address = !empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
 
         $ihpGravida = isset($ihp['gravida']) ? (int)$ihp['gravida'] : null;
         $suggestedGravida = ($ihpGravida !== null && $ihpGravida > 0) ? ($ihpGravida + 1) : 1;
@@ -554,5 +624,99 @@ class PatientController extends Controller {
         ];
 
         $this->json($response);
+    }
+
+    /**
+     * Export active patient directory records to CSV with official DOH/CHO preamble.
+     */
+    public function export() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Apply filters
+        $filters = [
+            'search' => trim($_GET['search'] ?? ''),
+            'sex' => trim($_GET['sex'] ?? ''),
+            'age_group' => trim($_GET['age_group'] ?? ''),
+            'phic_status' => trim($_GET['phic_status'] ?? '')
+        ];
+
+        $patients = $this->patientModel->allActive($filters);
+
+        $filename = 'patient_directory_' . date('Y-m-d_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        // Write UTF-8 BOM for Microsoft Excel compatibility
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        $generatedBy = $_SESSION['user_fullname'] ?? $_SESSION['username'] ?? 'Staff Personnel';
+        $filterDesc = [];
+        if (!empty($filters['search'])) $filterDesc[] = 'Search: "' . $filters['search'] . '"';
+        if (!empty($filters['age_group'])) $filterDesc[] = 'Age: ' . ucfirst($filters['age_group']);
+        if (!empty($filters['sex'])) $filterDesc[] = 'Sex: ' . $filters['sex'];
+        if (!empty($filters['phic_status'])) $filterDesc[] = 'PhilHealth: ' . ucfirst($filters['phic_status']);
+        $filterSummary = !empty($filterDesc) ? implode(', ', $filterDesc) : 'All Active Records';
+
+        // Write official health center metadata preamble block
+        fputcsv($output, ['BARANGAY SINALHAN HEALTH CENTER - CITY HEALTH OFFICE OF SANTA ROSA']);
+        fputcsv($output, ['System Export Report', 'Master Patient Directory & Census']);
+        fputcsv($output, ['Active Filter Scope', $filterSummary]);
+        fputcsv($output, ['Total Records Exported', count($patients)]);
+        fputcsv($output, ['Exported By', $generatedBy, 'Export Timestamp', date('Y-m-d H:i:s')]);
+        fputcsv($output, []); // Blank separator row
+
+        // CSV Column Headers (no barangay column, uses Full Address)
+        fputcsv($output, [
+            'Patient No.',
+            'Last Name',
+            'First Name',
+            'Middle Name',
+            'Suffix',
+            'Date of Birth',
+            'Age',
+            'Sex',
+            'Civil Status',
+            'Full Address',
+            'Contact No.',
+            'PhilHealth Status',
+            'PhilHealth PIN',
+            'Physical Folder / Envelope No.',
+            'Family Household Folder No.',
+            'Registration Date'
+        ]);
+
+        foreach ($patients as $p) {
+            $regDate = !empty($p['created_at']) ? date('Y-m-d H:i', strtotime($p['created_at'])) : '-';
+            $dobFormatted = !empty($p['dob']) ? date('Y-m-d', strtotime($p['dob'])) : '-';
+
+            fputcsv($output, [
+                $p['patient_no'] ?? '',
+                $p['last_name'] ?? '',
+                $p['first_name'] ?? '',
+                $p['middle_name'] ?? '',
+                $p['suffix'] ?? '',
+                $dobFormatted,
+                isset($p['age']) ? $p['age'] . ' yrs' : '',
+                $p['sex'] ?? '',
+                $p['civil_status'] ?? '',
+                $p['address'] ?? '',
+                $p['contact_no'] ?? '',
+                $p['phic_status'] ?? 'None',
+                $p['philhealth_no'] ?? '',
+                $p['envelope_no'] ?? '',
+                $p['family_no'] ?? '',
+                $regDate
+            ]);
+        }
+
+        fclose($output);
+        exit;
     }
 }

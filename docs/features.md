@@ -58,17 +58,17 @@ Vitals are automatically scanned against ranges and highlighted in the profile h
 
 ---
 
-## 3. Clinical Consultations (SOAP Notes)
+## 3. Clinical Consultation Ledger (IHP Part II)
 
-Provides structured clinical documentation following the global medical **SOAP** framework:
+Provides structured clinical documentation conforming to the official DOH / PhilHealth Individual Health Profile (IHP Page 4: Part II Clinical Consultation Ledger):
 
-* **Subjective (S)**: Patient's chief complaint, active symptoms, and history of present illness.
-* **Objective (O)**: Clinical measurements. Users can link the patient's latest recorded vital signs directly to the checkup.
-* **Assessment (A)**: Diagnosis, diagnostic impressions, and clinical findings.
-* **Plan (P)**: Recommendations, structured prescriptions, or follow-up instructions.
+* **History of Present Illness**: Patient's chief complaint, reported symptoms, timeline, and history of present illness.
+* **Physical Exam**: Objective clinical observations, organ findings, and linked vital signs.
+* **Assessment / Impression**: Primary clinical diagnosis, secondary impressions, or differential diagnosis.
+* **Treatment**: Non-pharmacological advice, lab recommendations, structured prescriptions, and follow-up return schedule.
 
 ### 3.1 Asynchronous Detail Viewer
-A consultation history log is displayed on the patient's profile. Clicking **View Details** triggers an AJAX load, rendering the SOAP notes and linked vital signs within a clean modal popup without reloading the main profile.
+A consultation history log is displayed on the patient's profile in the Clinical Consultation Ledger tab. Clicking **View Details** triggers an AJAX load, rendering the ledger entry and linked vital signs within a clean modal popup without reloading the main profile.
 
 ---
 
@@ -207,7 +207,7 @@ An integrated safety engine that scans clinical histories and renders contextual
 * **Allergy Alert Banner**: Prominently warns clinicians if a patient has documented drug, food, or contact allergies (e.g., Penicillin, Seafood) to prevent adverse medication events during consultation.
 * **Maternal Pre-Eclampsia High-Risk Banner**: Warns healthcare workers if an expectant mother has diagnosed hypertension, elevated BP, or pre-eclampsia history, advising immediate blood pressure checks and urine protein monitoring.
 * **Chronic NCD Warning Banners**: Contextual badges indicating active chronic conditions (Hypertension, Diabetes Mellitus, Bronchial Asthma) to encourage comprehensive chronic care management during routine visits.
-* **Vital Signs Quick Strip**: Displays latest recorded vitals directly within the SOAP consultation editor so clinicians don't need to switch between screens to review blood pressure, heart rate, or temperature.
+* **Vital Signs Quick Strip**: Displays latest recorded vitals directly within the consultation editor so clinicians don't need to switch between screens to review blood pressure, heart rate, or temperature.
 
 ---
 
@@ -353,7 +353,7 @@ The Clinical Care Workstation (`/patients/{id}`) provides an integrated, multi-t
 ### 14.1 Direct Inline Action Buttons Architecture
 Across all active clinical tables, actions are rendered as direct, high-contrast inline icon buttons rather than nested dropdowns. This permanently resolves `.table-responsive` overflow clipping and container scrollbar jumpiness, which previously caused menus to be cropped when tables contained fewer than 3 records:
 * **Consultations (`#tab-consultations`)**:
-  * **View SOAP Details** (`.view-consultation-btn`, `bi bi-eye`): Launches `#viewConsultationModal` via AJAX to review Subjective, Objective, Assessment, and Plan notes alongside linked vitals.
+  * **View Consultation Record** (`.view-consultation-btn`, `bi bi-eye`): Launches `#viewConsultationModal` via AJAX to review History of Present Illness, Physical Exam, Assessment / Impression, and Treatment notes alongside linked vitals.
   * **Archive (Soft-Delete) Consultation** (`.btn-archive-consultation`, `bi bi-archive`): Prompts for a mandatory archive reason via SweetAlert2, soft-deleting the consultation with CSRF protection and moving it to the Archived Records Hub.
 * **Vital Signs Log (`#tab-vitals`)**:
   * **View All Metrics & Notes** (`.btn-view-vitals`, `bi bi-eye`): Opens the comprehensive `#viewVitalsModal` showcasing complete anthropometric and physiological data.
@@ -391,7 +391,7 @@ To prevent unauthorized deletion of clinical data, strict authorization checks a
 * **Defense-in-Depth CSRF**: Endpoints (`/vital-signs/{id}/delete`, `/immunizations/{id}/delete`, `/prenatal/visit/{id}/delete`) strictly enforce `hash_equals(csrf_token(), $_POST['csrf_token'])`. Missing or forged tokens trigger immediate `SECURITY_VIOLATION` audit log entries.
 
 ### 14.4 Relational Safety Lock (Active Consultation Linkage)
-To protect clinical audit trails and ensure consultation SOAP notes do not lose their objective physiological basis:
+To protect clinical audit trails and ensure consultation records do not lose their objective physiological basis:
 * Vital signs linked to an **active consultation** cannot be deleted (`VitalSigns::isLinkedToActiveConsultation($id)`).
 * If a staff member or administrator attempts to delete a vital signs record referenced by an active consultation (`deleted_at IS NULL`), the deletion is blocked with a descriptive error message: *"This vital signs record is linked to an active consultation. Please archive or remove the consultation first."*
 * Once the linked consultation is soft-deleted (archived), the vital signs record may be deleted.

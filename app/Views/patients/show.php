@@ -6,6 +6,8 @@
  * @var array $vitalsHistory Vital signs history
  * @var array|false $latestVitals Latest vital signs
  * @var array $consultationsHistory Consultation records
+ * @var array|null $latestConsultation Latest clinical consultation encounter
+ * @var array $latestConsultationPrescriptions Prescriptions attached to latest consultation
  * @var array $appointmentsHistory Appointment history
  * @var array $queueHistory Daily queue history logs
  * @var array|false $medicalHistory Annex A1 IHP Medical History
@@ -126,7 +128,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                 </button>
             </li>
 
-            <!-- Tab 4: Consultations (SOAP) -->
+            <!-- Tab 4: Clinical Consultation Ledger -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-consultations-btn" data-bs-toggle="tab" data-bs-target="#tab-consultations" type="button" role="tab">
                     <i class="bi bi-clipboard2-pulse-fill me-1"></i> Consultations
@@ -174,7 +176,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
             <!-- Tab 3: PHIC / PCB Patient Ledger -->
             <?php require __DIR__ . '/partials/tab_pcb.php'; ?>
 
-            <!-- Tab 4: Consultations (SOAP Notes) -->
+            <!-- Tab 4: Clinical Consultation Ledger -->
             <?php require __DIR__ . '/partials/tab_consultations.php'; ?>
 
             <!-- Tab 5: Vital Signs History Log -->

@@ -194,7 +194,7 @@ class WellbabyRecord extends Model {
     public function getRegisteredRoster($search = '') {
         $sql = "SELECT wb.*, 
                        p.id AS patient_id, p.patient_no, p.envelope_no, p.first_name, p.last_name, 
-                       p.middle_name, p.suffix, p.dob, p.sex, p.barangay,
+                       p.middle_name, p.suffix, p.dob, p.sex, p.address, p.barangay,
                        TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
                        TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age_years,
                        m.id AS mother_id, m.first_name AS mother_first_name, m.last_name AS mother_last_name, m.patient_no AS mother_patient_no,

@@ -30,6 +30,7 @@ return function (\App\Core\Router $router) {
 
     // Patient Management Routes
     $router->get('/patients', 'PatientController@index', [AuthMiddleware::class]);
+    $router->get('/patients/export', 'PatientController@export', [AuthMiddleware::class]);
     $router->get('/patients/create', 'PatientController@create', [AuthMiddleware::class]);
     $router->post('/patients', 'PatientController@store', [AuthMiddleware::class]);
     $router->get('/patients/check-duplicate', 'PatientController@checkDuplicate', [AuthMiddleware::class]);
@@ -55,8 +56,9 @@ return function (\App\Core\Router $router) {
     $router->post('/prenatal/visit/{id}/delete', 'PrenatalController@deleteVisit', [AuthMiddleware::class]);
     $router->post('/prenatal/visit/{id}/update', 'PrenatalController@updateVisit', [AuthMiddleware::class]);
 
-    // Maternal AJAX Search & Patient Data API
+    // Patient AJAX Search & Data APIs
     $router->get('/api/patients/search/female', 'PatientController@searchFemale', [AuthMiddleware::class]);
+    $router->get('/api/patients/search/all', 'PatientController@searchAll', [AuthMiddleware::class]);
     $router->get('/api/patients/{id}/maternal-data', 'PatientController@getMaternalData', [AuthMiddleware::class]);
 
     // PhilHealth PCB Patient Ledger Routes (Page 3)
@@ -88,6 +90,7 @@ return function (\App\Core\Router $router) {
     $router->post('/vital-signs/{id}/update', 'VitalSignsController@update', [AuthMiddleware::class]);
 
     // Consultation Routes
+    $router->get('/consultations/create', 'ConsultationController@create', [AuthMiddleware::class]);
     $router->get('/patients/{id}/consultations/create', 'ConsultationController@create', [AuthMiddleware::class]);
     $router->post('/consultations', 'ConsultationController@store', [AuthMiddleware::class]);
     $router->get('/consultations/{id}', 'ConsultationController@show', [AuthMiddleware::class]);
@@ -113,6 +116,7 @@ return function (\App\Core\Router $router) {
     $router->post('/queue/{id}/status', 'QueueController@updateStatus', [AuthMiddleware::class]);
     $router->get('/queue/display', 'QueueController@display');
     $router->get('/queue/display-data', 'QueueController@displayData');
+    $router->get('/api/queue/active-today', 'QueueController@activeToday', [AuthMiddleware::class]);
 
     // Reports Routes
     $router->get('/reports', 'ReportController@index', [AuthMiddleware::class]);

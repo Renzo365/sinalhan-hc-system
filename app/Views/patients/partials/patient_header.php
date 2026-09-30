@@ -67,16 +67,9 @@
                     } else {
                         $demographicsItems[] = '<span>Blood: <span class="text-muted">Unknown</span></span>';
                     }
-                    if (!empty($patient['philhealth_no'])) {
-                        $demographicsItems[] = '<span>PHIC: <span class="font-monospace text-dark">' . h($patient['philhealth_no']) . '</span></span>';
-                    }
                     ?>
                     <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary">
                         <?= implode('<span class="text-muted">&bull;</span>', $demographicsItems) ?>
-                    </div>
-                    <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
-                        <i class="bi bi-geo-alt text-muted flex-shrink-0"></i>
-                        <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
                     </div>
 
                     <?php if (!empty($cdsAlerts['has_alerts'])): ?>
@@ -93,21 +86,33 @@
             </div>
 
             <!-- Right: Patient-Level Action Controls -->
-            <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
+            <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
                 <button type="button" class="btn btn-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#enqueuePatientModal" title="Check-in Patient to Today's Queue">
                     <i class="bi bi-person-check-fill me-1"></i> Check-in to Queue
                 </button>
                 <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Edit Patient Identity & Demographics">
                     <i class="bi bi-pencil-square me-1"></i> Edit Profile
                 </a>
-                <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Print Patient Profile">
-                    <i class="bi bi-printer me-1"></i> Print Chart
-                </button>
-                <?php if (is_admin()): ?>
-                    <button type="button" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#archivePatientModal" title="Archive Patient Record">
-                        <i class="bi bi-archive me-1"></i> Archive
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm px-2.5 py-1.5 shadow-xs d-flex align-items-center" type="button" id="patientMoreActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
+                        <i class="bi bi-three-dots-vertical"></i>
                     </button>
-                <?php endif; ?>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1" aria-labelledby="patientMoreActionsDropdown">
+                        <li>
+                            <button type="button" onclick="window.print()" class="dropdown-item small d-flex align-items-center py-2">
+                                <i class="bi bi-printer me-2 text-secondary"></i> Print Chart
+                            </button>
+                        </li>
+                        <?php if (is_admin()): ?>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <button type="button" class="dropdown-item small text-danger d-flex align-items-center py-2" data-bs-toggle="modal" data-bs-target="#archivePatientModal">
+                                    <i class="bi bi-archive me-2 text-danger"></i> Archive Patient
+                                </button>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </div>
             </div>
 
         </div>

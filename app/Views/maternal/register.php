@@ -191,8 +191,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                             <span class="fw-semibold text-dark text-truncate d-block" id="cardAddress">
                                                 <?php 
                                                     if (!empty($preselectedPatient)) {
-                                                        $addr = array_filter([$preselectedPatient['address'] ?? '', $preselectedPatient['barangay'] ?? '', 'Santa Rosa, Laguna']);
-                                                        echo h(implode(', ', $addr) ?: 'Barangay Sinalhan, Santa Rosa, Laguna');
+                                                        echo h(!empty(trim($preselectedPatient['address'] ?? '')) ? trim($preselectedPatient['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna');
                                                     } else {
                                                         echo '--';
                                                     }

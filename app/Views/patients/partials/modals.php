@@ -2,7 +2,7 @@
    UNIVERSAL IMMUNIZATION MODAL (Any Patient)
    ========================================================================== -->
 <div class="modal fade" id="recordImmunizationModal" tabindex="-1" aria-labelledby="recordImmunizationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="recordImmunizationModalLabel">
@@ -18,7 +18,7 @@
                 <div class="modal-body p-4 bg-white small">
                     <div class="mb-3">
                         <label for="vaccine_name" class="form-label fw-semibold text-secondary">Vaccine Name <span class="text-danger">*</span></label>
-                        <select name="vaccine_name" class="form-select" required>
+                        <select name="vaccine_name" id="vaccine_name" class="form-select" required>
                             <option value="">-- Select Vaccine --</option>
                             <optgroup label="Routine Infant EPI">
                                 <option value="BCG">BCG</option>
@@ -44,11 +44,11 @@
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <label for="dose_number" class="form-label fw-semibold text-secondary">Dose Number <span class="text-danger">*</span></label>
-                            <input type="number" name="dose_number" class="form-control font-monospace" value="1" min="1" max="10" required>
+                            <input type="number" name="dose_number" id="dose_number" class="form-control font-monospace" value="1" min="1" max="10" required>
                         </div>
                         <div class="col-6">
                             <label for="administered_date" class="form-label fw-semibold text-secondary">Administered Date <span class="text-danger">*</span></label>
-                            <input type="date" name="administered_date" class="form-control  bg-white" value="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="administered_date" id="administered_date" class="form-control bg-white" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 
@@ -56,7 +56,7 @@
                         <div class="row g-3 mb-3">
                             <div class="col-6">
                                 <label for="source" class="form-label fw-semibold text-secondary">Source</label>
-                                <select name="source" class="form-select">
+                                <select name="source" id="source" class="form-select">
                                     <option value="Health Center">Health Center</option>
                                     <option value="External">External facility</option>
                                     <option value="Patient Reported">Patient/parent reported</option>
@@ -65,7 +65,7 @@
                             </div>
                             <div class="col-6">
                                 <label for="documentation_status" class="form-label fw-semibold text-secondary">Documentation status</label>
-                                <select name="documentation_status" class="form-select">
+                                <select name="documentation_status" id="documentation_status" class="form-select">
                                     <option value="Administered">Administered</option>
                                     <option value="Reported">Reported</option>
                                     <option value="Unknown">Unknown</option>
@@ -73,7 +73,7 @@
                             </div>
                         </div>
                         <label for="remarks" class="form-label fw-semibold text-secondary">Remarks / Lot No. / Site</label>
-                        <input type="text" name="remarks" class="form-control" placeholder="e.g. Lot #ABC-123, Left Deltoid, Bakuna Eskwela">
+                        <input type="text" name="remarks" id="remarks" class="form-control" placeholder="e.g. Lot #ABC-123, Left Deltoid, Bakuna Eskwela">
                     </div>
                 </div>
                 
@@ -90,7 +90,7 @@
    VITAL SIGNS RECORDING MODAL
    ========================================================================== -->
 <div class="modal fade" id="addVitalsModal" tabindex="-1" aria-labelledby="addVitalsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="addVitalsModalLabel">
@@ -223,7 +223,7 @@
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-white py-3 border-bottom" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold text-dark" id="viewConsultationModalLabel">
-                    <i class="bi bi-journal-medical text-primary me-2"></i>Consultation Details (SOAP Notes)
+                    <i class="bi bi-journal-medical text-primary me-2"></i>Clinical Consultation Record
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -237,8 +237,8 @@
                 </div>
             </div>
             
-            <div class="modal-footer bg-light py-2.5 px-3 border-top d-flex justify-content-between align-items-center" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button type="button" class="btn btn-outline-dark btn-sm px-3 d-inline-flex align-items-center" onclick="window.print()">
+            <div class="modal-footer bg-light py-2.5 px-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center" onclick="window.print()">
                     <i class="bi bi-printer me-1.5"></i> Print Record
                 </button>
                 <div class="d-flex align-items-center gap-2" id="consultationModalFooterRight">
@@ -347,7 +347,7 @@
    EDIT VITAL SIGNS MODAL
    ========================================================================== -->
 <div class="modal fade" id="editVitalsModal" tabindex="-1" aria-labelledby="editVitalsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="editVitalsModalLabel">
@@ -475,7 +475,7 @@
    EDIT PCB SERVICE ENCOUNTER MODAL
    ========================================================================== -->
 <div class="modal fade" id="editPcbServiceModal" tabindex="-1" aria-labelledby="editPcbServiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="editPcbServiceModalLabel">
@@ -501,7 +501,7 @@
                         <!-- Service Date -->
                         <div class="col-12 col-md-6">
                             <label for="editPcbDate" class="form-label fw-semibold text-secondary small">Encounter Date <span class="text-danger">*</span></label>
-                            <input type="date" name="service_date" id="editPcbDate" class="form-control" required>
+                            <input type="date" name="service_date" id="editPcbDate" class="form-control" max="<?= date('Y-m-d') ?>" required>
                         </div>
 
                         <!-- Diagnosis -->
@@ -675,7 +675,7 @@
    MODAL: EDIT IMMUNIZATION RECORD
    ========================================================================== -->
 <div class="modal fade" id="editImmunizationModal" tabindex="-1" aria-labelledby="editImmunizationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="editImmunizationModalLabel">
@@ -721,7 +721,7 @@
                         </div>
                         <div class="col-6">
                             <label for="edit_imm_administered_date" class="form-label fw-semibold text-secondary">Administered Date <span class="text-danger">*</span></label>
-                            <input type="date" name="administered_date" id="edit_imm_administered_date" class="form-control bg-white" required>
+                            <input type="date" name="administered_date" id="edit_imm_administered_date" class="form-control bg-white" max="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 
@@ -858,7 +858,7 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light py-2 px-4 border-top" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                    <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">
                         <i class="bi bi-check-lg me-1"></i> Issue Queue Number
                     </button>
@@ -872,7 +872,7 @@
    RECORD DIAGNOSTIC / PCB SERVICE MODAL (PAGE 3)
    ========================================================================== -->
 <div class="modal fade" id="recordPcbServiceModal" tabindex="-1" aria-labelledby="recordPcbServiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="recordPcbServiceModalLabel">
@@ -899,7 +899,7 @@
                         <!-- Service Date -->
                         <div class="col-12 col-md-6">
                             <label for="modal_service_date" class="form-label fw-semibold text-secondary small">Encounter Date <span class="text-danger">*</span></label>
-                            <input type="date" name="service_date" id="modal_service_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="service_date" id="modal_service_date" class="form-control" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>" required>
                         </div>
 
                         <!-- Diagnosis -->
@@ -973,7 +973,7 @@
    UPDATE OBLIGATED PREVENTIVE SERVICES MODAL (PAGE 3)
    ========================================================================== -->
 <div class="modal fade" id="obligatedEditModal" tabindex="-1" aria-labelledby="obligatedEditModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold" id="obligatedEditModalLabel">
@@ -1011,20 +1011,20 @@
                             <h6 class="small fw-bold text-dark mb-1">1. BP Measurements (Dates Performed)</h6>
                             <div class="row g-2">
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">1st Qtr (Jan-Mar)</label>
-                                    <input type="date" name="bp_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q1'] ?? '') ?>">
+                                    <label for="bp_q1" class="form-label small text-muted mb-1">1st Qtr (Jan-Mar)</label>
+                                    <input type="date" name="bp_q1" id="bp_q1" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q1'] ?? '') ?>">
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">2nd Qtr (Apr-Jun)</label>
-                                    <input type="date" name="bp_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q2'] ?? '') ?>">
+                                    <label for="bp_q2" class="form-label small text-muted mb-1">2nd Qtr (Apr-Jun)</label>
+                                    <input type="date" name="bp_q2" id="bp_q2" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q2'] ?? '') ?>">
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">3rd Qtr (Jul-Sep)</label>
-                                    <input type="date" name="bp_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q3'] ?? '') ?>">
+                                    <label for="bp_q3" class="form-label small text-muted mb-1">3rd Qtr (Jul-Sep)</label>
+                                    <input type="date" name="bp_q3" id="bp_q3" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q3'] ?? '') ?>">
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">4th Qtr (Oct-Dec)</label>
-                                    <input type="date" name="bp_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q4'] ?? '') ?>">
+                                    <label for="bp_q4" class="form-label small text-muted mb-1">4th Qtr (Oct-Dec)</label>
+                                    <input type="date" name="bp_q4" id="bp_q4" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['bp_q4'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
@@ -1034,20 +1034,20 @@
                             <h6 class="small fw-bold text-dark mb-1">2. Periodic Clinical Breast Examination (Dates Performed)</h6>
                             <div class="row g-2">
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">1st Qtr</label>
-                                    <input type="date" name="cbe_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q1'] ?? '') ?>">
+                                    <label for="cbe_q1" class="form-label small text-muted mb-1">1st Qtr</label>
+                                    <input type="date" name="cbe_q1" id="cbe_q1" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q1'] ?? '') ?>">
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">2nd Qtr</label>
-                                    <input type="date" name="cbe_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q2'] ?? '') ?>">
+                                    <label for="cbe_q2" class="form-label small text-muted mb-1">2nd Qtr</label>
+                                    <input type="date" name="cbe_q2" id="cbe_q2" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q2'] ?? '') ?>">
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">3rd Qtr</label>
-                                    <input type="date" name="cbe_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q3'] ?? '') ?>">
+                                    <label for="cbe_q3" class="form-label small text-muted mb-1">3rd Qtr</label>
+                                    <input type="date" name="cbe_q3" id="cbe_q3" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q3'] ?? '') ?>">
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label small text-muted mb-1">4th Qtr</label>
-                                    <input type="date" name="cbe_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q4'] ?? '') ?>">
+                                    <label for="cbe_q4" class="form-label small text-muted mb-1">4th Qtr</label>
+                                    <input type="date" name="cbe_q4" id="cbe_q4" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['cbe_q4'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
@@ -1058,28 +1058,28 @@
                                 <h6 class="small fw-bold text-dark mb-1">3. Visual Inspection with Acetic Acid / VIA (Dates Performed)</h6>
                                 <div class="row g-2">
                                     <div class="col-6 col-md-3">
-                                        <label class="form-label small text-muted mb-1">1st Qtr</label>
-                                        <input type="date" name="via_q1" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
+                                        <label for="via_q1" class="form-label small text-muted mb-1">1st Qtr</label>
+                                        <input type="date" name="via_q1" id="via_q1" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q1'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-md-3">
-                                        <label class="form-label small text-muted mb-1">2nd Qtr</label>
-                                        <input type="date" name="via_q2" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
+                                        <label for="via_q2" class="form-label small text-muted mb-1">2nd Qtr</label>
+                                        <input type="date" name="via_q2" id="via_q2" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q2'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-md-3">
-                                        <label class="form-label small text-muted mb-1">3rd Qtr</label>
-                                        <input type="date" name="via_q3" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
+                                        <label for="via_q3" class="form-label small text-muted mb-1">3rd Qtr</label>
+                                        <input type="date" name="via_q3" id="via_q3" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q3'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-md-3">
-                                        <label class="form-label small text-muted mb-1">4th Qtr</label>
-                                        <input type="date" name="via_q4" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
+                                        <label for="via_q4" class="form-label small text-muted mb-1">4th Qtr</label>
+                                        <input type="date" name="via_q4" id="via_q4" min="<?= $pcbYear ?>-01-01" max="<?= $pcbYear ?>-12-31" class="form-control form-control-sm" value="<?= h($pcbObligated['via_q4'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
                         <?php endif; ?>
 
                         <div class="col-12">
-                            <label class="form-label small text-muted mb-1">Clinical Remarks / Compliance Notes</label>
-                            <input type="text" name="remarks" class="form-control form-control-sm" placeholder="e.g. Regular compliance, hypertensive medications prescribed..." value="<?= h($pcbObligated['remarks'] ?? '') ?>">
+                            <label for="pcb_obligated_remarks" class="form-label small text-muted mb-1">Clinical Remarks / Compliance Notes</label>
+                            <input type="text" name="remarks" id="pcb_obligated_remarks" class="form-control form-control-sm" placeholder="e.g. Regular compliance, hypertensive medications prescribed..." value="<?= h($pcbObligated['remarks'] ?? '') ?>">
                         </div>
                     </div>
                 </div>

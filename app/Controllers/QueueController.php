@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\QueueEntry;
 use App\Models\Patient;
+use App\Models\Appointment;
 use App\Models\AuditLog;
 use PDO;
 
 class QueueController extends Controller {
     protected $queueModel;
     protected $patientModel;
+    protected $appointmentModel;
 
     public function __construct() {
         $this->queueModel = new QueueEntry();
         $this->patientModel = new Patient();
+        $this->appointmentModel = new Appointment();
     }
 
     /**
@@ -26,7 +29,20 @@ class QueueController extends Controller {
         }
 
         $queueList = $this->queueModel->findAllToday();
-        $patients = $this->patientModel->allActive();
+        $queueStats = $this->queueModel->getTodayStats();
+
+        // Fetch today's scheduled appointments for quick intake check-in
+        $today = date('Y-m-d');
+        $todayAppointments = $this->appointmentModel->findAll([
+            'date_from' => $today,
+            'date_to' => $today,
+            'status' => 'Scheduled'
+        ]);
+
+        $preselectedPatient = null;
+        if (!empty($_GET['patient_id'])) {
+            $preselectedPatient = $this->patientModel->findById((int)$_GET['patient_id']);
+        }
 
         $errors = $_SESSION['form_errors'] ?? [];
         $input = $_SESSION['form_input'] ?? [];
@@ -36,7 +52,9 @@ class QueueController extends Controller {
 
         $this->view('queue/index', [
             'queueList' => $queueList,
-            'patients' => $patients,
+            'queueStats' => $queueStats,
+            'todayAppointments' => $todayAppointments,
+            'preselectedPatient' => $preselectedPatient,
             'errors' => $errors,
             'input' => $input
         ]);
@@ -63,7 +81,12 @@ class QueueController extends Controller {
         if ($this->queueModel->isPatientQueuedToday($patientId)) {
             $_SESSION['error_message'] = 'Patient is already registered in today\'s active queue.';
             $_SESSION['form_errors'] = ['Patient is already registered in today\'s active queue.'];
-            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/queue');
+            $referrer = $_SERVER['HTTP_REFERER'] ?? '';
+            if (strpos($referrer, 'patients') !== false) {
+                $this->redirect("/patients/{$patientId}#tab-appointments");
+            } else {
+                $this->redirect('/queue');
+            }
             return;
         }
 
@@ -84,8 +107,10 @@ class QueueController extends Controller {
         if ($newId) {
             $queueEntry = $this->queueModel->findById($newId);
             $queueNoStr = sprintf('%03d', $queueEntry['queue_no']);
+            $appointmentId = !empty($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : null;
             
-            AuditLog::log('QUEUE_REGISTERED', 'Queue', "Enqueued patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}) for [{$serviceType}] with Queue No: {$queueNoStr}");
+            $logExtra = $appointmentId ? " (Checked in from Appointment #{$appointmentId})" : "";
+            AuditLog::log('QUEUE_REGISTERED', 'Queue', "Enqueued patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}) for [{$serviceType}] with Queue No: {$queueNoStr}{$logExtra}");
             
             $_SESSION['success_message'] = "Patient successfully enqueued! Queue No: {$queueNoStr}";
             
@@ -141,14 +166,29 @@ class QueueController extends Controller {
         $userId = $_SESSION['user_id'];
         $queueNoStr = sprintf('%03d', $queueEntry['queue_no']);
 
+        $isRecall = ($queueEntry['status'] === 'Called' && $status === 'Called');
+        $cancelReason = !empty($_POST['cancel_reason']) ? ' [Reason: ' . trim($_POST['cancel_reason']) . ']' : '';
+
         if ($this->queueModel->updateStatus($id, $status, $userId)) {
-            AuditLog::log('QUEUE_STATUS_UPDATED', 'Queue', "Updated Queue No: {$queueNoStr} status to: {$status} for patient ID: {$queueEntry['patient_id']}");
+            $logAction = $isRecall 
+                ? "Re-called Queue No: {$queueNoStr} (audio announcement triggered)" 
+                : "Updated Queue No: {$queueNoStr} status to: {$status}{$cancelReason} for patient ID: {$queueEntry['patient_id']}";
+            AuditLog::log('QUEUE_STATUS_UPDATED', 'Queue', $logAction);
             
+            $successMsg = $isRecall 
+                ? "Queue No: {$queueNoStr} announcement re-triggered on public display!" 
+                : ($status === 'Cancelled' ? "Queue No: {$queueNoStr} has been cancelled." : "Queue No: {$queueNoStr} updated to {$status}.");
+
             if ($this->isAjax()) {
-                $this->json(['success' => true, 'message' => "Queue No: {$queueNoStr} marked as {$status}."]);
+                $this->json(['success' => true, 'message' => $successMsg]);
             } else {
-                $_SESSION['success_message'] = "Queue No: {$queueNoStr} updated to {$status}.";
-                $this->redirect($_SERVER['HTTP_REFERER'] ?? '/queue');
+                $_SESSION['success_message'] = $successMsg;
+                $referrer = $_SERVER['HTTP_REFERER'] ?? '';
+                if (strpos($referrer, 'patients') !== false) {
+                    $this->redirect("/patients/{$queueEntry['patient_id']}#tab-appointments");
+                } else {
+                    $this->redirect('/queue');
+                }
             }
         } else {
             if ($this->isAjax()) {
@@ -174,6 +214,30 @@ class QueueController extends Controller {
     public function displayData() {
         $data = $this->queueModel->getPublicDisplayData();
         $this->json($data);
+    }
+
+    /**
+     * AJAX JSON endpoint delivering active queue items, metrics, and bookings for 15s multi-station sync.
+     */
+    public function activeToday() {
+        $queueList = $this->queueModel->findAllToday();
+        $stats = $this->queueModel->getTodayStats();
+
+        $today = date('Y-m-d');
+        $todayAppointments = $this->appointmentModel->findAll([
+            'date_from' => $today,
+            'date_to' => $today,
+            'status' => 'Scheduled'
+        ]);
+
+        $this->json([
+            'success' => true,
+            'stats' => $stats,
+            'queue' => $queueList,
+            'appointments' => $todayAppointments,
+            'timestamp' => date('Y-m-d H:i:s'),
+            'server_time' => date('h:i:s A')
+        ]);
     }
 
     /**

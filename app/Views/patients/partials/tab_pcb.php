@@ -70,16 +70,29 @@
                             </div>
 
                             <!-- Read-Only Table View matching Page 3 -->
+                            <?php
+                            $curYearVal = (int)date('Y');
+                            $curQtrVal = (int)ceil(date('n') / 3);
+                            $formatQtrCell = function($dateVal, $qtrNum, $pcbYear) use ($curYearVal, $curQtrVal) {
+                                if (!empty($dateVal)) {
+                                    return '<span class="badge bg-white text-dark border font-monospace shadow-2xs">' . date('M d, Y', strtotime($dateVal)) . '</span>';
+                                }
+                                if ($pcbYear < $curYearVal || ($pcbYear === $curYearVal && $curQtrVal >= $qtrNum)) {
+                                    return '<span class="badge bg-light text-secondary-emphasis border border-secondary-subtle px-2 py-0.5" style="font-size: 0.72rem;" title="Quarter completed without recorded encounter">Due / Pending</span>';
+                                }
+                                return '<span class="badge bg-light text-muted border-0 px-2 py-0.5 opacity-75" style="font-size: 0.72rem;" title="Upcoming quarter">&mdash;</span>';
+                            };
+                            ?>
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0 text-center small">
                                     <thead class="table-light">
                                         <tr>
                                             <th class="text-start ps-3" style="width: 32%;">Primary Preventive Services</th>
                                             <th style="width: 18%;">Frequency</th>
-                                            <th style="width: 12.5%;">1<sup>st</sup> Qtr</th>
-                                            <th style="width: 12.5%;">2<sup>nd</sup> Qtr</th>
-                                            <th style="width: 12.5%;">3<sup>rd</sup> Qtr</th>
-                                            <th style="width: 12.5%;" class="pe-3">4<sup>th</sup> Qtr</th>
+                                            <th style="width: 12.5%; min-width: 95px;">1<sup>st</sup> Qtr</th>
+                                            <th style="width: 12.5%; min-width: 95px;">2<sup>nd</sup> Qtr</th>
+                                            <th style="width: 12.5%; min-width: 95px;">3<sup>rd</sup> Qtr</th>
+                                            <th style="width: 12.5%; min-width: 95px;" class="pe-3">4<sup>th</sup> Qtr</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -96,20 +109,20 @@
                                             <td>
                                                 <?= !empty($pcbObligated['is_hypertensive']) ? '<span class="text-danger fw-medium">Once a month</span>' : '<span class="text-muted">Once a year</span>' ?>
                                             </td>
-                                            <td><?= !empty($pcbObligated['bp_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td><?= !empty($pcbObligated['bp_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td><?= !empty($pcbObligated['bp_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td class="pe-3"><?= !empty($pcbObligated['bp_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['bp_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= $formatQtrCell($pcbObligated['bp_q1'] ?? null, 1, $pcbYear) ?></td>
+                                            <td><?= $formatQtrCell($pcbObligated['bp_q2'] ?? null, 2, $pcbYear) ?></td>
+                                            <td><?= $formatQtrCell($pcbObligated['bp_q3'] ?? null, 3, $pcbYear) ?></td>
+                                            <td class="pe-3"><?= $formatQtrCell($pcbObligated['bp_q4'] ?? null, 4, $pcbYear) ?></td>
                                         </tr>
 
                                         <!-- Service 2: Periodic Clinical Breast Exam -->
                                         <tr>
                                             <td class="text-start ps-3 fw-bold text-dark">2. Periodic Clinical Breast Examination</td>
                                             <td class="text-muted">Once a year</td>
-                                            <td><?= !empty($pcbObligated['cbe_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td><?= !empty($pcbObligated['cbe_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td><?= !empty($pcbObligated['cbe_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                            <td class="pe-3"><?= !empty($pcbObligated['cbe_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['cbe_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                            <td><?= $formatQtrCell($pcbObligated['cbe_q1'] ?? null, 1, $pcbYear) ?></td>
+                                            <td><?= $formatQtrCell($pcbObligated['cbe_q2'] ?? null, 2, $pcbYear) ?></td>
+                                            <td><?= $formatQtrCell($pcbObligated['cbe_q3'] ?? null, 3, $pcbYear) ?></td>
+                                            <td class="pe-3"><?= $formatQtrCell($pcbObligated['cbe_q4'] ?? null, 4, $pcbYear) ?></td>
                                         </tr>
 
                                         <!-- Service 3: Visual Inspection with Acetic Acid (Applicable to Females) -->
@@ -117,10 +130,10 @@
                                             <tr>
                                                 <td class="text-start ps-3 fw-bold text-dark">3. Visual Inspection with Acetic Acid (VIA)</td>
                                                 <td class="text-muted">Once a year</td>
-                                                <td><?= !empty($pcbObligated['via_q1']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q1'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                                <td><?= !empty($pcbObligated['via_q2']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q2'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                                <td><?= !empty($pcbObligated['via_q3']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q3'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                                <td class="pe-3"><?= !empty($pcbObligated['via_q4']) ? '<span class="badge bg-light text-dark border font-monospace">' . date('M d, Y', strtotime($pcbObligated['via_q4'])) . '</span>' : '<span class="text-muted">&mdash;</span>' ?></td>
+                                                <td><?= $formatQtrCell($pcbObligated['via_q1'] ?? null, 1, $pcbYear) ?></td>
+                                                <td><?= $formatQtrCell($pcbObligated['via_q2'] ?? null, 2, $pcbYear) ?></td>
+                                                <td><?= $formatQtrCell($pcbObligated['via_q3'] ?? null, 3, $pcbYear) ?></td>
+                                                <td class="pe-3"><?= $formatQtrCell($pcbObligated['via_q4'] ?? null, 4, $pcbYear) ?></td>
                                             </tr>
                                         <?php endif; ?>
                                     </tbody>
@@ -203,7 +216,7 @@
                                                         <?php elseif ($log['service_category'] === 'PCB1'): ?>
                                                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Other PCB1</span>
                                                         <?php else: ?>
-                                                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">Other Services</span>
+                                                            <span class="badge bg-secondary-subtle text-secondary-emphasis border px-2 py-1">Other Services</span>
                                                         <?php endif; ?>
                                                     </td>
                                                     <td class="text-start fw-bold text-dark">
@@ -240,7 +253,7 @@
                                                             $canEditPcb = in_array($curRole, ['admin', 'super_admin', 'staff'], true);
                                                         ?>
                                                         <div class="d-inline-flex gap-1 justify-content-end align-items-center">
-                                                            <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-pcb-service"
+                                                            <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-primary shadow-2xs btn-view-pcb-service"
                                                                 data-id="<?= $log['id'] ?>"
                                                                 data-date="<?= date('M d, Y', strtotime($log['service_date'])) ?>"
                                                                 data-category="<?= h($log['service_category']) ?>"
@@ -250,11 +263,12 @@
                                                                 data-referred="<?= !empty($log['status_referred']) ? 'Yes (' . h($log['referred_to'] ?? 'External Provider') . ')' : 'No' ?>"
                                                                 data-remarks="<?= h($log['remarks'] ?? 'None') ?>"
                                                                 data-recorder="<?= h($log['recorder_name'] ?? 'System') ?>"
-                                                                title="View Encounter Details">
-                                                                <i class="bi bi-eye fs-6"></i>
+                                                                title="View Encounter Details"
+                                                                aria-label="View encounter details">
+                                                                <i class="bi bi-eye"></i>
                                                             </button>
                                                             <?php if ($canEditPcb): ?>
-                                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-pcb-service"
+                                                                <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-secondary shadow-2xs btn-edit-pcb-service"
                                                                     data-id="<?= $log['id'] ?>"
                                                                     data-date="<?= h($log['service_date']) ?>"
                                                                     data-category="<?= h($log['service_category']) ?>"
@@ -264,16 +278,18 @@
                                                                     data-referred="<?= !empty($log['status_referred']) ? '1' : '0' ?>"
                                                                     data-referred-to="<?= h($log['referred_to'] ?? '') ?>"
                                                                     data-remarks="<?= h($log['remarks'] ?? '') ?>"
-                                                                    title="Edit Encounter">
-                                                                    <i class="bi bi-pencil-square fs-6"></i>
+                                                                    title="Edit Encounter"
+                                                                    aria-label="Edit encounter">
+                                                                    <i class="bi bi-pencil-square"></i>
                                                                 </button>
                                                             <?php endif; ?>
                                                             <?php if ($canDeletePcb): ?>
-                                                                <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 btn-delete-pcb-service" 
+                                                                <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-danger shadow-2xs btn-delete-pcb-service" 
                                                                     data-id="<?= $log['id'] ?>" 
                                                                     data-service="<?= h($log['service_type']) ?>" 
-                                                                    title="Delete Entry">
-                                                                    <i class="bi bi-trash fs-6"></i>
+                                                                    title="Delete Entry"
+                                                                    aria-label="Delete entry">
+                                                                    <i class="bi bi-trash"></i>
                                                                 </button>
                                                             <?php endif; ?>
                                                         </div>

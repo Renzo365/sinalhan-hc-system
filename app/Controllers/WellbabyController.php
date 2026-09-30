@@ -92,8 +92,7 @@ class WellbabyController extends Controller {
 
         $data = array_map(function($p) {
             $name = trim($p['last_name'] . ', ' . $p['first_name'] . ' ' . (!empty($p['middle_name']) ? mb_substr($p['middle_name'], 0, 1) . '.' : '') . ' ' . ($p['suffix'] ?? ''));
-            $addressParts = array_filter([$p['address'] ?? '', $p['barangay'] ?? '', 'Santa Rosa, Laguna']);
-            $address = implode(', ', $addressParts);
+            $address = !empty(trim($p['address'] ?? '')) ? trim($p['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
             $months = (int)($p['age_months'] ?? 0);
             $ageLabel = $months < 12 ? "{$months} mos" : floor($months / 12) . " yr " . ($months % 12) . " mos";
 

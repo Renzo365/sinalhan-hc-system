@@ -27,9 +27,13 @@ class ReportController extends Controller {
 
         $results = [];
         $metrics = [];
+        $morbidityBreakdown = [];
         if (!empty($type)) {
             $results = $this->queryReportData($type, $dateFrom, $dateTo, $allTime);
             $metrics = $this->computeReportMetrics($type, $results);
+            if ($type === 'consultations') {
+                $morbidityBreakdown = $this->computeMorbidityBreakdown($results);
+            }
             $rangeText = $allTime ? 'All Time (Cumulative Master Registry)' : "from {$dateFrom} to {$dateTo}";
             AuditLog::log('REPORT_GENERATED', 'Reports', "Generated report type: {$type} {$rangeText}");
         }
@@ -40,7 +44,8 @@ class ReportController extends Controller {
             'dateTo' => $dateTo,
             'allTime' => $allTime,
             'results' => $results,
-            'metrics' => $metrics
+            'metrics' => $metrics,
+            'morbidityBreakdown' => $morbidityBreakdown
         ]);
     }
 
@@ -78,6 +83,28 @@ class ReportController extends Controller {
         // Write UTF-8 BOM so Microsoft Excel correctly displays ñ, Ñ, °C, and other UTF-8 characters
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
+        $categoryLabels = [
+            'daily_visits' => 'Daily Patient Visits Log',
+            'consultations' => 'Clinical Consultations Summary',
+            'registrations' => 'Patient Registrations Summary',
+            'appointments' => 'Scheduled Care & Appointments Registry',
+            'queue_summary' => 'Daily Queue Operations Summary',
+            'vitals' => 'Recorded Vital Signs Log',
+            'maternal_health' => 'Maternal & Prenatal Health Registry',
+            'epi_coverage' => 'Childhood Routine Immunization (EPI) Coverage',
+            'chronic_morbidity' => 'Morbidity & Chronic Disease Registry (IHP)'
+        ];
+
+        $reportTitle = $categoryLabels[$type] ?? ucwords(str_replace('_', ' ', $type));
+        $generatedBy = $_SESSION['user_fullname'] ?? $_SESSION['username'] ?? 'Staff Personnel';
+
+        // Write metadata preamble block for official audit & reporting
+        fputcsv($output, ['BARANGAY SINALHAN HEALTH CENTER - CITY HEALTH OFFICE OF SANTA ROSA']);
+        fputcsv($output, ['System Export Report', $reportTitle]);
+        fputcsv($output, ['Reporting Period', $rangeText]);
+        fputcsv($output, ['Exported By', $generatedBy, 'Export Timestamp', date('Y-m-d H:i:s')]);
+        fputcsv($output, []); // Blank separator row
+
         // Column headers and mapping
         switch ($type) {
             case 'daily_visits':
@@ -112,7 +139,7 @@ class ReportController extends Controller {
                 break;
                 
             case 'registrations':
-                fputcsv($output, ['Reg Date', 'Patient ID', 'Last Name', 'First Name', 'Birth Date', 'Age', 'Sex', 'Barangay', 'Contact No.']);
+                fputcsv($output, ['Reg Date', 'Patient ID', 'Last Name', 'First Name', 'Birth Date', 'Age', 'Sex', 'Address', 'Contact No.']);
                 foreach ($data as $row) {
                     fputcsv($output, [
                         date('Y-m-d', strtotime($row['created_at'])),
@@ -122,7 +149,7 @@ class ReportController extends Controller {
                         $row['dob'],
                         $row['age'] . ' yrs',
                         $row['sex'],
-                        $row['barangay'],
+                        $row['address'] ?? '-',
                         $row['contact_no'] ?: '-'
                     ]);
                 }
@@ -161,7 +188,7 @@ class ReportController extends Controller {
                 break;
 
             case 'maternal_health':
-                fputcsv($output, ['Patient ID', 'Patient Name', 'Age', 'Barangay', 'Gravida', 'Para', 'GTPAL', 'LMP', 'EDC', 'Gestational Age (AOG)', 'Pre-Eclampsia Risk', 'Status']);
+                fputcsv($output, ['Patient ID', 'Patient Name', 'Age', 'Address', 'Gravida', 'Para', 'GTPAL', 'LMP', 'EDC', 'Gestational Age (AOG)', 'Pre-Eclampsia Risk', 'Status']);
                 foreach ($data as $row) {
                     $gtpal = "G{$row['gravida']}P{$row['para']} (T{$row['term_births']} P{$row['preterm_births']} A{$row['abortions']} L{$row['living_children']})";
                     $aogText = !empty($row['is_active']) 
@@ -172,7 +199,7 @@ class ReportController extends Controller {
                         $row['patient_no'],
                         "{$row['last_name']}, {$row['first_name']}",
                         $row['patient_age'] . ' yrs',
-                        $row['barangay'],
+                        $row['address'] ?? '-',
                         'G' . $row['gravida'],
                         'P' . $row['para'],
                         $gtpal,
@@ -186,14 +213,14 @@ class ReportController extends Controller {
                 break;
 
             case 'epi_coverage':
-                fputcsv($output, ['Patient ID', 'Child Name', 'DOB', 'Age (Mos)', 'Barangay', 'Mother', 'BCG', 'HepB', 'Penta 1', 'Penta 2', 'Penta 3', 'OPV 1', 'OPV 2', 'OPV 3', 'IPV', 'MCV 1', 'MCV 2', 'FIC Status']);
+                fputcsv($output, ['Patient ID', 'Child Name', 'DOB', 'Age (Mos)', 'Address', 'Mother', 'BCG', 'HepB', 'Penta 1', 'Penta 2', 'Penta 3', 'OPV 1', 'OPV 2', 'OPV 3', 'IPV', 'MCV 1', 'MCV 2', 'FIC Status']);
                 foreach ($data as $row) {
                     fputcsv($output, [
                         $row['patient_no'],
                         "{$row['last_name']}, {$row['first_name']}",
                         $row['dob'],
                         $row['age_months'],
-                        $row['barangay'],
+                        $row['address'] ?? '-',
                         $row['mother_name'] ?: '-',
                         $row['bcg_date'] ?: 'Pending',
                         $row['hepb_date'] ?: 'Pending',
@@ -212,7 +239,7 @@ class ReportController extends Controller {
                 break;
 
             case 'chronic_morbidity':
-                fputcsv($output, ['Patient ID', 'Patient Name', 'Age', 'Sex', 'Barangay', 'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Kidney Disease', 'PTB', 'Other Conditions', 'Allergies', 'Smoking', 'Alcohol']);
+                fputcsv($output, ['Patient ID', 'Patient Name', 'Age', 'Sex', 'Address', 'Hypertension', 'Diabetes', 'Asthma', 'Heart Disease', 'Kidney Disease', 'PTB', 'Other Conditions', 'Allergies', 'Smoking', 'Alcohol']);
                 foreach ($data as $row) {
                     $conds = $row['conditions_map'] ?? [];
                     $condKeys = array_keys($conds);
@@ -242,7 +269,7 @@ class ReportController extends Controller {
                         "{$row['last_name']}, {$row['first_name']}",
                         $row['patient_age'] . ' yrs',
                         $row['sex'],
-                        $row['barangay'],
+                        $row['address'] ?? '-',
                         $hasHtn,
                         $hasDm,
                         $hasAsthma,
@@ -253,6 +280,24 @@ class ReportController extends Controller {
                         !empty($row['allergies_text']) ? $row['allergies_text'] : 'None Reported',
                         $row['smoking_status'] ?: 'Never',
                         $row['alcohol_status'] ?: 'Never'
+                    ]);
+                }
+                break;
+
+            case 'appointments':
+                fputcsv($output, ['Appointment Date', 'Time', 'Patient ID', 'Patient Name', 'Program / Service', 'Purpose / Reason', 'Notes', 'Booked By', 'Status']);
+                foreach ($data as $row) {
+                    $timeStr = !empty($row['appointment_time']) ? date('h:i A', strtotime($row['appointment_time'])) : '-';
+                    fputcsv($output, [
+                        $row['appointment_date'],
+                        $timeStr,
+                        $row['patient_no'],
+                        "{$row['patient_last']}, {$row['patient_first']}",
+                        $row['program_type'] ?: 'General OPD',
+                        $row['purpose'] ?: '-',
+                        $row['notes'] ?: '-',
+                        $row['creator_name'] ?: 'Staff',
+                        $row['status']
                     ]);
                 }
                 break;
@@ -290,7 +335,6 @@ class ReportController extends Controller {
                             WHERE c.consulted_at >= :date_from AND c.consulted_at < :date_to_exclusive
                               AND c.deleted_at IS NULL
                               AND p.deleted_at IS NULL
-                              AND c.status != 'Cancelled'
                             ORDER BY c.consulted_at DESC";
                     $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
@@ -301,6 +345,29 @@ class ReportController extends Controller {
                             WHERE deleted_at IS NULL AND created_at >= :date_from AND created_at < :date_to_exclusive
                             ORDER BY created_at DESC";
                     $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
+                    break;
+                    
+                case 'appointments':
+                    if ($allTime) {
+                        $sql = "SELECT a.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last,
+                                       CONCAT(u.first_name, ' ', u.last_name) AS creator_name
+                                FROM appointments a
+                                JOIN patients p ON a.patient_id = p.id
+                                LEFT JOIN users u ON a.created_by = u.id
+                                WHERE p.deleted_at IS NULL
+                                ORDER BY a.appointment_date DESC, a.appointment_time ASC";
+                        $params = [];
+                    } else {
+                        $sql = "SELECT a.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last,
+                                       CONCAT(u.first_name, ' ', u.last_name) AS creator_name
+                                FROM appointments a
+                                JOIN patients p ON a.patient_id = p.id
+                                LEFT JOIN users u ON a.created_by = u.id
+                                WHERE a.appointment_date BETWEEN :date_from AND :date_to
+                                  AND p.deleted_at IS NULL
+                                ORDER BY a.appointment_date ASC, a.appointment_time ASC";
+                        $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    }
                     break;
                     
                 case 'queue_summary':
@@ -363,7 +430,7 @@ class ReportController extends Controller {
                     }
 
                     $sql = "SELECT pr.*, 
-                                   p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.contact_no, p.barangay, p.blood_type, p.philhealth_no,
+                                   p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.contact_no, p.address, p.barangay, p.blood_type, p.philhealth_no,
                                    TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
                                    CASE 
                                        WHEN pr.is_active = 1 THEN TIMESTAMPDIFF(WEEK, pr.lmp, CURRENT_DATE())
@@ -404,7 +471,7 @@ class ReportController extends Controller {
                         ];
                     }
 
-                    $sql = "SELECT p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.dob, p.sex, p.barangay, p.mother_name,
+                    $sql = "SELECT p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.dob, p.sex, p.address, p.barangay, p.mother_name,
                                    TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
                                    wb.birth_weight_kg, wb.birth_length_cm, wb.newborn_screening_done,
                                    (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND UPPER(vaccine_name) = 'BCG' AND deleted_at IS NULL LIMIT 1) AS bcg_date,
@@ -473,7 +540,7 @@ class ReportController extends Controller {
                     }
 
                     $sql = "SELECT pmh.smoking_status, pmh.smoking_pack_years, pmh.alcohol_status, pmh.alcohol_bottles_per_day,
-                                   p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.sex, p.contact_no, p.barangay, p.philhealth_no,
+                                   p.id AS patient_id, p.patient_no, p.first_name, p.last_name, p.middle_name, p.dob, p.sex, p.contact_no, p.address, p.barangay, p.philhealth_no,
                                    TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age
                             FROM patients p
                             LEFT JOIN patient_medical_histories pmh ON p.id = pmh.patient_id AND pmh.deleted_at IS NULL
@@ -570,16 +637,21 @@ class ReportController extends Controller {
                 $clinicians = count(array_unique(array_column($results, 'clinician_name')));
                 $assessments = array_filter(array_column($results, 'assessment'));
                 $topDiag = '-';
+                $topDiagSub = '';
+                $topDiagFull = '-';
                 if (!empty($assessments)) {
                     $counts = array_count_values($assessments);
                     arsort($counts);
-                    $topDiag = array_key_first($counts);
-                    if (strlen($topDiag) > 22) $topDiag = substr($topDiag, 0, 22) . '...';
+                    $topDiagFull = (string)array_key_first($counts);
+                    $topCount = reset($counts);
+                    $topPct = round(($topCount / max(1, count($assessments))) * 100, 1);
+                    $topDiagSub = "{$topCount} case(s) ({$topPct}%)";
+                    $topDiag = strlen($topDiagFull) > 24 ? substr($topDiagFull, 0, 24) . '...' : $topDiagFull;
                 }
                 return [
                     ['label' => 'Total Consultations', 'value' => number_format($count), 'icon' => 'bi-journal-medical', 'color' => 'primary'],
                     ['label' => 'Unique Patients', 'value' => number_format($uniquePatients), 'icon' => 'bi-person-check-fill', 'color' => 'teal'],
-                    ['label' => 'Top Diagnosis', 'value' => $topDiag, 'icon' => 'bi-clipboard2-pulse-fill', 'color' => 'info'],
+                    ['label' => 'Top Diagnosis', 'value' => $topDiag, 'sub' => $topDiagSub, 'full_title' => $topDiagFull, 'icon' => 'bi-clipboard2-pulse-fill', 'color' => 'info'],
                     ['label' => 'Active Clinicians', 'value' => number_format($clinicians), 'icon' => 'bi-person-badge-fill', 'color' => 'secondary'],
                 ];
 
@@ -596,6 +668,23 @@ class ReportController extends Controller {
                     ['label' => 'Pediatric (0-12 yrs)', 'value' => number_format($pedia), 'icon' => 'bi-emoji-smile-fill', 'color' => 'info'],
                     ['label' => 'Adults (13-59 yrs)', 'value' => number_format($adults), 'icon' => 'bi-person-fill', 'color' => 'teal'],
                     ['label' => 'Senior Citizens (60+)', 'value' => number_format($seniors), 'icon' => 'bi-heart-pulse-fill', 'color' => 'warning'],
+                ];
+
+            case 'appointments':
+                $completed = 0;
+                $scheduled = 0;
+                $cancelled = 0;
+                foreach ($results as $r) {
+                    if ($r['status'] === 'Completed') $completed++;
+                    elseif ($r['status'] === 'Scheduled') $scheduled++;
+                    elseif ($r['status'] === 'Cancelled') $cancelled++;
+                }
+                $showRate = round(($completed / max(1, $count)) * 100, 1);
+                return [
+                    ['label' => 'Total Bookings', 'value' => number_format($count), 'icon' => 'bi-calendar-check-fill', 'color' => 'primary'],
+                    ['label' => 'Attended / Completed', 'value' => number_format($completed), 'sub' => "{$showRate}% attendance rate", 'icon' => 'bi-check-circle-fill', 'color' => 'success'],
+                    ['label' => 'Upcoming / Scheduled', 'value' => number_format($scheduled), 'icon' => 'bi-clock-fill', 'color' => 'info'],
+                    ['label' => 'Cancelled / No-Show', 'value' => number_format($cancelled), 'icon' => 'bi-x-circle-fill', 'color' => 'danger'],
                 ];
 
             case 'queue_summary':
@@ -674,6 +763,34 @@ class ReportController extends Controller {
             default:
                 return [];
         }
+    }
+
+    /**
+     * Compute Top 10 Leading Causes of Morbidity according to DOH FHSIS standards.
+     */
+    private function computeMorbidityBreakdown(array $results): array {
+        $assessments = array_filter(array_column($results, 'assessment'));
+        if (empty($assessments)) {
+            return [];
+        }
+
+        $totalCount = count($assessments);
+        $counts = array_count_values($assessments);
+        arsort($counts);
+
+        $breakdown = [];
+        $rank = 1;
+        foreach (array_slice($counts, 0, 10, true) as $diagnosis => $cases) {
+            $percentage = round(($cases / $totalCount) * 100, 1);
+            $breakdown[] = [
+                'rank' => $rank++,
+                'diagnosis' => $diagnosis,
+                'cases' => $cases,
+                'percentage' => $percentage
+            ];
+        }
+
+        return $breakdown;
     }
 
     private function normalizeDateRange($dateFrom, $dateTo) {

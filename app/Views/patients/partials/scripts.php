@@ -19,8 +19,20 @@ window.filterPcbRows = function(cat, btn) {
     if (countEl) countEl.innerText = visibleCount;
 };
 
-// Global IHP Edit / View Mode Transition Functions
+// Global IHP Edit / View Mode Transition Functions & Dirty State Tracking
 let ihpFormInitialData = '';
+window._isSubmittingIhp = false;
+window._isDiscardingIhp = false;
+
+window.isIhpDirty = function() {
+    const editMode = document.getElementById('ihp-edit-mode');
+    const form = document.getElementById('ihpForm');
+    if (!editMode || editMode.classList.contains('d-none') || !form) {
+        return false;
+    }
+    const currentData = new URLSearchParams(new FormData(form)).toString();
+    return currentData !== ihpFormInitialData;
+};
 
 window.enterIhpEditMode = function() {
     const viewMode = document.getElementById('ihp-view-mode');
@@ -31,6 +43,12 @@ window.enterIhpEditMode = function() {
         editMode.classList.remove('d-none');
         if (form) {
             ihpFormInitialData = new URLSearchParams(new FormData(form)).toString();
+        }
+        if (typeof window.initIhpReactiveControls === 'function') {
+            window.initIhpReactiveControls();
+        }
+        if (typeof window.updateIhpBmi === 'function') {
+            window.updateIhpBmi();
         }
         const tabEl = document.getElementById('tab-ihp');
         if (tabEl) {
@@ -45,10 +63,7 @@ window.cancelIhpEditMode = function() {
     const editMode = document.getElementById('ihp-edit-mode');
     if (!form || !viewMode || !editMode) return;
 
-    const currentData = new URLSearchParams(new FormData(form)).toString();
-    const isDirty = (currentData !== ihpFormInitialData);
-
-    if (isDirty) {
+    if (window.isIhpDirty()) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'Discard Changes?',
@@ -61,22 +76,121 @@ window.cancelIhpEditMode = function() {
                 cancelButtonText: 'Keep Editing'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    window._isDiscardingIhp = true;
                     form.reset();
-                    const lmpInput = form.querySelector('input[name="lmp"]');
                     editMode.classList.add('d-none');
                     viewMode.classList.remove('d-none');
+                    ihpFormInitialData = '';
+                    setTimeout(() => { window._isDiscardingIhp = false; }, 200);
                 }
             });
         } else {
             if (confirm('Discard unsaved changes to this IHP record?')) {
+                window._isDiscardingIhp = true;
                 form.reset();
                 editMode.classList.add('d-none');
                 viewMode.classList.remove('d-none');
+                ihpFormInitialData = '';
+                setTimeout(() => { window._isDiscardingIhp = false; }, 200);
             }
         }
     } else {
         editMode.classList.add('d-none');
         viewMode.classList.remove('d-none');
+        ihpFormInitialData = '';
+    }
+};
+
+// Section 3: Dynamic Surgical Procedures Repeater
+let ihpSurgeryNextIndex = 100;
+
+window.addIhpSurgeryRow = function() {
+    const container = document.getElementById('ihpSurgeriesContainer');
+    const emptyMsg = document.getElementById('ihpSurgeriesEmpty');
+    if (!container) return;
+
+    if (emptyMsg) emptyMsg.classList.add('d-none');
+
+    const idx = ihpSurgeryNextIndex++;
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'ihp-surgery-row p-2 border rounded-2 bg-light-subtle position-relative';
+    rowDiv.innerHTML = `
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-5">
+                <label class="form-label fw-semibold text-secondary small mb-1">Operation / Procedure</label>
+                <input type="text" name="surgical_procedures[${idx}][operation]" class="form-control form-control-sm bg-white" placeholder="e.g. Appendectomy" required>
+            </div>
+            <div class="col-6 col-sm-3">
+                <label class="form-label fw-semibold text-secondary small mb-1">Date / Year</label>
+                <input type="text" name="surgical_procedures[${idx}][date]" class="form-control form-control-sm bg-white" placeholder="YYYY or Date">
+            </div>
+            <div class="col-6 col-sm-3">
+                <label class="form-label fw-semibold text-secondary small mb-1">Hospital / Clinic</label>
+                <input type="text" name="surgical_procedures[${idx}][hospital]" class="form-control form-control-sm bg-white" placeholder="e.g. Health Center">
+            </div>
+            <div class="col-12 col-sm-1 text-end text-sm-center">
+                <button type="button" class="btn btn-outline-danger btn-sm p-1 px-2" onclick="removeIhpSurgeryRow(this)" title="Remove procedure">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    container.appendChild(rowDiv);
+    const opInput = rowDiv.querySelector('input[name*="[operation]"]');
+    if (opInput) opInput.focus();
+};
+
+window.removeIhpSurgeryRow = function(btn) {
+    const row = btn.closest('.ihp-surgery-row');
+    if (row) {
+        row.remove();
+        const container = document.getElementById('ihpSurgeriesContainer');
+        const emptyMsg = document.getElementById('ihpSurgeriesEmpty');
+        if (container && container.querySelectorAll('.ihp-surgery-row').length === 0) {
+            if (emptyMsg) emptyMsg.classList.remove('d-none');
+        }
+    }
+};
+
+// Section 6: Real-Time Baseline BMI & WHO Asian Criteria Calculator
+window.updateIhpBmi = function() {
+    const hInput = document.getElementById('ihp_baseline_height');
+    const wInput = document.getElementById('ihp_baseline_weight');
+    const valSpan = document.getElementById('ihpBmiValue');
+    const badgeSpan = document.getElementById('ihpBmiBadge');
+    if (!hInput || !wInput || !valSpan || !badgeSpan) return;
+
+    const h = parseFloat(hInput.value);
+    const w = parseFloat(wInput.value);
+
+    if (h > 0 && w > 0) {
+        const hm = h / 100;
+        const bmi = w / (hm * hm);
+        valSpan.innerHTML = `${bmi.toFixed(2)} <span class="text-muted fs-7 fw-normal">kg/m²</span>`;
+
+        let cat = 'Normal';
+        let badgeClass = 'bg-success-subtle text-success border border-success-subtle';
+
+        if (bmi < 18.5) {
+            cat = 'Underweight';
+            badgeClass = 'bg-info-subtle text-info border border-info-subtle';
+        } else if (bmi <= 22.9) {
+            cat = 'Normal';
+            badgeClass = 'bg-success-subtle text-success border border-success-subtle';
+        } else if (bmi <= 27.4) {
+            cat = 'Overweight';
+            badgeClass = 'bg-warning-subtle text-dark border border-warning-subtle';
+        } else {
+            cat = 'Obese';
+            badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
+        }
+
+        badgeSpan.className = `badge ${badgeClass} px-2.5 py-1.5 fs-7`;
+        badgeSpan.textContent = cat;
+    } else {
+        valSpan.innerHTML = '<span class="text-muted fs-7 fw-normal">Enter height & weight</span>';
+        badgeSpan.className = 'badge bg-light text-muted border px-2.5 py-1.5 fs-7';
+        badgeSpan.textContent = '—';
     }
 };
 
@@ -266,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(updateTabScrollButtons, 80);
     });
 
-    // 3. Consultation SOAP Modal AJAX Loader
+    // 3. Clinical Consultation Modal AJAX Loader
     const viewConsultationModal = document.getElementById('viewConsultationModal');
     const consultationDetailsContent = document.getElementById('consultationDetailsContent');
 
@@ -291,27 +405,36 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/'/g, '&#039;');
     }
 
-    document.querySelectorAll('.view-consultation-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const consultationId = this.getAttribute('data-consultation-id');
-            const modal = bootstrap.Modal.getOrCreateInstance(viewConsultationModal);
-            modal.show();
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.view-consultation-btn');
+        if (!btn) return;
+        e.preventDefault();
 
-            const footerRight = document.getElementById('consultationModalFooterRight');
-            if (footerRight) {
-                footerRight.innerHTML = `<button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
-            }
+        const consultationId = btn.getAttribute('data-consultation-id');
+        if (!consultationId) return;
 
-            consultationDetailsContent.innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="text-muted mt-2 small">Fetching consultation record...</p>
+        const modal = bootstrap.Modal.getOrCreateInstance(viewConsultationModal);
+        modal.show();
+
+        const footerRight = document.getElementById('consultationModalFooterRight');
+        if (footerRight) {
+            footerRight.innerHTML = `<button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
+        }
+
+        consultationDetailsContent.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-            `;
+                <p class="text-muted mt-2 small">Fetching consultation record...</p>
+            </div>
+        `;
 
-            fetch(`<?= url('/consultations/') ?>${consultationId}`)
+        fetch(`<?= url('/consultations/') ?>${consultationId}`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
                 .then(res => {
                     if (!res.ok) throw new Error('Network response was not ok');
                     return res.json();
@@ -367,75 +490,55 @@ document.addEventListener('DOMContentLoaded', function() {
                         `;
                     }
 
-                    let statusBadgeHtml = '';
-                    if (data.status === 'Cancelled') {
-                        statusBadgeHtml = `
-                            <div class="col-12 col-md-3 text-md-end">
-                                <span class="badge bg-danger text-white px-2.5 py-1.5"><i class="bi bi-x-circle me-1"></i>Cancelled</span>
-                            </div>
-                        `;
-                    }
-
-                    let cancellationHtml = '';
-                    if (data.status === 'Cancelled' && data.archive_reason) {
-                        cancellationHtml = `
-                            <div class="col-12 alert alert-danger py-2 px-3 small mt-2 mb-0">
-                                <i class="bi bi-x-octagon-fill me-1"></i><strong>Cancellation Reason:</strong> ${escapeHtml(data.archive_reason)}
-                            </div>
-                        `;
-                    }
-
                     consultationDetailsContent.innerHTML = `
                         <!-- Metadata Header Strip -->
                         <div class="row g-2 pb-3 mb-3 border-bottom align-items-center">
-                            <div class="col-12 ${data.status === 'Cancelled' ? 'col-md-5' : 'col-md-6'}">
+                            <div class="col-12 col-md-6">
                                 <span class="text-muted small d-block">Consultation Date & Time:</span>
                                 <strong class="text-dark"><i class="bi bi-calendar-event me-1 text-primary"></i>${escapeHtml(data.formatted_date || data.consulted_at)}</strong>
                             </div>
-                            <div class="col-12 ${data.status === 'Cancelled' ? 'col-md-4' : 'col-md-6'}">
+                            <div class="col-12 col-md-6">
                                 <span class="text-muted small d-block">Attending Clinician:</span>
                                 <strong class="text-dark"><i class="bi bi-person-badge me-1 text-primary"></i>${escapeHtml(data.clinician_name || 'Unassigned Clinician')}</strong>
                             </div>
-                            ${statusBadgeHtml}
-                            ${cancellationHtml}
                         </div>
 
                         ${vitalsHtml}
 
-                        <!-- SOAP Note Clean Neutral Cards -->
+                        <!-- Clinical Consultation Ledger Cards -->
                         <div class="d-flex flex-column gap-3">
-                            <!-- Subjective (S) -->
+                            <!-- History of Present Illness -->
                             <div class="card border rounded-3 bg-white">
                                 <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">S</span>
-                                    <span class="fw-bold text-dark small text-uppercase">Subjective &mdash; Chief Complaint & History of Illness</span>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1"><i class="bi bi-file-earmark-medical"></i></span>
+                                    <span class="fw-bold text-dark small text-uppercase">History of Present Illness</span>
                                 </div>
-                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.subjective || 'No subjective complaint recorded.')}</div>
+                                <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.subjective || 'No history of present illness recorded.')}</div>
                             </div>
 
-                            <!-- Objective (O) -->
+                            <!-- Physical Examination -->
                             <div class="card border rounded-3 bg-white">
                                 <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">O</span>
-                                    <span class="fw-bold text-dark small text-uppercase">Objective &mdash; Physical Examination & Clinical Findings</span>
+                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1"><i class="bi bi-clipboard2-pulse"></i></span>
+                                    <span class="fw-bold text-dark small text-uppercase">Physical Examination</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.objective || 'No physical examination findings recorded.')}</div>
                             </div>
 
-                            <!-- Assessment (A) -->
+                            <!-- Assessment / Impression -->
                             <div class="card border rounded-3 bg-white">
                                 <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">A</span>
-                                    <span class="fw-bold text-dark small text-uppercase">Assessment &mdash; Clinical Impression / Diagnosis</span>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-diagram-3"></i></span>
+                                    <span class="fw-bold text-dark small text-uppercase">Assessment / Impression</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small fw-medium" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.assessment || 'No clinical diagnosis recorded.')}</div>
                             </div>
 
-                            <!-- Plan (P) -->
+                            <!-- Treatment / Management -->
                             <div class="card border rounded-3 bg-white">
                                 <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2 py-1">P</span>
-                                    <span class="fw-bold text-dark small text-uppercase">Plan &mdash; Treatment & Recommendations</span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-prescription2"></i></span>
+                                    <span class="fw-bold text-dark small text-uppercase">Treatment / Management</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan recorded.')}</div>
                             </div>
@@ -487,11 +590,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     `;
 
-                    // Update modal footer actions (Print & Edit buttons if authorized)
+                    // Update modal footer actions (Edit button if authorized)
                     const footerRight = document.getElementById('consultationModalFooterRight');
                     if (footerRight) {
                         let footerBtns = '';
-                        footerBtns += `<button type="button" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center me-1" onclick="window.print()"><i class="bi bi-printer me-1.5"></i> Print Note</button>`;
                         if (data.can_edit) {
                             footerBtns += `<a href="<?= url('/consultations/') ?>${data.id}/edit" class="btn btn-primary btn-sm px-3 d-inline-flex align-items-center"><i class="bi bi-pencil-square me-1.5"></i> Edit Consultation</a>`;
                         }
@@ -506,10 +608,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     `;
                 });
-        });
     });
 
-       // 6. Modernized Workstation Action Handlers
+    // 6. Modernized Workstation Action Handlers
 
     // A. Archive Consultation
     document.querySelectorAll('.btn-archive-consultation').forEach(btn => {
@@ -876,5 +977,429 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // L. Blood Pressure Physiological Sanity Check (Systolic must be strictly > Diastolic)
+    function validateBloodPressure(sysInput, diaInput, event) {
+        if (!sysInput || !diaInput) return true;
+        const sysVal = parseInt(sysInput.value, 10);
+        const diaVal = parseInt(diaInput.value, 10);
+        if (!isNaN(sysVal) && !isNaN(diaVal) && sysVal > 0 && diaVal > 0) {
+            if (sysVal <= diaVal) {
+                event.preventDefault();
+                const errMsg = `Physiological validation error: Systolic blood pressure (${sysVal} mmHg) must be strictly higher than Diastolic pressure (${diaVal} mmHg). Please verify the reading.`;
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Blood Pressure Reading',
+                        text: errMsg,
+                        confirmButtonColor: '#0d6efd'
+                    });
+                } else {
+                    alert(errMsg);
+                }
+                sysInput.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const addVitalsForm = document.getElementById('vitalsForm');
+    if (addVitalsForm) {
+        addVitalsForm.addEventListener('submit', function(e) {
+            const sysInput = document.getElementById('bp_systolic');
+            const diaInput = document.getElementById('bp_diastolic');
+            validateBloodPressure(sysInput, diaInput, e);
+        });
+    }
+
+    const editVitalsForm = document.getElementById('editVitalsForm');
+    if (editVitalsForm) {
+        editVitalsForm.addEventListener('submit', function(e) {
+            const sysInput = document.getElementById('editVitalSystolic');
+            const diaInput = document.getElementById('editVitalDiastolic');
+            validateBloodPressure(sysInput, diaInput, e);
+        });
+    }
+
+    // M. IHP Anchor Navigation Smooth Scroll with Visual Feedback
+    document.querySelectorAll('#ihpSectionNav a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetCard = document.querySelector(targetId);
+            if (targetCard) {
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetCard.classList.add('border-primary', 'shadow');
+                setTimeout(() => {
+                    targetCard.classList.remove('border-primary', 'shadow');
+                }, 1600);
+            }
+        });
     });
+
+    // N. IHP Reactive Form Controls & Specifics Disablement Coupling
+    window.initIhpReactiveControls = function() {
+        // 1. Condition Toggles (Allergy, Hypertension, Cancer, Hepatitis, TB/PTB, Others)
+        document.querySelectorAll('.condition-toggle').forEach(chk => {
+            const targetSelectors = chk.dataset.target ? chk.dataset.target.split(',') : [];
+            const targets = targetSelectors.map(sel => document.querySelector(sel.trim())).filter(Boolean);
+            const parentBox = chk.closest('.ihp-condition-box');
+
+            function updateConditionState(isUserAction) {
+                const isChecked = chk.checked;
+                if (parentBox) {
+                    if (isChecked) {
+                        parentBox.classList.add('active-condition');
+                    } else {
+                        parentBox.classList.remove('active-condition');
+                    }
+                }
+                targets.forEach((inp, idx) => {
+                    inp.disabled = !isChecked;
+                    if (isChecked) {
+                        inp.classList.remove('bg-light', 'text-muted');
+                        inp.classList.add('bg-white');
+                        if (isUserAction && idx === 0) {
+                            inp.focus();
+                        }
+                    } else {
+                        if (isUserAction) {
+                            inp.value = '';
+                        }
+                        inp.classList.remove('bg-white');
+                        inp.classList.add('bg-light', 'text-muted');
+                    }
+                });
+            }
+
+            // Ensure event listeners are attached only once
+            if (!chk.dataset.hasConditionListener) {
+                chk.dataset.hasConditionListener = 'true';
+                chk.addEventListener('change', function() {
+                    updateConditionState(true);
+                });
+
+                targets.forEach(inp => {
+                    inp.addEventListener('input', function() {
+                        if (this.value.trim().length > 0 && !chk.checked) {
+                            chk.checked = true;
+                            updateConditionState(false);
+                        }
+                    });
+                });
+            }
+
+            // Set initial state without clearing pre-existing values or stealing focus
+            updateConditionState(false);
+        });
+
+        // 2. Checklist Tile Active Highlight on Toggle (General PMH & Family conditions)
+        document.querySelectorAll('.ihp-checklist-tile').forEach(tile => {
+            const chk = tile.querySelector('input[type="checkbox"]');
+            if (chk && !chk.dataset.hasTileListener) {
+                chk.dataset.hasTileListener = 'true';
+                chk.addEventListener('change', function() {
+                    if (this.checked) {
+                        tile.classList.add('active-condition');
+                    } else {
+                        tile.classList.remove('active-condition');
+                    }
+                });
+            }
+        });
+
+        // 3. Section 4 Habits: Smoking Pack Years Coupling
+        const smokingSelect = document.getElementById('smoking_status');
+        const packYearsInput = document.getElementById('smoking_pack_years');
+        if (smokingSelect && packYearsInput && !smokingSelect.dataset.hasSmokingListener) {
+            smokingSelect.dataset.hasSmokingListener = 'true';
+            function syncSmoking(isUserAction) {
+                const isNever = (smokingSelect.value === 'Never');
+                packYearsInput.disabled = isNever;
+                if (isNever) {
+                    if (isUserAction) packYearsInput.value = '';
+                    packYearsInput.classList.remove('bg-white');
+                    packYearsInput.classList.add('bg-light', 'text-muted');
+                } else {
+                    packYearsInput.classList.remove('bg-light', 'text-muted');
+                    packYearsInput.classList.add('bg-white');
+                    if (isUserAction) packYearsInput.focus();
+                }
+            }
+            smokingSelect.addEventListener('change', function() {
+                syncSmoking(true);
+            });
+            syncSmoking(false);
+        }
+
+        // 4. Section 4 Habits: Alcohol Bottles Per Day Coupling
+        const alcoholSelect = document.getElementById('alcohol_status');
+        const bottlesInput = document.getElementById('alcohol_bottles_per_day');
+        if (alcoholSelect && bottlesInput && !alcoholSelect.dataset.hasAlcoholListener) {
+            alcoholSelect.dataset.hasAlcoholListener = 'true';
+            function syncAlcohol(isUserAction) {
+                const isNever = (alcoholSelect.value === 'Never');
+                bottlesInput.disabled = isNever;
+                if (isNever) {
+                    if (isUserAction) bottlesInput.value = '';
+                    bottlesInput.classList.remove('bg-white');
+                    bottlesInput.classList.add('bg-light', 'text-muted');
+                } else {
+                    bottlesInput.classList.remove('bg-light', 'text-muted');
+                    bottlesInput.classList.add('bg-white');
+                    if (isUserAction) bottlesInput.focus();
+                }
+            }
+            alcoholSelect.addEventListener('change', function() {
+                syncAlcohol(true);
+            });
+            syncAlcohol(false);
+        }
+
+        // 5. Section 8 Female Reproductive: Menopause Age Coupling
+        const menopauseCheck = document.getElementById('is_menopausal');
+        const menopauseAgeInput = document.getElementById('menopause_age');
+        if (menopauseCheck && menopauseAgeInput && !menopauseCheck.dataset.hasMenopauseListener) {
+            menopauseCheck.dataset.hasMenopauseListener = 'true';
+            function syncMenopause(isUserAction) {
+                const isMeno = menopauseCheck.checked;
+                menopauseAgeInput.disabled = !isMeno;
+                if (isMeno) {
+                    menopauseAgeInput.classList.remove('bg-light', 'text-muted');
+                    menopauseAgeInput.classList.add('bg-white');
+                    if (isUserAction) menopauseAgeInput.focus();
+                } else {
+                    if (isUserAction) menopauseAgeInput.value = '';
+                    menopauseAgeInput.classList.remove('bg-white');
+                    menopauseAgeInput.classList.add('bg-light', 'text-muted');
+                }
+            }
+            menopauseCheck.addEventListener('change', function() {
+                syncMenopause(true);
+            });
+            syncMenopause(false);
+        }
+
+        // 6. Section 7 Pertinent Physical Examination Checklist: Live Badges & Mark All Normal
+        function updatePeSystemBadge(sys) {
+            const badgeMap = {
+                'skin': { id: 'pe_badge_skin', normalText: 'Good Turgor' },
+                'heent': { id: 'pe_badge_heent', normalText: 'Normal' },
+                'chest_lungs': { id: 'pe_badge_chest', normalText: 'Clear' },
+                'heart': { id: 'pe_badge_heart', normalText: 'Normal Rhythm' },
+                'abdomen': { id: 'pe_badge_abdo', normalText: 'Soft, Non-tender' },
+                'extremities': { id: 'pe_badge_ext', normalText: 'Equal Pulses' }
+            };
+            const conf = badgeMap[sys];
+            if (!conf) return;
+            const badgeEl = document.getElementById(conf.id);
+            if (!badgeEl) return;
+
+            const systemCheckboxes = Array.from(document.querySelectorAll(`.pe-sys-${sys}`));
+            const checkedBoxes = systemCheckboxes.filter(c => c.checked);
+
+            if (checkedBoxes.length === 0) {
+                badgeEl.className = 'badge bg-light text-muted border px-2 py-1 pe-system-badge';
+                badgeEl.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Unspecified';
+                return;
+            }
+
+            const hasAcute = checkedBoxes.some(c => c.dataset.isAcute === '1');
+            const hasNormal = checkedBoxes.some(c => c.dataset.isNormal === '1');
+
+            if (hasAcute) {
+                badgeEl.className = 'badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 pe-system-badge';
+                badgeEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i>Abnormal Findings';
+            } else if (hasNormal) {
+                badgeEl.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-1 pe-system-badge';
+                badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${conf.normalText}`;
+            } else {
+                badgeEl.className = 'badge bg-info-subtle text-primary border border-info-subtle px-2 py-1 pe-system-badge';
+                badgeEl.innerHTML = '<i class="bi bi-info-circle me-1"></i>Recorded';
+            }
+        }
+
+        // Attach listeners to all physical examination checkboxes
+        document.querySelectorAll('.pe-checkbox').forEach(chk => {
+            if (!chk.dataset.hasPeListener) {
+                chk.dataset.hasPeListener = 'true';
+                chk.addEventListener('change', function() {
+                    const sys = this.dataset.system;
+                    if (sys) updatePeSystemBadge(sys);
+                });
+            }
+        });
+
+        // "Mark All Unremarkable / Normal" Button Action
+        const btnMarkAllNormal = document.getElementById('btnMarkAllNormal');
+        if (btnMarkAllNormal && !btnMarkAllNormal.dataset.hasNormalListener) {
+            btnMarkAllNormal.dataset.hasNormalListener = 'true';
+            btnMarkAllNormal.addEventListener('click', function() {
+                const allPeCheckboxes = document.querySelectorAll('.pe-checkbox');
+                allPeCheckboxes.forEach(chk => {
+                    if (chk.dataset.isNormal === '1') {
+                        chk.checked = true;
+                    } else {
+                        chk.checked = false;
+                    }
+                });
+
+                const remarksInput = document.getElementById('pe_remarks');
+                if (remarksInput && !remarksInput.value.trim()) {
+                    remarksInput.value = 'Patient is well-nourished, alert and ambulatory. Systemic physical examination findings unremarkable with no acute distress.';
+                }
+
+                // Update all system card badges immediately
+                ['skin', 'heent', 'chest_lungs', 'heart', 'abdomen', 'extremities'].forEach(sys => {
+                    updatePeSystemBadge(sys);
+                });
+
+                // Visual toast feedback
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'All physical findings marked unremarkable / normal',
+                        showConfirmButton: false,
+                        timer: 2200,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        }
+
+        // Sync initial state of physical exam badges
+        ['skin', 'heent', 'chest_lungs', 'heart', 'abdomen', 'extremities'].forEach(sys => {
+            updatePeSystemBadge(sys);
+        });
+    };
+
+    // Initialize reactive controls immediately on load
+    window.initIhpReactiveControls();
+
+    // 7. Baseline BMI Auto-Calculation Listeners
+    const ihpHeightInput = document.getElementById('ihp_baseline_height');
+    const ihpWeightInput = document.getElementById('ihp_baseline_weight');
+    if (ihpHeightInput && ihpWeightInput) {
+        ihpHeightInput.addEventListener('input', window.updateIhpBmi);
+        ihpWeightInput.addEventListener('input', window.updateIhpBmi);
+        window.updateIhpBmi();
+    }
+
+    // 8. Snapshot Initial Data if Form is already in Edit Mode (e.g. Validation Error)
+    const ihpEditModeEl = document.getElementById('ihp-edit-mode');
+    const ihpFormEl = document.getElementById('ihpForm');
+    if (ihpEditModeEl && !ihpEditModeEl.classList.contains('d-none') && ihpFormEl) {
+        ihpFormInitialData = new URLSearchParams(new FormData(ihpFormEl)).toString();
+    }
+
+    // 9. Unsaved Changes Guard: Workstation Tab Switching
+    const tabIhpBtn = document.getElementById('tab-ihp-btn');
+    if (tabIhpBtn) {
+        tabIhpBtn.addEventListener('hide.bs.tab', function(e) {
+            if (window._isDiscardingIhp || window._isSubmittingIhp) {
+                return;
+            }
+
+            if (window.isIhpDirty()) {
+                e.preventDefault();
+                const targetTabBtn = e.relatedTarget;
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Discard Unsaved IHP Changes?',
+                        text: 'You have unsaved medical history entries. Leaving this tab will discard your changes.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Discard & Switch Tab',
+                        cancelButtonText: 'Keep Editing'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window._isDiscardingIhp = true;
+                            const form = document.getElementById('ihpForm');
+                            const editMode = document.getElementById('ihp-edit-mode');
+                            const viewMode = document.getElementById('ihp-view-mode');
+                            if (form) form.reset();
+                            if (editMode) editMode.classList.add('d-none');
+                            if (viewMode) viewMode.classList.remove('d-none');
+                            ihpFormInitialData = '';
+
+                            if (targetTabBtn) {
+                                const nextTab = bootstrap.Tab.getOrCreateInstance(targetTabBtn);
+                                nextTab.show();
+                            }
+                            setTimeout(() => {
+                                window._isDiscardingIhp = false;
+                            }, 250);
+                        }
+                    });
+                } else {
+                    if (confirm('Discard unsaved changes to this IHP record and switch tab?')) {
+                        window._isDiscardingIhp = true;
+                        const form = document.getElementById('ihpForm');
+                        const editMode = document.getElementById('ihp-edit-mode');
+                        const viewMode = document.getElementById('ihp-view-mode');
+                        if (form) form.reset();
+                        if (editMode) editMode.classList.add('d-none');
+                        if (viewMode) viewMode.classList.remove('d-none');
+                        ihpFormInitialData = '';
+
+                        if (targetTabBtn) {
+                            const nextTab = bootstrap.Tab.getOrCreateInstance(targetTabBtn);
+                            nextTab.show();
+                        }
+                        setTimeout(() => {
+                            window._isDiscardingIhp = false;
+                        }, 250);
+                    }
+                }
+            }
+        });
+    }
+
+    // 10. Unsaved Changes Guard: Browser Window Unload / Refresh
+    window.addEventListener('beforeunload', function(e) {
+        if (window._isSubmittingIhp || window._isDiscardingIhp) return;
+        if (window.isIhpDirty()) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // 11. IHP Form Submission: Disarm Guard & Validate Blood Pressure
+    if (ihpFormEl) {
+        ihpFormEl.addEventListener('submit', function(e) {
+            const sys = document.getElementById('ihp_baseline_bp_systolic');
+            const dia = document.getElementById('ihp_baseline_bp_diastolic');
+            if (sys && dia && !validateBloodPressure(sys, dia, e)) {
+                return;
+            }
+            window._isSubmittingIhp = true;
+        });
+    }
+
+    // 12. 1-Click Clipboard Copy Handler for Overview Workstation
+    document.addEventListener('click', function(e) {
+        const copyBtn = e.target.closest('.copy-clipboard-btn');
+        if (!copyBtn) return;
+        const textToCopy = copyBtn.getAttribute('data-clipboard');
+        if (!textToCopy) return;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
+            copyBtn.setAttribute('title', 'Copied!');
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHtml;
+                copyBtn.setAttribute('title', copyBtn.getAttribute('aria-label') || 'Copy');
+            }, 1500);
+        }).catch(err => {
+            console.error('Failed to copy to clipboard: ', err);
+        });
+    });
+
+});
 </script>

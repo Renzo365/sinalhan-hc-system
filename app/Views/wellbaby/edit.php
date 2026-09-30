@@ -29,8 +29,7 @@ $breadcrumbs = [
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
-$addrParts = array_filter([$patient['address'] ?? '', $patient['barangay'] ?? '', 'Santa Rosa, Laguna']);
-$fullAddress = implode(', ', $addrParts) ?: 'Barangay Sinalhan, Santa Rosa, Laguna';
+$fullAddress = !empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
 
 $initials = '';
 if (!empty($firstName)) $initials .= mb_substr($firstName, 0, 1);
@@ -109,7 +108,7 @@ $motherLinkedPatientNo = $wellbabyRecord['mother_patient_no'] ?? '';
                                         <?php endif; ?>
                                     </div>
                                     <small class="text-muted">
-                                        Brgy. <?= h($patient['barangay'] ?? 'Sinalhan') ?> &bull; Contact: <?= h($patient['contact_no'] ?? 'N/A') ?>
+                                        <i class="bi bi-geo-alt me-1"></i><?= h(!empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan') ?> &bull; Contact: <?= h($patient['contact_no'] ?? 'N/A') ?>
                                     </small>
                                 </div>
                             </div>

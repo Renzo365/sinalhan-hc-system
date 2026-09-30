@@ -90,7 +90,7 @@ $activeTab = $activeTab ?? 'patients';
                                 <th>Patient No</th>
                                 <th class="text-start">Name</th>
                                 <th>Age/Sex</th>
-                                <th>Barangay</th>
+                                <th>Address</th>
                                 <th>Archived Date</th>
                                 <th>Archived By</th>
                                 <th>Reason for Archiving</th>
@@ -113,7 +113,7 @@ $activeTab = $activeTab ?? 'patients';
                                             <?= h($p['last_name']) ?>, <?= h($p['first_name']) ?> <?= h($p['middle_name'] ?? '') ?>
                                         </td>
                                         <td><?= h($p['age']) ?> yrs / <?= h($p['sex']) ?></td>
-                                        <td><?= h($p['barangay']) ?></td>
+                                        <td><?= h(!empty(trim($p['address'] ?? '')) ? $p['address'] : '—') ?></td>
                                         <td><?= date('Y-m-d h:i A', strtotime($p['deleted_at'])) ?></td>
                                         <td><span class="badge bg-secondary"><?= h(!empty(trim($p['archiver_name'] ?? '')) ? $p['archiver_name'] : 'System') ?></span></td>
                                         <td class="text-secondary text-start text-truncate" style="max-width: 200px;" title="<?= h($p['archive_reason']) ?>">
@@ -189,7 +189,7 @@ $activeTab = $activeTab ?? 'patients';
                                 <th>Archived Date</th>
                                 <th class="text-start">Patient Name & No.</th>
                                 <th>Clinician</th>
-                                <th class="text-start">Assessment / Diagnosis</th>
+                                <th class="text-start">Assessment / Impression</th>
                                 <th>Archive Reason</th>
                                 <th>Archived By</th>
                                 <th class="pe-4 text-end">Action</th>

@@ -34,10 +34,12 @@ class AppointmentController extends Controller {
         ];
 
         $appointments = $this->appointmentModel->findAll($filters);
+        $todayMetrics = $this->appointmentModel->getTodaySummaryMetrics();
 
         $this->view('appointments/index', [
             'appointments' => $appointments,
-            'filters' => $filters
+            'filters' => $filters,
+            'todayMetrics' => $todayMetrics
         ]);
     }
 
@@ -50,16 +52,14 @@ class AppointmentController extends Controller {
         }
 
         $patientId = isset($_GET['patient_id']) ? (int)$_GET['patient_id'] : null;
-        $patient = null;
-        $patients = [];
-
-        if ($patientId) {
-            $patient = $this->patientModel->findById($patientId);
+        $isLockedPatient = !empty($patientId);
+        if (!$patientId && !empty($_SESSION['form_input']['patient_id'])) {
+            $patientId = (int)$_SESSION['form_input']['patient_id'];
         }
 
-        // If no specific patient is pre-selected, fetch all active patients for search selection
-        if (!$patient) {
-            $patients = $this->patientModel->allActive();
+        $patient = null;
+        if ($patientId) {
+            $patient = $this->patientModel->findById($patientId);
         }
 
         $errors = $_SESSION['form_errors'] ?? [];
@@ -70,7 +70,8 @@ class AppointmentController extends Controller {
 
         $this->view('appointments/create', [
             'patient' => $patient,
-            'patients' => $patients,
+            'isLockedPatient' => $isLockedPatient && !empty($patient),
+            'patients' => [],
             'errors' => $errors,
             'input' => $input
         ]);

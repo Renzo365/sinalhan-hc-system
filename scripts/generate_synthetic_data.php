@@ -920,9 +920,9 @@ $stmtPmh = $pdo->prepare("
 
 $stmtCond = $pdo->prepare("
     INSERT INTO patient_conditions (
-        patient_id, condition_type, lineage, condition_name, remarks
+        patient_id, condition_type, condition_name, remarks
     ) VALUES (
-        :patient_id, :condition_type, :lineage, :condition_name, :remarks
+        :patient_id, :condition_type, :condition_name, :remarks
     )
 ");
 
@@ -1000,7 +1000,6 @@ foreach ($selectedPmh as $p) {
         $stmtCond->execute([
             ':patient_id' => $p['id'],
             ':condition_type' => 'Past',
-            ':lineage' => null,
             ':condition_name' => $selectedCond,
             ':remarks' => 'Maintenance medications managed at health center.'
         ]);
@@ -1010,7 +1009,6 @@ foreach ($selectedPmh as $p) {
         $stmtCond->execute([
             ':patient_id' => $p['id'],
             ':condition_type' => 'Family',
-            ':lineage' => pick(['Mother', 'Father', 'Both']),
             ':condition_name' => pick(['Hypertension', 'Diabetes Mellitus', 'Cerebrovascular Disease (Stroke)']),
             ':remarks' => 'Positive hereditary family history.'
         ]);

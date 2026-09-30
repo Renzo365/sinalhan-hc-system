@@ -25,11 +25,12 @@ class ConsultationController extends Controller {
      * 
      * @param int $patientId
      */
-    public function create($patientId) {
+    public function create($patientId = null) {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
+        $patientId = (int)($patientId ?: ($_GET['patient_id'] ?? 0));
         $patient = $this->patientModel->findById($patientId);
         if (!$patient) {
             http_response_code(404);
@@ -123,7 +124,7 @@ class ConsultationController extends Controller {
                 );
             }
 
-            AuditLog::log('CONSULTATION_CREATED', 'Clinical', "Recorded new consultation SOAP note for patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})");
+            AuditLog::log('CONSULTATION_CREATED', 'Clinical', "Recorded new consultation ledger entry for patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})");
             
             $_SESSION['success_message'] = 'Consultation record saved successfully!';
             $this->redirect("/patients/{$patientId}#tab-consultations");
@@ -159,12 +160,6 @@ class ConsultationController extends Controller {
             return;
         }
 
-        if ($consultation['status'] === 'Cancelled') {
-            $_SESSION['error_message'] = 'Cancelled consultations cannot be edited.';
-            $this->redirect("/patients/{$patientId}#tab-consultations");
-            return;
-        }
-
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
         if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
             $_SESSION['error_message'] = 'Unauthorized: You do not have permission to edit consultations.';
@@ -196,7 +191,8 @@ class ConsultationController extends Controller {
         unset($_SESSION['form_errors']);
         unset($_SESSION['form_input']);
 
-        $prescriptions = (new \App\Models\Prescription())->findByConsultationId($id);
+        $dbPrescriptions = (new \App\Models\Prescription())->findByConsultationId($id);
+        $prescriptions = !empty($input['prescriptions']) ? $input['prescriptions'] : $dbPrescriptions;
 
         $this->view('consultations/edit', [
             'consultation' => $consultation,
@@ -235,12 +231,6 @@ class ConsultationController extends Controller {
 
         $currentUserId = (int)($_SESSION['user_id'] ?? 0);
 
-        if ($consultation['status'] === 'Cancelled') {
-            $_SESSION['error_message'] = 'Cancelled consultations cannot be updated.';
-            $this->redirect("/patients/{$patientId}#tab-consultations");
-            return;
-        }
-
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
         if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
             $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update consultations.';
@@ -259,7 +249,7 @@ class ConsultationController extends Controller {
 
         $data = $_POST;
         $data['consulting_provider'] = trim($_POST['consulting_provider'] ?? '');
-        $data['status'] = !empty($_POST['status']) ? $_POST['status'] : ($consultation['status'] ?: 'Completed');
+        $data['status'] = 'Completed';
         $data['updated_by'] = $currentUserId;
 
         $updated = $this->consultationModel->update($id, $data);
@@ -275,7 +265,7 @@ class ConsultationController extends Controller {
             );
 
             $patientLabel = $patient ? "{$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})" : "Patient #{$patientId}";
-            AuditLog::log('CONSULTATION_UPDATED', 'Clinical', "Updated consultation SOAP note (#{$id}) for patient: {$patientLabel}");
+            AuditLog::log('CONSULTATION_UPDATED', 'Clinical', "Updated consultation ledger entry (#{$id}) for patient: {$patientLabel}");
 
             $_SESSION['success_message'] = 'Consultation record updated successfully!';
             $this->redirect("/patients/{$patientId}#tab-consultations");
@@ -298,39 +288,12 @@ class ConsultationController extends Controller {
     }
 
     /**
-     * Cancel / void an existing consultation.
+     * Cancel / void an existing consultation (delegates to standard archive workflow).
      * 
      * @param int $id
      */
     public function cancel($id) {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $consultation = $this->consultationModel->findById($id);
-        if (!$consultation) {
-            http_response_code(404);
-            $this->view('errors/404');
-            return;
-        }
-
-        $patientId = (int)$consultation['patient_id'];
-        $currentUserId = (int)($_SESSION['user_id'] ?? 0);
-        $canCancel = is_admin();
-
-        if (!$canCancel) {
-            $_SESSION['error_message'] = 'Unauthorized: Only administrators can cancel or void consultation records.';
-            $this->redirect("/patients/{$patientId}#tab-consultations");
-            return;
-        }
-
-        $reason = $_POST['reason'] ?? 'Voided by clinician';
-        $this->consultationModel->cancel($id, $currentUserId, $reason);
-
-        AuditLog::log('CONSULTATION_CANCELLED', 'Clinical', "Voided consultation SOAP record #{$id} for patient #{$patientId}. Reason: {$reason}");
-
-        $_SESSION['success_message'] = 'Consultation has been cancelled.';
-        $this->redirect("/patients/{$patientId}#tab-consultations");
+        $this->archive($id);
     }
 
     /**
@@ -346,15 +309,28 @@ class ConsultationController extends Controller {
         $consultation = $this->consultationModel->findById($id);
 
         if (!$consultation) {
+            $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+            if (strpos($accept, 'text/html') !== false && strpos($accept, 'application/json') === false) {
+                http_response_code(404);
+                $this->view('errors/404');
+                return;
+            }
             $this->json(['error' => 'Consultation record not found.'], 404);
+            return;
+        }
+
+        // If accessed directly from browser URL navigation (HTML), redirect to patient consultations tab
+        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+        if (!$isAjax && strpos($accept, 'text/html') !== false && strpos($accept, 'application/json') === false) {
+            $this->redirect("/patients/{$consultation['patient_id']}#tab-consultations");
             return;
         }
 
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
 
         // Authorized staff and admins can edit active consultations.
-        $consultation['can_edit'] = $consultation['status'] !== 'Cancelled'
-            && in_array($userRole, ['admin', 'super_admin', 'staff'], true);
+        $consultation['can_edit'] = in_array($userRole, ['admin', 'super_admin', 'staff'], true);
         
         // Formatting date helpers
         $consultation['formatted_date'] = date('F d, Y h:i A', strtotime($consultation['consulted_at']));

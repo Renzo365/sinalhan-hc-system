@@ -679,7 +679,7 @@ a:hover {
 }
 
 .text-pink {
-  color: #d63384 !important;
+  color: #b02a6b !important;
 }
 
 .border-pink {
@@ -703,7 +703,7 @@ a:hover {
 .btn-outline-pink {
   background-color: transparent !important;
   border-color: #d63384 !important;
-  color: #d63384 !important;
+  color: #b02a6b !important;
 }
 
 .btn-outline-pink:hover, 
@@ -917,6 +917,7 @@ a:hover {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
+  padding-bottom: 5.5rem;
 }
 
 .sticky-form-action-bar {
@@ -1043,7 +1044,7 @@ a:hover {
     text-decoration: none !important;
   }
 
-  /* Support Printing Active Modal (e.g., SOAP Consultation Note) */
+  /* Support Printing Active Modal (e.g., Clinical Consultation Record) */
   body.modal-open .app-wrapper {
     display: none !important;
   }
@@ -1093,3 +1094,289 @@ a:hover {
     padding: 10pt 0 !important;
   }
 }
+
+/* ==========================================================================
+   PhilHealth Annex A1 (IHP) Clinical Checklist & Specifics Styling
+   ========================================================================== */
+.ihp-condition-box {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  padding: 0.875rem 1rem;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+.ihp-condition-box:hover {
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+}
+.ihp-condition-box.active-condition,
+.ihp-condition-box:has(.condition-toggle:checked) {
+  border-color: #3b82f6 !important;
+  background-color: #f0f7ff !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+.ihp-condition-box .form-check-input {
+  cursor: pointer;
+  width: 1.15em;
+  height: 1.15em;
+  margin-top: 0.1em;
+}
+.ihp-condition-box .form-check-label {
+  cursor: pointer;
+  font-size: 0.875rem;
+  user-select: none;
+}
+.ihp-condition-box .ihp-specifics-input {
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ihp-condition-box .ihp-specifics-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.15);
+}
+.ihp-checklist-tile {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.15s ease-in-out;
+}
+.ihp-checklist-tile:hover {
+  border-color: #cbd5e1;
+  background-color: #f1f5f9;
+}
+.ihp-checklist-tile.active-condition,
+.ihp-checklist-tile:has(.form-check-input:checked) {
+  border-color: #93c5fd !important;
+  background-color: #f0f7ff !important;
+}
+.ihp-specifics-input:disabled {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Physical Examination (PE) Organ System Cards & Checklist */
+.pe-system-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+.pe-system-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+.pe-item-tile {
+  padding: 0.25rem 0.4rem;
+  border-radius: 0.35rem;
+  transition: background-color 0.15s ease-in-out;
+}
+.pe-item-tile:hover {
+  background-color: #f8fafc;
+}
+.pe-item-tile .form-check-label {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* IHP Section Sticky Quick-Navigation */
+#ihpSectionNav {
+  position: sticky;
+  top: 10px;
+  z-index: 1020;
+  background-color: rgba(248, 250, 252, 0.94) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Dynamic Surgical Repeater Row */
+.ihp-surgery-row {
+  transition: all 0.15s ease-in-out;
+}
+.ihp-surgery-row:hover {
+  border-color: #cbd5e1 !important;
+  background-color: #f1f5f9 !important;
+}
+
+/* Calculated BMI Box */
+#ihpBmiWrapper {
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+/* --- Consultation Clinical Ergonomics & Shortcuts --- */
+.btn-xs {
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.consultation-snippet-btn {
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  white-space: nowrap;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.consultation-snippet-btn:hover {
+  background-color: var(--color-primary-soft, rgba(13, 115, 119, 0.1)) !important;
+  color: var(--color-primary, #0D7377) !important;
+  border-color: var(--color-primary, #0D7377) !important;
+  transform: translateY(-1px);
+}
+
+.sig-chip {
+  font-weight: 600;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.sig-chip:hover {
+  background-color: var(--color-primary, #0D7377) !important;
+  color: #ffffff !important;
+  border-color: var(--color-primary, #0D7377) !important;
+  transform: translateY(-1px);
+}
+
+.sig-instruction-chip {
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.sig-instruction-chip:hover {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+  transform: translateY(-1px);
+}
+
+/* Consultation Sticky Action Bar */
+#consultationBottomBar {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  bottom: 1.25rem !important;
+  z-index: 1020 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(13, 115, 119, 0.22) !important;
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.14), 0 6px 12px -4px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 14px !important;
+}
+
+/* Patient Overview Workstation Ergonomics & High Contrast (WCAG 2.2 AA) */
+.overview-micro-label {
+  color: #4b5563 !important; /* Slate 600 (>5.5:1 contrast against white & #f8f9fa) */
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.2px;
+}
+
+.copy-clipboard-btn {
+  color: #6b7280;
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.copy-clipboard-btn:hover {
+  color: var(--color-primary, #0D7377) !important;
+  transform: scale(1.15);
+}
+
+/* Appointment Time Slot Cards Accessibility & Capacity Tiers (WCAG 2.1.1 Keyboard & 2.4.7 Focus Visible) */
+.time-slot-card:focus-visible {
+  outline: 3px solid rgba(13, 110, 253, 0.6) !important;
+  outline-offset: 2px !important;
+}
+
+.time-slot-card.has-booked {
+  border-color: #fde68a !important;
+  background-color: #fefce8 !important;
+}
+
+.time-slot-card.high-booked {
+  border-color: #fecaca !important;
+  background-color: #fef2f2 !important;
+}
+
+.time-slot-card.active.has-booked,
+.time-slot-card.active.high-booked {
+  border-color: #0D7377 !important;
+  background-color: #f0fdfa !important;
+  box-shadow: 0 0 0 2px rgba(13, 115, 119, 0.25) !important;
+}
+
+/* Appointment Program Category Accessible Badges (WCAG 2.2 AA Contrast > 5.5:1) */
+.badge-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.badge-category-maternal {
+  background-color: #fdf2f8 !important;
+  color: #9d174d !important;
+  border: 1px solid #fbcfe8 !important;
+}
+
+.badge-category-wellbaby {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.badge-category-opd {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+}
+
+.badge-category-senior {
+  background-color: #faf5ff !important;
+  color: #6b21a8 !important;
+  border: 1px solid #e9d5ff !important;
+}
+
+.badge-category-ncd {
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+.badge-category-family-planning {
+  background-color: #eef2ff !important;
+  color: #3730a3 !important;
+  border: 1px solid #c7d2fe !important;
+}
+
+.badge-category-dental {
+  background-color: #ecfeff !important;
+  color: #155e75 !important;
+  border: 1px solid #a5f3fc !important;
+}
+
+.badge-category-default {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+

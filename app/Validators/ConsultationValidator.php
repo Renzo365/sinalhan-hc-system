@@ -15,10 +15,10 @@ class ConsultationValidator extends BaseValidator {
         $this->clearErrors();
 
         $requiredFields = [
-            'subjective' => 'Subjective Notes (Chief Complaint)',
-            'objective' => 'Objective Notes (Physical Findings)',
-            'assessment' => 'Assessment (Diagnosis)',
-            'plan' => 'Plan (Treatment/Prescriptions)',
+            'subjective' => 'History of Present Illness',
+            'objective' => 'Physical Exam',
+            'assessment' => 'Assessment / Impression',
+            'plan' => 'Treatment',
             'consulted_at' => 'Date & Time of Consultation'
         ];
 
@@ -35,10 +35,6 @@ class ConsultationValidator extends BaseValidator {
             $this->addError('Consulting Provider name must be at least 2 characters.');
         }
 
-        $status = $input['status'] ?? 'Completed';
-        if (!in_array($status, ['Open', 'Completed', 'Cancelled'], true)) {
-            $this->addError('Invalid consultation status.');
-        }
 
         if (!empty($input['consulted_at'])) {
             $date = DateTime::createFromFormat('Y-m-d\TH:i', $input['consulted_at'])

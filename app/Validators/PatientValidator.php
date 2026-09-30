@@ -143,14 +143,7 @@ class PatientValidator extends BaseValidator {
             }
         }
 
-        // 9. Barangay & Address Length
-        if (!empty($input['barangay'])) {
-            $barangay = trim($input['barangay']);
-            if (mb_strlen($barangay) < 2 || mb_strlen($barangay) > 100) {
-                $this->addError('Barangay name must be between 2 and 100 characters.');
-            }
-        }
-
+        // 9. Full Address Length
         if (!empty($input['address'])) {
             $address = trim($input['address']);
             if (mb_strlen($address) < 5 || mb_strlen($address) > 500) {

@@ -52,6 +52,7 @@ class PatientMedicalHistoryController extends Controller {
                 $value = (int)$_POST[$field];
                 if ($value < $range[0] || $value > $range[1]) {
                     $_SESSION['error_message'] = ucfirst(str_replace('_', ' ', $field)) . ' is outside the allowed range.';
+                    $_SESSION['ihp_form_input'] = $_POST;
                     $this->redirect("/patients/{$patientId}#tab-ihp");
                     return;
                 }
@@ -62,6 +63,7 @@ class PatientMedicalHistoryController extends Controller {
             $lmpDate = \DateTime::createFromFormat('Y-m-d', $_POST['lmp']);
             if (!$lmpDate || $lmpDate->format('Y-m-d') !== $_POST['lmp'] || $_POST['lmp'] > date('Y-m-d')) {
                 $_SESSION['error_message'] = 'Last Menstrual Period must be a valid date that is not in the future.';
+                $_SESSION['ihp_form_input'] = $_POST;
                 $this->redirect("/patients/{$patientId}#tab-ihp");
                 return;
             }
@@ -71,6 +73,7 @@ class PatientMedicalHistoryController extends Controller {
         $alcoholStatus = $_POST['alcohol_status'] ?? 'Never';
         if (!in_array($smokingStatus, ['Never', 'Yes', 'Quit'], true) || !in_array($alcoholStatus, ['Never', 'Yes', 'Quit'], true)) {
             $_SESSION['error_message'] = 'Invalid smoking or alcohol history status.';
+            $_SESSION['ihp_form_input'] = $_POST;
             $this->redirect("/patients/{$patientId}#tab-ihp");
             return;
         }
@@ -118,19 +121,32 @@ class PatientMedicalHistoryController extends Controller {
 
         // Process Surgical History
         $surgical = [];
-        if (!empty($_POST['operation_1_name'])) {
-            $surgical[] = [
-                'operation' => trim($_POST['operation_1_name']),
-                'date' => $_POST['operation_1_date'] ?? '',
-                'hospital' => trim($_POST['operation_1_hospital'] ?? '')
-            ];
-        }
-        if (!empty($_POST['operation_2_name'])) {
-            $surgical[] = [
-                'operation' => trim($_POST['operation_2_name']),
-                'date' => $_POST['operation_2_date'] ?? '',
-                'hospital' => trim($_POST['operation_2_hospital'] ?? '')
-            ];
+        if (!empty($_POST['surgical_procedures']) && is_array($_POST['surgical_procedures'])) {
+            foreach ($_POST['surgical_procedures'] as $proc) {
+                $op = trim($proc['operation'] ?? $proc['name'] ?? '');
+                if ($op !== '') {
+                    $surgical[] = [
+                        'operation' => $op,
+                        'date' => trim($proc['date'] ?? ''),
+                        'hospital' => trim($proc['hospital'] ?? '')
+                    ];
+                }
+            }
+        } elseif (!empty($_POST['operation_1_name']) || !empty($_POST['operation_2_name'])) {
+            if (!empty($_POST['operation_1_name'])) {
+                $surgical[] = [
+                    'operation' => trim($_POST['operation_1_name']),
+                    'date' => $_POST['operation_1_date'] ?? '',
+                    'hospital' => trim($_POST['operation_1_hospital'] ?? '')
+                ];
+            }
+            if (!empty($_POST['operation_2_name'])) {
+                $surgical[] = [
+                    'operation' => trim($_POST['operation_2_name']),
+                    'date' => $_POST['operation_2_date'] ?? '',
+                    'hospital' => trim($_POST['operation_2_hospital'] ?? '')
+                ];
+            }
         }
 
         // Process Family Heredity - build associative map [Condition => Detail]
@@ -165,6 +181,8 @@ class PatientMedicalHistoryController extends Controller {
         }
         if (!empty($_POST['family_other'])) {
             $family['Others'] = trim($_POST['family_other']);
+        } elseif (!empty($_POST['fam_other_specify'])) {
+            $family['Others'] = trim($_POST['fam_other_specify']);
         }
 
         // Process Physical Examination Checklist
@@ -201,7 +219,6 @@ class PatientMedicalHistoryController extends Controller {
             'past_medical_history' => $pastMedical,
             'surgical_history' => $surgical,
             'family_history' => $family,
-            'family_history_lineage' => is_array($_POST['family_history_lineage'] ?? null) ? $_POST['family_history_lineage'] : [],
             'smoking_status' => $smokingStatus,
             'smoking_pack_years' => !empty($_POST['smoking_pack_years']) ? (float)$_POST['smoking_pack_years'] : null,
             'alcohol_status' => $alcoholStatus,
@@ -242,8 +259,10 @@ class PatientMedicalHistoryController extends Controller {
         if ($saved) {
             AuditLog::log('PATIENT_IHP_UPDATED', 'Patients', "Updated PhilHealth IHP Medical History for {$patient['patient_no']} ({$patient['first_name']} {$patient['last_name']})");
             $_SESSION['success_message'] = 'Individual Health Profile (IHP) Medical History saved successfully!';
+            unset($_SESSION['ihp_form_input']);
         } else {
             $_SESSION['error_message'] = 'Failed to save Medical History. Please check input values.';
+            $_SESSION['ihp_form_input'] = $_POST;
         }
 
         $this->redirect("/patients/{$patientId}#tab-ihp");

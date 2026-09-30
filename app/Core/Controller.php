@@ -30,6 +30,25 @@ class Controller {
         // user-controlled return URL from sending an authenticated user to an
         // external site.
         $url = is_string($url) ? $url : '/';
+        // Allow absolute HTTP/HTTPS URLs ONLY if they match current application host (e.g. same-origin referrer)
+        if (is_string($url) && preg_match('#^https?://#i', $url)) {
+            $parsed = parse_url($url);
+            $currentHost = $_SERVER['HTTP_HOST'] ?? '';
+            if (!empty($parsed['host']) && $currentHost !== '') {
+                $currentHostName = strtolower(explode(':', $currentHost)[0]);
+                $parsedHostName = strtolower($parsed['host']);
+                if ($currentHostName === $parsedHostName) {
+                    $url = ($parsed['path'] ?? '/')
+                         . (isset($parsed['query']) ? '?' . $parsed['query'] : '')
+                         . (isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '');
+                } else {
+                    $url = '/';
+                }
+            } else {
+                $url = '/';
+            }
+        }
+
         if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $url) || str_starts_with($url, '//')) {
             $url = '/';
         }
@@ -37,7 +56,7 @@ class Controller {
             $url = '/' . $url;
         }
 
-        $scriptName = $_SERVER['SCRIPT_NAME'];
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
         $basePath = str_replace('/index.php', '', $scriptName);
         
         // If the URL already starts with the base path, don't prepend it again

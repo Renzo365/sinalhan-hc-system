@@ -326,7 +326,6 @@ CREATE TABLE `patient_conditions` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
   `condition_type` ENUM('Past', 'Family') NOT NULL DEFAULT 'Past',
-  `lineage` ENUM('Mother', 'Father', 'Both', 'Unknown') DEFAULT NULL,
   `condition_name` VARCHAR(150) NOT NULL,
   `remarks` TEXT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

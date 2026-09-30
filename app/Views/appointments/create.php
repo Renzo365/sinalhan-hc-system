@@ -13,6 +13,10 @@ if (isset($patient) && $patient) {
     ];
 }
 require dirname(__DIR__) . '/layout/header.php';
+
+$preselectedPatient = $patient ?? null;
+$initialPatientId = !empty($preselectedPatient) ? $preselectedPatient['id'] : '';
+$isLockedPatient = !empty($isLockedPatient);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -43,7 +47,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
                 <h3 class="card-title h5 mb-0 fw-bold text-primary-dark">
-                    <i class="bi bi-calendar-event me-2"></i>Schedule Appointment
+                    <i class="bi bi-calendar2-check me-2 text-primary"></i>Appointment Booking Details
                 </h3>
             </div>
             
@@ -51,54 +55,140 @@ require dirname(__DIR__) . '/layout/header.php';
                 <?= csrf_field() ?>
 
                 <div class="card-body p-4 bg-white">
-                    <!-- 1. Patient Context Section -->
+                    <!-- 1. Patient Selection Section -->
                     <div class="mb-4">
-                        <h4 class="h6 fw-bold text-dark mb-3 border-bottom pb-2">1. Select Patient</h4>
-                        
-                        <?php if ($patient): ?>
-                            <!-- Patient pre-selected card -->
-                            <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                            <div class="card bg-light border-0 p-3 rounded-3 d-flex flex-row align-items-center gap-3">
-                                <div class="bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center fs-4" style="width: 48px; height: 48px;">
-                                    <i class="bi bi-person-fill"></i>
+                        <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.75rem;">1</span>
+                                <h4 class="h6 fw-bold text-dark mb-0">Select Patient <span class="text-danger">*</span></h4>
+                            </div>
+                            <?php if ($isLockedPatient): ?>
+                                <span class="badge bg-light text-secondary border px-3 py-1">
+                                    <i class="bi bi-lock-fill me-1 text-muted"></i> Patient Locked
+                                </span>
+                            <?php else: ?>
+                                <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Change Patient
+                                </button>
+                            <?php endif; ?>
+                        </div>
+
+                        <input type="hidden" name="patient_id" id="selectedPatientId" value="<?= h($initialPatientId) ?>" required>
+
+                        <!-- Patient Search Box -->
+                        <div id="patientSearchSection" class="<?= !empty($preselectedPatient) ? 'd-none' : '' ?>">
+                            <label for="patientSearchInput" class="form-label fw-semibold text-secondary small">
+                                Search Patient <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group input-group-lg mb-2 shadow-xs">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                <input type="text" 
+                                       id="patientSearchInput" 
+                                       class="form-control bg-light border-start-0 fs-6" 
+                                       placeholder="Type patient name, patient ID (e.g. PAT-), or envelope #..." 
+                                       autocomplete="off">
+                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div class="form-text small text-muted mb-3">
+                                <i class="bi bi-info-circle me-1"></i>Type patient name, ID, or envelope number to search. To schedule an unregistered patient, <a href="<?= url('/patients/create') ?>" target="_blank" class="fw-semibold">register them first</a>.
+                            </div>
+
+                            <!-- Live Search Results Dropdown List -->
+                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" style="max-height: 280px; overflow-y: auto;">
+                                <!-- Injected dynamically via JS -->
+                            </div>
+                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                <span class="small">Searching active patients...</span>
+                            </div>
+                        </div>
+
+                        <!-- Compact Patient Identity Card -->
+                        <div id="patientIdentityCard" class="<?= empty($preselectedPatient) ? 'd-none' : '' ?>">
+                            <div class="p-3 p-md-4 rounded-4" style="background-color: #f0fdfa; border: 1px solid #ccfbf1;">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3" style="border-bottom: 1px solid #ccfbf1;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #0D7377; color: #fff;">
+                                            <span id="cardInitials">
+                                                <?php 
+                                                    $init = '';
+                                                    if (!empty($preselectedPatient['first_name'])) $init .= mb_substr($preselectedPatient['first_name'], 0, 1);
+                                                    if (!empty($preselectedPatient['last_name'])) $init .= mb_substr($preselectedPatient['last_name'], 0, 1);
+                                                    echo strtoupper($init ?: 'PT');
+                                                ?>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <h5 class="h6 fw-bold text-dark mb-0" id="cardFullName">
+                                                    <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '')) : '--' ?>
+                                                </h5>
+                                                <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'female') ? 'bg-danger' : 'bg-primary' ?>" id="cardSex">
+                                                    <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?>
+                                                </span>
+                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo">
+                                                    <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
+                                                </span>
+                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge">
+                                                    Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
+                                                </span>
+                                            </div>
+                                            <small class="text-muted" id="cardCivilStatus">
+                                                <?= !empty($preselectedPatient['civil_status']) ? h($preselectedPatient['civil_status']) : 'Single' ?> &bull; Contact: <span id="cardContact"><?= h($preselectedPatient['contact_no'] ?? 'N/A') ?></span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="text-md-end">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Patient Selected
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="text-muted small fw-bold text-uppercase tracking-wider">Patient Record Linked</span>
-                                    <h5 class="h6 fw-bold text-primary-dark mb-1">
-                                        <?= h($patient['last_name']) ?>, <?= h($patient['first_name']) ?> <?= h($patient['middle_name'] ?? '') ?>
-                                    </h5>
-                                    <div class="d-flex align-items-center gap-3 text-secondary small">
-                                        <span><strong>No:</strong> <?= h($patient['patient_no']) ?></span>
-                                        <span class="vr"></span>
-                                        <span><strong>Age/Sex:</strong> <?= h($patient['age']) ?> yrs / <?= h($patient['sex']) ?></span>
+
+                                <!-- Demographic Grid: DOB, Age, Complete Address -->
+                                <div class="row g-3 small">
+                                    <div class="col-12 col-sm-6 col-md-3">
+                                        <div class="p-2 bg-white rounded-3 border">
+                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Date of Birth</span>
+                                            <span class="fw-bold text-dark" id="cardDob">
+                                                <?= !empty($preselectedPatient['dob']) ? date('M d, Y', strtotime($preselectedPatient['dob'])) : '--' ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-md-3">
+                                        <div class="p-2 bg-white rounded-3 border">
+                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
+                                            <span class="fw-bold text-dark" id="cardAge">
+                                                <?= !empty($preselectedPatient['age']) ? h($preselectedPatient['age']) . ' years old' : '--' ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="p-2 bg-white rounded-3 border">
+                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Complete Address</span>
+                                            <span class="fw-semibold text-dark text-truncate d-block" id="cardAddress">
+                                                <?php 
+                                                    if (!empty($preselectedPatient)) {
+                                                        echo h(!empty(trim($preselectedPatient['address'] ?? '')) ? trim($preselectedPatient['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna');
+                                                    } else {
+                                                        echo '--';
+                                                    }
+                                                ?>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        <?php else: ?>
-                            <!-- Search & dropdown for patient -->
-                            <div class="mb-3">
-                                <label for="patient_id" class="form-label fw-semibold text-secondary small">Choose Patient <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
-                                    <select name="patient_id" id="patient_id" class="form-select bg-light border-start-0" required>
-                                        <option value="">-- Select Patient --</option>
-                                        <?php foreach ($patients as $p): ?>
-                                            <option value="<?= $p['id'] ?>" <?= (isset($input['patient_id']) && $input['patient_id'] == $p['id']) ? 'selected' : '' ?>>
-                                                <?= h($p['last_name']) ?>, <?= h($p['first_name']) ?> (<?= h($p['patient_no']) ?>) &bull; Age: <?= h($p['age']) ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="form-text small">Only patients currently registered in the database can be selected. To schedule a new patient, please <a href="<?= url('/patients/create') ?>" target="_blank">register them first</a>.</div>
-                            </div>
-                        <?php endif; ?>
+                        </div>
                     </div>
 
                     <!-- 2. Schedule Details & Service Category -->
                     <div>
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 border-bottom pb-2 gap-2">
                             <h4 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger">*</span></h4>
-                            <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #e6fffa; color: #0d9488; border: 1px solid #b2f5ea;">
+                            <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
                                 <i class="bi bi-clock me-1"></i>Select a Time Slot
                             </span>
                         </div>
@@ -124,16 +214,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                             </div>
 
-                            <!-- Initial Status -->
+                            <!-- Initial Status (Clinically streamlined) -->
                             <div class="col-12 col-md-6">
                                 <label for="status" class="form-label fw-semibold text-secondary small">Initial Status <span class="text-danger">*</span></label>
                                 <select name="status" id="status" class="form-select bg-light">
-                                    <option value="Scheduled" <?= (!isset($input['status']) || $input['status'] === 'Scheduled') ? 'selected' : '' ?>>Scheduled (Confirmed by Patient)</option>
-                                    <option value="Completed" <?= (isset($input['status']) && $input['status'] === 'Completed') ? 'selected' : '' ?>>Completed</option>
-                                    <option value="Cancelled" <?= (isset($input['status']) && $input['status'] === 'Cancelled') ? 'selected' : '' ?>>Cancelled</option>
-                                    <option value="Missed" <?= (isset($input['status']) && $input['status'] === 'Missed') ? 'selected' : '' ?>>Missed</option>
+                                    <option value="Scheduled" <?= (!isset($input['status']) || $input['status'] === 'Scheduled') ? 'selected' : '' ?>>Scheduled (Upcoming Visit)</option>
+                                    <option value="Completed" <?= (isset($input['status']) && $input['status'] === 'Completed') ? 'selected' : '' ?>>Completed (Walk-in / Served)</option>
                                 </select>
-                                <div class="form-text small text-muted">Defaulting to "Scheduled" places the patient directly in the clinic's daily roster.</div>
+                                <div class="form-text small text-muted">Defaulting to "Scheduled" places the patient directly in the clinic's daily queue roster.</div>
                             </div>
 
                             <!-- Service Category / Program Type -->
@@ -188,12 +276,38 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </span>
                             </div>
 
+                            <!-- Slot Capacity Visual Legend -->
+                            <div class="d-flex flex-wrap align-items-center gap-3 p-2 px-3 mb-2 bg-light rounded-2 border small" style="font-size: 0.75rem;">
+                                <span class="text-muted fw-semibold me-1"><i class="bi bi-info-circle me-1"></i>Capacity Guide:</span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-success" style="width: 8px; height: 8px;"> </span> Available
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-warning" style="width: 8px; height: 8px;"> </span> 1 Booked (Concurrent OK)
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-danger" style="width: 8px; height: 8px;"> </span> 2+ Booked (High Volume)
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1 text-secondary">
+                                    <span class="badge rounded-circle p-1 bg-primary" style="width: 8px; height: 8px;"> </span> Selected
+                                </span>
+                            </div>
+
+                            <!-- Overbooking / Concurrent Capacity Notice -->
+                            <div id="slotCapacityAdvisory" class="alert alert-warning py-2 px-3 mb-3 small align-items-center gap-2" style="display: none;" role="note">
+                                <i class="bi bi-exclamation-triangle-fill text-warning flex-shrink-0 fs-5"></i>
+                                <div id="slotCapacityAdvisoryText">
+                                    <strong>Concurrent Booking Advisory:</strong> This time slot already has scheduled appointments.
+                                </div>
+                            </div>
+
+
                             <!-- Morning OPD Session -->
                             <div class="mb-3 p-3 bg-light rounded-3 border">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold small text-dark"><i class="bi bi-brightness-alt-high-fill text-warning me-1"></i> Morning OPD (08:30 AM - 12:00 PM)</span>
                                 </div>
-                                <div class="row g-2" id="morningSlotsContainer">
+                                <div class="row g-2" id="morningSlotsContainer" role="radiogroup" aria-label="Morning OPD Time Slots">
                                     <?php
                                     $morningSlots = [
                                         ['slot' => 1, 'time' => '08:30', 'label' => '08:30 AM'],
@@ -209,7 +323,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                         $isSelected = (!empty($input['appointment_time']) && strpos($input['appointment_time'], $slotTime) === 0);
                                     ?>
                                     <div class="col-6 col-sm-4 col-md-3">
-                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" data-time="<?= $slotTime ?>" data-slot="<?= $s['slot'] ?>" data-session="Morning OPD (08:30 AM - 12:00 PM)">
+                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" 
+                                             tabindex="0" 
+                                             role="radio" 
+                                             aria-checked="<?= $isSelected ? 'true' : 'false' ?>" 
+                                             aria-label="<?= $s['label'] ?> (Slot #<?= $s['slot'] ?>), <?= $isSelected ? 'Selected' : 'Available' ?>" 
+                                             data-time="<?= $slotTime ?>" 
+                                             data-slot="<?= $s['slot'] ?>" 
+                                             data-session="Morning OPD (08:30 AM - 12:00 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
@@ -228,7 +349,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold small text-dark"><i class="bi bi-sunset-fill text-danger me-1"></i> Afternoon OPD (01:00 PM - 04:30 PM)</span>
                                 </div>
-                                <div class="row g-2" id="afternoonSlotsContainer">
+                                <div class="row g-2" id="afternoonSlotsContainer" role="radiogroup" aria-label="Afternoon OPD Time Slots">
                                     <?php
                                     $afternoonSlots = [
                                         ['slot' => 8, 'time' => '13:00', 'label' => '01:00 PM'],
@@ -244,7 +365,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                         $isSelected = (!empty($input['appointment_time']) && strpos($input['appointment_time'], $slotTime) === 0);
                                     ?>
                                     <div class="col-6 col-sm-4 col-md-3">
-                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" data-time="<?= $slotTime ?>" data-slot="<?= $s['slot'] ?>" data-session="Afternoon OPD (01:00 PM - 04:30 PM)">
+                                        <div class="time-slot-card <?= $isSelected ? 'active' : '' ?>" 
+                                             tabindex="0" 
+                                             role="radio" 
+                                             aria-checked="<?= $isSelected ? 'true' : 'false' ?>" 
+                                             aria-label="<?= $s['label'] ?> (Slot #<?= $s['slot'] ?>), <?= $isSelected ? 'Selected' : 'Available' ?>" 
+                                             data-time="<?= $slotTime ?>" 
+                                             data-slot="<?= $s['slot'] ?>" 
+                                             data-session="Afternoon OPD (01:00 PM - 04:30 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
@@ -295,6 +423,11 @@ require dirname(__DIR__) . '/layout/header.php';
     border-color: #0d9488;
     background-color: #f0fdfa;
     transform: translateY(-1px);
+}
+.time-slot-card:focus-visible {
+    outline: 2px solid #0d9488 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.25) !important;
 }
 .time-slot-card.active {
     border-color: #0d9488 !important;
@@ -371,27 +504,62 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function updateSlotAdvisory() {
+        const activeCard = document.querySelector('.time-slot-card.active');
+        const advisoryBox = document.getElementById('slotCapacityAdvisory');
+        const advisoryText = document.getElementById('slotCapacityAdvisoryText');
+        if (!advisoryBox || !advisoryText) return;
+
+        if (activeCard && activeCard.dataset.time) {
+            const time = activeCard.dataset.time;
+            const count = currentCapacities[time] || 0;
+            if (count > 0) {
+                const timeLabel = activeCard.querySelector('.fs-6')?.textContent.trim() || time;
+                advisoryText.innerHTML = `<strong>Concurrent Booking Notice:</strong> <strong>${count} patient${count > 1 ? 's are' : ' is'}</strong> already booked for <strong>${timeLabel}</strong>. Booking this appointment will share this 30-minute consultation window.`;
+                advisoryBox.style.display = 'flex';
+                return;
+            }
+        }
+        advisoryBox.style.display = 'none';
+    }
+
     function applyCapacities(capacities) {
         slotCards.forEach(card => {
             const time = card.dataset.time;
             const slotNum = card.dataset.slot;
+            const slotLabel = card.querySelector('.fs-6')?.textContent.trim() || time;
             const statusLabel = card.querySelector('.slot-status-label');
             const count = capacities[time] || 0;
 
+            card.classList.remove('has-booked', 'high-booked');
+
             if (card.classList.contains('active')) {
+                card.setAttribute('aria-checked', 'true');
                 if (count > 0) {
-                    statusLabel.textContent = `Selected (${count} Booked)`;
+                    statusLabel.innerHTML = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-1">Selected (${count} Booked)</span>`;
+                    card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), Selected, ${count} already booked`);
                 } else {
-                    statusLabel.textContent = 'Selected';
+                    statusLabel.innerHTML = `<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-1">Selected</span>`;
+                    card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), Selected, Available`);
                 }
-            } else if (count > 0) {
+            } else if (count >= 2) {
+                card.classList.add('high-booked');
+                card.setAttribute('aria-checked', 'false');
+                statusLabel.innerHTML = `<span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-1">${count} Booked</span>`;
+                card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), ${count} already booked, High Volume`);
+            } else if (count === 1) {
                 card.classList.add('has-booked');
-                statusLabel.textContent = `${count} Booked`;
+                card.setAttribute('aria-checked', 'false');
+                statusLabel.innerHTML = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-1">1 Booked</span>`;
+                card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), 1 already booked`);
             } else {
-                card.classList.remove('has-booked');
-                statusLabel.textContent = 'Available';
+                card.setAttribute('aria-checked', 'false');
+                statusLabel.innerHTML = `<span class="text-success fw-medium">Available</span>`;
+                card.setAttribute('aria-label', `${slotLabel} (Slot #${slotNum}), Available`);
             }
         });
+
+        updateSlotAdvisory();
     }
 
     function loadDayCapacity() {
@@ -428,19 +596,73 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Time slot selection
+    function showTimeSlotError(msg) {
+        let errBanner = document.getElementById('timeSlotErrorAlert');
+        if (!errBanner) {
+            errBanner = document.createElement('div');
+            errBanner.id = 'timeSlotErrorAlert';
+            errBanner.className = 'alert alert-danger d-flex align-items-center gap-2 py-2 px-3 mb-3 shadow-xs';
+            errBanner.setAttribute('role', 'alert');
+            const slotsSection = document.getElementById('morningSlotsContainer')?.closest('.mb-4');
+            if (slotsSection) {
+                slotsSection.parentNode.insertBefore(errBanner, slotsSection);
+            }
+        }
+        errBanner.innerHTML = `<i class="bi bi-exclamation-triangle-fill fs-5 text-danger flex-shrink-0"></i> <div><strong>Please select a time slot:</strong> ${msg}</div>`;
+        errBanner.style.display = 'flex';
+        errBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true
+            });
+            Toast.fire({
+                icon: 'warning',
+                title: 'Please select an appointment time slot.'
+            });
+        }
+    }
+
+    function clearTimeSlotError() {
+        const errBanner = document.getElementById('timeSlotErrorAlert');
+        if (errBanner) {
+            errBanner.style.display = 'none';
+        }
+    }
+
+    function selectSlotCard(card) {
+        slotCards.forEach(c => {
+            c.classList.remove('active');
+            c.setAttribute('aria-checked', 'false');
+        });
+        card.classList.add('active');
+        card.setAttribute('aria-checked', 'true');
+        timeInput.value = card.dataset.time;
+
+        const sessionName = card.dataset.session || '';
+        if (sessionIndicator && sessionName) {
+            sessionIndicator.innerHTML = `<i class="bi bi-clock-fill me-1"></i>Session: ${sessionName}`;
+        }
+
+        clearTimeSlotError();
+        applyCapacities(currentCapacities);
+    }
+
+    // Time slot selection (click and keyboard)
     slotCards.forEach(card => {
         card.addEventListener('click', function() {
-            slotCards.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            timeInput.value = this.dataset.time;
+            selectSlotCard(this);
+        });
 
-            const sessionName = this.dataset.session || '';
-            if (sessionIndicator && sessionName) {
-                sessionIndicator.innerHTML = `<i class="bi bi-clock-fill me-1"></i>Session: ${sessionName}`;
+        card.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                selectSlotCard(this);
             }
-
-            applyCapacities(currentCapacities);
         });
     });
 
@@ -452,13 +674,232 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Form submit validation
+    // Patient Search & Selection (consistent with Maternal & Well-Baby register)
+    const searchInput = document.getElementById('patientSearchInput');
+    const clearSearchBtn = document.getElementById('btnClearSearch');
+    const resultsContainer = document.getElementById('searchResultsContainer');
+    const loadingSpinner = document.getElementById('searchLoadingSpinner');
+    const selectedPatientIdInput = document.getElementById('selectedPatientId');
+    const searchSection = document.getElementById('patientSearchSection');
+    const identityCard = document.getElementById('patientIdentityCard');
+    const btnChangePatient = document.getElementById('btnChangePatient');
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    let searchDebounceTimer = null;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (clearSearchBtn) {
+                clearSearchBtn.classList.toggle('d-none', query.length === 0);
+            }
+
+            clearTimeout(searchDebounceTimer);
+            if (query.length < 1) {
+                resultsContainer.classList.add('d-none');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            loadingSpinner.classList.remove('d-none');
+            searchDebounceTimer = setTimeout(() => {
+                fetch('<?= url('/api/patients/search/all') ?>?q=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        loadingSpinner.classList.add('d-none');
+                        renderSearchResults(data.results || []);
+                    })
+                    .catch(err => {
+                        loadingSpinner.classList.add('d-none');
+                        console.error('Error searching patients:', err);
+                    });
+            }, 250);
+        });
+
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                clearSearchBtn.classList.add('d-none');
+                resultsContainer.classList.add('d-none');
+                resultsContainer.innerHTML = '';
+                searchInput.focus();
+            });
+        }
+    }
+
+    function renderSearchResults(patients) {
+        resultsContainer.innerHTML = '';
+        if (patients.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="list-group-item text-center py-4 text-muted">
+                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary"></i>
+                    No registered patients found matching your search.
+                </div>
+            `;
+            resultsContainer.classList.remove('d-none');
+            return;
+        }
+
+        patients.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
+            item.style.cursor = 'pointer';
+
+            const sexBadgeClass = (p.sex && p.sex.toLowerCase() === 'female') ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-primary-subtle text-primary border-primary-subtle';
+
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
+                        <div class="small text-muted d-flex align-items-center gap-2 mt-1 flex-wrap">
+                            <span class="badge bg-light text-secondary border font-monospace">${escapeHtml(p.patient_no)}</span>
+                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
+                            <span class="badge ${sexBadgeClass} border">${escapeHtml(p.sex || 'N/A')}</span>
+                            <span>${p.age} yrs</span>
+                            <span>&bull;</span>
+                            <span class="text-truncate" style="max-width: 250px;">${escapeHtml(p.address)}</span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="btn btn-sm btn-outline-primary py-1 px-3">
+                            <i class="bi bi-check-lg me-1"></i>Select
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            item.addEventListener('click', () => selectPatient(p));
+            resultsContainer.appendChild(item);
+        });
+
+        resultsContainer.classList.remove('d-none');
+    }
+
+    function selectPatient(patient) {
+        resultsContainer.classList.add('d-none');
+        resultsContainer.innerHTML = '';
+        if (searchInput) searchInput.value = '';
+
+        selectedPatientIdInput.value = patient.id;
+
+        // Update Compact Patient Identity Card
+        document.getElementById('cardFullName').textContent = patient.name;
+        document.getElementById('cardPatientNo').textContent = patient.patient_no;
+        document.getElementById('cardDob').textContent = patient.dob_formatted || '--';
+        document.getElementById('cardAge').textContent = (patient.age !== undefined && patient.age !== null) ? (patient.age + ' years old') : '--';
+        document.getElementById('cardAddress').textContent = patient.address || 'Barangay Sinalhan, Santa Rosa, Laguna';
+        document.getElementById('cardCivilStatus').innerHTML = `${escapeHtml(patient.civil_status || 'Single')} &bull; Contact: <span>${escapeHtml(patient.contact_no || 'N/A')}</span>`;
+
+        const sexBadge = document.getElementById('cardSex');
+        if (sexBadge) {
+            sexBadge.textContent = patient.sex || 'N/A';
+            if (patient.sex && patient.sex.toLowerCase() === 'female') {
+                sexBadge.className = 'badge bg-danger';
+            } else {
+                sexBadge.className = 'badge bg-primary';
+            }
+        }
+
+        const envBadge = document.getElementById('cardEnvelopeBadge');
+        const envNo = document.getElementById('cardEnvelopeNo');
+        if (patient.envelope_no) {
+            envNo.textContent = patient.envelope_no;
+            envBadge.classList.remove('d-none');
+        } else {
+            envBadge.classList.add('d-none');
+        }
+
+        const initials = ((patient.first_name ? patient.first_name[0] : '') + (patient.last_name ? patient.last_name[0] : '')).toUpperCase() || 'PT';
+        document.getElementById('cardInitials').textContent = initials;
+
+        // Show identity card, hide search section
+        if (searchSection) searchSection.classList.add('d-none');
+        if (identityCard) identityCard.classList.remove('d-none');
+        if (btnChangePatient) btnChangePatient.classList.remove('d-none');
+    }
+
+    if (btnChangePatient) {
+        btnChangePatient.addEventListener('click', function() {
+            selectedPatientIdInput.value = '';
+            if (identityCard) identityCard.classList.add('d-none');
+            if (searchSection) searchSection.classList.remove('d-none');
+            btnChangePatient.classList.add('d-none');
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+            }
+        });
+    }
+
+    // Form submit validation with accessible inline feedback & double-booking confirmation
+    let doubleBookingConfirmed = false;
+
     if (form) {
         form.addEventListener('submit', function(e) {
+            if (!selectedPatientIdInput || !selectedPatientIdInput.value) {
+                e.preventDefault();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Patient Required',
+                        text: 'Please search and select a patient to schedule an appointment.'
+                    });
+                }
+                if (searchSection) searchSection.classList.remove('d-none');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.classList.add('is-invalid');
+                }
+                return;
+            }
+
             if (!timeInput.value) {
                 e.preventDefault();
-                alert('Please select an available time slot for the appointment.');
-                document.getElementById('morningSlotsContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showTimeSlotError('An available morning or afternoon consultation time slot is required.');
+                const firstCard = document.querySelector('.time-slot-card');
+                if (firstCard) firstCard.focus();
+                return;
+            }
+
+            const time = timeInput.value;
+            const count = currentCapacities[time] || 0;
+
+            if (count > 0 && !doubleBookingConfirmed) {
+                e.preventDefault();
+                const activeCard = document.querySelector('.time-slot-card.active');
+                const slotLabel = activeCard?.querySelector('.fs-6')?.textContent.trim() || time;
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Concurrent Appointment Warning',
+                        html: `The <strong>${slotLabel}</strong> time slot already has <strong>${count} scheduled appointment${count > 1 ? 's' : ''}</strong>.<br><br>Are you sure you want to add this booking to the same 30-minute consultation window?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0D7377',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Confirm Booking',
+                        cancelButtonText: 'Choose Another Slot'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            doubleBookingConfirmed = true;
+                            form.submit();
+                        }
+                    });
+                } else {
+                    if (confirm(`Notice: ${slotLabel} already has ${count} scheduled appointment(s). Do you wish to proceed?`)) {
+                        doubleBookingConfirmed = true;
+                        form.submit();
+                    }
+                }
             }
         });
     }

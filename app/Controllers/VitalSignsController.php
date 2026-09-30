@@ -24,10 +24,18 @@ class VitalSignsController extends Controller {
             session_start();
         }
 
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+               || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
+               || (!empty($_POST['format']) && $_POST['format'] === 'json');
+
         $patientId = (int)($_POST['patient_id'] ?? 0);
         
         $patient = $this->patientModel->findById($patientId);
         if (!$patient) {
+            if ($isAjax) {
+                $this->json(['success' => false, 'message' => 'Patient record not found.'], 404);
+                return;
+            }
             http_response_code(404);
             $this->view('errors/404');
             return;
@@ -51,6 +59,10 @@ class VitalSignsController extends Controller {
         $redirectTo = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : "/patients/{$patientId}#tab-vitals";
 
         if (!$hasMetric) {
+            if ($isAjax) {
+                $this->json(['success' => false, 'message' => 'At least one vital sign value must be filled.'], 422);
+                return;
+            }
             $_SESSION['error_message'] = 'At least one vital sign value must be filled.';
             $this->redirect($redirectTo);
             return;
@@ -75,8 +87,21 @@ class VitalSignsController extends Controller {
 
         if ($newId) {
             AuditLog::log('VITAL_SIGNS_RECORDED', 'Patients', "Recorded vital signs for patient: " . $patient['first_name'] . ' ' . $patient['last_name'] . " ({$patient['patient_no']})");
+            if ($isAjax) {
+                $vital = $this->vitalsModel->findById($newId);
+                $this->json([
+                    'success' => true,
+                    'message' => 'Vital signs recorded successfully!',
+                    'vital' => $vital
+                ]);
+                return;
+            }
             $_SESSION['success_message'] = 'Vital signs recorded successfully!';
         } else {
+            if ($isAjax) {
+                $this->json(['success' => false, 'message' => 'Failed to save vital signs. Please try again.'], 500);
+                return;
+            }
             $_SESSION['error_message'] = 'Failed to save vital signs. Please try again.';
         }
 

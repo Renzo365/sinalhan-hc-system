@@ -9,7 +9,7 @@ class Patient extends Model {
     /**
      * Get all active (non-archived) patients based on filters.
      * 
-     * @param array $filters Filter terms (search, barangay, sex, age_group, program_type)
+     * @param array $filters Filter terms (search, sex, age_group, program_type)
      * @return array List of matching patient records with computed badges
      */
     public function allActive($filters = []) {
@@ -19,7 +19,7 @@ class Patient extends Model {
                 WHERE p.deleted_at IS NULL";
         $params = [];
 
-        // Global Search (Name, Patient No, Family No, Contact No, PhilHealth PIN, Barangay)
+        // Global Search (Name, Patient No, Family No, Contact No, PhilHealth PIN, Address)
         if (!empty($filters['search'])) {
             $sql .= " AND (p.first_name LIKE :search_first 
                         OR p.last_name LIKE :search_last 
@@ -28,7 +28,7 @@ class Patient extends Model {
                         OR p.family_no LIKE :search_family
                         OR p.contact_no LIKE :search_contact 
                         OR p.philhealth_no LIKE :search_phic
-                        OR p.barangay LIKE :search_barangay)";
+                        OR p.address LIKE :search_address)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
@@ -37,13 +37,7 @@ class Patient extends Model {
             $params['search_family'] = $searchTerm;
             $params['search_contact'] = $searchTerm;
             $params['search_phic'] = $searchTerm;
-            $params['search_barangay'] = $searchTerm;
-        }
-
-        // Filter by Barangay
-        if (!empty($filters['barangay'])) {
-            $sql .= " AND p.barangay = :barangay";
-            $params['barangay'] = $filters['barangay'];
+            $params['search_address'] = $searchTerm;
         }
 
         // Filter by Sex
@@ -55,6 +49,9 @@ class Patient extends Model {
         // Filter by Age Group
         if (!empty($filters['age_group'])) {
             switch ($filters['age_group']) {
+                case 'under5':
+                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5";
+                    break;
                 case 'infant':
                     $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 1";
                     break;
@@ -76,11 +73,48 @@ class Patient extends Model {
             }
         }
 
+        // Filter by PhilHealth Status
+        if (!empty($filters['phic_status'])) {
+            if ($filters['phic_status'] === 'covered') {
+                $sql .= " AND p.phic_status IN ('Member', 'Dependent')";
+            } elseif ($filters['phic_status'] === 'none') {
+                $sql .= " AND (p.phic_status IS NULL OR p.phic_status = '' OR p.phic_status = 'None' OR p.phic_status = 'Non-Member')";
+            } else {
+                $sql .= " AND p.phic_status = :phic_status";
+                $params['phic_status'] = $filters['phic_status'];
+            }
+        }
+
         $sql .= " ORDER BY p.last_name ASC, p.first_name ASC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Retrieve demographic census metrics for active patients.
+     * 
+     * @return array
+     */
+    public function getCensusMetrics() {
+        $sql = "SELECT 
+                    COUNT(*) as total_patients,
+                    SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) >= 60 THEN 1 ELSE 0 END) as seniors,
+                    SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) <= 5 THEN 1 ELSE 0 END) as under5,
+                    SUM(CASE WHEN phic_status IN ('Member', 'Dependent') THEN 1 ELSE 0 END) as phic_covered,
+                    COUNT(DISTINCT NULLIF(TRIM(family_no), '')) as households
+                FROM patients
+                WHERE deleted_at IS NULL";
+        $result = $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
+
+        return [
+            'total_patients' => (int)($result['total_patients'] ?? 0),
+            'seniors' => (int)($result['seniors'] ?? 0),
+            'under5' => (int)($result['under5'] ?? 0),
+            'phic_covered' => (int)($result['phic_covered'] ?? 0),
+            'households' => (int)($result['households'] ?? 0)
+        ];
     }
 
     /**
@@ -120,7 +154,7 @@ class Patient extends Model {
             'last_name' => trim($lastName)
         ];
 
-        $sql = "SELECT id, patient_no, envelope_no, first_name, middle_name, last_name, suffix, dob, sex, barangay 
+        $sql = "SELECT id, patient_no, envelope_no, first_name, middle_name, last_name, suffix, dob, sex, address, barangay 
                 FROM patients 
                 WHERE deleted_at IS NULL";
 
@@ -650,7 +684,7 @@ class Patient extends Model {
         
         $params = [];
         if (!empty($search)) {
-            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR p.barangay LIKE :s5)";
+            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR p.address LIKE :s5)";
             $term = '%' . trim($search) . '%';
             $params['s1'] = $term;
             $params['s2'] = $term;

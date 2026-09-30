@@ -34,8 +34,17 @@ class Appointment extends Model {
             $params['status'] = $filters['status'];
         }
         if (!empty($filters['program_type'])) {
-            $sql .= " AND a.program_type = :program_type";
-            $params['program_type'] = $filters['program_type'];
+            $prog = trim($filters['program_type']);
+            if (in_array($prog, ['Maternal Care', 'Prenatal Care'], true)) {
+                $sql .= " AND a.program_type IN ('Maternal Care', 'Prenatal Care')";
+            } elseif (in_array($prog, ['Well-Baby Care', 'Well Baby Immunization'], true)) {
+                $sql .= " AND a.program_type IN ('Well-Baby Care', 'Well Baby Immunization')";
+            } elseif (in_array($prog, ['General OPD', 'Consultation'], true)) {
+                $sql .= " AND a.program_type IN ('General OPD', 'Consultation')";
+            } else {
+                $sql .= " AND a.program_type = :program_type";
+                $params['program_type'] = $prog;
+            }
         }
         if (!empty($filters['search'])) {
             $sql .= " AND (p.first_name LIKE :search_first 
@@ -251,4 +260,37 @@ class Appointment extends Model {
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll() ?: [];
     }
+
+    /**
+     * Get summary metrics for today's appointment triage.
+     *
+     * @return array Counts for total_today, scheduled_today, completed_today, missed_cancelled_today
+     */
+    public function getTodaySummaryMetrics() {
+        $sql = "SELECT 
+                    COUNT(*) as total_today,
+                    SUM(CASE WHEN a.status = 'Scheduled' THEN 1 ELSE 0 END) as scheduled_today,
+                    SUM(CASE WHEN a.status = 'Completed' THEN 1 ELSE 0 END) as completed_today,
+                    SUM(CASE WHEN a.status IN ('Missed', 'Cancelled') THEN 1 ELSE 0 END) as missed_cancelled_today
+                FROM appointments a
+                JOIN patients p ON a.patient_id = p.id
+                WHERE a.appointment_date = CURRENT_DATE()
+                  AND p.deleted_at IS NULL";
+        
+        $stmt = $this->db->query($sql);
+        $row = $stmt->fetch();
+
+        // Count overdue scheduled appointments (date < CURRENT_DATE() and status = 'Scheduled')
+        $overdueStmt = $this->db->query("SELECT COUNT(*) FROM appointments a JOIN patients p ON a.patient_id = p.id WHERE a.appointment_date < CURRENT_DATE() AND a.status = 'Scheduled' AND p.deleted_at IS NULL");
+        $overdueCount = (int)($overdueStmt ? $overdueStmt->fetchColumn() : 0);
+
+        return [
+            'total_today' => (int)($row['total_today'] ?? 0),
+            'scheduled_today' => (int)($row['scheduled_today'] ?? 0),
+            'completed_today' => (int)($row['completed_today'] ?? 0),
+            'missed_cancelled_today' => (int)($row['missed_cancelled_today'] ?? 0),
+            'overdue_count' => $overdueCount
+        ];
+    }
 }
+

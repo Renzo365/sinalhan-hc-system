@@ -7,6 +7,7 @@ $reportLabels = [
     'daily_visits' => 'Daily Patient Visits Log',
     'consultations' => 'Clinical Consultations Summary',
     'registrations' => 'Patient Registrations Summary',
+    'appointments' => 'Scheduled Care & Appointments Registry',
     'queue_summary' => 'Daily Queue Operations Summary',
     'vitals' => 'Recorded Vital Signs Log',
     'maternal_health' => 'Maternal & Prenatal Health Registry',
@@ -16,15 +17,37 @@ $reportLabels = [
 
 $reportName = $reportLabels[$type] ?? '';
 $allTime = !empty($allTime);
+$morbidityBreakdown = $morbidityBreakdown ?? [];
+
+// Calculate active quick preset based on date range
+$activePreset = '';
+$todayStr = date('Y-m-d');
+if (!$allTime) {
+    if ($dateFrom === $todayStr && $dateTo === $todayStr) {
+        $activePreset = 'today';
+    } elseif ($dateFrom === date('Y-m-d', strtotime('monday this week')) && $dateTo === $todayStr) {
+        $activePreset = 'this_week';
+    } elseif ($dateFrom === date('Y-m-01') && $dateTo === $todayStr) {
+        $activePreset = 'this_month';
+    } elseif ($dateFrom === date('Y-m-01', strtotime('first day of last month')) && $dateTo === date('Y-m-t', strtotime('last month'))) {
+        $activePreset = 'last_month';
+    } elseif ($dateFrom === date('Y-01-01') && $dateTo === $todayStr) {
+        $activePreset = 'this_year';
+    }
+}
 ?>
 
 <style>
 /* Print Styles */
 @media print {
+    @page {
+        size: landscape;
+        margin: 10mm 8mm;
+    }
     body {
         background: #fff !important;
         color: #000 !important;
-        font-size: 11pt !important;
+        font-size: 10pt !important;
     }
     .app-sidebar, 
     .app-main > header, 
@@ -67,16 +90,35 @@ $allTime = !empty($allTime);
         display: table-header-group;
     }
     th, td {
-        border: 1px solid #6c757d !important;
+        border: 1px solid #495057 !important;
         color: #000 !important;
-        padding: 6px 10px !important;
-        font-size: 9.5pt !important;
+        padding: 5px 8px !important;
+        font-size: 9pt !important;
+    }
+    /* Critical: Never truncate text in official printed documents */
+    .text-truncate {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        max-width: none !important;
+    }
+    .badge {
+        border: 1px solid #495057 !important;
+        color: #000 !important;
+        background: transparent !important;
+        font-weight: 600 !important;
+    }
+    a {
+        color: #000 !important;
+        text-decoration: none !important;
     }
     .print-header {
         display: block !important;
-        border-bottom: 3px double #333;
-        margin-bottom: 25px;
-        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+    .print-metrics-summary {
+        display: block !important;
+        margin-bottom: 12px;
     }
     .print-signatory {
         display: block !important;
@@ -85,7 +127,8 @@ $allTime = !empty($allTime);
 }
 @media screen {
     .print-header,
-    .print-signatory {
+    .print-signatory,
+    .print-metrics-summary {
         display: none !important;
     }
 }
@@ -93,6 +136,12 @@ $allTime = !empty($allTime);
     font-size: 0.72rem;
     padding: 0.2rem 0.45rem;
     border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+.card-filter-card {
+    position: sticky;
+    top: 1.25rem;
+    z-index: 10;
 }
 .bg-pink {
     background-color: #d63384;
@@ -102,6 +151,24 @@ $allTime = !empty($allTime);
 }
 .bg-teal-soft {
     background-color: rgba(32, 201, 151, 0.15);
+}
+.bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.15);
+}
+.bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.15);
+}
+.bg-pink-soft {
+    background-color: rgba(214, 51, 132, 0.15);
+}
+.text-pink {
+    color: #d63384 !important;
+}
+.text-teal {
+    color: #20c997 !important;
+}
+.border-teal {
+    border-color: #20c997 !important;
 }
 </style>
 
@@ -132,6 +199,7 @@ $allTime = !empty($allTime);
                             <option value="daily_visits" <?= $type === 'daily_visits' ? 'selected' : '' ?>>Daily Patient Visits</option>
                             <option value="consultations" <?= $type === 'consultations' ? 'selected' : '' ?>>Consultations Summary</option>
                             <option value="registrations" <?= $type === 'registrations' ? 'selected' : '' ?>>Patient Registrations</option>
+                            <option value="appointments" <?= $type === 'appointments' ? 'selected' : '' ?>>Scheduled Care & Appointments Registry</option>
                             <option value="maternal_health" <?= $type === 'maternal_health' ? 'selected' : '' ?>>Maternal & Prenatal Health Registry</option>
                             <option value="epi_coverage" <?= $type === 'epi_coverage' ? 'selected' : '' ?>>Childhood Routine Immunization (EPI)</option>
                             <option value="chronic_morbidity" <?= $type === 'chronic_morbidity' ? 'selected' : '' ?>>Morbidity & Chronic Disease Registry</option>
@@ -145,12 +213,12 @@ $allTime = !empty($allTime);
                         <label class="form-label text-secondary small fw-semibold d-flex justify-content-between">
                             <span>Quick Presets</span>
                         </label>
-                        <div class="d-flex flex-wrap gap-1">
-                            <button type="button" class="btn btn-outline-secondary btn-preset" onclick="setDatePreset('today')">Today</button>
-                            <button type="button" class="btn btn-outline-secondary btn-preset" onclick="setDatePreset('this_week')">This Week</button>
-                            <button type="button" class="btn btn-outline-secondary btn-preset" onclick="setDatePreset('this_month')">This Month</button>
-                            <button type="button" class="btn btn-outline-secondary btn-preset" onclick="setDatePreset('last_month')">Last Month</button>
-                            <button type="button" class="btn btn-outline-secondary btn-preset" onclick="setDatePreset('this_year')">This Year</button>
+                        <div class="d-flex flex-wrap gap-1" id="quickDatePresets">
+                            <button type="button" class="btn btn-preset <?= $activePreset === 'today' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="today" onclick="setDatePreset('today')">Today</button>
+                            <button type="button" class="btn btn-preset <?= $activePreset === 'this_week' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_week" onclick="setDatePreset('this_week')">This Week</button>
+                            <button type="button" class="btn btn-preset <?= $activePreset === 'this_month' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_month" onclick="setDatePreset('this_month')">This Month</button>
+                            <button type="button" class="btn btn-preset <?= $activePreset === 'last_month' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="last_month" onclick="setDatePreset('last_month')">Last Month</button>
+                            <button type="button" class="btn btn-preset <?= $activePreset === 'this_year' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_year" onclick="setDatePreset('this_year')">This Year</button>
                         </div>
                     </div>
 
@@ -219,16 +287,16 @@ $allTime = !empty($allTime);
                 <div class="row g-3 mb-4 no-print">
                     <?php foreach ($metrics as $m): ?>
                         <div class="col-6 col-md-3">
-                            <div class="card card-premium h-100 p-3 border">
+                            <div class="card card-premium h-100 p-3 border" title="<?= !empty($m['full_title']) ? h($m['full_title']) : h($m['label'] . ': ' . $m['value']) ?>">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <span class="text-secondary small fw-semibold"><?= h($m['label']) ?></span>
                                     <div class="rounded-circle bg-<?= h($m['color']) ?>-soft p-2 text-<?= h($m['color']) ?>">
                                         <i class="bi <?= h($m['icon']) ?> fs-5"></i>
                                     </div>
                                 </div>
-                                <div class="h4 fw-bold mb-0 text-dark"><?= h($m['value']) ?></div>
+                                <div class="h4 fw-bold mb-0 text-dark <?= strlen((string)$m['value']) > 18 ? 'fs-5' : '' ?>"><?= h($m['value']) ?></div>
                                 <?php if (!empty($m['sub'])): ?>
-                                    <small class="text-muted mt-1" style="font-size: 0.72rem;"><?= h($m['sub']) ?></small>
+                                    <small class="text-muted mt-1 d-block" style="font-size: 0.72rem;"><?= h($m['sub']) ?></small>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -236,19 +304,117 @@ $allTime = !empty($allTime);
                 </div>
             <?php endif; ?>
 
+            <!-- DOH FHSIS Top 10 Leading Causes of Morbidity Summary (Consultations) -->
+            <?php if ($type === 'consultations' && !empty($morbidityBreakdown)): ?>
+                <div class="card card-premium mb-4">
+                    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded p-2 bg-primary-soft text-primary">
+                                <i class="bi bi-clipboard2-pulse fs-5"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title h6 mb-0 fw-bold text-dark">DOH FHSIS Leading Causes of Morbidity</h3>
+                                <p class="text-secondary small mb-0">Ranked frequency distribution for public health surveillance & City Health Office reporting</p>
+                            </div>
+                        </div>
+                        <span class="badge bg-teal-soft text-teal border border-teal fw-semibold">
+                            Top <?= count($morbidityBreakdown) ?> Morbidities
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center" style="width: 70px;">Rank</th>
+                                        <th>Diagnosis / Clinical Impression</th>
+                                        <th class="text-center" style="width: 140px;">Reported Cases</th>
+                                        <th class="text-center" style="width: 120px;">% Share</th>
+                                        <th style="width: 180px;">Visual Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($morbidityBreakdown as $mb): ?>
+                                        <tr>
+                                            <td class="text-center fw-bold">
+                                                <span class="badge <?= $mb['rank'] <= 3 ? 'bg-primary' : 'bg-light text-dark border' ?> rounded-circle" style="width: 24px; height: 24px; line-height: 18px; padding: 3px 0;">
+                                                    <?= $mb['rank'] ?>
+                                                </span>
+                                            </td>
+                                            <td class="fw-bold text-primary-dark"><?= h($mb['diagnosis']) ?></td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border px-2 py-1 fs-6"><?= number_format($mb['cases']) ?></span>
+                                            </td>
+                                            <td class="text-center fw-semibold text-secondary"><?= $mb['percentage'] ?>%</td>
+                                            <td>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar <?= $mb['rank'] === 1 ? 'bg-primary' : ($mb['rank'] <= 3 ? 'bg-teal' : 'bg-secondary') ?>" 
+                                                         role="progressbar" 
+                                                         style="width: <?= min(100, $mb['percentage']) ?>%;" 
+                                                         aria-valuenow="<?= $mb['percentage'] ?>" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <!-- Report Container (Includes printable headers) -->
             <div class="card card-premium print-report-card">
                 <!-- PRINT HEADER ONLY -->
-                <div class="print-header text-center">
-                    <h2 class="h4 fw-bold mb-1 text-uppercase text-dark">Barangay Sinalhan Health Center</h2>
-                    <p class="text-secondary small mb-3">Sinalhan Road, Brgy. Sinalhan, Santa Rosa City, Laguna, Philippines</p>
-                    <hr class="mb-3">
-                    <h3 class="h5 fw-bold text-dark text-uppercase"><?= h($reportName) ?></h3>
-                    <p class="text-muted small">
-                        Period: <strong><?= $allTime ? 'All Time (Cumulative Master Registry)' : date('M d, Y', strtotime($dateFrom)) . ' to ' . date('M d, Y', strtotime($dateTo)) ?></strong> 
-                        &bull; Generated By: <?= h($_SESSION['user_fullname'] ?? $_SESSION['username'] ?? 'Staff') ?> on <?= date('Y-m-d h:i A') ?>
-                    </p>
+                <div class="print-header text-center mb-3">
+                    <div style="font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.5px; color: #495057; font-weight: 600;">
+                        Republic of the Philippines &bull; Province of Laguna &bull; City of Santa Rosa
+                    </div>
+                    <h2 class="fw-bold mb-0 text-uppercase text-dark" style="font-size: 13pt; letter-spacing: 0.5px;">
+                        City Health Office &bull; Barangay Sinalhan Health Center
+                    </h2>
+                    <div class="text-secondary small mb-2" style="font-size: 8.5pt;">
+                        Sinalhan Road, Brgy. Sinalhan, Santa Rosa City, Laguna 4026, Philippines
+                    </div>
+                    <div style="border-bottom: 2px solid #0D7377; width: 100%; margin: 6px auto 10px auto;"></div>
+                    <h3 class="fw-bold text-dark text-uppercase mb-1" style="font-size: 11pt;">
+                        <?= h($reportName) ?>
+                    </h3>
+                    <div class="text-muted small" style="font-size: 8.5pt;">
+                        Reporting Period: <strong><?= $allTime ? 'All Time (Cumulative Master Registry)' : date('M d, Y', strtotime($dateFrom)) . ' to ' . date('M d, Y', strtotime($dateTo)) ?></strong> 
+                        &bull; Generated By: <strong><?= h($_SESSION['user_fullname'] ?? $_SESSION['username'] ?? 'Staff Personnel') ?></strong> on <?= date('F d, Y h:i A') ?>
+                    </div>
                 </div>
+
+                <!-- PRINT METRICS SUMMARY (Visible only in print) -->
+                <?php if (!empty($metrics)): ?>
+                    <div class="print-metrics-summary mb-3">
+                        <table class="table table-bordered text-center small mb-2" style="font-size: 8.5pt; border: 1px solid #495057;">
+                            <thead>
+                                <tr style="background-color: #f1f5f9 !important;">
+                                    <?php foreach ($metrics as $m): ?>
+                                        <th class="py-1 px-2" style="font-weight: 700;"><?= h($m['label']) ?></th>
+                                    <?php endforeach; ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <?php foreach ($metrics as $m): ?>
+                                        <td class="py-1 px-2">
+                                            <span style="font-size: 10.5pt; font-weight: 700;"><?= h($m['value']) ?></span>
+                                            <?php if (!empty($m['sub'])): ?>
+                                                <br><span style="font-size: 7.5pt; color: #495057;"><?= h($m['sub']) ?></span>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
 
                 <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between no-print">
                     <h3 class="card-title h6 mb-0 fw-bold text-dark">
@@ -283,21 +449,29 @@ $allTime = !empty($allTime);
                                     <?php else: ?>
                                         <?php foreach ($results as $row): ?>
                                             <tr>
-                                                <td><?= h($row['queue_date']) ?></td>
+                                                <td data-order="<?= h($row['queue_date']) ?>"><?= h($row['queue_date']) ?></td>
                                                 <td class="fw-bold">#<?= sprintf('%03d', $row['queue_no']) ?></td>
-                                                <td><?= h($row['patient_no']) ?></td>
-                                                <td class="text-start fw-bold"><?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?></td>
+                                                <td>
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
+                                                        <?= h($row['patient_no']) ?>
+                                                    </a>
+                                                </td>
+                                                <td class="text-start fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark" title="View Patient Profile">
+                                                        <?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?>
+                                                    </a>
+                                                </td>
                                                 <td><span class="badge bg-light text-primary border"><?= h($row['service_type'] ?: 'General OPD') ?></span></td>
-                                                <td><?= date('h:i A', strtotime($row['time_in'])) ?></td>
-                                                <td><?= $row['time_called'] ? date('h:i A', strtotime($row['time_called'])) : '-' ?></td>
-                                                <td><?= $row['time_completed'] ? date('h:i A', strtotime($row['time_completed'])) : '-' ?></td>
+                                                <td data-order="<?= h($row['time_in']) ?>"><?= date('h:i A', strtotime($row['time_in'])) ?></td>
+                                                <td data-order="<?= h($row['time_called'] ?: '99:99:99') ?>"><?= $row['time_called'] ? date('h:i A', strtotime($row['time_called'])) : '-' ?></td>
+                                                <td data-order="<?= h($row['time_completed'] ?: '99:99:99') ?>"><?= $row['time_completed'] ? date('h:i A', strtotime($row['time_completed'])) : '-' ?></td>
                                                 <td>
                                                     <?php 
-                                                        $statusClass = 'bg-secondary';
-                                                        if ($row['status'] === 'Completed') $statusClass = 'bg-success';
-                                                        elseif ($row['status'] === 'Cancelled') $statusClass = 'bg-danger';
-                                                        elseif (in_array($row['status'], ['Called', 'Serving'])) $statusClass = 'bg-primary';
-                                                        elseif ($row['status'] === 'Waiting') $statusClass = 'bg-warning text-dark';
+                                                         $statusClass = 'bg-secondary';
+                                                         if ($row['status'] === 'Completed') $statusClass = 'bg-success';
+                                                         elseif ($row['status'] === 'Cancelled') $statusClass = 'bg-danger';
+                                                         elseif (in_array($row['status'], ['Called', 'Serving'])) $statusClass = 'bg-primary';
+                                                         elseif ($row['status'] === 'Waiting') $statusClass = 'bg-warning text-dark';
                                                     ?>
                                                     <span class="badge <?= $statusClass ?>"><?= h($row['status']) ?></span>
                                                 </td>
@@ -315,27 +489,45 @@ $allTime = !empty($allTime);
                                         <th>Date</th>
                                         <th>Patient ID</th>
                                         <th class="text-start">Patient Name</th>
-                                        <th class="text-start">Assessment (Diagnosis)</th>
-                                        <th class="text-start">Subjective Notes</th>
-                                        <th>Clinician</th>
+                                        <th class="text-start">Assessment / Impression</th>
+                                        <th class="text-start">History of Present Illness</th>
+                                        <th class="text-start" style="min-width: 175px;">Clinician / Provider</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($results)): ?>
                                         <tr><td colspan="6" class="text-muted py-4">No consultations logged in this period.</td></tr>
                                     <?php else: ?>
-                                        <?php foreach ($results as $row): ?>
+                                        <?php foreach ($results as $row): 
+                                            $cName = $row['clinician_name'] ?? 'Unassigned';
+                                            $roleBadge = '';
+                                            if (preg_match('/^(.*?)\s*\((BHW|Nurse|Midwife|Doctor|MD|RN|RM)\)$/i', $cName, $matches)) {
+                                                $cName = trim($matches[1]);
+                                                $role = strtoupper($matches[2]);
+                                                $roleClass = 'bg-secondary-soft text-secondary border';
+                                                if (in_array($role, ['DOCTOR', 'MD'])) $roleClass = 'bg-primary-soft text-primary border';
+                                                elseif (in_array($role, ['NURSE', 'RN'])) $roleClass = 'bg-info-soft text-info border';
+                                                elseif (in_array($role, ['MIDWIFE', 'RM'])) $roleClass = 'bg-pink-soft text-danger border';
+                                                $roleBadge = '<span class="badge ' . $roleClass . ' small ms-1">' . h($matches[2]) . '</span>';
+                                            }
+                                        ?>
                                             <tr>
-                                                <td><?= date('Y-m-d', strtotime($row['consulted_at'])) ?></td>
-                                                <td><?= h($row['patient_no']) ?></td>
+                                                <td data-order="<?= date('Y-m-d H:i:s', strtotime($row['consulted_at'])) ?>"><?= date('Y-m-d', strtotime($row['consulted_at'])) ?></td>
+                                                <td>
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
+                                                        <?= h($row['patient_no']) ?>
+                                                    </a>
+                                                </td>
                                                 <td class="text-start fw-bold">
-                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark" title="View Patient Profile">
                                                         <?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?>
                                                     </a>
                                                 </td>
-                                                <td class="text-start fw-semibold"><?= h($row['assessment']) ?></td>
-                                                <td class="text-start text-secondary text-truncate" style="max-width: 180px;"><?= h($row['subjective']) ?></td>
-                                                <td><?= h($row['clinician_name']) ?></td>
+                                                <td class="text-start fw-semibold" title="<?= h($row['assessment']) ?>"><?= h($row['assessment']) ?></td>
+                                                <td class="text-start text-secondary text-truncate" style="max-width: 220px;" title="<?= h($row['subjective']) ?>"><?= h($row['subjective']) ?></td>
+                                                <td class="text-start" style="min-width: 175px;">
+                                                    <span class="fw-semibold"><?= h($cName) ?></span><?= $roleBadge ?>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
@@ -353,7 +545,7 @@ $allTime = !empty($allTime);
                                         <th class="text-start">First Name</th>
                                         <th>Birth Date</th>
                                         <th>Age/Sex</th>
-                                        <th>Barangay</th>
+                                        <th>Address</th>
                                         <th>Contact No.</th>
                                     </tr>
                                 </thead>
@@ -363,18 +555,77 @@ $allTime = !empty($allTime);
                                     <?php else: ?>
                                         <?php foreach ($results as $row): ?>
                                             <tr>
-                                                <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
+                                                <td data-order="<?= date('Y-m-d H:i:s', strtotime($row['created_at'])) ?>"><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
                                                 <td class="fw-bold">
-                                                    <a href="<?= url('/patients/' . $row['id']) ?>" class="link-primary-dark">
+                                                    <a href="<?= url('/patients/' . $row['id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
                                                         <?= h($row['patient_no']) ?>
                                                     </a>
                                                 </td>
-                                                <td class="text-start fw-bold"><?= h($row['last_name']) ?></td>
-                                                <td class="text-start"><?= h($row['first_name']) ?></td>
-                                                <td><?= h($row['dob']) ?></td>
+                                                <td class="text-start fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['id']) ?>" class="link-primary-dark" title="View Patient Profile"><?= h($row['last_name']) ?></a>
+                                                </td>
+                                                <td class="text-start">
+                                                    <a href="<?= url('/patients/' . $row['id']) ?>" class="link-primary-dark" title="View Patient Profile"><?= h($row['first_name']) ?></a>
+                                                </td>
+                                                <td data-order="<?= date('Y-m-d', strtotime($row['dob'])) ?>"><?= h($row['dob']) ?></td>
                                                 <td><?= h($row['age']) ?> yrs / <?= h($row['sex']) ?></td>
-                                                <td><?= h($row['barangay']) ?></td>
+                                                <td><?= h(!empty(trim($row['address'] ?? '')) ? $row['address'] : '—') ?></td>
                                                 <td><?= h($row['contact_no'] ?? '-') ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+
+                        <?php elseif ($type === 'appointments'): ?>
+                            <!-- Scheduled Care & Appointments Registry Table -->
+                            <table class="table table-hover align-middle mb-0 text-center small" id="reportTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Patient ID</th>
+                                        <th class="text-start">Patient Name</th>
+                                        <th>Program / Service</th>
+                                        <th class="text-start">Purpose / Notes</th>
+                                        <th>Booked By</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($results)): ?>
+                                        <tr><td colspan="8" class="text-muted py-4">No appointments scheduled in this period.</td></tr>
+                                    <?php else: ?>
+                                        <?php foreach ($results as $row): 
+                                            $statusClass = 'bg-secondary';
+                                            if ($row['status'] === 'Completed') $statusClass = 'bg-success';
+                                            elseif ($row['status'] === 'Scheduled') $statusClass = 'bg-primary';
+                                            elseif ($row['status'] === 'Cancelled') $statusClass = 'bg-danger';
+                                            $timeFormatted = !empty($row['appointment_time']) ? date('h:i A', strtotime($row['appointment_time'])) : '-';
+                                        ?>
+                                            <tr>
+                                                <td data-order="<?= h($row['appointment_date']) ?>"><?= date('M d, Y', strtotime($row['appointment_date'])) ?></td>
+                                                <td data-order="<?= h($row['appointment_time'] ?: '99:99:99') ?>"><?= h($timeFormatted) ?></td>
+                                                <td>
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
+                                                        <?= h($row['patient_no']) ?>
+                                                    </a>
+                                                </td>
+                                                <td class="text-start fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark" title="View Patient Profile">
+                                                        <?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-light text-primary border"><?= h($row['program_type'] ?: 'General OPD') ?></span>
+                                                </td>
+                                                <td class="text-start text-secondary text-truncate" style="max-width: 240px;" title="<?= h($row['purpose'] ?? '') ?><?= !empty($row['notes']) ? ' | ' . h($row['notes']) : '' ?>">
+                                                    <?= h($row['purpose'] ?: ($row['notes'] ?: '—')) ?>
+                                                </td>
+                                                <td><?= h($row['creator_name'] ?: 'Staff') ?></td>
+                                                <td>
+                                                    <span class="badge <?= $statusClass ?>"><?= h($row['status']) ?></span>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
@@ -400,7 +651,7 @@ $allTime = !empty($allTime);
                                     <?php else: ?>
                                         <?php foreach ($results as $row): ?>
                                             <tr>
-                                                <td class="fw-bold"><?= h($row['date']) ?></td>
+                                                <td class="fw-bold" data-order="<?= h($row['date']) ?>"><?= h($row['date']) ?></td>
                                                 <td><strong><?= number_format($row['total']) ?></strong></td>
                                                 <td><span class="badge bg-success"><?= number_format($row['completed']) ?></span></td>
                                                 <td><span class="badge bg-danger"><?= number_format($row['cancelled']) ?></span></td>
@@ -437,17 +688,21 @@ $allTime = !empty($allTime);
                                             $isHighBp = ($row['bp_systolic'] >= 140 || $row['bp_diastolic'] >= 90);
                                         ?>
                                             <tr>
-                                                <td><?= date('Y-m-d', strtotime($row['recorded_at'])) ?></td>
+                                                <td data-order="<?= date('Y-m-d H:i:s', strtotime($row['recorded_at'])) ?>"><?= date('Y-m-d', strtotime($row['recorded_at'])) ?></td>
                                                 <td class="fw-bold">
-                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
                                                         <?= h($row['patient_no']) ?>
                                                     </a>
                                                 </td>
-                                                <td class="text-start fw-bold"><?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?></td>
+                                                <td class="text-start fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark" title="View Patient Profile">
+                                                        <?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?>
+                                                    </a>
+                                                </td>
                                                 <td>
                                                     <?php if ($row['bp_systolic'] && $row['bp_diastolic']): ?>
                                                         <span class="badge <?= $isHighBp ? 'bg-danger text-white' : 'bg-light text-dark border' ?>">
-                                                            <?= "{$row['bp_systolic']}/{$row['bp_diastolic']}" ?>
+                                                             <?= "{$row['bp_systolic']}/{$row['bp_diastolic']}" ?>
                                                         </span>
                                                     <?php else: ?>
                                                         -
@@ -481,7 +736,7 @@ $allTime = !empty($allTime);
                                         <th>Patient ID</th>
                                         <th class="text-start">Mother Name</th>
                                         <th>Age</th>
-                                        <th>Barangay</th>
+                                        <th>Address</th>
                                         <th>Obstetric (GTPAL)</th>
                                         <th>LMP</th>
                                         <th>Expected Delivery (EDC)</th>
@@ -496,20 +751,24 @@ $allTime = !empty($allTime);
                                     <?php else: ?>
                                         <?php foreach ($results as $row): ?>
                                             <tr>
-                                                <td class="fw-bold"><?= h($row['patient_no']) ?></td>
+                                                <td class="fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
+                                                        <?= h($row['patient_no']) ?>
+                                                    </a>
+                                                </td>
                                                 <td class="text-start fw-bold">
-                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark" title="View Patient Profile">
                                                         <?= h($row['last_name']) ?>, <?= h($row['first_name']) ?>
                                                     </a>
                                                 </td>
                                                 <td><?= h($row['patient_age']) ?> yrs</td>
-                                                <td><?= h($row['barangay']) ?></td>
+                                                <td><?= h(!empty(trim($row['address'] ?? '')) ? $row['address'] : '—') ?></td>
                                                 <td>
                                                     <span class="badge bg-light text-dark border">G<?= h($row['gravida']) ?>P<?= h($row['para']) ?></span>
                                                     <small class="text-muted d-block font-monospace" style="font-size: 0.68rem;">T<?= h($row['term_births']) ?> P<?= h($row['preterm_births']) ?> A<?= h($row['abortions']) ?> L<?= h($row['living_children']) ?></small>
                                                 </td>
-                                                <td><?= date('M d, Y', strtotime($row['lmp'])) ?></td>
-                                                <td class="fw-bold text-primary"><?= date('M d, Y', strtotime($row['edc'])) ?></td>
+                                                <td data-order="<?= date('Y-m-d', strtotime($row['lmp'])) ?>"><?= date('M d, Y', strtotime($row['lmp'])) ?></td>
+                                                <td class="fw-bold text-primary" data-order="<?= date('Y-m-d', strtotime($row['edc'])) ?>"><?= date('M d, Y', strtotime($row['edc'])) ?></td>
                                                 <td>
                                                     <?php if (!empty($row['is_active'])): ?>
                                                         <strong><?= h($row['calculated_aog'] !== null ? $row['calculated_aog'] . ' wks' : '0 wks') ?></strong>
@@ -564,7 +823,11 @@ $allTime = !empty($allTime);
                                             $isCIC = !empty($row['is_cic']);
                                         ?>
                                             <tr>
-                                                <td class="fw-bold"><?= h($row['patient_no']) ?></td>
+                                                <td class="fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Child Profile">
+                                                        <?= h($row['patient_no']) ?>
+                                                    </a>
+                                                </td>
                                                 <td class="text-start fw-bold">
                                                     <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark">
                                                         <?= h($row['last_name']) ?>, <?= h($row['first_name']) ?>
@@ -573,7 +836,7 @@ $allTime = !empty($allTime);
                                                         <div class="text-muted font-monospace" style="font-size: 0.72rem;">M: <?= h($row['mother_name']) ?></div>
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><?= date('M d, Y', strtotime($row['dob'])) ?></td>
+                                                <td data-order="<?= date('Y-m-d', strtotime($row['dob'])) ?>"><?= date('M d, Y', strtotime($row['dob'])) ?></td>
                                                 <td><strong><?= h($row['age_months']) ?>m</strong></td>
                                                 <td><?= $row['bcg_date'] ? '<i class="bi bi-check-circle-fill text-success" title="BCG: ' . $row['bcg_date'] . '"></i>' : '<span class="text-muted">-</span>' ?></td>
                                                 <td><?= $row['hepb_date'] ? '<i class="bi bi-check-circle-fill text-success" title="HepB: ' . $row['hepb_date'] . '"></i>' : '<span class="text-muted">-</span>' ?></td>
@@ -615,7 +878,7 @@ $allTime = !empty($allTime);
                                         <th>Patient ID</th>
                                         <th class="text-start">Patient Name</th>
                                         <th>Age/Sex</th>
-                                        <th>Barangay</th>
+                                        <th>Address</th>
                                         <th>Diagnosed Conditions</th>
                                         <th class="text-start">Allergies</th>
                                         <th>Lifestyle History</th>
@@ -626,17 +889,21 @@ $allTime = !empty($allTime);
                                         <tr><td colspan="7" class="text-muted py-4">No chronic morbidity records found.</td></tr>
                                     <?php else: ?>
                                         <?php foreach ($results as $row): 
-                                            $conds = $row['conditions_map'] ?? [];
+                                             $conds = $row['conditions_map'] ?? [];
                                         ?>
                                             <tr>
-                                                <td class="fw-bold"><?= h($row['patient_no']) ?></td>
+                                                <td class="fw-bold">
+                                                    <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="badge bg-light text-primary border text-decoration-none" title="View Patient Profile">
+                                                        <?= h($row['patient_no']) ?>
+                                                    </a>
+                                                </td>
                                                 <td class="text-start fw-bold">
                                                     <a href="<?= url('/patients/' . $row['patient_id']) ?>" class="link-primary-dark">
                                                         <?= h($row['last_name']) ?>, <?= h($row['first_name']) ?>
                                                     </a>
                                                 </td>
                                                 <td><?= h($row['patient_age']) ?> yrs / <?= h($row['sex']) ?></td>
-                                                <td><?= h($row['barangay']) ?></td>
+                                                <td><?= h(!empty(trim($row['address'] ?? '')) ? $row['address'] : '—') ?></td>
                                                 <td>
                                                     <div class="d-flex flex-wrap gap-1 justify-content-center">
                                                         <?php foreach ($conds as $cName => $cRemarks): 
@@ -780,6 +1047,17 @@ function setDatePreset(preset) {
         fromInput.value = format(firstDayYear);
         toInput.value = format(today);
     }
+
+    // Update active preset button highlight
+    document.querySelectorAll('#quickDatePresets .btn-preset').forEach(btn => {
+        if (btn.getAttribute('data-preset') === preset) {
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary', 'text-white');
+        } else {
+            btn.classList.remove('btn-primary', 'text-white');
+            btn.classList.add('btn-outline-secondary');
+        }
+    });
 }
 
 // Toggle date input fields when "Cumulative Master Registry" is checked
@@ -791,6 +1069,11 @@ function toggleAllTime(isChecked) {
         toInput.setAttribute('disabled', 'disabled');
         fromInput.removeAttribute('required');
         toInput.removeAttribute('required');
+        // Clear active state from preset buttons
+        document.querySelectorAll('#quickDatePresets .btn-preset').forEach(btn => {
+            btn.classList.remove('btn-primary', 'text-white');
+            btn.classList.add('btn-outline-secondary');
+        });
     } else {
         fromInput.removeAttribute('disabled');
         toInput.removeAttribute('disabled');
