@@ -567,8 +567,12 @@
                                                             </div>
                                                             <div class="d-flex flex-wrap gap-1">
                                                                 <?php foreach ($patientImmunizations as $admImm): ?>
-                                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" title="Given: <?= h($admImm['date_administered']) ?><?= !empty($admImm['administered_by_name']) ? ' by ' . h($admImm['administered_by_name']) : '' ?>">
-                                                                        <i class="bi bi-shield-check me-1"></i><?= h($admImm['vaccine_name']) ?> (Dose <?= h($admImm['dose_number']) ?>)
+                                                                    <?php
+                                                                        $immDate = !empty($admImm['administered_date']) ? date('M d, Y', strtotime($admImm['administered_date'])) : 'Recorded';
+                                                                        $immVaccinator = !empty($admImm['vaccinator_name']) ? (' by ' . h($admImm['vaccinator_name'])) : '';
+                                                                    ?>
+                                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" title="Given: <?= $immDate ?><?= $immVaccinator ?>">
+                                                                        <i class="bi bi-shield-check me-1"></i><?= h($admImm['vaccine_name'] ?? 'Vaccine') ?> (Dose <?= h($admImm['dose_number'] ?? '1') ?>)
                                                                     </span>
                                                                 <?php endforeach; ?>
                                                             </div>

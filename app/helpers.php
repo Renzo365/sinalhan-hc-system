@@ -31,7 +31,7 @@ if (!function_exists('csrf_field')) {
 
 if (!function_exists('url')) {
     function url($path = '') {
-        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/sinalhan-hc-system/public/index.php';
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/sinalhealth/public/index.php';
         $basePath = str_replace('/index.php', '', $scriptName);
         return rtrim($basePath, '/') . '/' . ltrim($path, '/');
     }

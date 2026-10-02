@@ -268,7 +268,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                     <a href="<?= url('/patients/' . $p['id']) ?>" 
                                        class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace text-decoration-none px-2 py-1 text-hover-primary" 
                                        title="Open <?= h($p['patient_no']) ?> workstation">
-                                        <i class="bi bi-person-vcard me-1"></i><?= h($p['patient_no']) ?>
+                                        <?= h($p['patient_no']) ?>
                                     </a>
                                 </td>
                                 <td>
@@ -279,7 +279,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                         <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mt-0.5" style="font-size: 0.76rem;">
                                             <?php if (!empty($p['address'])): ?>
                                                 <span class="text-truncate" style="max-width: 250px;" title="<?= h($p['address']) ?>">
-                                                    <i class="bi bi-geo-alt text-secondary me-0.5"></i><?= h($p['address']) ?>
+                                                    <?= h($p['address']) ?>
                                                 </span>
                                             <?php endif; ?>
                                             <?php if (!empty($p['address']) && !empty($p['contact_no'])): ?>
@@ -287,7 +287,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                             <?php endif; ?>
                                             <?php if (!empty($p['contact_no'])): ?>
                                                 <span>
-                                                    <i class="bi bi-telephone text-secondary me-0.5"></i><?= h($p['contact_no']) ?>
+                                                    <?= h($p['contact_no']) ?>
                                                 </span>
                                             <?php endif; ?>
                                             <?php if (empty($p['address']) && empty($p['contact_no'])): ?>
@@ -299,7 +299,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 <td>
                                     <?php if (!empty($p['envelope_no'])): ?>
                                         <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.75rem;" title="Physical Folder Envelope No.">
-                                            <i class="bi bi-folder2-open text-primary me-1"></i>#<?= h(ltrim($p['envelope_no'], '#')) ?>
+                                            #<?= h(ltrim($p['envelope_no'], '#')) ?>
                                         </span>
                                     <?php else: ?>
                                         <span class="text-muted small">&mdash;</span>
@@ -308,9 +308,9 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 <td>
                                     <?php if (!empty($p['family_no'])): ?>
                                         <a href="<?= url('/patients?search=' . urlencode($p['family_no'])) ?>" 
-                                           class="badge bg-light text-dark border text-decoration-none text-hover-primary" 
+                                           class="badge bg-light text-dark border text-decoration-none text-hover-primary font-monospace" 
                                            title="Filter all household members in folder <?= h($p['family_no']) ?>">
-                                            <i class="bi bi-house-door-fill text-primary me-1"></i><?= h($p['family_no']) ?>
+                                           <?= h($p['family_no']) ?>
                                         </a>
                                     <?php else: ?>
                                         <span class="text-muted small">&mdash;</span>
@@ -329,11 +329,11 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 <td>
                                     <?php if (($p['sex'] ?? '') === 'Male'): ?>
                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-medium px-2 py-1">
-                                            <i class="bi bi-gender-male me-1"></i>Male
+                                            Male
                                         </span>
                                     <?php elseif (($p['sex'] ?? '') === 'Female'): ?>
                                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">
-                                            <i class="bi bi-gender-female me-1"></i>Female
+                                            Female
                                         </span>
                                     <?php else: ?>
                                         <span class="text-muted small">&mdash;</span>
@@ -342,15 +342,15 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 <td>
                                     <?php if (($p['phic_status'] ?? '') === 'Member'): ?>
                                         <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1" <?= !empty($p['philhealth_no']) ? 'title="PhilHealth PIN: ' . h($p['philhealth_no']) . '"' : '' ?>>
-                                            <i class="bi bi-shield-check me-1"></i>Member
+                                            Member
                                         </span>
                                     <?php elseif (($p['phic_status'] ?? '') === 'Dependent'): ?>
                                         <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle fw-medium px-2 py-1" <?= !empty($p['philhealth_no']) ? 'title="PhilHealth PIN: ' . h($p['philhealth_no']) . '"' : '' ?>>
-                                            <i class="bi bi-shield-plus me-1"></i>Dependent
+                                            Dependent
                                         </span>
                                     <?php else: ?>
                                         <span class="badge bg-light text-secondary border fw-normal px-2 py-1">
-                                            <i class="bi bi-dash-circle me-1"></i>None
+                                            None
                                         </span>
                                     <?php endif; ?>
                                 </td>

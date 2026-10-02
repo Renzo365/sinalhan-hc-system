@@ -11,14 +11,14 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="auth-brand-col">
         <div class="auth-brand-content">
             <!-- Institutional Eyebrow -->
-            <div class="brand-hero-eyebrow">Barangay Sinalhan Health Center</div>
+            <div class="brand-hero-eyebrow">SinalHealth &bull; Barangay Health Station Sinalhan 2</div>
 
             <!-- Main Hero Heading -->
             <h1 class="brand-hero-title">Patient &amp; Health Records <br>Management System</h1>
 
             <!-- Mission Description -->
             <p class="brand-mission-desc">
-                Providing accessible, standardized, and secure public health services for the constituents of Barangay Sinalhan, City of Santa Rosa, Laguna. Dedicated to compassionate primary care and digital health governance.
+                Manage patient records, track consultations, and streamline clinic services for Barangay Sinalhan—all in one place.
             </p>
         </div>
     </div>
@@ -26,6 +26,11 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- Right Form Panel (Staff Sign In) -->
     <div class="auth-form-col">
         <div class="auth-form-box">
+            <!-- SinalHealth Logo (Option 1) -->
+            <div class="mb-4 text-center">
+                <img src="<?= asset('images/sinalhan-logo.png') ?>" alt="SinalHealth" style="height: 48px; width: auto; max-width: 100%; object-fit: contain;">
+            </div>
+
             <!-- Header Section -->
             <h2 class="auth-card-title">Staff Portal Sign In</h2>
             <p class="auth-card-subtitle">
@@ -121,7 +126,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of Use</a>
                 </div>
                 <div class="auth-footer-meta">
-                    &copy; <?= date('Y') ?> Barangay Sinalhan Health Center &bull; City of Santa Rosa, Laguna
+                    &copy; <?= date('Y') ?> SinalHealth &bull; Barangay Sinalhan Health Center
                 </div>
             </div>
         </div>

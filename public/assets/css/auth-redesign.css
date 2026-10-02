@@ -45,12 +45,28 @@ body.auth-redesign-body {
   max-width: 46%;
   background-color: #0A3D40;
   color: #ffffff;
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: flex-start;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 3.5rem 3.25rem;
+  z-index: 10;
+}
+
+.auth-brand-col::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../images/login_bg.jpg') center center / cover no-repeat;
+  opacity: 0.18;
+  pointer-events: none;
   z-index: 1;
 }
 
@@ -564,6 +580,9 @@ body.auth-redesign-body {
   }
 
   .auth-brand-col {
+    position: relative;
+    height: auto;
+    align-self: auto;
     flex: 0 0 auto;
     max-width: 100%;
     width: 100%;

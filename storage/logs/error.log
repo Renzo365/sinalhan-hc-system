@@ -39,3 +39,27 @@ Stack Trace:
 #7 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
 #8 {main}
 --------------------------------------------------------------------------------
+[2026-10-02 23:19:08] [ErrorException] User: admin | IP: 192.168.1.197 | URI: /sinalhan-hc-system/public/patients/1
+Exception: ErrorException: Undefined array key "date_administered" in C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\partials\tab_ihp.php:570
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\partials\tab_ihp.php(570): App\Core\ErrorHandler::handleError(2, 'Undefined array...', 'C:\\xampp\\htdocs...', 570)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\show.php(174): require('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(217): App\Core\Controller->view('patients/show', Array)
+#4 [internal function]: App\Controllers\PatientController->show('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------
+[2026-10-02 23:19:40] [ErrorException] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/1
+Exception: ErrorException: Undefined array key "date_administered" in C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\partials\tab_ihp.php:570
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\partials\tab_ihp.php(570): App\Core\ErrorHandler::handleError(2, 'Undefined array...', 'C:\\xampp\\htdocs...', 570)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Views\patients\show.php(174): require('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientController.php(217): App\Core\Controller->view('patients/show', Array)
+#4 [internal function]: App\Controllers\PatientController->show('1')
+#5 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#6 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#7 {main}
+--------------------------------------------------------------------------------

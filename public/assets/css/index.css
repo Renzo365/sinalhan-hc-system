@@ -223,17 +223,17 @@ a:hover {
 .app-sidebar {
   width: var(--sidebar-width);
   background-color: var(--color-sidebar);
-  height: 100vh;
-  height: 100dvh;
-  max-height: 100vh;
+  height: calc(100vh - var(--topbar-height));
+  height: calc(100dvh - var(--topbar-height));
+  max-height: calc(100vh - var(--topbar-height));
   position: fixed;
   left: 0;
-  top: 0;
+  top: var(--topbar-height);
   bottom: 0;
-  z-index: 1000;
+  z-index: 990;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   overflow: hidden;
 }
@@ -319,14 +319,41 @@ a:hover {
   position: fixed;
   top: 0;
   right: 0;
-  left: var(--sidebar-width);
-  z-index: 999;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 30px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
+}
+
+.topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+  user-select: none;
+}
+.topbar-brand:hover {
+  opacity: 0.9;
+}
+
+.topbar-logo {
+  height: 42px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 575.98px) {
+  .topbar-logo {
+    height: 32px;
+    max-width: 130px;
+  }
 }
 
 .topbar-title {
@@ -493,10 +520,17 @@ a:hover {
 /* --- Responsive Adaptations --- */
 @media (max-width: 991.98px) {
   .app-sidebar {
+    top: var(--topbar-height);
+    height: calc(100vh - var(--topbar-height));
+    height: calc(100dvh - var(--topbar-height));
+    max-height: calc(100vh - var(--topbar-height));
     transform: translateX(-100%);
+    z-index: 1050;
   }
   .app-topbar {
     left: 0;
+    width: 100%;
+    padding: 0 16px;
   }
   .app-main {
     margin-left: 0;

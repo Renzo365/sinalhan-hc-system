@@ -28,14 +28,14 @@ $initials = strtoupper($initials ?: 'ST');
     <div class="auth-brand-col">
         <div class="auth-brand-content">
             <!-- Institutional Eyebrow -->
-            <div class="brand-hero-eyebrow">Barangay Sinalhan Health Center</div>
+            <div class="brand-hero-eyebrow">SinalHealth &bull; Barangay Health Station Sinalhan 2</div>
 
             <!-- Main Hero Heading -->
-            <h1 class="brand-hero-title">Patient Management &amp;<br>Health Records System</h1>
+            <h1 class="brand-hero-title">Patient &amp; Health Records <br>Management System</h1>
 
             <!-- Mission Description -->
             <p class="brand-mission-desc">
-                Providing accessible, standardized, and secure public health services for the constituents of Barangay Sinalhan, City of Santa Rosa, Laguna. Dedicated to compassionate primary care and digital health governance.
+                Manage patient records, track consultations, and streamline clinic services for Barangay Sinalhan—all in one place.
             </p>
         </div>
     </div>
@@ -43,6 +43,11 @@ $initials = strtoupper($initials ?: 'ST');
     <!-- Right Form Panel (First-Time Password Update) -->
     <div class="auth-form-col">
         <div class="auth-form-box">
+            <!-- SinalHealth Logo (Option 1) -->
+            <div class="mb-4 text-center">
+                <img src="<?= asset('images/sinalhan-logo.png') ?>" alt="SinalHealth" style="height: 48px; width: auto; max-width: 100%; object-fit: contain;">
+            </div>
+
             <!-- Title & Explanatory Subtitle -->
             <h2 class="auth-card-title">First-Time Password Update</h2>
             <p class="auth-card-subtitle">

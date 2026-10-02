@@ -4,19 +4,17 @@
         <button class="btn btn-outline-primary d-lg-none me-3" type="button" id="sidebarToggle" aria-label="Toggle sidebar">
             <i class="bi bi-list"></i>
         </button>
-        <h1 class="topbar-title h4 mb-0 d-none d-sm-block">
-            Barangay Sinalhan Health Center
-        </h1>
+        <!-- System Brand (Occupies top-left above sidebar) -->
+        <a href="<?= url('/dashboard') ?>" class="topbar-brand d-flex align-items-center text-decoration-none">
+            <img src="<?= asset('images/sinalhan-logo.png') ?>" alt="SinalHealth" class="topbar-logo">
+        </a>
     </div>
     
     <div class="d-flex align-items-center gap-3">
         <!-- Live PST Date & Clock -->
-        <div class="d-none d-md-flex align-items-center bg-white border rounded-pill px-3 py-1 text-muted small shadow-xs" style="font-size: 0.8125rem;">
-            <i class="bi bi-calendar3 text-primary me-1.5"></i>
-            <span id="topbarLiveDate"><?= date('l, F j, Y') ?></span>
-            <span class="mx-2 text-secondary opacity-50">&bull;</span>
-            <i class="bi bi-clock text-primary me-1.5"></i>
-            <span id="topbarClock" class="font-monospace fw-semibold text-dark"><?= date('h:i:s A') ?> PST</span>
+        <div class="d-none d-md-flex flex-column text-end justify-content-center me-1" style="line-height: 1.25;">
+            <div id="topbarLiveDate" class="fw-bold text-dark" style="font-size: 0.875rem; letter-spacing: -0.01em;"><?= date('l, M j, Y') ?></div>
+            <div id="topbarClock" class="text-muted" style="font-size: 0.775rem;"><?= date('h:i:s A') ?></div>
         </div>
         <?php 
         $userFullName = $_SESSION['user_fullname'] ?? 'User';
@@ -127,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Live Topbar PST Clock
     const topbarClockEl = document.getElementById('topbarClock');
+    const topbarDateEl = document.getElementById('topbarLiveDate');
     if (topbarClockEl) {
         function updateTopbarPstClock() {
             try {
@@ -138,10 +137,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     second: '2-digit',
                     hour12: true
                 });
-                topbarClockEl.textContent = timeStr + ' PST';
+                topbarClockEl.textContent = timeStr;
+                if (topbarDateEl) {
+                    const dateStr = now.toLocaleDateString('en-US', {
+                        timeZone: 'Asia/Manila',
+                        weekday: 'long',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    topbarDateEl.textContent = dateStr;
+                }
             } catch (e) {
                 const d = new Date();
-                topbarClockEl.textContent = d.toLocaleTimeString() + ' PST';
+                topbarClockEl.textContent = d.toLocaleTimeString();
             }
         }
         setInterval(updateTopbarPstClock, 1000);

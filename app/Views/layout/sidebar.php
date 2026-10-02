@@ -20,11 +20,6 @@ if (!function_exists('isActive')) {
 }
 ?>
 <aside class="app-sidebar">
-    <div class="sidebar-brand">
-        <i class="bi bi-heart-pulse-fill text-info me-2 fs-4"></i>
-        <span>SINALHAN PMS</span>
-    </div>
-    
     <div class="sidebar-menu">
         <a href="<?= url('/dashboard') ?>" class="sidebar-item <?= isActive('/dashboard', $uri) ?>">
             <i class="bi bi-speedometer2"></i>

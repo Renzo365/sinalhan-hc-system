@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= isset($title) ? h($title) . ' - ' : '' ?>Barangay Sinalhan Health Center</title>
+    <title><?= isset($title) ? h($title) . ' - ' : '' ?>SinalHealth</title>
     <!-- Local CSS Vendor Files -->
     <link rel="stylesheet" href="<?= asset('vendor/bootstrap/css/bootstrap.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('vendor/bootstrap-icons/bootstrap-icons.css') ?>">
@@ -15,14 +15,14 @@
 <body>
 <?php if (isset($_SESSION['user_id']) && !isset($disable_layout)): ?>
 <div class="app-wrapper">
-    <!-- Sidebar -->
+    <!-- Topbar (Full-width across top) -->
+    <?php require dirname(__DIR__) . '/layout/topbar.php'; ?>
+
+    <!-- Sidebar (Below the topbar) -->
     <?php require dirname(__DIR__) . '/layout/sidebar.php'; ?>
     
     <!-- Main Content Area -->
     <div class="app-main">
-        <!-- Topbar -->
-        <?php require dirname(__DIR__) . '/layout/topbar.php'; ?>
-        
         <div class="app-content">
             <!-- Breadcrumbs / Page Header -->
             <?php if (isset($title)): ?>
