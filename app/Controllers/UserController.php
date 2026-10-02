@@ -92,6 +92,8 @@ class UserController extends Controller {
         }
 
         $data = $_POST;
+        $data['role'] = $role;
+        $data['contact_no'] = !empty($contactNo) ? \App\Validators\UserValidator::sanitizePhone($contactNo) : null;
 
         if ($this->userModel->create($data)) {
             AuditLog::log('USER_CREATED', 'Users', "Created new user account: {$username} ({$firstName} {$lastName}) with role: {$role}");
@@ -185,6 +187,7 @@ class UserController extends Controller {
         }
 
         $data = $_POST;
+        $data['contact_no'] = !empty($contactNo) ? \App\Validators\UserValidator::sanitizePhone($contactNo) : null;
 
         if ($this->userModel->update($id, $data)) {
             // Synchronize session full name in real time if editing current user
@@ -238,8 +241,8 @@ class UserController extends Controller {
         $errors = $validator->validatePasswordReset($user, $_POST, (int)$_SESSION['user_id']);
 
         if (!empty($errors)) {
-            $_SESSION['error_message'] = implode(' ', $errors);
-            $this->redirect('/users');
+            $_SESSION['reset_password_errors'] = $errors;
+            $this->redirect("/users/{$id}/edit#password-reset-section");
             return;
         }
 
@@ -253,7 +256,7 @@ class UserController extends Controller {
             $_SESSION['error_message'] = 'Failed to reset password. Please try again.';
         }
 
-        $this->redirect('/users');
+        $this->redirect("/users/{$id}/edit#password-reset-section");
     }
 
     /**

@@ -3,6 +3,7 @@ $title = 'User Accounts';
 require dirname(__DIR__) . '/layout/header.php';
 ?>
 
+
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
         <h2 class="h3 mb-1 fw-bold text-primary-dark">User Accounts</h2>
@@ -91,31 +92,47 @@ require dirname(__DIR__) . '/layout/header.php';
                                 $canManage = true; // Standard admin can manage staff
                             }
                             
+                            $disabledTooltipReason = 'You do not have permission to manage this protected account.';
+                            if ($isTargetSuperAdmin) {
+                                $disabledTooltipReason = 'The Super Admin account is permanently protected.';
+                            } elseif ($isTargetAdmin) {
+                                $disabledTooltipReason = 'You cannot modify peer administrator accounts. Only Super Admin can manage Administrators.';
+                            }
+
                             if ($u['role'] === 'super_admin') {
-                                $roleBadge = 'bg-primary text-white fw-bold shadow-sm';
+                                $roleBadgeStyle = 'background-color: #0f766e; color: #ffffff;';
+                                $roleBadgeClass = 'badge shadow-sm';
                                 $roleDisplay = 'Super Admin';
                             } elseif ($u['role'] === 'admin') {
-                                $roleBadge = 'bg-light text-primary border border-primary-subtle fw-bold';
+                                $roleBadgeStyle = 'background-color: #e6fffa; color: #0d9488; border: 1px solid #99f6e4;';
+                                $roleBadgeClass = 'badge fw-semibold';
                                 $roleDisplay = 'Admin';
                             } else {
-                                $roleBadge = 'bg-light text-dark border';
+                                $roleBadgeStyle = 'background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;';
+                                $roleBadgeClass = 'badge fw-medium';
                                 $roleDisplay = 'Staff';
                             }
                         ?>
                             <tr>
                                 <td class="text-start ps-4 fw-bold font-monospace text-dark"><?= h($u['username']) ?></td>
                                 <td class="text-start">
-                                    <span class="fw-bold text-dark"><?= h($u['last_name']) ?>, <?= h($u['first_name']) ?></span>
-                                    <div class="text-muted small" style="font-size: 0.72rem;"><?= h($u['email'] ?: '-') ?></div>
-                                    <?php if ($isLocked): ?>
-                                        <div class="mt-1">
-                                            <span class="badge bg-warning text-dark border border-warning-subtle" style="font-size: 0.68rem;" title="Temporarily locked due to failed attempts">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fw-bold text-dark"><?= h($u['last_name']) ?>, <?= h($u['first_name']) ?></span>
+                                        <?php if ($isLocked): ?>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;" title="Temporarily locked out due to failed attempts">
                                                 <i class="bi bi-clock-history me-1"></i> Locked (<?= h($lockoutInfo['remaining_formatted']) ?>)
                                             </span>
-                                        </div>
-                                    <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="small mt-1" style="font-size: 0.75rem;">
+                                        <?php if (!empty($u['email'])): ?>
+                                            <span class="text-muted"><i class="bi bi-envelope me-1"></i><?= h($u['email']) ?></span>
+                                        <?php else: ?>
+                                            <span class="text-muted fst-italic">No email recorded</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
-                                <td><span class="badge <?= $roleBadge ?>"><?= $roleDisplay ?></span></td>
+                                <td><span class="<?= $roleBadgeClass ?>" style="<?= $roleBadgeStyle ?>"><?= $roleDisplay ?></span></td>
                                 <td>
                                     <span class="fw-medium text-dark"><?= h($u['job_title'] ?: 'Staff Member') ?></span>
                                 </td>
@@ -126,30 +143,22 @@ require dirname(__DIR__) . '/layout/header.php';
                                      <div class="d-inline-flex gap-2 align-items-center">
                                          <?php if (!$canManage): ?>
                                              <!-- Disabled Action Buttons with Tooltip for Protected Accounts -->
-                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="You do not have permission to edit this protected account.">
+                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= h($disabledTooltipReason) ?>">
                                                  <button type="button" 
                                                          class="btn btn-sm btn-light border text-muted opacity-50 d-inline-flex align-items-center justify-content-center" 
                                                          style="min-width: 34px; min-height: 34px; padding: 0.25rem; pointer-events: none;" 
+                                                         aria-label="Edit Profile (Disabled)"
                                                          tabindex="-1"
                                                          disabled>
                                                      <i class="bi bi-pencil-square fs-6"></i>
                                                  </button>
                                              </span>
 
-                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="You do not have permission to reset this protected account's password.">
+                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="<?= h($disabledTooltipReason) ?>">
                                                  <button type="button" 
                                                          class="btn btn-sm btn-light border text-muted opacity-50 d-inline-flex align-items-center justify-content-center" 
                                                          style="min-width: 34px; min-height: 34px; padding: 0.25rem; pointer-events: none;" 
-                                                         tabindex="-1"
-                                                         disabled>
-                                                     <i class="bi bi-key-fill fs-6"></i>
-                                                 </button>
-                                             </span>
-
-                                             <span class="d-inline-block" style="cursor: not-allowed;" data-bs-toggle="tooltip" data-bs-placement="top" title="You do not have permission to archive this protected account.">
-                                                 <button type="button" 
-                                                         class="btn btn-sm btn-light border text-muted opacity-50 d-inline-flex align-items-center justify-content-center" 
-                                                         style="min-width: 34px; min-height: 34px; padding: 0.25rem; pointer-events: none;" 
+                                                         aria-label="Archive Account (Disabled)"
                                                          tabindex="-1"
                                                          disabled>
                                                      <i class="bi bi-archive-fill fs-6"></i>
@@ -164,6 +173,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                                              class="btn btn-sm btn-outline-warning border text-dark d-inline-flex align-items-center justify-content-center" 
                                                              style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
                                                              title="Clear 15-Minute Lockout" 
+                                                             aria-label="Clear Lockout for <?= h($u['username']) ?>"
+                                                             data-bs-toggle="tooltip"
+                                                             data-bs-placement="top"
                                                              data-confirm="Are you sure you want to clear the 15-minute login lockout for user '<?= h($u['username']) ?>'? They will be able to log in immediately.">
                                                          <i class="bi bi-unlock-fill fs-6"></i>
                                                      </button>
@@ -174,21 +186,12 @@ require dirname(__DIR__) . '/layout/header.php';
                                              <a href="<?= url('/users/' . $u['id'] . '/edit') ?>" 
                                                 class="btn btn-sm btn-outline-primary border d-inline-flex align-items-center justify-content-center" 
                                                 style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
-                                                title="Edit Profile Details">
+                                                title="Edit Profile Details"
+                                                aria-label="Edit Profile Details for <?= h($u['username']) ?>"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top">
                                                  <i class="bi bi-pencil-square fs-6"></i>
                                              </a>
-                                             
-                                             <!-- Password Reset Button Triggering Modal -->
-                                             <button type="button" 
-                                                     class="btn btn-sm btn-outline-warning border d-inline-flex align-items-center justify-content-center" 
-                                                     style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
-                                                     title="Reset User Password" 
-                                                     data-bs-toggle="modal" 
-                                                     data-bs-target="#resetPasswordModal" 
-                                                     data-user-id="<?= $u['id'] ?>" 
-                                                     data-username="<?= h($u['username']) ?>">
-                                                 <i class="bi bi-key-fill fs-6"></i>
-                                             </button>
 
                                              <!-- Archive Action Button -->
                                              <?php if (!$isSelf && !$isTargetSuperAdmin && (!$isTargetAdmin || is_super_admin())): ?>
@@ -198,6 +201,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                                              class="btn btn-sm btn-outline-danger border d-inline-flex align-items-center justify-content-center" 
                                                              style="min-width: 34px; min-height: 34px; padding: 0.25rem;"
                                                              title="Archive Account" 
+                                                             aria-label="Archive Account <?= h($u['username']) ?>"
+                                                             data-bs-toggle="tooltip"
+                                                             data-bs-placement="top"
                                                              data-confirm="Are you sure you want to archive user account '<?= h($u['username']) ?>'? This account will be deactivated and moved to the Archived Records Hub.">
                                                          <i class="bi bi-archive-fill fs-6"></i>
                                                      </button>
@@ -211,68 +217,6 @@ require dirname(__DIR__) . '/layout/header.php';
                     <?php endif; ?>
                 </tbody>
             </table>
-        </div>
-    </div>
-</div>
-
-<!-- Reset Password Modal -->
-<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-warning py-3 text-dark" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold d-flex align-items-center" id="resetPasswordModalLabel">
-                    <i class="bi bi-shield-fill-check me-2 fs-5"></i> Reset User Password
-                </h5>
-                <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="resetPasswordForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
-                <?= csrf_field() ?>
-                <div class="modal-body p-4 bg-white">
-                    <p class="text-secondary small mb-3">
-                        You are resetting the password for account: <strong id="resetTargetUsername" class="text-primary font-monospace"></strong>
-                    </p>
-                    
-                    <!-- Admin Password field -->
-                    <div class="mb-3">
-                        <label for="admin_password" class="form-label fw-semibold text-secondary small">Your Administrator Password <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key-fill"></i></span>
-                            <input type="password" name="admin_password" id="admin_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Enter your current password to authorize" required>
-                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- New Password field -->
-                    <div class="mb-3">
-                        <label for="new_password" class="form-label fw-semibold text-secondary small">New Temporary Password <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
-                            <input type="password" name="new_password" id="new_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Minimum 8 characters" minlength="8" required>
-                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Confirm Password field -->
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label fw-semibold text-secondary small">Confirm New Password <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
-                            <input type="password" name="confirm_password" id="confirm_password" class="form-control bg-light border-start-0 border-end-0" placeholder="Repeat new password" minlength="8" required>
-                            <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-0 py-3 d-flex justify-content-end gap-2" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning px-4 fw-bold">Reset Password</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -294,14 +238,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const usersTable = $('#usersTable').DataTable({
             "paging": true,
             "lengthChange": true,
-            "searching": true,
+            "searching": false,
             "ordering": true,
             "info": true,
             "autoWidth": false,
             "responsive": true,
             "order": [[1, "asc"]], // Sort by name ascending
             "columnDefs": [
-                { "orderable": false, "targets": 5 } // Actions
+                { "orderable": false, "targets": 5 } // Actions column index 5
             ],
             "language": {
                 "paginate": {
@@ -317,38 +261,5 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endif; ?>
 
     initTooltips();
-
-    // Handle Reset Password Modal data population
-    const resetModal = document.getElementById('resetPasswordModal');
-    if (resetModal) {
-        resetModal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const userId = button.getAttribute('data-user-id');
-            const username = button.getAttribute('data-username');
-            
-            const targetUsername = document.getElementById('resetTargetUsername');
-            const form = document.getElementById('resetPasswordForm');
-            
-            targetUsername.textContent = '@' + username;
-            form.action = '<?= url('/users/') ?>' + userId + '/reset-password';
-            
-            ['admin_password', 'new_password', 'confirm_password'].forEach(function(id) {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.value = '';
-                    el.type = 'password';
-                }
-            });
-            resetModal.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
-                const icon = btn.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                }
-                btn.setAttribute('title', 'Show password');
-                btn.setAttribute('aria-label', 'Show password');
-            });
-        });
-    }
 });
 </script>

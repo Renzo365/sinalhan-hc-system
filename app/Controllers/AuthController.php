@@ -56,7 +56,7 @@ class AuthController extends Controller {
         $password = $_POST['password'] ?? '';
 
         if (empty($identifier) || empty($password)) {
-            $this->setLoginError('Username or Employee ID and password are required.', $identifier);
+            $this->setLoginError('Username and password are required.', $identifier);
             $this->redirect('/login');
             return;
         }

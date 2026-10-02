@@ -90,6 +90,7 @@ class User extends Model {
                 last_name = :last_name, 
                 email = :email, 
                 contact_no = :contact_no, 
+                job_title = :job_title,
                 updated_at = CURRENT_TIMESTAMP 
                 WHERE id = :id";
         
@@ -100,7 +101,8 @@ class User extends Model {
             'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
             'last_name' => trim($data['last_name'] ?? ''),
             'email' => !empty($data['email']) ? trim($data['email']) : null,
-            'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null
+            'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
+            'job_title' => !empty($data['job_title']) ? trim($data['job_title']) : null
         ]);
     }
 
@@ -161,6 +163,16 @@ class User extends Model {
             $params['role'] = $filters['role'];
         }
 
+        if (!empty($filters['date_from'])) {
+            $sql .= " AND DATE(deleted_at) >= :date_from";
+            $params['date_from'] = $filters['date_from'];
+        }
+
+        if (!empty($filters['date_to'])) {
+            $sql .= " AND DATE(deleted_at) <= :date_to";
+            $params['date_to'] = $filters['date_to'];
+        }
+
         $sql .= " ORDER BY deleted_at DESC";
 
         $stmt = $this->db->prepare($sql);
@@ -218,7 +230,7 @@ class User extends Model {
         return $stmt->execute([
             'username' => trim($data['username']),
             'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
-            'role' => $data['role'],
+            'role' => $data['role'] ?? 'staff',
             'first_name' => trim($data['first_name']),
             'middle_name' => !empty($data['middle_name']) ? trim($data['middle_name']) : null,
             'last_name' => trim($data['last_name']),

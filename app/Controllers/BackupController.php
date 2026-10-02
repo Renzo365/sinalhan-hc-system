@@ -10,6 +10,15 @@ class BackupController extends Controller {
     protected $backupDir;
 
     public function __construct() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!is_super_admin()) {
+            $_SESSION['error_message'] = 'Access Denied: Database backup and disaster recovery tools are restricted to Super Administrators.';
+            $this->redirect('/dashboard');
+            exit;
+        }
+
         $this->backupDir = dirname(dirname(__DIR__)) . '/storage/backups';
         if (!file_exists($this->backupDir)) {
             if (!mkdir($this->backupDir, 0750, true) && !is_dir($this->backupDir)) {

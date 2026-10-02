@@ -58,7 +58,9 @@ class ProfileController extends Controller {
         $middleName = trim($_POST['middle_name'] ?? '');
         $lastName = trim($_POST['last_name'] ?? '');
         $email = trim($_POST['email'] ?? '');
-        $contactNo = trim($_POST['contact_no'] ?? '');
+        $rawContact = trim($_POST['contact_no'] ?? '');
+        $contactNo = \App\Validators\UserValidator::sanitizePhone($rawContact);
+        $jobTitle = trim($_POST['job_title'] ?? '');
 
         $errors = [];
 
@@ -76,6 +78,11 @@ class ProfileController extends Controller {
             }
         }
 
+        // Contact number validation
+        if (!empty($rawContact) && !preg_match('/^09\d{9}$/', $contactNo)) {
+            $errors[] = 'Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).';
+        }
+
         if (!empty($errors)) {
             $_SESSION['profile_errors'] = $errors;
             $_SESSION['old_profile'] = $_POST;
@@ -88,14 +95,15 @@ class ProfileController extends Controller {
             'middle_name' => $middleName,
             'last_name' => $lastName,
             'email' => $email,
-            'contact_no' => $contactNo
+            'contact_no' => !empty($rawContact) ? $contactNo : null,
+            'job_title' => $jobTitle
         ];
 
         if ($this->userModel->updateProfile($userId, $updateData)) {
             // Synchronize active session full name immediately
             $_SESSION['user_fullname'] = trim($firstName . ' ' . $lastName);
 
-            AuditLog::log('PROFILE_UPDATED', 'users', $userId, 'Updated personal profile contact details');
+            AuditLog::log('PROFILE_UPDATED', 'users', $userId, 'Updated personal profile details');
             $_SESSION['success_message'] = 'Your profile details have been successfully updated.';
         } else {
             $_SESSION['error_message'] = 'Failed to update profile details. Please try again.';
@@ -141,6 +149,12 @@ class ProfileController extends Controller {
         if (!empty($newPassword)) {
             if (strlen($newPassword) < 8) {
                 $errors[] = 'New password must be at least 8 characters long.';
+            }
+
+            if (!empty($currentPassword) && $newPassword === $currentPassword) {
+                $errors[] = 'New password cannot be the same as your current password. Please choose a different password.';
+            } elseif (password_verify($newPassword, $user['password_hash'])) {
+                $errors[] = 'New password cannot be the same as your current password. Please choose a different password.';
             }
 
             if ($newPassword !== $confirmPassword) {

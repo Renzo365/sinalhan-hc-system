@@ -21,6 +21,12 @@ class AuditLogController extends Controller {
             session_start();
         }
 
+        if (!is_super_admin()) {
+            $_SESSION['error_message'] = 'Access Denied: Security audit logs are restricted to Super Administrators.';
+            $this->redirect('/dashboard');
+            exit;
+        }
+
         $filters = [
             'date_from' => trim($_GET['date_from'] ?? ''),
             'date_to' => trim($_GET['date_to'] ?? ''),

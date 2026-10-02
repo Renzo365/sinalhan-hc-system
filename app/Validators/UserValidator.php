@@ -15,6 +15,22 @@ class UserValidator extends BaseValidator {
     }
 
     /**
+     * Sanitize and normalize Philippine mobile numbers to 09XXXXXXXXX format.
+     * 
+     * @param string|null $contactNo
+     * @return string
+     */
+    public static function sanitizePhone($contactNo) {
+        $clean = preg_replace('/[^0-9]/', '', (string)$contactNo);
+        if (strpos($clean, '639') === 0 && strlen($clean) === 12) {
+            $clean = '0' . substr($clean, 2);
+        } elseif (strpos($clean, '9') === 0 && strlen($clean) === 10) {
+            $clean = '0' . $clean;
+        }
+        return $clean;
+    }
+
+    /**
      * Validate inputs for user creation.
      * 
      * @param array $input
@@ -25,13 +41,21 @@ class UserValidator extends BaseValidator {
 
         $username = trim($input['username'] ?? '');
         $password = $input['password'] ?? '';
+        $confirmPassword = $input['confirm_password'] ?? '';
         $firstName = trim($input['first_name'] ?? '');
         $lastName = trim($input['last_name'] ?? '');
         $email = trim($input['email'] ?? '');
-        $contactNo = trim($input['contact_no'] ?? '');
+        $rawContact = trim($input['contact_no'] ?? '');
+        $contactNo = self::sanitizePhone($rawContact);
 
         if (empty($username) || empty($password) || empty($firstName) || empty($lastName)) {
             $this->addError('Username, Password, First Name, and Last Name are required.');
+        }
+
+        if (empty($confirmPassword)) {
+            $this->addError('Please confirm the initial password.');
+        } elseif ($password !== $confirmPassword) {
+            $this->addError('Initial password and confirmation password do not match.');
         }
 
         if (!empty($username) && !preg_match('/^[a-zA-Z0-9_]{3,20}$/', $username)) {
@@ -54,7 +78,7 @@ class UserValidator extends BaseValidator {
             }
         }
 
-        if (!empty($contactNo) && !preg_match('/^09\d{9}$/', $contactNo)) {
+        if (!empty($rawContact) && !preg_match('/^09\d{9}$/', $contactNo)) {
             $this->addError('Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).');
         }
 
@@ -75,7 +99,8 @@ class UserValidator extends BaseValidator {
         $firstName = trim($input['first_name'] ?? '');
         $lastName = trim($input['last_name'] ?? '');
         $email = trim($input['email'] ?? '');
-        $contactNo = trim($input['contact_no'] ?? '');
+        $rawContact = trim($input['contact_no'] ?? '');
+        $contactNo = self::sanitizePhone($rawContact);
         $role = $input['role'] ?? 'staff';
 
         if (empty($firstName) || empty($lastName)) {
@@ -90,7 +115,7 @@ class UserValidator extends BaseValidator {
             }
         }
 
-        if (!empty($contactNo) && !preg_match('/^09\d{9}$/', $contactNo)) {
+        if (!empty($rawContact) && !preg_match('/^09\d{9}$/', $contactNo)) {
             $this->addError('Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).');
         }
 
@@ -128,8 +153,8 @@ class UserValidator extends BaseValidator {
             $this->addError('New temporary password must be at least 8 characters long.');
         }
 
-        if (!empty($newPassword) && !empty($user['password_hash']) && password_verify($newPassword, $user['password_hash'])) {
-            $this->addError("The new temporary password cannot be the same as the user's current password.");
+        if (!empty($user['password_hash']) && password_verify($newPassword, $user['password_hash'])) {
+            $this->addError('New password cannot be the same as the user\'s current password. Please choose a different password.');
         }
 
         if ($this->userModel) {

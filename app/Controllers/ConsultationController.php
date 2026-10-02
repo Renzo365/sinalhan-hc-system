@@ -396,8 +396,36 @@ class ConsultationController extends Controller {
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
         if (!in_array($userRole, ['admin', 'super_admin'], true)) {
             $_SESSION['error_message'] = 'Unauthorized: Only administrators can restore archived consultations.';
-            $this->redirect('/archive/patients?tab=consultations');
+            $this->redirect('/archive?tab=consultations');
             return;
+        }
+
+        try {
+            $db = \App\Core\Database::getInstance()->getConnection();
+            $stmt = $db->prepare("
+                SELECT c.id, c.patient_id, p.first_name, p.last_name, p.patient_no, p.deleted_at as patient_deleted_at
+                FROM consultations c
+                JOIN patients p ON c.patient_id = p.id
+                WHERE c.id = :id
+                LIMIT 1
+            ");
+            $stmt->execute(['id' => $id]);
+            $consultationInfo = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (!$consultationInfo) {
+                $_SESSION['error_message'] = 'Consultation record not found.';
+                $this->redirect('/archive?tab=consultations');
+                return;
+            }
+
+            // Orphan prevention: Do not allow restoring a consultation whose parent patient is archived
+            if (!empty($consultationInfo['patient_deleted_at'])) {
+                $_SESSION['error_message'] = "Cannot restore consultation: The parent patient ({$consultationInfo['first_name']} {$consultationInfo['last_name']} - {$consultationInfo['patient_no']}) is currently archived. Please restore the patient record first.";
+                $this->redirect('/archive?tab=consultations');
+                return;
+            }
+        } catch (\Exception $e) {
+            error_log("Error verifying consultation parent patient: " . $e->getMessage());
         }
 
         if ($this->consultationModel->restore($id)) {
@@ -407,6 +435,6 @@ class ConsultationController extends Controller {
             $_SESSION['error_message'] = 'Failed to restore consultation. Please try again.';
         }
 
-        $this->redirect('/archive/patients?tab=consultations');
+        $this->redirect('/archive?tab=consultations');
     }
 }

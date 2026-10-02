@@ -3,6 +3,7 @@
 use App\Middleware\AuthMiddleware;
 use App\Middleware\GuestMiddleware;
 use App\Middleware\AdminMiddleware;
+use App\Middleware\SuperAdminMiddleware;
 
 return function (\App\Core\Router $router) {
     // Guest Routes
@@ -122,14 +123,14 @@ return function (\App\Core\Router $router) {
     $router->get('/reports', 'ReportController@index', [AuthMiddleware::class]);
     $router->get('/reports/export', 'ReportController@export', [AuthMiddleware::class]);
 
-    // Audit Logs Routes (Admin Only)
-    $router->get('/audit-logs', 'AuditLogController@index', [AdminMiddleware::class]);
+    // Audit Logs Routes (Super Admin Only)
+    $router->get('/audit-logs', 'AuditLogController@index', [SuperAdminMiddleware::class]);
 
-    // Backup Routes (Admin Only)
-    $router->get('/backup', 'BackupController@index', [AdminMiddleware::class]);
-    $router->post('/backup', 'BackupController@store', [AdminMiddleware::class]);
-    $router->get('/backup/download', 'BackupController@download', [AdminMiddleware::class]);
-    $router->post('/backup/delete', 'BackupController@delete', [AdminMiddleware::class]);
+    // Backup Routes (Super Admin Only)
+    $router->get('/backup', 'BackupController@index', [SuperAdminMiddleware::class]);
+    $router->post('/backup', 'BackupController@store', [SuperAdminMiddleware::class]);
+    $router->get('/backup/download', 'BackupController@download', [SuperAdminMiddleware::class]);
+    $router->post('/backup/delete', 'BackupController@delete', [SuperAdminMiddleware::class]);
 
     // Archived Records Hub Routes (Admin Only)
     $router->get('/archive', 'PatientController@archivedIndex', [AdminMiddleware::class]);

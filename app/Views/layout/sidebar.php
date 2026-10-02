@@ -70,20 +70,23 @@ if (!function_exists('isActive')) {
                 <span>Archive</span>
             </a>
             
-            <a href="<?= url('/audit-logs') ?>" class="sidebar-item <?= isActive('/audit-logs', $uri) ?>">
-                <i class="bi bi-shield-lock"></i>
-                <span>Audit Logs</span>
-            </a>
-            
-            <a href="<?= url('/backup') ?>" class="sidebar-item <?= isActive('/backup', $uri) ?>">
-                <i class="bi bi-database-down"></i>
-                <span>Backup</span>
-            </a>
-            
             <a href="<?= url('/users') ?>" class="sidebar-item <?= isActive('/users', $uri) ?>">
                 <i class="bi bi-person-gear"></i>
                 <span>Users</span>
             </a>
+
+            <!-- System Security & Infrastructure (Super Admin Exclusive) -->
+            <?php if (is_super_admin()): ?>
+                <a href="<?= url('/audit-logs') ?>" class="sidebar-item <?= isActive('/audit-logs', $uri) ?>">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>Audit Logs</span>
+                </a>
+                
+                <a href="<?= url('/backup') ?>" class="sidebar-item <?= isActive('/backup', $uri) ?>">
+                    <i class="bi bi-database-down"></i>
+                    <span>Backup</span>
+                </a>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </aside>

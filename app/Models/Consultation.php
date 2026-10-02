@@ -240,9 +240,11 @@ class Consultation extends Model {
     public function allArchived($filters = []) {
         $sql = "SELECT c.*, p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last,
                        COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name,
-                       CONCAT(archiver.first_name, ' ', archiver.last_name) AS archiver_name
+                       CONCAT(archiver.first_name, ' ', archiver.last_name) AS archiver_name,
+                       vs.bp_systolic, vs.bp_diastolic, vs.heart_rate, vs.temperature, vs.respiratory_rate, vs.weight, vs.height, vs.bmi
                 FROM consultations c
                 JOIN patients p ON c.patient_id = p.id
+                LEFT JOIN vital_signs vs ON c.vital_signs_id = vs.id
                 LEFT JOIN users u ON c.consulted_by = u.id
                 LEFT JOIN users archiver ON c.deleted_by = archiver.id
                 WHERE c.deleted_at IS NOT NULL";

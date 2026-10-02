@@ -54,10 +54,10 @@ require dirname(__DIR__) . '/layout/header.php';
             <form action="<?= url('/login') ?>" method="POST" autocomplete="off">
                 <?= csrf_field() ?>
 
-                <!-- Field 1: Username or Employee ID -->
+                <!-- Field 1: Username -->
                 <div class="mb-3">
                     <label for="username" class="auth-field-label">
-                        <span>Username or Employee ID</span>
+                        <span>Username</span>
                     </label>
                     <div class="input-group auth-input-group">
                         <span class="input-group-text"><i class="bi bi-person"></i></span>
@@ -65,7 +65,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                name="username" 
                                id="username" 
                                class="form-control" 
-                               placeholder="e.g. bhw-nurse01 or BHC-2026-0042" 
+                               placeholder="Enter your username" 
                                value="<?= h($username ?? '') ?>" 
                                required 
                                autocomplete="username"
@@ -154,7 +154,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <ul>
                     <li><strong>Role-Based Access Control (RBAC):</strong> Access is compartmentalized strictly according to clinical role.</li>
                     <li><strong>Automatic Inactivity Timeout:</strong> Sessions automatically terminate after 15 minutes of inactivity to prevent unauthorized access at shared clinic workstations.</li>
-                    <li><strong>Immutable Audit Logging:</strong> Every authentication event, failed login, record viewing, consultation creation, and profile modification is recorded with employee ID and timestamp.</li>
+                    <li><strong>Immutable Audit Logging:</strong> Every authentication event, failed login, record viewing, consultation creation, and profile modification is recorded with username and timestamp.</li>
                     <li><strong>Cryptographic Defense:</strong> Password hashes are secured using industry-standard bcrypt algorithms with salted keys.</li>
                 </ul>
 
@@ -185,7 +185,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                 <h6 class="fw-bold text-dark mt-3">2. Account Responsibility &amp; Credential Security</h6>
                 <ul>
-                    <li>User accounts and employee IDs are assigned individually and are strictly non-transferable.</li>
+                    <li>User accounts are assigned individually and are strictly non-transferable.</li>
                     <li>Sharing account credentials, leaving workstations logged in unattended, or utilizing shared passwords is a direct violation of clinical protocol.</li>
                     <li>Users must promptly report any suspected unauthorized access or compromise of credentials to the BHC IT Desk (Local 104).</li>
                 </ul>

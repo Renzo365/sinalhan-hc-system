@@ -363,36 +363,66 @@ class PatientController extends Controller {
     }
 
     /**
-     * Display a list of archived patients.
+     * Display a list of archived patients, consultations, and staff accounts.
      */
     public function archivedIndex() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        $filters = [
-            'search' => trim($_GET['search'] ?? ''),
-            'date_from' => trim($_GET['date_from'] ?? ''),
-            'date_to' => trim($_GET['date_to'] ?? '')
-        ];
-
-        $archivedPatients = $this->patientModel->allArchived($filters);
-
-        $consultationModel = new \App\Models\Consultation();
-        $archivedConsultations = $consultationModel->allArchived($filters);
-
-        $userModel = new \App\Models\User();
-        $archivedUsers = $userModel->allArchived($filters);
-
         $activeTab = trim($_GET['tab'] ?? 'patients');
         if (!in_array($activeTab, ['patients', 'consultations', 'users'], true)) {
             $activeTab = 'patients';
+        }
+
+        $filters = [
+            'search' => trim($_GET['search'] ?? ''),
+            'date_from' => trim($_GET['date_from'] ?? ''),
+            'date_to' => trim($_GET['date_to'] ?? ''),
+            'role' => trim($_GET['role'] ?? '')
+        ];
+
+        // Isolate search and date filters to the active tab so filtering one tab never mutates or zeroes out others
+        $filtersPatients = ($activeTab === 'patients') ? $filters : [];
+        $filtersConsultations = ($activeTab === 'consultations') ? $filters : [];
+        $filtersUsers = ($activeTab === 'users') ? $filters : [];
+
+        $archivedPatients = $this->patientModel->allArchived($filtersPatients);
+
+        $consultationModel = new \App\Models\Consultation();
+        $archivedConsultations = $consultationModel->allArchived($filtersConsultations);
+        if (!empty($archivedConsultations)) {
+            $prescriptionModel = new \App\Models\Prescription();
+            foreach ($archivedConsultations as &$cRecord) {
+                $cRecord['prescriptions'] = $prescriptionModel->findByConsultationId($cRecord['id']);
+            }
+            unset($cRecord);
+        }
+
+        $userModel = new \App\Models\User();
+        $archivedUsers = $userModel->allArchived($filtersUsers);
+
+        // Baseline total archived counts for tab badges (independent of active search queries)
+        try {
+            $db = \App\Core\Database::getInstance()->getConnection();
+            $tabCounts = [
+                'patients' => (int)$db->query("SELECT COUNT(*) FROM patients WHERE deleted_at IS NOT NULL")->fetchColumn(),
+                'consultations' => (int)$db->query("SELECT COUNT(*) FROM consultations WHERE deleted_at IS NOT NULL")->fetchColumn(),
+                'users' => (int)$db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NOT NULL")->fetchColumn()
+            ];
+        } catch (\Exception $e) {
+            $tabCounts = [
+                'patients' => count($archivedPatients),
+                'consultations' => count($archivedConsultations),
+                'users' => count($archivedUsers)
+            ];
         }
 
         $this->view('archive/patients', [
             'patients' => $archivedPatients,
             'consultations' => $archivedConsultations,
             'users' => $archivedUsers,
+            'tabCounts' => $tabCounts,
             'filters' => $filters,
             'activeTab' => $activeTab
         ]);
@@ -424,11 +454,11 @@ class PatientController extends Controller {
 
         if ($this->patientModel->restore($id)) {
             AuditLog::log('PATIENT_RESTORED', 'Patients', "Restored patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})");
-            $_SESSION['success_message'] = 'Patient record restored successfully.';
-            $this->redirect('/patients');
+            $_SESSION['success_message'] = "Patient record for {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}) restored successfully.";
+            $this->redirect('/archive?tab=patients');
         } else {
             $_SESSION['error_message'] = 'Failed to restore patient. Please try again.';
-            $this->redirect('/archive/patients');
+            $this->redirect('/archive?tab=patients');
         }
     }
 

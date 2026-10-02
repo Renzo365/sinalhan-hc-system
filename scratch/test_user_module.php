@@ -8,6 +8,8 @@ require_once __DIR__ . '/../app/Models/User.php';
 require_once __DIR__ . '/../app/Models/AuditLog.php';
 require_once __DIR__ . '/../app/Middleware/AuthMiddleware.php';
 require_once __DIR__ . '/../app/Middleware/AdminMiddleware.php';
+require_once __DIR__ . '/../app/Validators/BaseValidator.php';
+require_once __DIR__ . '/../app/Validators/UserValidator.php';
 require_once __DIR__ . '/../app/Controllers/UserController.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -68,6 +70,7 @@ $_POST = [
     'csrf_token' => 'invalid_token',
     'username' => 'testuser',
     'password' => 'Password123!',
+    'confirm_password' => 'Password123!',
     'first_name' => 'Test',
     'last_name' => 'User'
 ];

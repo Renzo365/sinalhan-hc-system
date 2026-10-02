@@ -249,7 +249,7 @@ $initials = strtoupper($initials ?: 'ST');
                 <ul>
                     <li><strong>Role-Based Access Control (RBAC):</strong> Access is compartmentalized strictly according to clinical role.</li>
                     <li><strong>Automatic Inactivity Timeout:</strong> Sessions automatically terminate after 15 minutes of inactivity to prevent unauthorized access at shared clinic workstations.</li>
-                    <li><strong>Immutable Audit Logging:</strong> Every authentication event, failed login, record viewing, consultation creation, and profile modification is recorded with employee ID and timestamp.</li>
+                    <li><strong>Immutable Audit Logging:</strong> Every authentication event, failed login, record viewing, consultation creation, and profile modification is recorded with username and timestamp.</li>
                     <li><strong>Cryptographic Defense:</strong> Password hashes are secured using industry-standard bcrypt algorithms with salted keys.</li>
                 </ul>
 
@@ -280,7 +280,7 @@ $initials = strtoupper($initials ?: 'ST');
 
                 <h6 class="fw-bold text-dark mt-3">2. Account Responsibility &amp; Credential Security</h6>
                 <ul>
-                    <li>User accounts and employee IDs are assigned individually and are strictly non-transferable.</li>
+                    <li>User accounts are assigned individually and are strictly non-transferable.</li>
                     <li>Sharing account credentials, leaving workstations logged in unattended, or utilizing shared passwords is a direct violation of clinical protocol.</li>
                     <li>Users must promptly report any suspected unauthorized access or compromise of credentials to the BHC IT Desk (Local 104).</li>
                 </ul>
