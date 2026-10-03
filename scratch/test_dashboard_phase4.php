@@ -45,7 +45,7 @@ $tests = [
     'Encounter view chart action present' => strpos($output, 'View Chart') !== false,
     'No badged patient IDs in encounters' => !preg_match('/<span[^>]*class="[^"]*badge[^"]*"[^>]*>\s*P-\d{4}-\d+\s*<\/span>/', $output),
     'De-badged monospace patient IDs present' => preg_match('/class="font-monospace[^"]*"[^>]*>\s*P-\d{4}-\d+/i', $output),
-    'Clinician attribution displayed' => strpos($output, 'bi-person-badge') !== false,
+    'Clinician attribution displayed' => strpos($output, 'fw-medium text-dark small') !== false || strpos($output, 'Health Center Staff') !== false,
     'Maternal Delivery Radar still intact' => strpos($output, 'Maternal Delivery Radar') !== false,
     'Child Health EPI widget still intact' => strpos($output, 'Child Health &amp; Immunization (EPI)') !== false,
     // Header should not contain action buttons

@@ -38,8 +38,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                             <i class="bi bi-people-fill fs-5"></i>
                         </div>
                     </div>
-                    <div class="small text-muted mt-2 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                        <i class="bi bi-check-circle-fill text-primary"></i>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
                         <span><strong class="text-dark"><?= number_format($apptsCompleted) ?></strong> Appts &bull; <strong class="text-dark"><?= number_format($stats['today_visits'] ?? 0) ?></strong> Walk-ins</span>
                     </div>
                 </div>
@@ -63,8 +62,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                             <i class="bi bi-calendar2-check-fill fs-5"></i>
                         </div>
                     </div>
-                    <div class="small text-muted mt-2 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                        <i class="bi bi-person-check text-info-emphasis"></i>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
                         <span><strong class="text-dark"><?= $apptsCompleted ?></strong> Completed (<?= $apptsPct ?>% attendance)</span>
                     </div>
                 </div>
@@ -88,8 +86,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                             <i class="bi bi-ticket-perforated-fill fs-5"></i>
                         </div>
                     </div>
-                    <div class="small text-muted mt-2 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                        <i class="bi bi-broadcast text-warning-emphasis"></i>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
                         <span>Now Serving: <strong class="text-dark font-monospace"><?= !empty($queueStats['serving_no']) ? sprintf('%03d', $queueStats['serving_no']) : '--' ?></strong></span>
                     </div>
                 </div>
@@ -113,8 +110,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                             <i class="bi bi-shield-check fs-5"></i>
                         </div>
                     </div>
-                    <div class="small text-muted mt-2 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                        <i class="bi bi-check2-circle text-success"></i>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
                         <span><strong class="text-dark"><?= $phicPct ?>%</strong> PhilHealth &bull; <strong class="text-dark"><?= number_format($households) ?></strong> families</span>
                     </div>
                 </div>
@@ -173,7 +169,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                 ?>
                                     <tr>
                                         <td class="ps-4 fw-semibold text-secondary font-monospace small" style="white-space: nowrap;">
-                                            <i class="bi bi-clock me-1 text-primary"></i><?= date('h:i A', strtotime($appt['appointment_time'])) ?>
+                                            <?= date('h:i A', strtotime($appt['appointment_time'])) ?>
                                         </td>
                                         <td>
                                             <div>
@@ -187,10 +183,10 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 </a>
                                                 <?php if (!empty($appt['contact_no'])): ?>
                                                     <span>&bull;</span>
-                                                    <span><i class="bi bi-telephone me-0.5"></i><?= h($appt['contact_no']) ?></span>
+                                                    <span><?= h($appt['contact_no']) ?></span>
                                                 <?php else: ?>
                                                     <span>&bull;</span>
-                                                    <span><i class="bi bi-geo-alt me-0.5"></i>Brgy. Sinalhan</span>
+                                                    <span>Brgy. Sinalhan</span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -207,19 +203,19 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                         <td>
                                             <?php if ($appt['status'] === 'Scheduled'): ?>
                                                 <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
-                                                    <i class="bi bi-calendar-event me-1"></i>Scheduled
+                                                    Scheduled
                                                 </span>
                                             <?php elseif ($appt['status'] === 'Completed'): ?>
                                                 <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                                    <i class="bi bi-check2-circle me-1"></i>Completed
+                                                    Completed
                                                 </span>
                                             <?php elseif ($appt['status'] === 'Cancelled'): ?>
                                                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
-                                                    <i class="bi bi-x-circle me-1"></i>Cancelled
+                                                    Cancelled
                                                 </span>
                                             <?php elseif ($appt['status'] === 'Missed'): ?>
                                                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
-                                                    <i class="bi bi-clock-history me-1"></i>Missed
+                                                    Missed
                                                 </span>
                                             <?php else: ?>
                                                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><?= h($appt['status']) ?></span>
@@ -228,7 +224,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                         <td class="pe-4 text-end">
                                             <?php if ($isEnqueued): ?>
                                                 <span class="badge bg-success-subtle text-success border border-success-subtle py-1.5 px-2" title="Patient is already enqueued today">
-                                                    <i class="bi bi-ticket-perforated-fill me-1"></i>Queue #<?= $qNo ?>
+                                                    Queue #<?= $qNo ?>
                                                 </span>
                                             <?php elseif ($appt['status'] === 'Scheduled'): ?>
                                                 <form action="<?= url('/queue') ?>" method="POST" class="d-inline">
@@ -238,12 +234,12 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                     <input type="hidden" name="appointment_id" value="<?= (int)$appt['id'] ?>">
                                                     <input type="hidden" name="redirect_to" value="<?= url('/dashboard') ?>">
                                                     <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2.5 d-inline-flex align-items-center shadow-xs" title="Issue Queue Ticket for <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>">
-                                                        <i class="bi bi-box-arrow-in-right me-1"></i><span>Check In</span>
+                                                        <span>Check In</span>
                                                     </button>
                                                 </form>
                                             <?php elseif ($appt['status'] === 'Completed'): ?>
                                                 <span class="badge bg-light text-secondary border py-1.5 px-2">
-                                                    <i class="bi bi-check2-all text-success me-1"></i>Fulfilled
+                                                    Fulfilled
                                                 </span>
                                             <?php else: ?>
                                                 <span class="text-muted small">&mdash;</span>
@@ -409,16 +405,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 <?= h($del['patient_no']) ?>
                                             </a>
                                             <span>&bull;</span>
-                                            <span><i class="bi bi-calendar-heart text-danger me-1"></i>EDC: <strong><?= date('M d, Y', strtotime($del['edc'])) ?></strong></span>
+                                            <span>EDC: <strong><?= date('M d, Y', strtotime($del['edc'])) ?></strong></span>
                                             <?php if (!empty($del['contact_no'])): ?>
                                                 <span>&bull;</span>
-                                                <span><i class="bi bi-telephone me-1"></i><?= h($del['contact_no']) ?></span>
+                                                <span><?= h($del['contact_no']) ?></span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="flex-shrink-0 text-end">
                                         <span class="badge <?= $daysBadgeClass ?>" style="font-size: 0.72rem;">
-                                            <i class="bi bi-hourglass-split me-0.5"></i><?= $daysLabel ?>
+                                            <?= $daysLabel ?>
                                         </span>
                                     </div>
                                 </div>
@@ -504,25 +500,15 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         
                         <div class="row g-2 pt-2 border-top">
                             <div class="col-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="bg-white rounded-circle border p-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-clipboard2-pulse text-primary small"></i>
-                                    </div>
-                                    <div class="lh-1">
-                                        <div class="fw-bold text-dark small font-monospace"><?= number_format($childHealth['total_wellbaby'] ?? 0) ?> Folders</div>
-                                        <span class="text-muted" style="font-size: 0.68rem;">Well-Baby Growth Logs</span>
-                                    </div>
+                                <div class="lh-1">
+                                    <div class="fw-bold text-dark small font-monospace"><?= number_format($childHealth['total_wellbaby'] ?? 0) ?> Folders</div>
+                                    <span class="text-muted" style="font-size: 0.68rem;">Well-Baby Growth Logs</span>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="bg-white rounded-circle border p-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                        <i class="bi bi-check2-circle text-success small"></i>
-                                    </div>
-                                    <div class="lh-1">
-                                        <div class="fw-bold text-dark small font-monospace"><?= number_format($childHealth['infants_under1'] ?? 0) ?> Infants</div>
-                                        <span class="text-muted" style="font-size: 0.68rem;">Under-1 Cohort Target</span>
-                                    </div>
+                                <div class="lh-1">
+                                    <div class="fw-bold text-dark small font-monospace"><?= number_format($childHealth['infants_under1'] ?? 0) ?> Infants</div>
+                                    <span class="text-muted" style="font-size: 0.68rem;">Under-1 Cohort Target</span>
                                 </div>
                             </div>
                         </div>
@@ -587,10 +573,10 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                     <tr>
                                         <td class="ps-4" style="white-space: nowrap;">
                                             <div class="fw-semibold text-dark small">
-                                                <i class="bi bi-calendar3 me-1 text-primary"></i><?= date('M d, Y', strtotime($enc['consulted_at'])) ?>
+                                                <?= date('M d, Y', strtotime($enc['consulted_at'])) ?>
                                             </div>
                                             <div class="text-muted small font-monospace mt-0.5" style="font-size: 0.72rem;">
-                                                <i class="bi bi-clock me-1 text-secondary"></i><?= date('h:i A', strtotime($enc['consulted_at'])) ?>
+                                                <?= date('h:i A', strtotime($enc['consulted_at'])) ?>
                                             </div>
                                         </td>
                                         <td>
@@ -609,7 +595,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                         </td>
                                         <td>
                                             <div class="fw-semibold text-dark text-truncate" style="max-width: 380px;" title="<?= h($enc['assessment'] ?: 'Clinical Assessment Pending') ?>">
-                                                <i class="bi bi-file-earmark-medical me-1 text-info-emphasis"></i><?= h($enc['assessment'] ?: 'Clinical Assessment Pending') ?>
+                                                <?= h($enc['assessment'] ?: 'Clinical Assessment Pending') ?>
                                             </div>
                                             <?php if (!empty($enc['subjective'])): ?>
                                                 <div class="text-muted small text-truncate mt-0.5" style="max-width: 380px; font-size: 0.74rem;" title="Chief Complaint: <?= h($enc['subjective']) ?>">
@@ -619,13 +605,11 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center gap-1.5 text-secondary">
-                                                <i class="bi bi-person-badge text-primary opacity-75"></i>
                                                 <span class="fw-medium text-dark small"><?= h($enc['clinician_name'] ?: 'Health Center Staff') ?></span>
                                             </div>
                                         </td>
                                         <td class="pe-4 text-end">
-                                            <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2.5 d-inline-flex align-items-center gap-1 shadow-xs" title="Open Patient Medical Chart">
-                                                <i class="bi bi-folder2-open"></i>
+                                            <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2.5 d-inline-flex align-items-center shadow-xs" title="Open Patient Medical Chart">
                                                 <span>View Chart</span>
                                             </a>
                                         </td>
