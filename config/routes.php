@@ -39,13 +39,19 @@ return function (\App\Core\Router $router) {
     $router->get('/patients/{id}/edit', 'PatientController@edit', [AuthMiddleware::class]);
     $router->post('/patients/{id}', 'PatientController@update', [AuthMiddleware::class]);
     $router->post('/patients/{id}/medical-history', 'PatientMedicalHistoryController@save', [AuthMiddleware::class]);
-    // Maternal Care Workstation Routes
-    $router->get('/maternal', 'MaternalController@index', [AuthMiddleware::class]);
-    $router->get('/maternal/register', 'PrenatalController@createEpisode', [AuthMiddleware::class]);
-    $router->post('/maternal/register', 'PrenatalController@storeEpisode', [AuthMiddleware::class]);
-    $router->get('/maternal/episode/{id}/edit', 'PrenatalController@editEpisode', [AuthMiddleware::class]);
-    $router->post('/maternal/episode/{id}/edit', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
-    $router->get('/maternal/{id}', 'MaternalController@show', [AuthMiddleware::class]);
+    // Prenatal Care Workstation Routes
+    $router->get('/prenatal', 'MaternalController@index', [AuthMiddleware::class]);
+    $router->get('/maternal', 'MaternalController@index', [AuthMiddleware::class]); // Backward compatibility alias
+    $router->get('/prenatal/register', 'PrenatalController@createEpisode', [AuthMiddleware::class]);
+    $router->get('/maternal/register', 'PrenatalController@createEpisode', [AuthMiddleware::class]); // Backward compatibility alias
+    $router->post('/prenatal/register', 'PrenatalController@storeEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/register', 'PrenatalController@storeEpisode', [AuthMiddleware::class]); // Backward compatibility alias
+    $router->get('/prenatal/episode/{id}/edit', 'PrenatalController@editEpisode', [AuthMiddleware::class]);
+    $router->get('/maternal/episode/{id}/edit', 'PrenatalController@editEpisode', [AuthMiddleware::class]); // Backward compatibility alias
+    $router->post('/prenatal/episode/{id}/edit', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/episode/{id}/edit', 'PrenatalController@updateEpisode', [AuthMiddleware::class]); // Backward compatibility alias
+    $router->get('/prenatal/{id}', 'MaternalController@show', [AuthMiddleware::class]);
+    $router->get('/maternal/{id}', 'MaternalController@show', [AuthMiddleware::class]); // Backward compatibility alias
     $router->post('/patients/{id}/prenatal/episode', 'PrenatalController@storeEpisode', [AuthMiddleware::class]);
     $router->post('/patients/{id}/past-obstetric', 'PrenatalController@storePastObstetric', [AuthMiddleware::class]);
     $router->post('/past-obstetric/{id}/delete', 'PrenatalController@deletePastObstetric', [AuthMiddleware::class]);

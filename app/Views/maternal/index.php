@@ -1,23 +1,29 @@
 <?php
 /**
- * @var array $activeRoster Active maternal pregnancy records
+ * @var array $activeRoster Active prenatal pregnancy records
  * @var array $recentlyDelivered Concluded delivery records within 90 days
  * @var string $search Active search query
  */
 
-$title = 'Maternal Care Workstation';
+$title = 'Prenatal Care Workstation';
 $breadcrumbs = [
-    'Maternal Care' => null
+    'Prenatal Care' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
 // Quick stats calculation
 $totalActive = count($activeRoster);
 $nearTermCount = 0;
+$overdueCount = 0;
+
 foreach ($activeRoster as $row) {
     $weeks = (int)($row['calculated_aog']['weeks'] ?? 0);
-    if ($weeks >= 37) {
+    $daysLeft = (int)($row['days_until_edc'] ?? 0);
+    if ($weeks >= 37 && $daysLeft >= 0) {
         $nearTermCount++;
+    }
+    if ($daysLeft < 0) {
+        $overdueCount++;
     }
 }
 $deliveredCount = count($recentlyDelivered);
@@ -28,55 +34,95 @@ $deliveredCount = count($recentlyDelivered);
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold mb-1 text-dark">
-                <i class="bi bi-heart-pulse-fill text-danger me-2"></i>Maternal Care Workstation
+                <i class="bi bi-heart-pulse-fill text-danger me-2"></i>Prenatal Care Workstation
             </h2>
             <p class="text-muted mb-0">Active pregnancy cohorts, prenatal checkup tracking, and delivery outcomes.</p>
         </div>
-            <a href="<?= url('/maternal/register') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-sm">
-                <i class="bi bi-person-plus-fill me-2 fs-5"></i>
+        <div>
+            <a href="<?= url('/prenatal/register') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-sm">
+                <i class="bi bi-plus-lg me-2"></i>
                 <span>Register Pregnancy</span>
             </a>
+        </div>
     </div>
 
-    <!-- Metrics Summary Cards -->
+    <!-- Prenatal Cohort Operational KPI Summary Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-primary">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-primary-subtle text-primary p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                        <i class="bi bi-person-heart fs-4"></i>
+        <!-- 1. Active Pregnancies -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Active Pregnancies</div>
+                            <div class="h3 mb-0 fw-bold text-primary mt-1"><?= $totalActive ?></div>
+                        </div>
+                        <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-person-hearts fs-5"></i>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-secondary small fw-medium text-uppercase tracking-wider">Active Pregnancies</div>
-                        <div class="fs-3 fw-bold text-dark"><?= $totalActive ?></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-warning">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-warning-subtle text-warning p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                        <i class="bi bi-bell-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <div class="text-secondary small fw-medium text-uppercase tracking-wider">Near Term (≥37 Weeks)</div>
-                        <div class="fs-3 fw-bold text-dark"><?= $nearTermCount ?></div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Active antenatal cohort</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-success">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-success-subtle text-success p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                        <i class="bi bi-check-circle-fill fs-4"></i>
+        <!-- 2. Near Term -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Near Term (≥37w)</div>
+                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1"><?= $nearTermCount ?></div>
+                        </div>
+                        <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-bell fs-5"></i>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-secondary small fw-medium text-uppercase tracking-wider">Recent Deliveries (90d)</div>
-                        <div class="fs-3 fw-bold text-dark"><?= $deliveredCount ?></div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Due within 3 weeks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. High-Risk / Overdue -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">High-Risk / Overdue</div>
+                            <div class="h3 mb-0 fw-bold <?= $overdueCount > 0 ? 'text-danger' : 'text-secondary' ?> mt-1"><?= $overdueCount ?></div>
+                        </div>
+                        <div class="<?= $overdueCount > 0 ? 'bg-danger-subtle text-danger' : 'bg-light text-secondary' ?> rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-exclamation-triangle fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span><?= $overdueCount > 0 ? 'Past estimated EDC date' : 'No overdue records' ?></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Recent Deliveries (90d) -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Recent Deliveries</div>
+                            <div class="h3 mb-0 fw-bold text-success mt-1"><?= $deliveredCount ?></div>
+                        </div>
+                        <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-check-circle fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Last 90 days concluded</span>
                     </div>
                 </div>
             </div>
@@ -86,7 +132,7 @@ $deliveredCount = count($recentlyDelivered);
     <!-- Filters Card -->
     <div class="card card-premium mb-4">
         <div class="card-body p-4">
-            <form action="<?= url('/maternal') ?>" method="GET" class="row g-3 align-items-end" id="filtersForm">
+            <form action="<?= url('/prenatal') ?>" method="GET" class="row g-3 align-items-end" id="filtersForm">
                 <!-- Search Keyword -->
                 <div class="col-12 col-md-6">
                     <label for="search" class="form-label fw-semibold text-secondary small">Search Mother / Patient</label>
@@ -116,9 +162,9 @@ $deliveredCount = count($recentlyDelivered);
                 <!-- Action Buttons -->
                 <div class="col-12 col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-grow-1">
-                        <i class="bi bi-funnel"></i> Filter
+                        Filter
                     </button>
-                    <a href="<?= url('/maternal') ?>" class="btn btn-outline-secondary" title="Clear Filters">
+                    <a href="<?= url('/prenatal') ?>" class="btn btn-outline-secondary" title="Clear Filters">
                         <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 </div>
@@ -130,9 +176,7 @@ $deliveredCount = count($recentlyDelivered);
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="bi bi-list-stars text-primary me-2"></i>Active Pregnant Mothers Cohort
-                </h5>
+                <h5 class="fw-bold mb-0 text-dark">Active Pregnant Mothers Cohort</h5>
                 <small class="text-muted">Mothers currently enrolled in active pregnancy episodes</small>
             </div>
             <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace">
@@ -161,7 +205,7 @@ $deliveredCount = count($recentlyDelivered);
                                     <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
                                     <?php if (!empty($search) || !empty($stage)): ?>
                                         No active pregnant patients match your search/filter criteria.
-                                        <div class="mt-2"><a href="<?= url('/maternal') ?>" class="btn btn-sm btn-outline-primary">Clear Filters</a></div>
+                                        <div class="mt-2"><a href="<?= url('/prenatal') ?>" class="btn btn-sm btn-outline-primary">Clear Filters</a></div>
                                     <?php else: ?>
                                         No active pregnancy episodes currently registered.
                                         <div class="small text-muted mt-1">To enroll a pregnant mother, click <strong>Register Pregnancy</strong> above.</div>
@@ -186,7 +230,7 @@ $deliveredCount = count($recentlyDelivered);
                                 <tr>
                                     <td class="ps-4 py-3">
                                         <div>
-                                            <a href="<?= url('/maternal/' . $row['patient_id']) ?>" class="fw-bold text-dark text-decoration-none hover-primary">
+                                            <a href="<?= url('/prenatal/' . $row['patient_id']) ?>" class="fw-bold text-dark text-decoration-none hover-primary">
                                                 <?= h($row['last_name']) ?>, <?= h($row['first_name']) ?> <?= !empty($row['middle_name']) ? h(mb_substr($row['middle_name'], 0, 1)) . '.' : '' ?>
                                             </a>
                                             <div class="small text-muted d-flex align-items-center gap-1 mt-1">
@@ -232,8 +276,8 @@ $deliveredCount = count($recentlyDelivered);
                                         </span>
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/maternal/' . $row['patient_id']) ?>" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
-                                            <i class="bi bi-folder2-open me-1"></i> Open Workstation
+                                        <a href="<?= url('/prenatal/' . $row['patient_id']) ?>" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
+                                            Open Workstation
                                         </a>
                                     </td>
                                 </tr>
@@ -249,9 +293,7 @@ $deliveredCount = count($recentlyDelivered);
     <?php if (!empty($recentlyDelivered)): ?>
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-0 py-3 px-4">
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="bi bi-clock-history text-success me-2"></i>Recently Delivered / Concluded (Last 90 Days)
-                </h5>
+                <h5 class="fw-bold mb-0 text-dark">Recently Delivered / Concluded (Last 90 Days)</h5>
                 <small class="text-muted">Postpartum mothers and recently concluded pregnancy episodes</small>
             </div>
             <div class="card-body p-0">
@@ -289,6 +331,8 @@ $deliveredCount = count($recentlyDelivered);
                                         if ($outcome === 'Stillbirth') $outcomeClass = 'bg-dark text-white';
                                         elseif ($outcome === 'Miscarriage') $outcomeClass = 'bg-warning text-dark';
                                         elseif ($outcome === 'Ectopic') $outcomeClass = 'bg-danger text-white';
+                                        elseif ($outcome === 'Transferred Out / Referred') $outcomeClass = 'bg-info text-white';
+                                        elseif ($outcome === 'Unreturned / Discontinued') $outcomeClass = 'bg-secondary text-white';
                                         ?>
                                         <span class="badge <?= $outcomeClass ?> px-2 py-1"><?= h($outcome) ?></span>
                                     </td>
@@ -296,8 +340,8 @@ $deliveredCount = count($recentlyDelivered);
                                         <span class="badge bg-light text-secondary border"><?= (int)$deliv['visit_count'] ?> visits</span>
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/maternal/' . $deliv['patient_id']) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                            <i class="bi bi-eye me-1"></i> View Records
+                                        <a href="<?= url('/prenatal/' . $deliv['patient_id']) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            View Records
                                         </a>
                                     </td>
                                 </tr>

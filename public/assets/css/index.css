@@ -712,12 +712,21 @@ a:hover {
   background-color: #d63384 !important;
 }
 
+.bg-pink-subtle {
+  background-color: rgba(214, 51, 132, 0.12) !important;
+  color: #b02a6b !important;
+}
+
 .text-pink {
   color: #b02a6b !important;
 }
 
 .border-pink {
   border-color: #d63384 !important;
+}
+
+.border-pink-subtle {
+  border-color: rgba(214, 51, 132, 0.28) !important;
 }
 
 .btn-pink {

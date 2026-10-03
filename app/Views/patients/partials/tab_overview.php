@@ -12,7 +12,7 @@
                                             <i class="bi bi-person-lines-fill text-primary me-2"></i>Demographic & Civil Profile
                                         </h5>
                                         <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit Demographics">
-                                            <i class="bi bi-pencil me-1"></i> Edit
+                                            Edit
                                         </a>
                                     </div>
                                     <div class="card-body p-3 small">
@@ -21,7 +21,6 @@
                                             <div class="col-12">
                                                 <span class="overview-micro-label d-block">Residential Address</span>
                                                 <span class="text-dark fw-medium">
-                                                    <i class="bi bi-geo-alt-fill text-primary me-1"></i>
                                                     <?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?>
                                                 </span>
                                             </div>
@@ -31,13 +30,13 @@
                                                 <span class="overview-micro-label d-block">Primary Contact Number</span>
                                                 <?php if (!empty($patient['contact_no'])): ?>
                                                     <div class="d-flex align-items-center">
-                                                        <span class="font-monospace fw-semibold text-dark"><i class="bi bi-telephone text-secondary me-1"></i><a href="tel:<?= h($patient['contact_no']) ?>" class="text-decoration-none text-dark"><?= h($patient['contact_no']) ?></a></span>
+                                                        <span class="font-monospace fw-semibold text-dark"><a href="tel:<?= h($patient['contact_no']) ?>" class="text-decoration-none text-dark"><?= h($patient['contact_no']) ?></a></span>
                                                         <button type="button" class="btn btn-link btn-xs p-0 text-secondary ms-1.5 copy-clipboard-btn" data-clipboard="<?= h($patient['contact_no']) ?>" title="Copy phone number" aria-label="Copy primary phone number">
                                                             <i class="bi bi-copy"></i>
                                                         </button>
                                                     </div>
                                                 <?php else: ?>
-                                                    <span class="text-muted fst-italic"><i class="bi bi-telephone text-muted me-1"></i>None registered</span>
+                                                    <span class="text-muted fst-italic">None registered</span>
                                                 <?php endif; ?>
                                             </div>
                                             <div class="col-6 border-top pt-2 mt-1">
@@ -66,7 +65,7 @@
                                             <!-- PhilHealth Section Divider -->
                                             <div class="col-12 border-top pt-2 mt-1">
                                                 <div class="d-flex align-items-center gap-1 text-primary small fw-bold">
-                                                    <i class="bi bi-card-checklist me-1"></i>PhilHealth Information
+                                                    PhilHealth Information
                                                 </div>
                                             </div>
 
@@ -113,7 +112,7 @@
                                                 <span class="badge bg-light text-dark border">Fam # <?= h($patient['family_no']) ?></span>
                                             <?php endif; ?>
                                             <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit Family & Emergency Contacts">
-                                                <i class="bi bi-pencil me-1"></i> Edit
+                                                Edit
                                             </a>
                                         </div>
                                     </div>
@@ -149,13 +148,13 @@
                                                 <span class="overview-micro-label d-block">Emergency Phone</span>
                                                 <?php if (!empty($patient['emergency_no'])): ?>
                                                     <div class="d-flex align-items-center">
-                                                        <span class="font-monospace fw-semibold text-dark"><i class="bi bi-telephone-fill text-danger me-1"></i><a href="tel:<?= h($patient['emergency_no']) ?>" class="text-decoration-none text-dark"><?= h($patient['emergency_no']) ?></a></span>
+                                                        <span class="font-monospace fw-semibold text-dark"><a href="tel:<?= h($patient['emergency_no']) ?>" class="text-decoration-none text-dark"><?= h($patient['emergency_no']) ?></a></span>
                                                         <button type="button" class="btn btn-link btn-xs p-0 text-secondary ms-1.5 copy-clipboard-btn" data-clipboard="<?= h($patient['emergency_no']) ?>" title="Copy emergency phone" aria-label="Copy emergency phone">
                                                             <i class="bi bi-copy"></i>
                                                         </button>
                                                     </div>
                                                 <?php else: ?>
-                                                    <span class="text-muted fst-italic"><i class="bi bi-telephone text-muted me-1"></i>None provided</span>
+                                                    <span class="text-muted fst-italic">None provided</span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -176,19 +175,19 @@
                                                 $vitalsTime = strtotime($latestVitals['recorded_at']);
                                                 $daysDiff = floor((time() - $vitalsTime) / 86400);
                                                 if ($daysDiff <= 0) {
-                                                    echo '<span class="badge bg-success-subtle text-success border border-success-subtle fw-medium"><i class="bi bi-check-circle me-1"></i>Recorded Today</span>';
+                                                    echo '<span class="badge bg-success-subtle text-success border border-success-subtle fw-medium">Recorded Today</span>';
                                                 } elseif ($daysDiff == 1) {
-                                                    echo '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium"><i class="bi bi-clock-history me-1"></i>Recorded Yesterday &bull; Retake Recommended for Today</span>';
+                                                    echo '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium">Recorded Yesterday &bull; Retake Recommended for Today</span>';
                                                 } elseif ($daysDiff <= 7) {
-                                                    echo '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium"><i class="bi bi-clock-history me-1"></i>Recorded ' . $daysDiff . ' days ago &bull; Retake for Today</span>';
+                                                    echo '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium">Recorded ' . $daysDiff . ' days ago &bull; Retake for Today</span>';
                                                 } else {
-                                                    echo '<span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle fw-medium"><i class="bi bi-exclamation-triangle me-1"></i>Recorded ' . $daysDiff . ' days ago &bull; Stale Vitals</span>';
+                                                    echo '<span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle fw-medium">Recorded ' . $daysDiff . ' days ago &bull; Stale Vitals</span>';
                                                 }
                                                 ?>
                                             <?php endif; ?>
                                         </div>
                                         <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
-                                            <i class="bi bi-plus-lg me-1"></i> Record Vitals
+                                            + Record Vitals
                                         </button>
                                     </div>
                                     <div class="card-body p-3">
@@ -288,7 +287,7 @@
                                                 <!-- 1. BP -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between <?= $bpTileClass ?>">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-activity me-1"></i>Blood Pressure</span>
+                                                        <span class="overview-micro-label d-block">Blood Pressure</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= h($latestVitals['bp_systolic'] ?? '--') ?>/<?= h($latestVitals['bp_diastolic'] ?? '--') ?></span>
                                                             <span class="text-muted small ms-1" style="font-size: 0.7rem;">mmHg</span>
@@ -302,7 +301,7 @@
                                                 <!-- 2. Pulse / HR -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between <?= $hrTileClass ?>">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-heart me-1"></i>Heart Rate</span>
+                                                        <span class="overview-micro-label d-block">Heart Rate</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= h($latestVitals['heart_rate'] ?? '--') ?></span>
                                                             <span class="text-muted small ms-1" style="font-size: 0.7rem;">bpm</span>
@@ -316,7 +315,7 @@
                                                 <!-- 3. Temp -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between <?= $tempTileClass ?>">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-thermometer-half me-1"></i>Temperature</span>
+                                                        <span class="overview-micro-label d-block">Temperature</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= !empty($latestVitals['temperature']) ? number_format((float)$latestVitals['temperature'], 1) : '--' ?></span>
                                                             <span class="text-muted small ms-1" style="font-size: 0.7rem;">°C</span>
@@ -330,7 +329,7 @@
                                                 <!-- 4. Resp Rate -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between <?= $rrTileClass ?>">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-lungs me-1"></i>Resp Rate</span>
+                                                        <span class="overview-micro-label d-block">Resp Rate</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= h($latestVitals['respiratory_rate'] ?? '--') ?></span>
                                                             <span class="text-muted small ms-1" style="font-size: 0.7rem;">cpm</span>
@@ -344,7 +343,7 @@
                                                 <!-- 5. SpO2 -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between <?= $spo2TileClass ?>">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-droplet-half me-1"></i>Oxygen Saturation</span>
+                                                        <span class="overview-micro-label d-block">Oxygen Saturation</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= !empty($latestVitals['oxygen_saturation']) ? h($latestVitals['oxygen_saturation']) . '%' : '--' ?></span>
                                                             <span class="text-muted small ms-1" style="font-size: 0.7rem;">SpO2</span>
@@ -358,7 +357,7 @@
                                                 <!-- 6. Weight / Height -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between bg-light text-dark">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-arrows-vertical me-1"></i>Weight / Height</span>
+                                                        <span class="overview-micro-label d-block">Weight / Height</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= !empty($latestVitals['weight']) ? h($latestVitals['weight']) . ' kg' : '--' ?></span>
                                                         </div>
@@ -371,7 +370,7 @@
                                                 <!-- 7. BMI -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between <?= $bmiTileClass ?>">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-calculator me-1"></i>Body Mass Index</span>
+                                                        <span class="overview-micro-label d-block">Body Mass Index</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= !empty($latestVitals['bmi']) ? number_format((float)$latestVitals['bmi'], 2) : '--' ?></span>
                                                         </div>
@@ -384,7 +383,7 @@
                                                 <!-- 8. Waistline -->
                                                 <div class="col-6 col-sm-4 col-lg-3">
                                                     <div class="p-2 rounded border h-100 d-flex flex-column justify-content-between bg-light text-dark">
-                                                        <span class="overview-micro-label d-block"><i class="bi bi-record-circle me-1"></i>Waistline</span>
+                                                        <span class="overview-micro-label d-block">Waistline</span>
                                                         <div class="my-1">
                                                             <span class="fw-bold fs-6"><?= !empty($latestVitals['waist_circumference']) ? h($latestVitals['waist_circumference']) . ' cm' : '--' ?></span>
                                                         </div>
@@ -396,8 +395,8 @@
                                             </div>
 
                                             <div class="text-muted small d-flex flex-wrap justify-content-between align-items-center pt-2 border-top mt-2" style="font-size: 0.75rem;">
-                                                <span><i class="bi bi-clock me-1"></i>Recorded: <strong><?= date('M d, Y h:i A', strtotime($latestVitals['recorded_at'])) ?></strong></span>
-                                                <span><i class="bi bi-person-check me-1"></i>Recorded By: <strong><?= h($latestVitals['recorder_name'] ?? 'Clinician') ?></strong></span>
+                                                <span>Recorded: <strong><?= date('M d, Y h:i A', strtotime($latestVitals['recorded_at'])) ?></strong></span>
+                                                <span>Recorded By: <strong><?= h($latestVitals['recorder_name'] ?? 'Clinician') ?></strong></span>
                                             </div>
                                         <?php else: ?>
                                             <div class="text-center py-4 text-muted">
@@ -428,24 +427,24 @@
                                             </h5>
                                             <?php if (!empty($latestConsultation)): ?>
                                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-medium">
-                                                    <i class="bi bi-calendar-event me-1"></i><?= date('M d, Y', strtotime($latestConsultation['consulted_at'])) ?>
+                                                    <?= date('M d, Y', strtotime($latestConsultation['consulted_at'])) ?>
                                                 </span>
                                                 <span class="badge <?= ($latestConsultation['status'] ?? '') === 'Completed' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' ?> fw-medium">
                                                     <?= h($latestConsultation['status'] ?? 'Open') ?>
                                                 </span>
                                                 <span class="text-muted small">
-                                                    <i class="bi bi-person-badge me-1"></i>Clinician: <strong><?= h($latestConsultation['clinician_name'] ?? 'Clinician') ?></strong>
+                                                    Clinician: <strong><?= h($latestConsultation['clinician_name'] ?? 'Clinician') ?></strong>
                                                 </span>
                                             <?php endif; ?>
                                         </div>
                                         <div class="d-flex align-items-center gap-2">
                                             <?php if (!empty($latestConsultation)): ?>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 view-consultation-btn" data-consultation-id="<?= $latestConsultation['id'] ?>" title="View Full Encounter">
-                                                    <i class="bi bi-eye me-1"></i> View Record
+                                                    View Record
                                                 </button>
                                             <?php endif; ?>
                                             <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-sm btn-primary py-1 px-2.5 shadow-xs fw-semibold">
-                                                <i class="bi bi-plus-circle me-1"></i> + New Consultation Entry
+                                                + New Consultation Entry
                                             </a>
                                         </div>
                                     </div>
@@ -458,7 +457,7 @@
                                                         <span class="text-muted d-block small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Assessment / Clinical Impression</span>
                                                         <div class="p-2 rounded bg-light border border-primary-subtle mt-1">
                                                             <span class="fw-bold text-dark fs-6">
-                                                                <i class="bi bi-diagram-3 text-primary me-1"></i><?= !empty($latestConsultation['assessment']) ? nl2br(h($latestConsultation['assessment'])) : '<span class="text-muted fst-italic">No assessment entered</span>' ?>
+                                                                <?= !empty($latestConsultation['assessment']) ? nl2br(h($latestConsultation['assessment'])) : '<span class="text-muted fst-italic">No assessment entered</span>' ?>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -476,7 +475,7 @@
                                                 <div class="col-12 col-md-5">
                                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                                         <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                                                            <i class="bi bi-prescription2 text-success me-1"></i>Prescribed Medications
+                                                            Prescribed Medications
                                                         </span>
                                                         <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;">
                                                             <?= count($latestConsultationPrescriptions ?? []) ?> item<?= count($latestConsultationPrescriptions ?? []) === 1 ? '' : 's' ?>
@@ -487,7 +486,7 @@
                                                             <?php foreach ($latestConsultationPrescriptions as $rx): ?>
                                                                 <div class="p-1.5 rounded bg-light border d-flex justify-content-between align-items-center small">
                                                                     <div>
-                                                                        <strong class="text-dark"><i class="bi bi-capsule text-success me-1"></i><?= h($rx['medicine_name']) ?></strong>
+                                                                        <strong class="text-dark"><?= h($rx['medicine_name']) ?></strong>
                                                                         <?php if (!empty($rx['dosage'])): ?>
                                                                             <span class="text-muted small ms-1">(<?= h($rx['dosage']) ?>)</span>
                                                                         <?php endif; ?>
@@ -538,7 +537,6 @@
                                                 <?php foreach ($familyMembers as $member): ?>
                                                     <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
                                                         <div>
-                                                            <i class="bi bi-person me-1 text-primary"></i>
                                                             <strong><?= h($member['last_name']) ?>, <?= h($member['first_name']) ?> <?= h($member['suffix'] ?? '') ?></strong>
                                                             <span class="text-muted ms-1">(<?= h($member['age']) ?> yrs / <?= h($member['sex']) ?>)</span>
                                                         </div>
@@ -566,7 +564,7 @@
                                             <i class="bi bi-clipboard2-check text-primary me-2"></i>IHP Health Summary
                                         </h5>
                                         <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="editIhpFromOverview();">
-                                            <i class="bi bi-pencil me-1"></i> Edit IHP
+                                            Edit IHP
                                         </button>
                                     </div>
                                     <div class="card-body p-3 small">
@@ -636,13 +634,13 @@
                                             <!-- Active & High-Risk Chronic Conditions -->
                                             <div class="mb-2">
                                                 <strong class="d-block mb-1 text-dark" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-shield-shaded text-danger me-1"></i>Active &amp; Chronic Conditions:
+                                                    Active &amp; Chronic Conditions:
                                                 </strong>
                                                 <?php if (!empty($highRiskItems)): ?>
                                                     <div class="d-flex flex-wrap gap-1">
                                                         <?php foreach ($highRiskItems as $hrItem): ?>
                                                             <span class="badge <?= $hrItem['class'] ?> fw-medium px-2 py-1">
-                                                                <i class="bi <?= $hrItem['icon'] ?> me-1"></i><?= h($hrItem['label']) ?>
+                                                                <?= h($hrItem['label']) ?>
                                                             </span>
                                                         <?php endforeach; ?>
                                                     </div>
@@ -700,7 +698,7 @@
                                 </div>
                             </div>
 
-                            <!-- Maternal Care Workstation Quick Card (Only if registered in Maternal program) -->
+                            <!-- Prenatal Care Workstation Quick Card (Only if registered in Prenatal program) -->
                             <?php 
                             $hasMaternalRegistration = !empty($activePrenatal) || !empty($allPrenatalEpisodes);
                             $hasWellbabyRegistration = !empty($wellbabyRecord);
@@ -710,16 +708,16 @@
                                     <div class="card border rounded-3 h-100 shadow-xs">
                                         <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
                                             <h5 class="h6 mb-0 fw-bold text-dark">
-                                                <i class="bi bi-heart-pulse-fill text-pink me-2"></i>Maternal Care
+                                                <i class="bi bi-heart-pulse-fill text-pink me-2"></i>Prenatal Care
                                             </h5>
-                                            <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2">
+                                            <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2">
                                                 Open Workstation <i class="bi bi-arrow-right ms-1"></i>
                                             </a>
                                         </div>
                                         <div class="card-body p-3 small">
                                             <?php if ($activePrenatal): ?>
                                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                                    <span class="badge bg-pink text-white"><i class="bi bi-heart-fill me-1"></i>Active Pregnancy Episode</span>
+                                                    <span class="badge bg-pink text-white">Active Pregnancy Episode</span>
                                                     <span class="fw-bold text-pink"><?= h($activePrenatal['calculated_aog']['weeks'] ?? '--') ?> weeks AOG</span>
                                                 </div>
                                                 <div class="row g-2 text-muted">
@@ -729,18 +727,18 @@
                                                     <div class="col-6"><strong>Trimester:</strong> <?= h($activePrenatal['calculated_aog']['trimester'] ?? '1st') ?></div>
                                                 </div>
                                                 <div class="mt-3">
-                                                    <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-sm btn-pink text-white w-100 shadow-xs">
-                                                        <i class="bi bi-heart-pulse-fill me-1"></i> Open Maternal Workstation
+                                                    <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="btn btn-sm btn-pink text-white w-100 shadow-xs">
+                                                        Open Prenatal Workstation
                                                     </a>
                                                 </div>
                                             <?php else: ?>
                                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                                    <span class="badge bg-secondary text-white"><i class="bi bi-clock-history me-1"></i>Concluded / Past Episodes</span>
+                                                    <span class="badge bg-secondary text-white">Concluded / Past Episodes</span>
                                                     <span class="text-muted"><?= count($allPrenatalEpisodes) ?> episode(s)</span>
                                                 </div>
-                                                <p class="text-muted mb-2">Patient has past maternal health and delivery records on file.</p>
-                                                <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary w-100 shadow-xs">
-                                                    <i class="bi bi-journal-medical me-1"></i> Open Maternal Workstation
+                                                <p class="text-muted mb-2">Patient has past prenatal health and delivery records on file.</p>
+                                                <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary w-100 shadow-xs">
+                                                    Open Prenatal Workstation
                                                 </a>
                                             <?php endif; ?>
                                         </div>

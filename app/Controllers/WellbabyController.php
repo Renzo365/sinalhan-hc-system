@@ -34,11 +34,13 @@ class WellbabyController extends Controller {
         $registeredRoster = $this->wbModel->getRegisteredRoster($search);
         $unregisteredChildren = $this->patientModel->getUnregisteredChildren($search);
         $allUnregistered = $this->patientModel->getUnregisteredChildren('');
+        $metrics = $this->wbModel->getRegistryMetrics();
 
         $this->view('wellbaby/index', [
             'registeredRoster' => $registeredRoster,
             'unregisteredChildren' => $unregisteredChildren,
             'allUnregistered' => $allUnregistered,
+            'metrics' => $metrics,
             'search' => $search
         ]);
     }
@@ -70,12 +72,9 @@ class WellbabyController extends Controller {
             }
         }
 
-        $potentialMothers = $this->patientModel->findPotentialMothers(100);
-
         $this->view('wellbaby/register', [
             'preselectedPatient' => $preselectedPatient,
-            'alreadyRegistered' => $alreadyRegistered,
-            'potentialMothers' => $potentialMothers
+            'alreadyRegistered' => $alreadyRegistered
         ]);
     }
 

@@ -4,7 +4,6 @@
  * 
  * @var array|null $preselectedPatient Pre-selected child patient record (optional)
  * @var bool $alreadyRegistered Whether preselected child already has a well-baby record
- * @var array $potentialMothers List of potential mothers
  */
 
 $title = 'Register Infant for Well-Baby Care';
@@ -27,7 +26,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h2 class="h3 mb-1 fw-bold text-dark">
-                <i class="bi bi-emoji-smile-fill text-success me-2"></i>Register Infant for Well-Baby Care
+                Register Infant for Well-Baby Care
             </h2>
             <p class="text-secondary small mb-0">Enroll an eligible infant or child (aged 0–5 years) into the Well-Baby &amp; EPI Immunization Program.</p>
         </div>
@@ -216,62 +215,14 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                     </div>
                 </div>
 
-                <!-- Step 2: Parental Information (Hybrid Linking) -->
+                <!-- Step 2: Parental Information -->
                 <div id="parentalInfoSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
                         <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">2</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Parental Information &amp; Maternal Link</h5>
+                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Parental Information</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
-                        <div class="alert alert-light border small mb-4">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-info-circle text-primary fs-5 me-2 mt-n1"></i>
-                                <div>
-                                    <strong>Parental Details &amp; Health Profile Integration:</strong>
-                                    Enter the parents' names and birthdates. If the mother is an active registered patient in the health center, you can optionally link her profile to connect the child to her maternal care history.
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Link Registered Mother Autocomplete / Selector -->
-                        <div class="mb-4 p-3 bg-light rounded-3 border">
-                            <label for="motherSearchInput" class="form-label fw-semibold text-secondary small d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-link-45deg me-1"></i>Link Registered Mother Profile (Optional)</span>
-                                <span class="badge bg-secondary-subtle text-secondary" id="linkedMotherBadge">Not Linked</span>
-                            </label>
-
-                            <input type="hidden" name="mother_patient_id" id="mother_patient_id" value="">
-
-                            <!-- Search Input for Mother -->
-                            <div class="input-group mb-2">
-                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-search"></i></span>
-                                <input type="text" 
-                                       id="motherSearchInput" 
-                                       class="form-control bg-white" 
-                                       placeholder="Type mother's name or patient ID to link..." 
-                                       autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherLink">
-                                    <i class="bi bi-x-circle me-1"></i> Unlink
-                                </button>
-                            </div>
-
-                            <!-- Mother Live Search Results -->
-                            <div id="motherSearchResults" class="list-group shadow-sm rounded-3 border mb-2 d-none" style="max-height: 200px; overflow-y: auto;"></div>
-
-                            <!-- Mother Selected Alert -->
-                            <div id="motherSelectedCard" class="d-none p-2 px-3 bg-white rounded border border-success-subtle d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-check-fill text-success fs-5"></i>
-                                    <div>
-                                        <div class="fw-bold text-dark small" id="linkedMotherName">--</div>
-                                        <div class="text-muted" style="font-size: 0.75rem;" id="linkedMotherDetails">--</div>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="btnRemoveMotherLink">
-                                    <i class="bi bi-trash"></i> Remove
-                                </button>
-                            </div>
-                        </div>
+                        <input type="hidden" name="mother_patient_id" id="mother_patient_id" value="">
 
                         <!-- Parent Form Fields -->
                         <div class="row g-3">
@@ -447,9 +398,9 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     Initial Infant Feeding Practice
                                 </label>
                                 <select name="feeding_method" id="feeding_method" class="form-select">
-                                    <option value="LAM / Exclusive Breastfeeding">LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feed">Bottle Feeding (Formula)</option>
-                                    <option value="Mixed">Mixed Feeding</option>
+                                    <option value="LAM (Exclusive Breastfeeding)">LAM (Exclusive Breastfeeding)</option>
+                                    <option value="Bottle Feeding">Bottle Feeding</option>
+                                    <option value="Mixed Feeding">Mixed Feeding</option>
                                 </select>
                             </div>
 
@@ -458,7 +409,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 <div class="p-3 bg-light rounded-3 border">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <h6 class="fw-bold text-dark mb-0">
-                                            <i class="bi bi-clipboard2-pulse text-success me-2"></i>Newborn Screening (NBS) Certificate
+                                            Newborn Screening (NBS) Certificate
                                         </h6>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" name="newborn_screening_done" value="1" id="newborn_screening_done">
@@ -539,18 +490,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const birthCircumstancesSection = document.getElementById('birthCircumstancesSection');
     const form = document.getElementById('wellbabyRegistrationForm');
 
-    // Mother Search elements
-    const motherSearchInput = document.getElementById('motherSearchInput');
-    const motherResults = document.getElementById('motherSearchResults');
-    const motherPatientId = document.getElementById('mother_patient_id');
-    const motherSelectedCard = document.getElementById('motherSelectedCard');
-    const linkedMotherName = document.getElementById('linkedMotherName');
-    const linkedMotherDetails = document.getElementById('linkedMotherDetails');
-    const linkedMotherBadge = document.getElementById('linkedMotherBadge');
-    const btnClearMotherLink = document.getElementById('btnClearMotherLink');
-    const btnRemoveMotherLink = document.getElementById('btnRemoveMotherLink');
+    // Parental Info form fields
     const motherNameInput = document.getElementById('mother_name');
     const motherDobInput = document.getElementById('mother_dob');
+    const fatherNameInput = document.getElementById('father_name');
+    const fatherDobInput = document.getElementById('father_dob');
 
     let debounceTimer;
 
@@ -682,20 +626,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('cardAddress').textContent = child.address;
 
         // Fill existing parental text if present
-        if (child.mother_name && !motherNameInput.value) {
-            motherNameInput.value = child.mother_name;
-        }
-        if (child.mother_dob && !motherDobInput.value) {
-            motherDobInput.value = child.mother_dob;
-        }
-        const fatherNameInput = document.getElementById('father_name');
-        if (fatherNameInput && child.father_name && !fatherNameInput.value) {
-            fatherNameInput.value = child.father_name;
-        }
-        const fatherDobInput = document.getElementById('father_dob');
-        if (fatherDobInput && child.father_dob && !fatherDobInput.value) {
-            fatherDobInput.value = child.father_dob;
-        }
+        if (motherNameInput) motherNameInput.value = child.mother_name || '';
+        if (motherDobInput) motherDobInput.value = child.mother_dob || '';
+        if (fatherNameInput) fatherNameInput.value = child.father_name || '';
+        if (fatherDobInput) fatherDobInput.value = child.father_dob || '';
 
         // Hide search, show card
         patientSearchSection.classList.add('d-none');
@@ -742,105 +676,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchInput.focus();
             }
             if (clearSearchBtn) clearSearchBtn.classList.add('d-none');
+            if (motherNameInput) motherNameInput.value = '';
+            if (motherDobInput) motherDobInput.value = '';
+            if (fatherNameInput) fatherNameInput.value = '';
+            if (fatherDobInput) fatherDobInput.value = '';
             parentalInfoSection.classList.add('opacity-50', 'pointer-events-none');
             birthCircumstancesSection.classList.add('opacity-50', 'pointer-events-none');
             setClinicalInputsDisabled(true);
         });
-    }
-
-    // 2. Mother Live Autocomplete Handlers
-    let motherDebounceTimer;
-    if (motherSearchInput) {
-        motherSearchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            clearTimeout(motherDebounceTimer);
-
-            if (query.length < 1) {
-                motherResults.classList.add('d-none');
-                motherResults.innerHTML = '';
-                return;
-            }
-
-            motherDebounceTimer = setTimeout(() => {
-                fetch('<?= url('/api/patients/search/female') ?>?q=' + encodeURIComponent(query))
-                    .then(res => res.json())
-                    .then(data => {
-                        renderMotherResults(data.results || []);
-                    })
-                    .catch(err => console.error('Mother search error:', err));
-            }, 300);
-        });
-    }
-
-    function renderMotherResults(results) {
-        if (!results || results.length === 0) {
-            motherResults.innerHTML = `
-                <div class="list-group-item text-center py-2 text-muted small">
-                    No matching female patients found.
-                </div>
-            `;
-            motherResults.classList.remove('d-none');
-            return;
-        }
-
-        let html = '';
-        results.forEach(m => {
-            html += `
-                <button type="button" class="list-group-item list-group-item-action py-2 px-3 btn-select-mother"
-                        data-mother='${JSON.stringify(m).replace(/'/g, "&apos;")}'>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong class="text-dark">${m.name}</strong> 
-                            <span class="badge bg-light text-secondary border font-monospace ms-1">${m.patient_no}</span>
-                            <div class="small text-muted">${m.dob_formatted} &bull; ${m.age} yrs &bull; ${m.civil_status}</div>
-                        </div>
-                        <span class="btn btn-sm btn-outline-primary py-0 px-2 small">Link</span>
-                    </div>
-                </button>
-            `;
-        });
-
-        motherResults.innerHTML = html;
-        motherResults.classList.remove('d-none');
-
-        motherResults.querySelectorAll('.btn-select-mother').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const mom = JSON.parse(this.getAttribute('data-mother'));
-                linkMother(mom);
-            });
-        });
-    }
-
-    function linkMother(mom) {
-        motherPatientId.value = mom.id;
-        linkedMotherName.textContent = mom.name + ' (' + mom.patient_no + ')';
-        linkedMotherDetails.textContent = (mom.dob_formatted || '') + ' • ' + (mom.age ? mom.age + ' years old' : '') + ' • ' + (mom.address || '');
-        
-        motherSelectedCard.classList.remove('d-none');
-        motherSearchInput.parentElement.classList.add('d-none');
-        motherResults.classList.add('d-none');
-        linkedMotherBadge.className = 'badge bg-success-subtle text-success border border-success-subtle';
-        linkedMotherBadge.textContent = 'Linked to Patient #' + mom.patient_no;
-
-        // Auto-populate mother text fields
-        if (mom.name) motherNameInput.value = mom.first_name + ' ' + mom.last_name;
-        if (mom.dob) motherDobInput.value = mom.dob;
-    }
-
-    function unlinkMother() {
-        motherPatientId.value = '';
-        motherSelectedCard.classList.add('d-none');
-        motherSearchInput.parentElement.classList.remove('d-none');
-        motherSearchInput.value = '';
-        linkedMotherBadge.className = 'badge bg-secondary-subtle text-secondary';
-        linkedMotherBadge.textContent = 'Not Linked';
-    }
-
-    if (btnRemoveMotherLink) {
-        btnRemoveMotherLink.addEventListener('click', unlinkMother);
-    }
-    if (btnClearMotherLink) {
-        btnClearMotherLink.addEventListener('click', unlinkMother);
     }
 
     // 3. NBS Checkbox Toggle requirement

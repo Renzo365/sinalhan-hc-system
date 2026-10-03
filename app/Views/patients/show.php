@@ -107,21 +107,21 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
             <!-- Tab 1: Overview -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-semibold text-nowrap" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">
-                    <i class="bi bi-grid-1x2-fill me-1"></i> Overview
+                    Overview
                 </button>
             </li>
                     
             <!-- Tab 2: IHP Medical History -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-ihp-btn" data-bs-toggle="tab" data-bs-target="#tab-ihp" type="button" role="tab">
-                    <i class="bi bi-file-earmark-medical-fill me-1"></i> IHP History
+                    IHP History
                 </button>
             </li>
 
             <!-- Tab 3: PHIC / PCB Ledger (Page 3) -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-pcb-btn" data-bs-toggle="tab" data-bs-target="#tab-pcb" type="button" role="tab">
-                    <i class="bi bi-card-checklist me-1"></i> PHIC / PCB Ledger
+                    PHIC / PCB Ledger
                     <?php if (!empty($pcbServiceLogs)): ?>
                         <span class="badge bg-light text-secondary border ms-1"><?= count($pcbServiceLogs) ?></span>
                     <?php endif; ?>
@@ -131,7 +131,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
             <!-- Tab 4: Clinical Consultation Ledger -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-consultations-btn" data-bs-toggle="tab" data-bs-target="#tab-consultations" type="button" role="tab">
-                    <i class="bi bi-clipboard2-pulse-fill me-1"></i> Consultations
+                    Consultations
                     <span class="badge bg-light text-secondary border ms-1"><?= count($consultationsHistory) ?></span>
                 </button>
             </li>
@@ -139,7 +139,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
             <!-- Tab 5: Vital Signs History -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-vitals-btn" data-bs-toggle="tab" data-bs-target="#tab-vitals" type="button" role="tab">
-                    <i class="bi bi-activity me-1"></i> Vitals Log
+                    Vitals Log
                     <span class="badge bg-light text-secondary border ms-1"><?= count($vitalsHistory) ?></span>
                 </button>
             </li>
@@ -147,7 +147,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
             <!-- Tab 6: Universal Immunizations -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-immunizations-btn" data-bs-toggle="tab" data-bs-target="#tab-immunizations" type="button" role="tab">
-                    <i class="bi bi-shield-plus me-1"></i> Immunizations
+                    Immunizations
                     <span class="badge bg-light text-secondary border ms-1"><?= count($patientImmunizations) ?></span>
                 </button>
             </li>
@@ -155,7 +155,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
             <!-- Tab 7: Appointments & Queue -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-appointments-btn" data-bs-toggle="tab" data-bs-target="#tab-appointments" type="button" role="tab">
-                    <i class="bi bi-calendar3 me-1"></i> Appointments
+                    Appointments
                 </button>
             </li>
         </ul>

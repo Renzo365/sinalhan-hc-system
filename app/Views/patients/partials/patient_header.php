@@ -42,12 +42,12 @@
                         </span>
                         <?php if (!empty($patient['envelope_no'])): ?>
                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
-                                <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
+                                Env #<?= h($patient['envelope_no']) ?>
                             </span>
                         <?php endif; ?>
                         <?php if (!empty($patient['family_no'])): ?>
                             <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
-                                <i class="bi bi-house-door-fill me-1"></i>Fam #<?= h($patient['family_no']) ?>
+                                Fam #<?= h($patient['family_no']) ?>
                             </a>
                         <?php endif; ?>
                     </div>

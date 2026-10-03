@@ -504,6 +504,10 @@ class PatientController extends Controller {
             $name = trim($p['last_name'] . ', ' . $p['first_name'] . ' ' . (!empty($p['middle_name']) ? mb_substr($p['middle_name'], 0, 1) . '.' : '') . ' ' . ($p['suffix'] ?? ''));
             $address = !empty(trim($p['address'] ?? '')) ? trim($p['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
             
+            $age = $p['age'] !== null ? (int)$p['age'] : 0;
+            $isWra = ($age >= 10 && $age <= 49);
+            $wraNotice = !$isWra ? "Patient age ({$age}) is outside standard Women of Reproductive Age (10–49 yrs)." : null;
+            
             return [
                 'id' => (int)$p['id'],
                 'patient_no' => $p['patient_no'],
@@ -514,7 +518,9 @@ class PatientController extends Controller {
                 'middle_name' => $p['middle_name'],
                 'dob' => $p['dob'],
                 'dob_formatted' => !empty($p['dob']) ? date('M d, Y', strtotime($p['dob'])) : 'N/A',
-                'age' => $p['age'],
+                'age' => $age,
+                'is_wra' => $isWra,
+                'wra_notice' => $wraNotice,
                 'address' => $address ?: 'Barangay Sinalhan, Santa Rosa, Laguna',
                 'contact_no' => $p['contact_no'] ?: 'N/A',
                 'civil_status' => $p['civil_status'] ?: 'Single',

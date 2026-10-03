@@ -55,7 +55,7 @@ $motherLinkedPatientNo = $wellbabyRecord['mother_patient_no'] ?? '';
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h2 class="h3 mb-1 fw-bold text-dark">
-                <i class="bi bi-pencil-square text-success me-2"></i>Edit Well-Baby Birth Record
+                Edit Well-Baby Birth Record
             </h2>
             <p class="text-secondary small mb-0">Update infant birth circumstances, maternal link, newborn screening certificate, and parental information.</p>
         </div>
@@ -82,7 +82,7 @@ $motherLinkedPatientNo = $wellbabyRecord['mother_patient_no'] ?? '';
             <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
                     <h5 class="card-title h6 fw-bold mb-0 text-dark">
-                        <i class="bi bi-person-badge text-success me-2"></i>Infant / Child Demographic Profile
+                        Infant / Child Demographic Profile
                     </h5>
                     <span class="badge bg-success text-white font-monospace">Record #<?= h($wellbabyRecord['id']) ?></span>
                 </div>
@@ -406,11 +406,11 @@ $motherLinkedPatientNo = $wellbabyRecord['mother_patient_no'] ?? '';
                                 <label for="feeding_method" class="form-label fw-semibold text-secondary small">
                                     Initial Infant Feeding Practice
                                 </label>
-                                <?php $feed = $wellbabyRecord['feeding_method'] ?? 'LAM / Exclusive Breastfeeding'; ?>
+                                <?php $feed = $wellbabyRecord['feeding_method'] ?? 'LAM (Exclusive Breastfeeding)'; ?>
                                 <select name="feeding_method" id="feeding_method" class="form-select">
-                                    <option value="LAM / Exclusive Breastfeeding" <?= ($feed === 'LAM / Exclusive Breastfeeding') ? 'selected' : '' ?>>LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feed" <?= ($feed === 'Bottle Feed') ? 'selected' : '' ?>>Bottle Feeding (Formula)</option>
-                                    <option value="Mixed" <?= ($feed === 'Mixed') ? 'selected' : '' ?>>Mixed Feeding</option>
+                                    <option value="LAM (Exclusive Breastfeeding)" <?= (stripos($feed, 'LAM') !== false || stripos($feed, 'breast') !== false) ? 'selected' : '' ?>>LAM (Exclusive Breastfeeding)</option>
+                                    <option value="Bottle Feeding" <?= (stripos($feed, 'bottle') !== false || stripos($feed, 'formula') !== false) ? 'selected' : '' ?>>Bottle Feeding</option>
+                                    <option value="Mixed Feeding" <?= (stripos($feed, 'mixed') !== false) ? 'selected' : '' ?>>Mixed Feeding</option>
                                 </select>
                             </div>
 
@@ -419,7 +419,7 @@ $motherLinkedPatientNo = $wellbabyRecord['mother_patient_no'] ?? '';
                                 <div class="p-3 bg-light rounded-3 border">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <h6 class="fw-bold text-dark mb-0">
-                                            <i class="bi bi-clipboard2-pulse text-success me-2"></i>Newborn Screening (NBS) Certificate
+                                            Newborn Screening (NBS) Certificate
                                         </h6>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" 

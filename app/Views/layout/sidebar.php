@@ -31,9 +31,9 @@ if (!function_exists('isActive')) {
             <span>Patients</span>
         </a>
         
-        <a href="<?= url('/maternal') ?>" class="sidebar-item <?= isActive('/maternal', $uri) ?>">
+        <a href="<?= url('/prenatal') ?>" class="sidebar-item <?= (isActive('/prenatal', $uri) || isActive('/maternal', $uri)) ? 'active' : '' ?>">
             <i class="bi bi-heart-pulse-fill"></i>
-            <span>Maternal Care</span>
+            <span>Prenatal Care</span>
         </a>
 
         <a href="<?= url('/well-baby') ?>" class="sidebar-item <?= isActive('/well-baby', $uri) ?>">

@@ -7,14 +7,17 @@ use App\Core\Model;
 class WellbabyRecord extends Model {
     private function normalizeFeedingMethod($feedingMethod) {
         $aliases = [
-            'Bottle Feeding (Formula)' => 'Bottle Feed',
-            'Formula Feeding' => 'Bottle Feed',
-            'Mixed Feeding' => 'Mixed',
+            'Bottle Feeding (Formula)' => 'Bottle Feeding',
+            'Bottle Feed' => 'Bottle Feeding',
+            'Formula Feeding' => 'Bottle Feeding',
+            'Mixed' => 'Mixed Feeding',
+            'LAM / Exclusive Breastfeeding' => 'LAM (Exclusive Breastfeeding)',
+            'LAM' => 'LAM (Exclusive Breastfeeding)',
         ];
         $feedingMethod = $aliases[$feedingMethod] ?? $feedingMethod;
-        return in_array($feedingMethod, ['LAM / Exclusive Breastfeeding', 'Bottle Feed', 'Mixed'], true)
+        return in_array($feedingMethod, ['LAM (Exclusive Breastfeeding)', 'Bottle Feeding', 'Mixed Feeding'], true)
             ? $feedingMethod
-            : 'LAM / Exclusive Breastfeeding';
+            : 'LAM (Exclusive Breastfeeding)';
     }
 
     /**
@@ -224,5 +227,45 @@ class WellbabyRecord extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Compute operational summary KPIs for the Well-Baby & EPI Registry.
+     * 
+     * @return array
+     */
+    public function getRegistryMetrics() {
+        $sqlRegistered = "SELECT COUNT(*) FROM wellbaby_records wb INNER JOIN patients p ON wb.patient_id = p.id WHERE wb.deleted_at IS NULL AND p.deleted_at IS NULL";
+        $totalRegistered = (int)$this->db->query($sqlRegistered)->fetchColumn();
+
+        $sqlUnderOne = "SELECT COUNT(*) FROM wellbaby_records wb INNER JOIN patients p ON wb.patient_id = p.id WHERE wb.deleted_at IS NULL AND p.deleted_at IS NULL AND TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) < 12";
+        $underOneCohort = (int)$this->db->query($sqlUnderOne)->fetchColumn();
+
+        $sqlFIC = "SELECT COUNT(DISTINCT wb.patient_id) 
+                   FROM wellbaby_records wb
+                   INNER JOIN patients p ON wb.patient_id = p.id
+                   INNER JOIN (
+                       SELECT patient_id, COUNT(DISTINCT CONCAT(UPPER(TRIM(vaccine_name)), ':', dose_number)) as routine_doses
+                       FROM immunizations
+                       WHERE deleted_at IS NULL
+                         AND (
+                             UPPER(vaccine_name) LIKE '%BCG%' OR
+                             UPPER(vaccine_name) LIKE '%HEPATITIS B%' OR
+                             UPPER(vaccine_name) LIKE '%PENTAVALENT%' OR
+                             UPPER(vaccine_name) LIKE '%POLIO%' OR
+                             UPPER(vaccine_name) LIKE '%MEASLES%' OR
+                             UPPER(vaccine_name) LIKE '%MCV%'
+                         )
+                       GROUP BY patient_id
+                       HAVING routine_doses >= 9
+                   ) imm_summary ON wb.patient_id = imm_summary.patient_id
+                   WHERE wb.deleted_at IS NULL AND p.deleted_at IS NULL";
+        $ficCount = (int)$this->db->query($sqlFIC)->fetchColumn();
+
+        return [
+            'total_registered' => $totalRegistered,
+            'under_one_cohort' => $underOneCohort,
+            'fic_count' => $ficCount
+        ];
     }
 }

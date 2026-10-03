@@ -27,6 +27,15 @@ class PrenatalRecord extends Model {
 
         if ($record && !empty($record['lmp'])) {
             $record['calculated_aog'] = $this->calculateCurrentAOG($record['lmp']);
+            // Auto-lapse if past 42 weeks (294 days)
+            if (($record['calculated_aog']['weeks'] ?? 0) > 42) {
+                try {
+                    $this->db->prepare("UPDATE prenatal_records SET is_active = 0, delivery_outcome = 'Lapsed / Past Episode', notes = CONCAT(COALESCE(notes, ''), '\n[System: Auto-lapsed past 42 weeks gestation with no delivery reported]') WHERE id = :id")->execute(['id' => $record['id']]);
+                } catch (\Exception $e) {
+                    // Ignore DB write error during read
+                }
+                return false;
+            }
         }
 
         return $record;
@@ -39,13 +48,8 @@ class PrenatalRecord extends Model {
      * @return bool
      */
     public function hasActiveEpisode($patientId) {
-        $stmt = $this->db->prepare(
-            "SELECT 1 FROM prenatal_records
-             WHERE patient_id = :patient_id AND is_active = 1 AND deleted_at IS NULL
-             LIMIT 1"
-        );
-        $stmt->execute(['patient_id' => (int)$patientId]);
-        return (bool)$stmt->fetchColumn();
+        $active = $this->findActiveByPatientId($patientId);
+        return !empty($active);
     }
 
     /**
@@ -232,7 +236,7 @@ class PrenatalRecord extends Model {
         try {
             $lmp = new DateTime($lmpDate);
             $edc = clone $lmp;
-            $edc->modify('+1 year -3 months +7 days');
+            $edc->modify('+280 days');
             return $edc->format('Y-m-d');
         } catch (\Exception $e) {
             return '';
@@ -327,7 +331,8 @@ class PrenatalRecord extends Model {
                 LEFT JOIN users u ON pr.created_by = u.id
                 WHERE pr.is_active = 1 
                   AND pr.deleted_at IS NULL 
-                  AND p.deleted_at IS NULL";
+                  AND p.deleted_at IS NULL
+                  AND (pr.lmp IS NULL OR DATEDIFF(CURRENT_DATE(), pr.lmp) <= 294)";
         
         $params = [];
         if (!empty($search)) {

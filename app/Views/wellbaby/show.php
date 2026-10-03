@@ -50,7 +50,7 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div class="min-w-0">
             <h2 class="h3 mb-1 fw-bold text-primary-dark">
-                <i class="bi bi-emoji-smile-fill text-success me-2"></i>Well-Baby &amp; EPI Workstation
+                Well-Baby &amp; EPI Workstation
             </h2>
             <p class="text-secondary small mb-0">Infant birth circumstances, DOH EPI immunization schedule tracking, and pediatric growth logs.</p>
         </div>
@@ -117,7 +117,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php endif; ?>
                             <?php if (!empty($patient['mother_name'])): ?>
                                 <span class="text-muted">&bull;</span>
-                                <span><i class="bi bi-person-heart text-muted me-1"></i>Mother: <?= h($patient['mother_name']) ?></span>
+                                <span>Mother: <?= h($patient['mother_name']) ?></span>
                             <?php endif; ?>
                         </div>
                         <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
@@ -161,7 +161,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div>
                     <div class="d-flex align-items-center gap-2">
                         <h5 class="h6 fw-bold text-success mb-0">
-                            <i class="bi bi-emoji-smile-fill me-2"></i>Well Baby Infant Profile (CHO Santa Rosa Record)
+                            Well-Baby Infant Profile (CHO Santa Rosa Record)
                         </h5>
                         <span class="badge bg-success text-white">Birth Record</span>
                         <?php if (!empty($wellbabyRecord['mother_cpab_tt'])): ?>
@@ -175,7 +175,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <i class="bi bi-pencil me-1"></i> Edit Birth Record
                     </a>
                     <button type="button" class="btn btn-sm btn-success text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
-                        <i class="bi bi-plus-lg me-1"></i> + Record Growth Visit
+                        <i class="bi bi-plus-lg me-1"></i>Record Growth Visit
                     </button>
                 </div>
             </div>
@@ -239,7 +239,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <h6 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-shield-check text-primary me-2"></i>DOH Mandatory Routine Infant Immunization Schedule (EPI)
+                        DOH Mandatory Routine Infant Immunization Schedule (EPI)
                     </h6>
                     <span class="text-muted small">Official schedule for infants aged 0–12 months. Dates save directly to the central registry.</span>
                 </div>
@@ -282,37 +282,74 @@ require dirname(__DIR__) . '/layout/header.php';
                 ];
                 ?>
 
+                <?php
+                $patientDob = !empty($patient['dob']) && $patient['dob'] !== '0000-00-00' ? $patient['dob'] : null;
+                $infantAgeDays = $patientDob ? (int)floor((time() - strtotime($patientDob)) / 86400) : 0;
+                $milestoneMinDays = [
+                    'At Birth' => 0,
+                    '1.5 Months (6 Weeks)' => 42,
+                    '2.5 Months (10 Weeks)' => 70,
+                    '3.5 Months (14 Weeks)' => 98,
+                    '9 Months' => 270,
+                    '12 Months (1 Year)' => 365
+                ];
+                ?>
+
                 <div class="row g-3">
-                    <?php foreach ($epiSchedule as $milestone => $vaccines): ?>
+                    <?php foreach ($epiSchedule as $milestone => $vaccines): 
+                        $minDays = $milestoneMinDays[$milestone] ?? 0;
+                        $isMilestoneEligible = $infantAgeDays >= $minDays;
+                    ?>
                         <div class="col-12 col-md-6 col-lg-4">
                             <div class="card border bg-light-subtle h-100 p-2 rounded-3">
-                                <div class="fw-bold text-primary small mb-2 border-bottom pb-1">
-                                    <i class="bi bi-clock-history me-1"></i><?= $milestone ?>
+                                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                    <span class="fw-bold text-primary small">
+                                        <i class="bi bi-clock-history me-1"></i><?= $milestone ?>
+                                    </span>
+                                    <?php if ($isMilestoneEligible): ?>
+                                        <span class="badge bg-primary-subtle text-primary font-monospace" style="font-size: 0.65rem;">Active Target</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.65rem;">Upcoming</span>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="d-flex flex-column gap-2">
                                     <?php foreach ($vaccines as $v): 
                                         $lookupKey = strtoupper(trim(str_replace('_', ' ', explode('__', $v['key'])[0]))) . ':' . $v['dose'];
-                                        $existingRecord = $vaccineMap[$lookupKey] ?? null;
+                                        $existingRecord = $vaccineMap[$v['key']] ?? $vaccineMap[$lookupKey] ?? null;
                                         $isDone = !empty($existingRecord);
                                         $administeredDate = $isDone ? $existingRecord['administered_date'] : '';
+                                        $inputId = 'epi_date_' . strtolower(str_replace(['[', ']', '__'], ['_', '', '_'], $v['key']));
                                     ?>
                                         <div class="p-2 bg-white rounded border small">
                                             <div class="d-flex justify-content-between align-items-start mb-1">
                                                 <div>
-                                                    <strong class="text-dark"><?= h($v['name']) ?></strong>
+                                                    <label for="<?= $inputId ?>" class="fw-bold text-dark mb-0 d-block cursor-pointer"><?= h($v['name']) ?></label>
                                                     <span class="text-muted d-block" style="font-size: 0.7rem;"><?= h($v['desc']) ?></span>
                                                 </div>
                                                 <?php if ($isDone): ?>
                                                     <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                                        <i class="bi bi-check-circle-fill me-1"></i>Done
+                                                        Done
+                                                    </span>
+                                                <?php elseif ($isMilestoneEligible): ?>
+                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                                        Due Now
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="badge bg-light text-secondary border">Pending</span>
+                                                    <span class="badge bg-light text-secondary border">Upcoming</span>
                                                 <?php endif; ?>
                                             </div>
                                             <div class="input-group input-group-sm mt-1">
-                                                <span class="input-group-text bg-light"><i class="bi bi-calendar-event"></i></span>
-                                                <input type="date" name="epi[<?= $v['key'] ?>]" class="form-control bg-white" placeholder="Administered Date" value="<?= h($administeredDate) ?>">
+                                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                                <input type="date" 
+                                                       name="epi[<?= $v['key'] ?>]" 
+                                                       id="<?= $inputId ?>" 
+                                                       class="form-control bg-white" 
+                                                       placeholder="Administered Date" 
+                                                       aria-label="<?= h($v['name']) ?> Dose <?= (int)$v['dose'] ?> Administered Date"
+                                                       value="<?= h($administeredDate) ?>">
+                                                <?php if (!$isDone): ?>
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm btn-set-today" title="Set to today's date">Today</button>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
@@ -320,6 +357,16 @@ require dirname(__DIR__) . '/layout/header.php';
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+
+                <!-- Secondary Bottom Save Bar -->
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>Saving updates existing dose records or inserts new dates into the child's immunization record.
+                    </small>
+                    <button type="submit" class="btn btn-sm btn-primary shadow-xs px-3 py-1.5 fw-semibold text-nowrap">
+                        <i class="bi bi-check2-circle me-1"></i> Save EPI Schedule
+                    </button>
                 </div>
             </form>
         </div>
@@ -473,53 +520,53 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="row g-3">
                             <!-- Checkup Date -->
                             <div class="col-12 col-sm-6">
-                                <label for="log_date" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
-                                <input type="date" name="log_date" class="form-control bg-white" value="<?= date('Y-m-d') ?>" required>
+                                <label for="add_log_date" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
+                                <input type="date" name="log_date" id="add_log_date" class="form-control bg-white" value="<?= date('Y-m-d') ?>" required>
                             </div>
 
                             <!-- Age in Months -->
                             <div class="col-12 col-sm-6">
-                                <label for="age_months" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" name="age_months" class="form-control font-monospace" placeholder="e.g. 1.5" required>
+                                <label for="add_age_months" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
+                                <input type="number" step="0.1" name="age_months" id="add_age_months" class="form-control font-monospace" placeholder="e.g. 1.5" required>
                             </div>
 
                             <!-- Weight (kg) -->
                             <div class="col-12 col-sm-6 col-md-3">
-                                <label class="form-label fw-semibold text-secondary">Weight (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="weight_kg" class="form-control" placeholder="e.g. 4.5" required>
+                                <label for="add_weight_kg" class="form-label fw-semibold text-secondary">Weight (kg) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" name="weight_kg" id="add_weight_kg" class="form-control" placeholder="e.g. 4.5" required>
                             </div>
 
                             <!-- Height (cm) -->
                             <div class="col-12 col-sm-6 col-md-3">
-                                <label class="form-label fw-semibold text-secondary">Height / Length (cm) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" name="height_cm" class="form-control" placeholder="e.g. 54.0" required>
+                                <label for="add_height_cm" class="form-label fw-semibold text-secondary">Height / Length (cm) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.1" name="height_cm" id="add_height_cm" class="form-control" placeholder="e.g. 54.0" required>
                             </div>
 
                             <!-- Head Circumference (cm) -->
                             <div class="col-12 col-sm-6 col-md-3">
-                                <label class="form-label fw-semibold text-secondary">Head Circumference (cm)</label>
-                                <input type="number" step="0.1" name="head_circumference_cm" class="form-control" placeholder="e.g. 37.5">
+                                <label for="add_head_circ" class="form-label fw-semibold text-secondary">Head Circumference (cm)</label>
+                                <input type="number" step="0.1" name="head_circumference_cm" id="add_head_circ" class="form-control" placeholder="e.g. 37.5">
                             </div>
 
                             <!-- Chest Circumference (cm) -->
                             <div class="col-12 col-sm-6 col-md-3">
-                                <label class="form-label fw-semibold text-secondary">Chest Circumference (cm)</label>
-                                <input type="number" step="0.1" name="chest_circumference_cm" class="form-control" placeholder="e.g. 37.0">
+                                <label for="add_chest_circ" class="form-label fw-semibold text-secondary">Chest Circumference (cm)</label>
+                                <input type="number" step="0.1" name="chest_circumference_cm" id="add_chest_circ" class="form-control" placeholder="e.g. 37.0">
                             </div>
 
                             <!-- Body Temp -->
                             <div class="col-12 col-sm-6">
-                                <label class="form-label fw-semibold text-secondary">Body Temperature (°C)</label>
-                                <input type="number" step="0.1" name="temperature" class="form-control" placeholder="36.5">
+                                <label for="add_temperature" class="form-label fw-semibold text-secondary">Body Temperature (°C)</label>
+                                <input type="number" step="0.1" name="temperature" id="add_temperature" class="form-control" placeholder="36.5">
                             </div>
 
                             <!-- Feeding Practice -->
                             <div class="col-12 col-sm-6">
-                                <label class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
-                                <select name="feeding_method" class="form-select">
-                                    <option value="LAM / Exclusive Breastfeeding" selected>LAM / Exclusive Breastfeeding</option>
-                                    <option value="Bottle Feed">Bottle Feeding (Formula)</option>
-                                    <option value="Mixed">Mixed Feeding</option>
+                                <label for="add_feeding_method" class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
+                                <select name="feeding_method" id="add_feeding_method" class="form-select">
+                                    <option value="LAM (Exclusive Breastfeeding)" selected>LAM (Exclusive Breastfeeding)</option>
+                                    <option value="Bottle Feeding">Bottle Feeding (Formula)</option>
+                                    <option value="Mixed Feeding">Mixed Feeding</option>
                                 </select>
                             </div>
 
@@ -527,8 +574,8 @@ require dirname(__DIR__) . '/layout/header.php';
 
                             <!-- Vaccines Administered Today -->
                             <div class="col-12 col-sm-6">
-                                <label class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
-                                <input type="text" name="vaccines_administered" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization Schedule above">
+                                <label for="add_vaccines" class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
+                                <input type="text" name="vaccines_administered" id="add_vaccines" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization Schedule above">
                             </div>
 
                             <!-- Supplementation Toggles -->
@@ -545,8 +592,8 @@ require dirname(__DIR__) . '/layout/header.php';
 
                             <!-- TCB / Developmental Notes -->
                             <div class="col-12">
-                                <label class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
-                                <textarea name="tcb_notes" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months..."></textarea>
+                                <label for="add_tcb_notes" class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
+                                <textarea name="tcb_notes" id="add_tcb_notes" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -623,9 +670,9 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-sm-6">
                             <label for="editGrowthFeeding" class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
                             <select name="feeding_method" id="editGrowthFeeding" class="form-select">
-                                <option value="LAM / Exclusive Breastfeeding">LAM / Exclusive Breastfeeding</option>
-                                <option value="Bottle Feed">Bottle Feeding (Formula)</option>
-                                <option value="Mixed">Mixed Feeding</option>
+                                <option value="LAM (Exclusive Breastfeeding)">LAM (Exclusive Breastfeeding)</option>
+                                <option value="Bottle Feeding">Bottle Feeding (Formula)</option>
+                                <option value="Mixed Feeding">Mixed Feeding</option>
                             </select>
                         </div>
 
@@ -825,6 +872,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (editGrowthLogModal) {
                 editGrowthLogModal.show();
+            }
+        });
+    });
+
+    // One-Click 'Today' Quick Date for Pending EPI inputs
+    document.querySelectorAll('.btn-set-today').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const group = this.closest('.input-group');
+            const input = group ? group.querySelector('input[type="date"]') : null;
+            if (input) {
+                const today = new Date().toISOString().split('T')[0];
+                input.value = today;
+                input.dispatchEvent(new Event('change'));
+                input.classList.add('border-primary');
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-primary');
             }
         });
     });

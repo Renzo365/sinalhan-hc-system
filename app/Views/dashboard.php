@@ -320,11 +320,11 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <i class="bi bi-heart-pulse-fill fs-6"></i>
                     </div>
                     <div>
-                        <h3 class="card-title h6 mb-0 fw-bold text-dark">Maternal Delivery Radar</h3>
+                        <h3 class="card-title h6 mb-0 fw-bold text-dark">Prenatal Delivery Radar</h3>
                         <div class="text-muted small" style="font-size: 0.72rem;">Active pregnancies &amp; EDC delivery countdown</div>
                     </div>
                 </div>
-                <a href="<?= url('/maternal') ?>" class="btn btn-sm btn-outline-danger px-2.5 py-1 d-inline-flex align-items-center gap-1" title="Open Full Maternal Registry">
+                <a href="<?= url('/prenatal') ?>" class="btn btn-sm btn-outline-danger px-2.5 py-1 d-inline-flex align-items-center gap-1" title="Open Full Prenatal Registry">
                     <span class="small">Registry</span>
                     <i class="bi bi-arrow-right"></i>
                 </a>
@@ -427,7 +427,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <span class="text-muted small" style="font-size: 0.75rem;">
                         <i class="bi bi-info-circle me-1 text-primary"></i>Calculated from Last Menstrual Period (LMP + 280d)
                     </span>
-                    <a href="<?= url('/maternal/register') ?>" class="btn btn-sm btn-link text-danger p-0 fw-semibold text-decoration-none" style="font-size: 0.75rem;">
+                    <a href="<?= url('/prenatal/register') ?>" class="btn btn-sm btn-link text-danger p-0 fw-semibold text-decoration-none" style="font-size: 0.75rem;">
                         <i class="bi bi-plus-circle me-0.5"></i>New Episode
                     </a>
                 </div>

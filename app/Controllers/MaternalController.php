@@ -80,7 +80,7 @@ class MaternalController extends Controller {
         }
 
         if (strtolower($patient['sex'] ?? '') !== 'female') {
-            $_SESSION['error_message'] = 'Maternal care workstation is only applicable for female patients.';
+            $_SESSION['error_message'] = 'Prenatal care workstation is only applicable for female patients.';
             $this->redirect("/patients/{$patientId}");
             return;
         }

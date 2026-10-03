@@ -7,15 +7,17 @@
  * @var bool $hasActiveEpisode Whether preselected patient already has active pregnancy
  */
 
-$title = 'Register Maternal Pregnancy Episode';
+$title = 'Register Prenatal Care Episode';
 $breadcrumbs = [
-    'Maternal Care' => '/maternal',
+    'Prenatal Care' => '/prenatal',
     'Register Pregnancy' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
 $initialPatientId = $preselectedPatient['id'] ?? '';
 $initialHusband = $preselectedPatient['spouse_name'] ?? '';
+$initialPatientAge = !empty($preselectedPatient['age']) ? (int)$preselectedPatient['age'] : null;
+$isPreselectedNonWra = ($initialPatientAge !== null && ($initialPatientAge < 10 || $initialPatientAge > 49));
 $initialGravida = 1;
 if (!empty($preselectedIhp['gravida'])) {
     $initialGravida = max(1, (int)$preselectedIhp['gravida'] + 1);
@@ -33,13 +35,13 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
             <h2 class="h3 mb-1 fw-bold text-primary-dark">
-                <i class="bi bi-heart-pulse-fill text-pink me-2"></i>Register Maternal Pregnancy Episode
+                <i class="bi bi-heart-pulse-fill text-pink me-2"></i>Register Prenatal Care Episode
             </h2>
-            <p class="text-secondary small mb-0">Enroll an eligible female patient into the CHO I Maternal Health Care Program.</p>
+            <p class="text-secondary small mb-0">Enroll an eligible female patient into the CHO I Prenatal Health Care Program.</p>
         </div>
         <div>
-            <a href="<?= !empty($initialPatientId) ? url('/maternal/' . $initialPatientId) : url('/maternal') ?>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to <?= !empty($initialPatientId) ? 'Workstation' : 'Maternal Roster' ?>
+            <a href="<?= !empty($initialPatientId) ? url('/prenatal/' . $initialPatientId) : url('/prenatal') ?>" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to <?= !empty($initialPatientId) ? 'Workstation' : 'Prenatal Roster' ?>
             </a>
         </div>
     </div>
@@ -68,14 +70,27 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                             </p>
                         </div>
                     </div>
-                    <a href="<?= !empty($initialPatientId) ? url('/maternal/' . $initialPatientId) : '#' ?>" id="btnViewExistingWorkstation" class="btn btn-warning btn-sm fw-semibold">
+                    <a href="<?= !empty($initialPatientId) ? url('/prenatal/' . $initialPatientId) : '#' ?>" id="btnViewExistingWorkstation" class="btn btn-warning btn-sm fw-semibold">
                         <i class="bi bi-box-arrow-up-right me-1"></i> Open Workstation
                     </a>
                 </div>
             </div>
 
+            <!-- WRA Clinical Safety Advisory Banner -->
+            <div id="wraAdvisoryAlert" class="alert alert-warning border border-warning-subtle rounded-4 mb-4 <?= $isPreselectedNonWra ? '' : 'd-none' ?>">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-4 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark">Clinical Advisory: Patient Age Outside Standard WRA Range</h6>
+                        <p class="mb-0 small text-secondary" id="wraAdvisoryText">
+                            This patient is <strong id="wraAdvisoryAge"><?= $initialPatientAge ?? '--' ?></strong> years old, which is outside the standard Women of Reproductive Age range (10–49 years). Please verify clinical records and patient identity prior to proceeding.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Main Registration Form -->
-            <form action="<?= url('/maternal/register') ?>" method="POST" id="maternalRegistrationForm">
+            <form action="<?= url('/prenatal/register') ?>" method="POST" id="maternalRegistrationForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="patient_id" id="selectedPatientId" value="<?= h($initialPatientId) ?>">
 
@@ -114,7 +129,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 </button>
                             </div>
                             <div class="form-text small text-muted mb-3">
-                                Only female patients registered in the Barangay Sinalhan database are eligible for Maternal Care enrollment.
+                                Only female patients registered in the Barangay Sinalhan database are eligible for Prenatal Care enrollment.
                             </div>
 
                             <!-- Live Search Results Dropdown List -->
@@ -289,7 +304,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
 
                                 <div class="row g-2 text-center">
                                     <div class="col-4 col-sm-2">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">Gravida (G)</label>
+                                        <label for="gravida" class="form-label small fw-semibold text-secondary mb-1">Gravida (G)</label>
                                         <input type="number" 
                                                name="gravida" 
                                                id="gravida" 
@@ -301,7 +316,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         <small class="text-muted" style="font-size: 0.7rem;">Total Pregnancies</small>
                                     </div>
                                     <div class="col-4 col-sm-2">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">Para (P)</label>
+                                        <label for="para" class="form-label small fw-semibold text-secondary mb-1">Para (P)</label>
                                         <input type="number" 
                                                name="para" 
                                                id="para" 
@@ -312,7 +327,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         <small class="text-muted" style="font-size: 0.7rem;">Total Deliveries</small>
                                     </div>
                                     <div class="col-4 col-sm-2">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">Term (T)</label>
+                                        <label for="term_births" class="form-label small fw-semibold text-secondary mb-1">Term (T)</label>
                                         <input type="number" 
                                                name="term_births" 
                                                id="term_births" 
@@ -323,7 +338,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         <small class="text-muted" style="font-size: 0.7rem;">Full Term (&ge;37w)</small>
                                     </div>
                                     <div class="col-4 col-sm-2">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">Preterm (P)</label>
+                                        <label for="preterm_births" class="form-label small fw-semibold text-secondary mb-1">Preterm (P)</label>
                                         <input type="number" 
                                                name="preterm_births" 
                                                id="preterm_births" 
@@ -334,7 +349,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         <small class="text-muted" style="font-size: 0.7rem;">Preterm (&lt;37w)</small>
                                     </div>
                                     <div class="col-4 col-sm-2">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">Abortion (A)</label>
+                                        <label for="abortions" class="form-label small fw-semibold text-secondary mb-1">Abortion (A)</label>
                                         <input type="number" 
                                                name="abortions" 
                                                id="abortions" 
@@ -345,7 +360,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         <small class="text-muted" style="font-size: 0.7rem;">Miscarriages / Ab</small>
                                     </div>
                                     <div class="col-4 col-sm-2">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">Living (L)</label>
+                                        <label for="living_children" class="form-label small fw-semibold text-secondary mb-1">Living (L)</label>
                                         <input type="number" 
                                                name="living_children" 
                                                id="living_children" 
@@ -376,7 +391,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
 
                     <!-- Footer Action Bar -->
                     <div class="card-footer bg-light py-3 px-4 border-0 d-flex justify-content-between align-items-center">
-                        <a href="<?= url('/maternal') ?>" class="btn btn-outline-secondary">
+                        <a href="<?= url('/prenatal') ?>" class="btn btn-outline-secondary">
                             Cancel
                         </a>
                         <button type="submit" class="btn btn-pink text-white px-4 py-2 fw-semibold shadow-sm" id="btnSubmitRegistration" <?= $hasActiveEpisode ? 'disabled' : '' ?>>
@@ -448,6 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const husbandInput = document.getElementById('husband_name');
 
     let searchDebounceTimer = null;
+    let currentPatientAge = <?= $initialPatientAge !== null ? $initialPatientAge : 'null' ?>;
+    let confirmedWra = false;
 
     // 1. Live Patient Search Handler
     if (searchInput) {
@@ -508,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
             item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
             
             const activeBadge = p.has_active_episode 
-                ? `<span class="badge bg-warning text-dark border"><i class="bi bi-heart-pulse me-1"></i>Active Episode</span>` 
+                ? `<span class="badge bg-warning text-dark border">Active Episode</span>` 
                 : `<span class="badge bg-success-subtle text-success border border-success-subtle">Eligible</span>`;
 
             item.innerHTML = `
@@ -546,12 +563,30 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Error', text: data.error, confirmButtonColor: '#d63384' });
+                    } else {
+                        alert(data.error);
+                    }
                     return;
                 }
 
                 const patient = data.patient;
                 selectedPatientIdInput.value = patient.id;
+                currentPatientAge = parseInt(patient.age, 10);
+                confirmedWra = false;
+
+                // Update WRA Alert Banner
+                const wraAlert = document.getElementById('wraAdvisoryAlert');
+                const wraAge = document.getElementById('wraAdvisoryAge');
+                if (wraAlert && wraAge) {
+                    if (!isNaN(currentPatientAge) && (currentPatientAge < 10 || currentPatientAge > 49)) {
+                        wraAge.textContent = currentPatientAge;
+                        wraAlert.classList.remove('d-none');
+                    } else {
+                        wraAlert.classList.add('d-none');
+                    }
+                }
 
                 // Update Compact Patient Identity Card
                 document.getElementById('cardFullName').textContent = patient.name;
@@ -581,7 +616,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Check active episode status
                 if (data.has_active_episode && data.active_episode) {
                     activeEpisodeWarningText.textContent = `This patient already has an active pregnancy episode (#${data.active_episode.id}) started on ${data.active_episode.created_at} with EDC ${data.active_episode.edc}. Conclude or manage the existing episode first.`;
-                    btnViewExistingWorkstation.href = '<?= url('/maternal/') ?>' + patient.id;
+                    btnViewExistingWorkstation.href = '<?= url('/prenatal/') ?>' + patient.id;
                     activeEpisodeWarning.classList.remove('d-none');
                     btnSubmit.disabled = true;
                 } else {
@@ -602,13 +637,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     livingInput.value = data.ihp.living_children || 0;
                 }
 
-                if (patient.spouse_name && !husbandInput.value) {
-                    husbandInput.value = patient.spouse_name;
+                if (husbandInput) {
+                    husbandInput.value = patient.spouse_name || '';
                 }
             })
             .catch(err => {
                 console.error('Error fetching maternal patient data:', err);
-                alert('Failed to load patient information.');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load patient information.', confirmButtonColor: '#d63384' });
+                } else {
+                    alert('Failed to load patient information.');
+                }
             });
     }
 
@@ -620,6 +659,11 @@ document.addEventListener('DOMContentLoaded', function() {
             searchSection.classList.remove('d-none');
             btnChangePatient.classList.add('d-none');
             activeEpisodeWarning.classList.add('d-none');
+            if (husbandInput) husbandInput.value = '';
+            const wraAlert = document.getElementById('wraAdvisoryAlert');
+            if (wraAlert) wraAlert.classList.add('d-none');
+            currentPatientAge = null;
+            confirmedWra = false;
             clinicalSection.classList.add('opacity-50', 'pointer-events-none');
             btnSubmit.disabled = false;
             if (searchInput) searchInput.focus();
@@ -639,12 +683,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const lmpDate = new Date(lmpInput.value);
         if (isNaN(lmpDate.getTime())) return;
 
-        // Calculate EDC using Naegele's Rule: +1 year, -3 months, +7 days
-        const edc = new Date(lmpDate);
-        edc.setFullYear(edc.getFullYear() + 1);
-        edc.setMonth(edc.getMonth() - 3);
-        edc.setDate(edc.getDate() + 7);
-
+        // Calculate EDC using WHO/ACOG standard: LMP + 280 days (prevents JS month roll error)
+        const edc = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         liveEdcDisplay.textContent = edc.toLocaleDateString('en-US', options);
 
@@ -665,6 +705,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const weeks = Math.floor(totalDays / 7);
         const days = totalDays % 7;
+
+        if (weeks > 44) {
+            liveAogDisplay.textContent = `${weeks}w ${days}d (>44w)`;
+            liveTrimesterBadge.textContent = 'Exceeds 44w';
+            liveTrimesterBadge.className = 'badge bg-danger text-white';
+            return;
+        }
+
         liveAogDisplay.textContent = `${weeks}w ${days}d`;
 
         // Trimester Badge
@@ -696,14 +744,93 @@ document.addEventListener('DOMContentLoaded', function() {
         regForm.addEventListener('submit', function(e) {
             if (!selectedPatientIdInput || !selectedPatientIdInput.value) {
                 e.preventDefault();
-                alert('Please search and select an eligible female patient before submitting.');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Patient Required',
+                        text: 'Please search and select an eligible female patient before submitting.',
+                        confirmButtonColor: '#d63384'
+                    });
+                } else {
+                    alert('Please search and select an eligible female patient before submitting.');
+                }
                 if (searchInput) searchInput.focus();
                 return false;
             }
+
             if (!lmpInput || !lmpInput.value) {
                 e.preventDefault();
-                alert('Please provide a valid Last Menstrual Period (LMP).');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'LMP Required',
+                        text: 'Please provide a valid Last Menstrual Period (LMP).',
+                        confirmButtonColor: '#d63384'
+                    });
+                } else {
+                    alert('Please provide a valid Last Menstrual Period (LMP).');
+                }
                 if (lmpInput) lmpInput.focus();
+                return false;
+            }
+
+            const lmpDate = new Date(lmpInput.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            lmpDate.setHours(0, 0, 0, 0);
+            const totalDays = Math.floor((today - lmpDate) / (1000 * 60 * 60 * 24));
+            const weeks = Math.floor(totalDays / 7);
+
+            if (totalDays < 0) {
+                e.preventDefault();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid LMP',
+                        text: 'Last Menstrual Period cannot be a future date.',
+                        confirmButtonColor: '#d63384'
+                    });
+                } else {
+                    alert('Last Menstrual Period cannot be a future date.');
+                }
+                return false;
+            }
+
+            if (weeks > 44) {
+                e.preventDefault();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'LMP Exceeds Gestational Boundary',
+                        text: 'The entered LMP yields an Age of Gestation over 44 weeks. Please verify the LMP date.',
+                        confirmButtonColor: '#d63384'
+                    });
+                } else {
+                    alert('The entered LMP yields an Age of Gestation over 44 weeks.');
+                }
+                return false;
+            }
+
+            // WRA Confirmation Gate (if patient age is < 10 or > 49)
+            if (currentPatientAge !== null && !confirmedWra && (currentPatientAge < 10 || currentPatientAge > 49)) {
+                e.preventDefault();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'WRA Clinical Advisory',
+                        html: `Patient is <b>${currentPatientAge} years old</b>, which is outside the standard Women of Reproductive Age range (10–49 years).<br><br>Do you want to confirm enrollment of this prenatal care episode?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d63384',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Confirm Enrollment',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            confirmedWra = true;
+                            regForm.submit();
+                        }
+                    });
+                }
                 return false;
             }
         });

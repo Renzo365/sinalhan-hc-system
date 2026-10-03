@@ -25,23 +25,120 @@ class Immunization extends Model {
     }
 
     /**
+     * Canonicalize raw vaccine name to official DOH EPI clinical registry format.
+     * 
+     * @param string $name
+     * @return string
+     */
+    public static function canonicalizeVaccineName($name) {
+        $clean = strtoupper(trim(str_replace(['_', '-'], [' ', ' '], $name)));
+        $clean = preg_replace('/\s+/', ' ', $clean);
+
+        if (str_starts_with($clean, 'BCG')) {
+            return 'BCG';
+        }
+        if (str_contains($clean, 'PENTAVALENT') || str_contains($clean, 'PENTA') || str_contains($clean, 'DTP HEPB HIB')) {
+            return 'Pentavalent (DTP-HepB-Hib)';
+        }
+        if (str_contains($clean, 'HEPATITIS B') || str_contains($clean, 'HEPA B') || str_contains($clean, 'HEP B') || $clean === 'HEPB' || str_starts_with($clean, 'HEPB ')) {
+            return 'Hepatitis B (Birth Dose)';
+        }
+        if (str_contains($clean, 'ORAL POLIO') || $clean === 'OPV') {
+            return 'Oral Polio Vaccine (OPV)';
+        }
+        if (str_contains($clean, 'INACTIVATED POLIO') || $clean === 'IPV') {
+            return 'Inactivated Polio Vaccine (IPV)';
+        }
+        if (str_contains($clean, 'PNEUMOCOCCAL') || str_contains($clean, 'PCV') || str_contains($clean, 'ROTAVIRUS') || str_contains($clean, 'ROTA')) {
+            return 'Pneumococcal Conjugate Vaccine (PCV)';
+        }
+        if (str_contains($clean, 'MEASLES RUBELLA') || str_contains($clean, 'MCV1') || str_contains($clean, 'MCV 1') || str_contains($clean, 'ANTI MEASLES')) {
+            return 'Measles-Rubella (MCV1)';
+        }
+        if (str_contains($clean, 'MMR') || str_contains($clean, 'MCV2') || str_contains($clean, 'MCV 2') || str_contains($clean, 'MEASLES MUMPS RUBELLA')) {
+            return 'Measles-Mumps-Rubella (MCV2)';
+        }
+
+        return trim($name);
+    }
+
+    /**
+     * Retrieve all search alias variations for a given vaccine.
+     * 
+     * @param string $vaccineName
+     * @return array
+     */
+    public static function getVaccineAliases($vaccineName) {
+        $canonical = self::canonicalizeVaccineName($vaccineName);
+        $groups = [
+            'BCG' => ['BCG', 'BACILLUS CALMETTE-GUERIN'],
+            'Hepatitis B (Birth Dose)' => ['HEPATITIS B (BIRTH DOSE)', 'HEPATITIS B', 'HEPATITIS_B', 'HEPA B', 'HEPA_B', 'HEPB', 'HEP B'],
+            'Pentavalent (DTP-HepB-Hib)' => ['PENTAVALENT (DTP-HEPB-HIB)', 'PENTAVALENT', 'PENTA', 'DTP-HEPB-HIB', 'DTP HEPB HIB'],
+            'Oral Polio Vaccine (OPV)' => ['ORAL POLIO VACCINE (OPV)', 'ORAL POLIO VACCINE', 'ORAL POLIO', 'OPV'],
+            'Inactivated Polio Vaccine (IPV)' => ['INACTIVATED POLIO VACCINE (IPV)', 'INACTIVATED POLIO', 'IPV'],
+            'Pneumococcal Conjugate Vaccine (PCV)' => ['PNEUMOCOCCAL CONJUGATE VACCINE (PCV)', 'PNEUMOCOCCAL CONJUGATE VACCINE', 'PCV', 'ROTAVIRUS', 'ROTA', 'ROTAVIRUS / PCV', 'ROTAVIRUS/PCV'],
+            'Measles-Rubella (MCV1)' => ['MEASLES-RUBELLA (MCV1)', 'MEASLES-RUBELLA', 'MEASLES RUBELLA (MCV1)', 'MCV1', 'MCV 1', 'MEASLES (MCV 1)', 'ANTI-MEASLES', 'ANTI MEASLES', 'MEASLES', 'MCV'],
+            'Measles-Mumps-Rubella (MCV2)' => ['MEASLES-MUMPS-RUBELLA (MCV2)', 'MEASLES-MUMPS-RUBELLA', 'MEASLES MUMPS RUBELLA (MCV2)', 'MCV2', 'MCV 2', 'MMR BOOSTER (MCV 2)', 'MMR BOOSTER', 'MMR']
+        ];
+        return $groups[$canonical] ?? [strtoupper(trim($vaccineName))];
+    }
+
+    /**
      * Get a map of vaccine name + dose number => record for fast lookup.
+     * Indexing occurs across canonical names, short names, and EPI schedule keys.
      * 
      * @param int $patientId
-     * @return array Keyed by 'VACCINE_NAME:DOSE_NUMBER'
+     * @return array Keyed by multiple alias variations and schedule keys
      */
     public function getVaccineMap($patientId) {
         $records = $this->findByPatientId($patientId);
         $map = [];
+
         foreach ($records as $r) {
-            $key = strtoupper(trim($r['vaccine_name'])) . ':' . (int)$r['dose_number'];
-            $map[$key] = $r;
+            $dose = (int)$r['dose_number'];
+            $rawName = trim($r['vaccine_name']);
+            $canonical = self::canonicalizeVaccineName($rawName);
+            $aliases = self::getVaccineAliases($canonical);
+
+            // 1. Raw DB key
+            $map[strtoupper($rawName) . ':' . $dose] = $r;
+            // 2. Canonical key
+            $map[strtoupper($canonical) . ':' . $dose] = $r;
+
+            // 3. All alias variations
+            foreach ($aliases as $alias) {
+                $map[$alias . ':' . $dose] = $r;
+            }
+
+            // 4. EPI Form Schedule Keys
+            if ($canonical === 'BCG' && $dose === 1) {
+                $map['BCG__1'] = $r;
+            } elseif ($canonical === 'Hepatitis B (Birth Dose)' && $dose === 1) {
+                $map['HEPATITIS_B__1'] = $r;
+                $map['HEPATITIS B__1'] = $r;
+            } elseif ($canonical === 'Pentavalent (DTP-HepB-Hib)') {
+                $map['PENTAVALENT__' . $dose] = $r;
+            } elseif ($canonical === 'Oral Polio Vaccine (OPV)') {
+                $map['OPV__' . $dose] = $r;
+            } elseif ($canonical === 'Pneumococcal Conjugate Vaccine (PCV)') {
+                $map['ROTAVIRUS__' . $dose] = $r;
+                $map['PCV__' . $dose] = $r;
+            } elseif ($canonical === 'Inactivated Polio Vaccine (IPV)' && $dose === 1) {
+                $map['IPV__1'] = $r;
+            } elseif ($canonical === 'Measles-Rubella (MCV1)' && $dose === 1) {
+                $map['MCV__1'] = $r;
+                $map['MCV1__1'] = $r;
+            } elseif ($canonical === 'Measles-Mumps-Rubella (MCV2)' && ($dose === 2 || $dose === 1)) {
+                $map['MCV__2'] = $r;
+                $map['MCV2__2'] = $r;
+            }
         }
         return $map;
     }
 
     /**
      * Record or update an immunization dose for a patient.
+     * Prevents duplicate inserts by matching across known vaccine aliases.
      * 
      * @param array $data
      * @return int|false
@@ -56,24 +153,27 @@ class Immunization extends Model {
             $documentationStatus = 'Unknown';
         }
 
-        // Check if dose already recorded
+        $canonicalName = self::canonicalizeVaccineName($data['vaccine_name']);
+        $doseNumber = (int)($data['dose_number'] ?? 1);
+        $aliases = self::getVaccineAliases($canonicalName);
+        $placeholders = implode(',', array_fill(0, count($aliases), '?'));
+
+        // Check if dose already recorded using alias group
         $sqlCheck = "SELECT id FROM immunizations 
-                     WHERE patient_id = :patient_id 
-                       AND UPPER(TRIM(vaccine_name)) = UPPER(TRIM(:vaccine_name))
-                       AND dose_number = :dose_number
+                     WHERE patient_id = ? 
+                       AND dose_number = ?
+                       AND UPPER(TRIM(vaccine_name)) IN ($placeholders)
                        AND deleted_at IS NULL
                      LIMIT 1";
         $stmtCheck = $this->db->prepare($sqlCheck);
-        $stmtCheck->execute([
-            'patient_id' => $data['patient_id'],
-            'vaccine_name' => $data['vaccine_name'],
-            'dose_number' => (int)($data['dose_number'] ?? 1)
-        ]);
+        $checkParams = array_merge([(int)$data['patient_id'], $doseNumber], $aliases);
+        $stmtCheck->execute($checkParams);
         $existing = $stmtCheck->fetch();
 
         if ($existing) {
             // Update existing dose
             $sqlUpdate = "UPDATE immunizations SET
+                            vaccine_name = :vaccine_name,
                             administered_date = :administered_date,
                             source = :source,
                             documentation_status = :documentation_status,
@@ -83,6 +183,7 @@ class Immunization extends Model {
             $stmtUpdate = $this->db->prepare($sqlUpdate);
             $result = $stmtUpdate->execute([
                 'id' => $existing['id'],
+                'vaccine_name' => $canonicalName,
                 'administered_date' => $data['administered_date'],
                 'source' => $source,
                 'documentation_status' => $documentationStatus,
@@ -91,7 +192,7 @@ class Immunization extends Model {
             ]);
             return $result ? (int)$existing['id'] : false;
         } else {
-            // Insert new dose
+            // Insert new dose using canonical name
             $sqlInsert = "INSERT INTO immunizations (
                             patient_id, vaccine_name, dose_number, 
                             administered_date, source, documentation_status, remarks, administered_by
@@ -102,8 +203,8 @@ class Immunization extends Model {
             $stmtInsert = $this->db->prepare($sqlInsert);
             $result = $stmtInsert->execute([
                 'patient_id' => $data['patient_id'],
-                'vaccine_name' => trim($data['vaccine_name']),
-                'dose_number' => (int)($data['dose_number'] ?? 1),
+                'vaccine_name' => $canonicalName,
+                'dose_number' => $doseNumber,
                 'administered_date' => $data['administered_date'],
                 'source' => $source,
                 'documentation_status' => $documentationStatus,
@@ -166,22 +267,27 @@ class Immunization extends Model {
      * @return bool True if a record was actually deleted, false otherwise
      */
     public function deleteByPatientVaccineDose($patientId, $vaccineName, $doseNumber, $userId = null) {
-        $stmt = $this->db->prepare("
-            UPDATE immunizations 
-            SET deleted_at = CURRENT_TIMESTAMP, 
-                deleted_by = :user_id, 
-                archive_reason = 'Cleared from EPI schedule' 
-            WHERE patient_id = :patient_id 
-              AND UPPER(TRIM(vaccine_name)) = UPPER(TRIM(:vaccine_name))
-              AND dose_number = :dose_number
-              AND deleted_at IS NULL
-        ");
-        $stmt->execute([
-            'patient_id' => (int)$patientId,
-            'vaccine_name' => trim($vaccineName),
-            'dose_number' => (int)$doseNumber,
-            'user_id' => $userId ? (int)$userId : null
-        ]);
+        $canonicalName = self::canonicalizeVaccineName($vaccineName);
+        $aliases = self::getVaccineAliases($canonicalName);
+        $placeholders = implode(',', array_fill(0, count($aliases), '?'));
+
+        $sql = "UPDATE immunizations 
+                SET deleted_at = CURRENT_TIMESTAMP, 
+                    deleted_by = ?, 
+                    archive_reason = 'Cleared from EPI schedule' 
+                WHERE patient_id = ? 
+                  AND dose_number = ?
+                  AND UPPER(TRIM(vaccine_name)) IN ($placeholders)
+                  AND deleted_at IS NULL";
+        
+        $params = array_merge([
+            $userId ? (int)$userId : null,
+            (int)$patientId,
+            (int)$doseNumber
+        ], $aliases);
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->rowCount() > 0;
     }
 

@@ -22,8 +22,8 @@ if (!empty($suffix)) {
 
 $title = 'Edit Pregnancy Episode: ' . $fullNameFormatted;
 $breadcrumbs = [
-    'Maternal Care' => '/maternal',
-    $fullNameFormatted => '/maternal/' . $patient['id'],
+    'Prenatal Care' => '/prenatal',
+    $fullNameFormatted => '/prenatal/' . $patient['id'],
     'Edit Episode' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
@@ -46,7 +46,7 @@ $initials = strtoupper($initials ?: 'PT');
             <p class="text-secondary small mb-0">Update gestational benchmarks, LMP, and obstetric history for Episode #<?= h($episode['id']) ?>.</p>
         </div>
         <div>
-            <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-outline-secondary">
+            <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back to Patient Workstation
             </a>
         </div>
@@ -308,7 +308,7 @@ $initials = strtoupper($initials ?: 'PT');
 
                     <!-- Footer Action Bar -->
                     <div class="card-footer bg-light py-3 px-4 border-0 d-flex justify-content-between align-items-center">
-                        <a href="<?= url('/maternal/' . $patient['id']) ?>" class="btn btn-outline-secondary">
+                        <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="btn btn-outline-secondary">
                             Cancel
                         </a>
                         <button type="submit" class="btn btn-pink text-white px-4 py-2 fw-semibold shadow-sm">
@@ -357,12 +357,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const lmpDate = new Date(lmpInput.value);
         if (isNaN(lmpDate.getTime())) return;
 
-        // Calculate EDC using Naegele's Rule: +1 year, -3 months, +7 days
-        const edc = new Date(lmpDate);
-        edc.setFullYear(edc.getFullYear() + 1);
-        edc.setMonth(edc.getMonth() - 3);
-        edc.setDate(edc.getDate() + 7);
-
+        // Calculate EDC using WHO/ACOG standard: LMP + 280 days (prevents month overflow)
+        const edc = new Date(lmpDate.getTime() + (280 * 24 * 60 * 60 * 1000));
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         liveEdcDisplay.textContent = edc.toLocaleDateString('en-US', options);
 
@@ -383,6 +379,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const weeks = Math.floor(totalDays / 7);
         const days = totalDays % 7;
+
+        if (weeks > 44) {
+            liveAogDisplay.textContent = `${weeks}w ${days}d (>44w)`;
+            liveTrimesterBadge.textContent = 'Overdue / Check LMP';
+            liveTrimesterBadge.className = 'badge bg-danger text-white';
+            return;
+        }
+
         liveAogDisplay.textContent = `${weeks}w ${days}d`;
 
         // Trimester Badge

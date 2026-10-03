@@ -11,16 +11,10 @@ $breadcrumbs = [
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
-$totalRegistered = count($registeredRoster);
-$totalUnregistered = count($unregisteredChildren);
-
-// Count infants with active growth monitoring (growth log within last 60 days)
-$activeMonitoringCount = 0;
-foreach ($registeredRoster as $child) {
-    if (!empty($child['growth_log_count']) && (int)$child['growth_log_count'] > 0) {
-        $activeMonitoringCount++;
-    }
-}
+$totalRegistered = (int)($metrics['total_registered'] ?? count($registeredRoster));
+$underOneCohort = (int)($metrics['under_one_cohort'] ?? 0);
+$ficCount = (int)($metrics['fic_count'] ?? 0);
+$totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
 ?>
 
 <div class="container-fluid py-4">
@@ -28,7 +22,7 @@ foreach ($registeredRoster as $child) {
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold mb-1 text-dark">
-                <i class="bi bi-emoji-smile-fill text-success me-2"></i>Well-Baby &amp; EPI Workstation
+                Well-Baby &amp; EPI Workstation
             </h2>
             <p class="text-muted mb-0">Infant birth circumstances, DOH EPI immunization schedule tracking, and pediatric growth logs.</p>
         </div>
@@ -42,43 +36,81 @@ foreach ($registeredRoster as $child) {
 
     <!-- Metrics Summary Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-success">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-success-subtle text-success p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                        <i class="bi bi-emoji-smile-fill fs-4"></i>
+        <!-- 1. Registered Infants -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Registered Infants</div>
+                            <div class="h3 mb-0 fw-bold text-success mt-1"><?= $totalRegistered ?></div>
+                        </div>
+                        <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-people fs-5"></i>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-secondary small fw-medium text-uppercase tracking-wider">Registered Infants (0-5y)</div>
-                        <div class="fs-3 fw-bold text-dark"><?= $totalRegistered ?></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-info">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-info-subtle text-info p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                        <i class="bi bi-graph-up-arrow fs-4"></i>
-                    </div>
-                    <div>
-                        <div class="text-secondary small fw-medium text-uppercase tracking-wider">Growth Monitored</div>
-                        <div class="fs-3 fw-bold text-dark"><?= $activeMonitoringCount ?></div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Active pediatric cohort (0–5y)</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white border-start border-4 border-warning">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-warning-subtle text-warning p-3 me-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                        <i class="bi bi-person-plus-fill fs-4"></i>
+        <!-- 2. Under-1 EPI Cohort -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Under-1 Cohort</div>
+                            <div class="h3 mb-0 fw-bold text-primary mt-1"><?= $underOneCohort ?></div>
+                        </div>
+                        <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-calendar-check fs-5"></i>
+                        </div>
                     </div>
-                    <div>
-                        <div class="text-secondary small fw-medium text-uppercase tracking-wider">Unregistered (Age ≤5)</div>
-                        <div class="fs-3 fw-bold text-dark"><?= $totalUnregistered ?></div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Routine vaccine targets (&lt;12m)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Fully Immunized (FIC) -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Fully Immunized (FIC)</div>
+                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1"><?= $ficCount ?></div>
+                        </div>
+                        <div class="bg-info-subtle text-info-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-shield-check fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Completed routine series</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Pending Registration -->
+        <div class="col-6 col-lg-3">
+            <div class="card card-premium shadow-sm h-100 border">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Pending Registration</div>
+                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1"><?= $totalUnregistered ?></div>
+                        </div>
+                        <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-person-plus fs-5"></i>
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-2" style="font-size: 0.75rem;">
+                        <span>Eligible barangay infants</span>
                     </div>
                 </div>
             </div>
@@ -120,9 +152,7 @@ foreach ($registeredRoster as $child) {
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="bi bi-list-check text-success me-2"></i>Registered Well-Baby Registry
-                </h5>
+                <h5 class="fw-bold mb-0 text-dark">Registered Well-Baby Registry</h5>
                 <small class="text-muted">Children with initialized birth records and pediatric health profiles</small>
             </div>
             <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace">
@@ -188,7 +218,7 @@ foreach ($registeredRoster as $child) {
                                     <td>
                                         <?php if (!empty($child['mother_id'])): ?>
                                             <a href="<?= url('/patients/' . $child['mother_id']) ?>" class="text-decoration-none fw-medium text-primary">
-                                                <i class="bi bi-person-heart me-1"></i><?= h($child['mother_last_name']) ?>, <?= h($child['mother_first_name']) ?>
+                                                <?= h($child['mother_last_name']) ?>, <?= h($child['mother_first_name']) ?>
                                             </a>
                                             <div class="text-muted font-monospace" style="font-size: 0.72rem;"><?= h($child['mother_patient_no'] ?? '') ?></div>
                                         <?php else: ?>
@@ -206,7 +236,7 @@ foreach ($registeredRoster as $child) {
                                     </td>
                                     <td class="text-center">
                                         <span class="badge rounded-pill bg-light text-success border border-success-subtle px-3 py-1 fw-bold">
-                                            <i class="bi bi-shield-check me-1"></i><?= (int)($child['imm_count'] ?? 0) ?> doses
+                                            <?= (int)($child['imm_count'] ?? 0) ?> doses
                                         </span>
                                     </td>
                                     <td class="text-center">
@@ -219,7 +249,7 @@ foreach ($registeredRoster as $child) {
                                     </td>
                                     <td class="pe-4 text-end">
                                         <a href="<?= url('/well-baby/' . $child['patient_id']) ?>" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm text-white">
-                                            <i class="bi bi-folder2-open me-1"></i> Open Workstation
+                                            Open Workstation
                                         </a>
                                     </td>
                                 </tr>
@@ -236,9 +266,7 @@ foreach ($registeredRoster as $child) {
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="fw-bold mb-0 text-dark">
-                        <i class="bi bi-exclamation-circle text-warning me-2"></i>Unregistered Children (Aged 0–5 Years)
-                    </h5>
+                    <h5 class="fw-bold mb-0 text-dark">Unregistered Children (Aged 0–5 Years)</h5>
                     <small class="text-muted">Children registered in the patient directory who do not have a well-baby birth record initialized yet</small>
                 </div>
                 <span class="badge bg-warning-subtle text-dark border px-3 py-1"><?= count($unregisteredChildren) ?> Pending Registration</span>
@@ -274,7 +302,7 @@ foreach ($registeredRoster as $child) {
                                     <td><?= h($unreg['sex'] ?? 'Unknown') ?></td>
                                     <td class="pe-4 text-end">
                                         <a href="<?= url('/well-baby/register?patient_id=' . $unreg['id']) ?>" class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                            <i class="bi bi-plus-circle me-1"></i> Initialize Well-Baby Record
+                                            Initialize Record
                                         </a>
                                     </td>
                                 </tr>
