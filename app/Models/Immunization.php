@@ -28,9 +28,10 @@ class Immunization extends Model {
      * Canonicalize raw vaccine name to official DOH EPI clinical registry format.
      * 
      * @param string $name
+     * @param int|null $doseNumber
      * @return string
      */
-    public static function canonicalizeVaccineName($name) {
+    public static function canonicalizeVaccineName($name, $doseNumber = null) {
         $clean = strtoupper(trim(str_replace(['_', '-'], [' ', ' '], $name)));
         $clean = preg_replace('/\s+/', ' ', $clean);
 
@@ -49,7 +50,10 @@ class Immunization extends Model {
         if (str_contains($clean, 'INACTIVATED POLIO') || $clean === 'IPV') {
             return 'Inactivated Polio Vaccine (IPV)';
         }
-        if (str_contains($clean, 'PNEUMOCOCCAL') || str_contains($clean, 'PCV') || str_contains($clean, 'ROTAVIRUS') || str_contains($clean, 'ROTA')) {
+        if (str_contains($clean, 'ROTAVIRUS') || str_contains($clean, 'ROTA')) {
+            return 'Rotavirus Vaccine (ROTA)';
+        }
+        if (str_contains($clean, 'PNEUMOCOCCAL') || str_contains($clean, 'PCV')) {
             return 'Pneumococcal Conjugate Vaccine (PCV)';
         }
         if (str_contains($clean, 'MEASLES RUBELLA') || str_contains($clean, 'MCV1') || str_contains($clean, 'MCV 1') || str_contains($clean, 'ANTI MEASLES')) {
@@ -57,6 +61,15 @@ class Immunization extends Model {
         }
         if (str_contains($clean, 'MMR') || str_contains($clean, 'MCV2') || str_contains($clean, 'MCV 2') || str_contains($clean, 'MEASLES MUMPS RUBELLA')) {
             return 'Measles-Mumps-Rubella (MCV2)';
+        }
+        if ($clean === 'MCV') {
+            return ($doseNumber === 2) ? 'Measles-Mumps-Rubella (MCV2)' : 'Measles-Rubella (MCV1)';
+        }
+        if (str_contains($clean, 'VITAMIN A') || $clean === 'VIT A') {
+            return 'Vitamin A';
+        }
+        if (str_contains($clean, 'DEWORMING') || str_contains($clean, 'DEWORM')) {
+            return 'Deworming';
         }
 
         return trim($name);
@@ -76,9 +89,12 @@ class Immunization extends Model {
             'Pentavalent (DTP-HepB-Hib)' => ['PENTAVALENT (DTP-HEPB-HIB)', 'PENTAVALENT', 'PENTA', 'DTP-HEPB-HIB', 'DTP HEPB HIB'],
             'Oral Polio Vaccine (OPV)' => ['ORAL POLIO VACCINE (OPV)', 'ORAL POLIO VACCINE', 'ORAL POLIO', 'OPV'],
             'Inactivated Polio Vaccine (IPV)' => ['INACTIVATED POLIO VACCINE (IPV)', 'INACTIVATED POLIO', 'IPV'],
-            'Pneumococcal Conjugate Vaccine (PCV)' => ['PNEUMOCOCCAL CONJUGATE VACCINE (PCV)', 'PNEUMOCOCCAL CONJUGATE VACCINE', 'PCV', 'ROTAVIRUS', 'ROTA', 'ROTAVIRUS / PCV', 'ROTAVIRUS/PCV'],
+            'Rotavirus Vaccine (ROTA)' => ['ROTAVIRUS VACCINE (ROTA)', 'ROTAVIRUS VACCINE', 'ROTAVIRUS', 'ROTA', 'ROTA I', 'ROTA II', 'ROTA 1', 'ROTA 2'],
+            'Pneumococcal Conjugate Vaccine (PCV)' => ['PNEUMOCOCCAL CONJUGATE VACCINE (PCV)', 'PNEUMOCOCCAL CONJUGATE VACCINE', 'PCV', 'PNEUMOCOCCAL'],
             'Measles-Rubella (MCV1)' => ['MEASLES-RUBELLA (MCV1)', 'MEASLES-RUBELLA', 'MEASLES RUBELLA (MCV1)', 'MCV1', 'MCV 1', 'MEASLES (MCV 1)', 'ANTI-MEASLES', 'ANTI MEASLES', 'MEASLES', 'MCV'],
-            'Measles-Mumps-Rubella (MCV2)' => ['MEASLES-MUMPS-RUBELLA (MCV2)', 'MEASLES-MUMPS-RUBELLA', 'MEASLES MUMPS RUBELLA (MCV2)', 'MCV2', 'MCV 2', 'MMR BOOSTER (MCV 2)', 'MMR BOOSTER', 'MMR']
+            'Measles-Mumps-Rubella (MCV2)' => ['MEASLES-MUMPS-RUBELLA (MCV2)', 'MEASLES-MUMPS-RUBELLA', 'MEASLES MUMPS RUBELLA (MCV2)', 'MCV2', 'MCV 2', 'MMR BOOSTER (MCV 2)', 'MMR BOOSTER', 'MMR', 'MCV'],
+            'Vitamin A' => ['VITAMIN A', 'VIT A', 'VITAMIN_A', 'VITAMIN A CAPSULE'],
+            'Deworming' => ['DEWORMING', 'DEWORM', 'DEWORMING TABLET']
         ];
         return $groups[$canonical] ?? [strtoupper(trim($vaccineName))];
     }
@@ -97,7 +113,7 @@ class Immunization extends Model {
         foreach ($records as $r) {
             $dose = (int)$r['dose_number'];
             $rawName = trim($r['vaccine_name']);
-            $canonical = self::canonicalizeVaccineName($rawName);
+            $canonical = self::canonicalizeVaccineName($rawName, $dose);
             $aliases = self::getVaccineAliases($canonical);
 
             // 1. Raw DB key
@@ -118,19 +134,30 @@ class Immunization extends Model {
                 $map['HEPATITIS B__1'] = $r;
             } elseif ($canonical === 'Pentavalent (DTP-HepB-Hib)') {
                 $map['PENTAVALENT__' . $dose] = $r;
+                $map['Pentavalent__' . $dose] = $r;
             } elseif ($canonical === 'Oral Polio Vaccine (OPV)') {
                 $map['OPV__' . $dose] = $r;
-            } elseif ($canonical === 'Pneumococcal Conjugate Vaccine (PCV)') {
+            } elseif ($canonical === 'Rotavirus Vaccine (ROTA)') {
                 $map['ROTAVIRUS__' . $dose] = $r;
+                $map['Rotavirus__' . $dose] = $r;
+                $map['ROTA__' . $dose] = $r;
+                $map['Rota__' . $dose] = $r;
+            } elseif ($canonical === 'Pneumococcal Conjugate Vaccine (PCV)') {
                 $map['PCV__' . $dose] = $r;
             } elseif ($canonical === 'Inactivated Polio Vaccine (IPV)' && $dose === 1) {
                 $map['IPV__1'] = $r;
-            } elseif ($canonical === 'Measles-Rubella (MCV1)' && $dose === 1) {
+            } elseif ($canonical === 'Measles-Rubella (MCV1)' && ($dose === 1 || $dose === 0)) {
                 $map['MCV__1'] = $r;
                 $map['MCV1__1'] = $r;
             } elseif ($canonical === 'Measles-Mumps-Rubella (MCV2)' && ($dose === 2 || $dose === 1)) {
                 $map['MCV__2'] = $r;
                 $map['MCV2__2'] = $r;
+            } elseif ($canonical === 'Vitamin A') {
+                $map['VITAMIN_A__' . $dose] = $r;
+                $map['Vitamin_A__' . $dose] = $r;
+            } elseif ($canonical === 'Deworming') {
+                $map['DEWORMING__' . $dose] = $r;
+                $map['Deworming__' . $dose] = $r;
             }
         }
         return $map;
@@ -153,8 +180,8 @@ class Immunization extends Model {
             $documentationStatus = 'Unknown';
         }
 
-        $canonicalName = self::canonicalizeVaccineName($data['vaccine_name']);
         $doseNumber = (int)($data['dose_number'] ?? 1);
+        $canonicalName = self::canonicalizeVaccineName($data['vaccine_name'], $doseNumber);
         $aliases = self::getVaccineAliases($canonicalName);
         $placeholders = implode(',', array_fill(0, count($aliases), '?'));
 
@@ -267,7 +294,7 @@ class Immunization extends Model {
      * @return bool True if a record was actually deleted, false otherwise
      */
     public function deleteByPatientVaccineDose($patientId, $vaccineName, $doseNumber, $userId = null) {
-        $canonicalName = self::canonicalizeVaccineName($vaccineName);
+        $canonicalName = self::canonicalizeVaccineName($vaccineName, (int)$doseNumber);
         $aliases = self::getVaccineAliases($canonicalName);
         $placeholders = implode(',', array_fill(0, count($aliases), '?'));
 

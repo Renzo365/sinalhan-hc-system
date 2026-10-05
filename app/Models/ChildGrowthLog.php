@@ -135,6 +135,14 @@ class ChildGrowthLog extends Model {
      * @return bool
      */
     public function updateLog($id, $data) {
+        $existing = $this->findById($id);
+        $vitaminA = array_key_exists('vitamin_a_dose', $data)
+            ? (!empty($data['vitamin_a_dose']) ? 1 : 0)
+            : ($existing ? (int)($existing['vitamin_a_dose'] ?? 0) : 0);
+        $deworming = array_key_exists('deworming_dose', $data)
+            ? (!empty($data['deworming_dose']) ? 1 : 0)
+            : ($existing ? (int)($existing['deworming_dose'] ?? 0) : 0);
+
         $sql = "UPDATE child_growth_logs SET
                     log_date = :log_date,
                     age_months = :age_months,
@@ -162,8 +170,8 @@ class ChildGrowthLog extends Model {
             'temperature' => !empty($data['temperature']) ? (float)$data['temperature'] : null,
             'feeding_method' => $this->normalizeFeedingMethod($data['feeding_method'] ?? ''),
             'vaccines_administered' => !empty($data['vaccines_administered']) ? trim($data['vaccines_administered']) : null,
-            'vitamin_a_dose' => !empty($data['vitamin_a_dose']) ? 1 : 0,
-            'deworming_dose' => !empty($data['deworming_dose']) ? 1 : 0,
+            'vitamin_a_dose' => $vitaminA,
+            'deworming_dose' => $deworming,
             'tcb_notes' => !empty($data['tcb_notes']) ? trim($data['tcb_notes']) : null
         ]);
     }

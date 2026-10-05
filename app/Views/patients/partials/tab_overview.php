@@ -42,7 +42,7 @@
                                             <div class="col-6 border-top pt-2 mt-1">
                                                 <span class="overview-micro-label d-block">Civil Status</span>
                                                 <span class="fw-semibold text-dark">
-                                                    <?= ($patient['civil_status'] === 'Others' && !empty($patient['civil_status_other'])) ? 'Others (' . h($patient['civil_status_other']) . ')' : h($patient['civil_status'] ?? 'Unspecified') ?>
+                                                    <?= (($patient['civil_status'] ?? '') === 'Others' && !empty($patient['civil_status_other'])) ? 'Others (' . h($patient['civil_status_other']) . ')' : h($patient['civil_status'] ?? 'Unspecified') ?>
                                                 </span>
                                             </div>
 
@@ -746,7 +746,7 @@
                                 </div>
                             <?php endif; ?>
 
-                            <!-- Well-Baby & EPI Workstation Quick Card (Only if registered in Well-Baby program) -->
+                            <!-- Well-Baby & EPI Workstation Quick Card (If registered or eligible) -->
                             <?php if ($hasWellbabyRegistration): ?>
                                 <div class="col-12 <?= $hasMaternalRegistration ? 'col-md-6' : '' ?>">
                                     <div class="card border rounded-3 h-100 shadow-xs">
@@ -774,6 +774,25 @@
                                                     <i class="bi bi-emoji-smile-fill me-1"></i> Open Well-Baby Workstation
                                                 </a>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php elseif (isset($patient['age']) && (int)$patient['age'] <= 5): ?>
+                                <div class="col-12 <?= $hasMaternalRegistration ? 'col-md-6' : '' ?>">
+                                    <div class="card border rounded-3 h-100 shadow-xs">
+                                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                                            <h5 class="h6 mb-0 fw-bold text-dark">
+                                                <i class="bi bi-emoji-smile text-primary me-2"></i>Well-Baby &amp; EPI Care
+                                            </h5>
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">Eligible (Aged 0–5)</span>
+                                        </div>
+                                        <div class="card-body p-3 small">
+                                            <p class="text-muted mb-3">
+                                                This child is eligible for routine infant/under-5 immunization (DOH EPI schedule), monthly growth monitoring, and vitamin supplementation.
+                                            </p>
+                                            <a href="<?= url('/well-baby/register?patient_id=' . $patient['id']) ?>" class="btn btn-sm btn-primary text-white w-100 shadow-xs">
+                                                <i class="bi bi-plus-circle me-1"></i> Register in Well-Baby Program
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

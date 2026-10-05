@@ -102,7 +102,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
 
                         <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
-                            <span><strong><?= h($patient['age'] ?? 'Infant') ?></strong> yrs &bull; <?= h($patient['gender'] ?? $patient['sex'] ?? 'Child') ?></span>
+                            <span><strong><?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : h($patient['age'] ?? 'Infant') . ' yrs' ?></strong> &bull; <?= h($patient['gender'] ?? $patient['sex'] ?? 'Child') ?></span>
                             <span class="text-muted">&bull;</span>
                             <span>DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
                             <span class="text-muted">&bull;</span>
@@ -155,15 +155,15 @@ require dirname(__DIR__) . '/layout/header.php';
 
     <?php if ($wellbabyRecord): ?>
         
-        <!-- 1. Infant Birth Context & Newborn Screening Card -->
+        <!-- 1. Child Information & Birth History Card -->
         <div class="card border-success rounded-3 p-4 mb-4 bg-light-subtle shadow-xs">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 pb-2 border-bottom">
                 <div>
                     <div class="d-flex align-items-center gap-2">
                         <h5 class="h6 fw-bold text-success mb-0">
-                            Well-Baby Infant Profile (CHO Santa Rosa Record)
+                            Child Information &amp; Birth History
                         </h5>
-                        <span class="badge bg-success text-white">Birth Record</span>
+                        <span class="badge bg-success text-white">Official CHO Record</span>
                         <?php if (!empty($wellbabyRecord['mother_cpab_tt'])): ?>
                             <span class="badge bg-info text-white"><i class="bi bi-shield-check me-1"></i>CPAB: <?= h($wellbabyRecord['mother_cpab_tt']) ?></span>
                         <?php endif; ?>
@@ -187,6 +187,9 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="p-2 bg-white rounded border">
                         <span class="text-muted d-block" style="font-size: 0.75rem;">Birth Weight / Length</span>
                         <span class="fw-bold text-success fs-7"><?= h($wellbabyRecord['birth_weight_kg']) ?> kg / <?= h($wellbabyRecord['birth_length_cm']) ?> cm</span>
+                        <?php if (!empty($wellbabyRecord['birth_time'])): ?>
+                            <span class="text-muted d-block" style="font-size: 0.7rem;">Time: <?= date('h:i A', strtotime($wellbabyRecord['birth_time'])) ?></span>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -194,9 +197,20 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="col-6 col-sm-3">
                     <div class="p-2 bg-white rounded border">
                         <span class="text-muted d-block" style="font-size: 0.75rem;">Delivery Place & Type</span>
-                        <span class="fw-bold text-dark fs-7"><?= h($wellbabyRecord['place_of_delivery']) ?> (<?= h($wellbabyRecord['delivery_type']) ?>)</span>
+                        <span class="fw-bold text-dark fs-7">
+                            <?= h($wellbabyRecord['place_of_delivery']) ?>
+                            <?php if (!empty($wellbabyRecord['place_of_delivery_other'])): ?>
+                                (<?= h($wellbabyRecord['place_of_delivery_other']) ?>)
+                            <?php endif; ?>
+                            &bull; <?= h($wellbabyRecord['delivery_type']) ?>
+                        </span>
                         <?php if (!empty($wellbabyRecord['attended_by'])): ?>
-                            <span class="text-muted d-block" style="font-size: 0.7rem;">Attended by: <?= h($wellbabyRecord['attended_by']) ?></span>
+                            <span class="text-muted d-block" style="font-size: 0.7rem;">
+                                Attended by: <?= h($wellbabyRecord['attended_by']) ?>
+                                <?php if (!empty($wellbabyRecord['attended_by_other'])): ?>
+                                    (<?= h($wellbabyRecord['attended_by_other']) ?>)
+                                <?php endif; ?>
+                            </span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -217,18 +231,20 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                 </div>
 
-                <!-- Mother Link & Feeding Method -->
+                <!-- Parental Details -->
                 <div class="col-6 col-sm-3">
                     <div class="p-2 bg-white rounded border">
-                        <span class="text-muted d-block" style="font-size: 0.75rem;">Mother / Feeding Method</span>
+                        <span class="text-muted d-block" style="font-size: 0.75rem;">Parental Information</span>
                         <?php if (!empty($wellbabyRecord['mother_patient_id'])): ?>
                             <a href="<?= url('/patients/' . $wellbabyRecord['mother_patient_id']) ?>" class="fw-bold text-primary text-decoration-none d-block">
                                 <i class="bi bi-person-fill"></i> <?= h($wellbabyRecord['mother_last_name']) ?>, <?= h($wellbabyRecord['mother_first_name']) ?>
                             </a>
                         <?php else: ?>
-                            <span class="fw-bold text-dark d-block"><?= h($patient['mother_name'] ?? 'Not Linked') ?></span>
+                            <span class="fw-bold text-dark d-block"><?= !empty($patient['mother_name']) ? 'Mother: ' . h($patient['mother_name']) : 'Mother: Not Recorded' ?></span>
                         <?php endif; ?>
-                        <span class="text-muted small" style="font-size: 0.7rem;"><?= h($wellbabyRecord['feeding_method']) ?></span>
+                        <?php if (!empty($patient['father_name'])): ?>
+                            <span class="text-muted small d-block" style="font-size: 0.7rem;">Father: <?= h($patient['father_name']) ?></span>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -239,13 +255,10 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <h6 class="fw-bold text-dark mb-0">
-                        DOH Mandatory Routine Infant Immunization Schedule (EPI)
+                        <i class="bi bi-shield-shaded text-primary me-2"></i>DOH Mandatory Routine Infant Immunization Schedule (EPI)
                     </h6>
                     <span class="text-muted small">Official schedule for infants aged 0–12 months. Dates save directly to the central registry.</span>
                 </div>
-                <button type="submit" form="epiScheduleForm" class="btn btn-sm btn-primary shadow-xs">
-                    <i class="bi bi-check2-circle me-1"></i> Save EPI Schedule
-                </button>
             </div>
 
             <form action="<?= url('/patients/' . $patient['id'] . '/wellbaby/epi-schedule') ?>" method="POST" id="epiScheduleForm">
@@ -259,25 +272,25 @@ require dirname(__DIR__) . '/layout/header.php';
                         ['key' => 'Hepatitis_B__1', 'name' => 'Hepatitis B', 'dose' => 1, 'desc' => 'Within 24 hours of birth']
                     ],
                     '1.5 Months (6 Weeks)' => [
-                        ['key' => 'Pentavalent__1', 'name' => 'Pentavalent (DTP-HepB-Hib)', 'dose' => 1, 'desc' => 'Dose 1'],
-                        ['key' => 'OPV__1', 'name' => 'Oral Polio Vaccine (OPV)', 'dose' => 1, 'desc' => 'Dose 1'],
-                        ['key' => 'Rotavirus__1', 'name' => 'Rotavirus / PCV', 'dose' => 1, 'desc' => 'Dose 1']
+                        ['key' => 'Pentavalent__1', 'name' => 'Pentavalent 1 (PENTA 1)', 'dose' => 1, 'desc' => 'DTP-HepB-Hib 1'],
+                        ['key' => 'OPV__1', 'name' => 'Oral Polio Vaccine 1 (OPV 1)', 'dose' => 1, 'desc' => 'Oral Polio 1'],
+                        ['key' => 'Rotavirus__1', 'name' => 'Rotavirus Vaccine (ROTA 1)', 'dose' => 1, 'desc' => 'Rotavirus Dose 1']
                     ],
                     '2.5 Months (10 Weeks)' => [
-                        ['key' => 'Pentavalent__2', 'name' => 'Pentavalent (DTP-HepB-Hib)', 'dose' => 2, 'desc' => 'Dose 2'],
-                        ['key' => 'OPV__2', 'name' => 'Oral Polio Vaccine (OPV)', 'dose' => 2, 'desc' => 'Dose 2'],
-                        ['key' => 'Rotavirus__2', 'name' => 'Rotavirus / PCV', 'dose' => 2, 'desc' => 'Dose 2']
+                        ['key' => 'Pentavalent__2', 'name' => 'Pentavalent 2 (PENTA 2)', 'dose' => 2, 'desc' => 'DTP-HepB-Hib 2'],
+                        ['key' => 'OPV__2', 'name' => 'Oral Polio Vaccine 2 (OPV 2)', 'dose' => 2, 'desc' => 'Oral Polio 2'],
+                        ['key' => 'Rotavirus__2', 'name' => 'Rotavirus Vaccine (ROTA 2)', 'dose' => 2, 'desc' => 'Rotavirus Dose 2']
                     ],
                     '3.5 Months (14 Weeks)' => [
-                        ['key' => 'Pentavalent__3', 'name' => 'Pentavalent (DTP-HepB-Hib)', 'dose' => 3, 'desc' => 'Dose 3'],
-                        ['key' => 'OPV__3', 'name' => 'Oral Polio Vaccine (OPV)', 'dose' => 3, 'desc' => 'Dose 3'],
-                        ['key' => 'IPV__1', 'name' => 'Inactivated Polio (IPV)', 'dose' => 1, 'desc' => 'Dose 1']
+                        ['key' => 'Pentavalent__3', 'name' => 'Pentavalent 3 (PENTA 3)', 'dose' => 3, 'desc' => 'DTP-HepB-Hib 3'],
+                        ['key' => 'OPV__3', 'name' => 'Oral Polio Vaccine 3 (OPV 3)', 'dose' => 3, 'desc' => 'Oral Polio 3'],
+                        ['key' => 'IPV__1', 'name' => 'Inactivated Polio (IPV)', 'dose' => 1, 'desc' => 'Inactivated Polio Dose 1']
                     ],
                     '9 Months' => [
-                        ['key' => 'MCV__1', 'name' => 'Measles (MCV 1)', 'dose' => 1, 'desc' => 'Anti-Measles dose']
+                        ['key' => 'MCV__1', 'name' => 'MCV1 (Anti-Measles)', 'dose' => 1, 'desc' => 'Measles-Rubella Dose 1']
                     ],
                     '12 Months (1 Year)' => [
-                        ['key' => 'MCV__2', 'name' => 'MMR Booster (MCV 2)', 'dose' => 2, 'desc' => 'Measles, Mumps, Rubella']
+                        ['key' => 'MCV__2', 'name' => 'MCV2 (MMR)', 'dose' => 2, 'desc' => 'Measles-Mumps-Rubella Dose 2']
                     ]
                 ];
                 ?>
@@ -359,7 +372,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <?php endforeach; ?>
                 </div>
 
-                <!-- Secondary Bottom Save Bar -->
+                <!-- Bottom Save Bar for EPI Schedule -->
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mt-3 pt-3 border-top">
                     <small class="text-muted">
                         <i class="bi bi-info-circle me-1"></i>Saving updates existing dose records or inserts new dates into the child's immunization record.
@@ -371,7 +384,106 @@ require dirname(__DIR__) . '/layout/header.php';
             </form>
         </div>
 
-        <!-- 3. Periodic Pediatric Growth Monitoring Log -->
+        <!-- 3. Routine Supplementation Tracker (Vitamin A & Deworming) -->
+        <div class="card border rounded-3 p-3 mb-4 shadow-xs">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-capsule text-warning me-2"></i>Routine Supplementation Tracker
+                    </h6>
+                    <span class="text-muted small">Official 6-month interval Vitamin A (100,000 / 200,000 IU) and Deworming schedule.</span>
+                </div>
+            </div>
+
+            <form action="<?= url('/patients/' . $patient['id'] . '/wellbaby/epi-schedule') ?>" method="POST" id="supplementationForm">
+                <?= csrf_field() ?>
+
+                <?php
+                $supplements = [
+                    'Vitamin A (6 Doses)' => [
+                        ['key' => 'Vitamin_A__1', 'name' => 'Vitamin A - Dose 1', 'dose' => 1, 'target' => '6 mos (100,000 IU)', 'minDays' => 180],
+                        ['key' => 'Vitamin_A__2', 'name' => 'Vitamin A - Dose 2', 'dose' => 2, 'target' => '12 mos (200,000 IU)', 'minDays' => 365],
+                        ['key' => 'Vitamin_A__3', 'name' => 'Vitamin A - Dose 3', 'dose' => 3, 'target' => '18 mos (200,000 IU)', 'minDays' => 545],
+                        ['key' => 'Vitamin_A__4', 'name' => 'Vitamin A - Dose 4', 'dose' => 4, 'target' => '24 mos (200,000 IU)', 'minDays' => 730],
+                        ['key' => 'Vitamin_A__5', 'name' => 'Vitamin A - Dose 5', 'dose' => 5, 'target' => '30 mos (200,000 IU)', 'minDays' => 910],
+                        ['key' => 'Vitamin_A__6', 'name' => 'Vitamin A - Dose 6', 'dose' => 6, 'target' => '36 mos (200,000 IU)', 'minDays' => 1095],
+                    ],
+                    'Deworming (6 Doses)' => [
+                        ['key' => 'Deworming__1', 'name' => 'Deworming - Dose 1', 'dose' => 1, 'target' => '12 mos', 'minDays' => 365],
+                        ['key' => 'Deworming__2', 'name' => 'Deworming - Dose 2', 'dose' => 2, 'target' => '18 mos', 'minDays' => 545],
+                        ['key' => 'Deworming__3', 'name' => 'Deworming - Dose 3', 'dose' => 3, 'target' => '24 mos', 'minDays' => 730],
+                        ['key' => 'Deworming__4', 'name' => 'Deworming - Dose 4', 'dose' => 4, 'target' => '30 mos', 'minDays' => 910],
+                        ['key' => 'Deworming__5', 'name' => 'Deworming - Dose 5', 'dose' => 5, 'target' => '36 mos', 'minDays' => 1095],
+                        ['key' => 'Deworming__6', 'name' => 'Deworming - Dose 6', 'dose' => 6, 'target' => '42 mos', 'minDays' => 1280],
+                    ]
+                ];
+                ?>
+
+                <div class="row g-3">
+                    <?php foreach ($supplements as $progName => $doses): ?>
+                        <div class="col-12 col-lg-6">
+                            <div class="card border bg-light-subtle h-100 p-2 rounded-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                    <span class="fw-bold text-dark small">
+                                        <i class="bi bi-capsule me-1 text-warning"></i><?= $progName ?>
+                                    </span>
+                                </div>
+                                <div class="row g-2">
+                                    <?php foreach ($doses as $d): 
+                                        $existingRecord = $vaccineMap[$d['key']] ?? null;
+                                        $isDone = !empty($existingRecord);
+                                        $administeredDate = $isDone ? $existingRecord['administered_date'] : '';
+                                        $isEligible = $infantAgeDays >= $d['minDays'];
+                                        $inputId = 'supp_date_' . strtolower($d['key']);
+                                    ?>
+                                        <div class="col-12 col-sm-6">
+                                            <div class="p-2 bg-white rounded border small h-100">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <div>
+                                                        <label for="<?= $inputId ?>" class="fw-bold text-dark mb-0 d-block cursor-pointer"><?= h($d['name']) ?></label>
+                                                        <span class="text-muted d-block" style="font-size: 0.7rem;"><?= h($d['target']) ?></span>
+                                                    </div>
+                                                    <?php if ($isDone): ?>
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Done</span>
+                                                    <?php elseif ($isEligible): ?>
+                                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Due</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-light text-muted border">Upcoming</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="input-group input-group-sm mt-1">
+                                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                                    <input type="date" 
+                                                           name="epi[<?= $d['key'] ?>]" 
+                                                           id="<?= $inputId ?>" 
+                                                           class="form-control bg-white" 
+                                                           value="<?= h($administeredDate) ?>">
+                                                    <?php if (!$isDone): ?>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-set-today" title="Set to today's date">Today</button>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- Bottom Save Bar for Supplementation Tracker -->
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>Tracks the 6 Vitamin A doses and 6 Deworming doses according to DOH standards.
+                    </small>
+                    <button type="submit" class="btn btn-sm btn-warning text-dark fw-semibold shadow-xs px-3 py-1.5 text-nowrap">
+                        <i class="bi bi-check2-circle me-1"></i> Save Supplementation Tracker
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 4. Periodic Pediatric Growth Monitoring Log -->
         <div class="card border rounded-3 p-3 shadow-xs">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
@@ -393,7 +505,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <th>Age</th>
                             <th>Anthropometrics (Weight &bull; Height)</th>
                             <th>Feeding Method</th>
-                            <th>Supplements</th>
+                            <th>Immunization Given</th>
                             <th class="pe-3 text-end">Action</th>
                         </tr>
                     </thead>
@@ -416,15 +528,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </td>
                                     <td><span class="badge bg-light text-dark border"><?= h($gl['feeding_method']) ?></span></td>
                                     <td>
-                                        <?php if (!empty($gl['vitamin_a_dose'])): ?>
-                                            <span class="badge bg-warning-subtle text-dark border me-1">Vit A</span>
-                                        <?php endif; ?>
-                                        <?php if (!empty($gl['deworming_dose'])): ?>
-                                            <span class="badge bg-info-subtle text-info border">Dewormed</span>
-                                        <?php endif; ?>
-                                        <?php if (empty($gl['vitamin_a_dose']) && empty($gl['deworming_dose'])): ?>
-                                            <span class="text-muted">--</span>
-                                        <?php endif; ?>
+                                        <?= !empty($gl['vaccines_administered']) ? h($gl['vaccines_administered']) : '<span class="text-muted">--</span>' ?>
                                     </td>
                                     <td class="pe-3 text-end text-nowrap">
                                         <?php 
@@ -440,7 +544,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 data-chest="<?= h($gl['chest_circumference_cm'] ?? '--') ?>" 
                                                 data-temp="<?= h($gl['temperature'] ?? '--') ?>" 
                                                 data-feeding="<?= h($gl['feeding_method']) ?>" 
-                                                data-supplements="<?= (!empty($gl['vitamin_a_dose']) ? 'Vitamin A' : '') . (!empty($gl['deworming_dose']) ? ' Deworming' : '') ?: 'None' ?>" 
+                                                data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>" 
                                                 data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>" 
                                                 title="View Growth Details">
                                                 <i class="bi bi-eye fs-6"></i>
@@ -455,8 +559,6 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     data-chest="<?= h($gl['chest_circumference_cm'] ?? '') ?>"
                                                     data-temp="<?= h($gl['temperature'] ?? '') ?>"
                                                     data-feeding="<?= h($gl['feeding_method']) ?>"
-                                                    data-vita="<?= !empty($gl['vitamin_a_dose']) ? '1' : '0' ?>"
-                                                    data-deworm="<?= !empty($gl['deworming_dose']) ? '1' : '0' ?>"
                                                     data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>"
                                                     data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>"
                                                     title="Edit Growth Visit">
@@ -528,6 +630,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <div class="col-12 col-sm-6">
                                 <label for="add_age_months" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
                                 <input type="number" step="0.1" name="age_months" id="add_age_months" class="form-control font-monospace" placeholder="e.g. 1.5" required>
+                                <div class="form-text small text-muted" id="add_age_months_help">Auto-calculated from child's DOB</div>
                             </div>
 
                             <!-- Weight (kg) -->
@@ -564,30 +667,18 @@ require dirname(__DIR__) . '/layout/header.php';
                             <div class="col-12 col-sm-6">
                                 <label for="add_feeding_method" class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
                                 <select name="feeding_method" id="add_feeding_method" class="form-select">
-                                    <option value="LAM (Exclusive Breastfeeding)" selected>LAM (Exclusive Breastfeeding)</option>
-                                    <option value="Bottle Feeding">Bottle Feeding (Formula)</option>
-                                    <option value="Mixed Feeding">Mixed Feeding</option>
+                                    <option value="LAM / Exclusive Breastfeeding" selected>LAM / Exclusive Breastfeeding</option>
+                                    <option value="Bottle Feed">Bottle Feed</option>
+                                    <option value="Mixed">Mixed</option>
                                 </select>
                             </div>
 
                             <hr class="my-2 text-muted opacity-25">
 
-                            <!-- Vaccines Administered Today -->
-                            <div class="col-12 col-sm-6">
-                                <label for="add_vaccines" class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
-                                <input type="text" name="vaccines_administered" id="add_vaccines" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization Schedule above">
-                            </div>
-
-                            <!-- Supplementation Toggles -->
-                            <div class="col-12 col-sm-6 d-flex align-items-center gap-4 mt-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="vitamin_a_dose" value="1" id="vit_a_check">
-                                    <label class="form-check-label text-dark fw-semibold" for="vit_a_check">Vitamin A Capsule Given</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="deworming_dose" value="1" id="deworming_check">
-                                    <label class="form-check-label text-dark fw-semibold" for="deworming_check">Deworming Tablet Given</label>
-                                </div>
+                            <!-- Immunization Given -->
+                            <div class="col-12">
+                                <label for="add_vaccines" class="form-label fw-semibold text-secondary">Immunization Given</label>
+                                <input type="text" name="vaccines_administered" id="add_vaccines" class="form-control" placeholder="e.g. Pentavalent 1, OPV 1, ROTA 1">
                             </div>
 
                             <!-- TCB / Developmental Notes -->
@@ -634,6 +725,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-sm-6">
                             <label for="editGrowthAge" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
                             <input type="number" step="0.1" name="age_months" id="editGrowthAge" class="form-control font-monospace" placeholder="e.g. 1.5" required>
+                            <div class="form-text small text-muted" id="edit_age_months_help">Auto-calculated from child's DOB</div>
                         </div>
 
                         <!-- Weight (kg) -->
@@ -670,30 +762,18 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-sm-6">
                             <label for="editGrowthFeeding" class="form-label fw-semibold text-secondary">Infant Feeding Practice</label>
                             <select name="feeding_method" id="editGrowthFeeding" class="form-select">
-                                <option value="LAM (Exclusive Breastfeeding)">LAM (Exclusive Breastfeeding)</option>
-                                <option value="Bottle Feeding">Bottle Feeding (Formula)</option>
-                                <option value="Mixed Feeding">Mixed Feeding</option>
+                                <option value="LAM / Exclusive Breastfeeding">LAM / Exclusive Breastfeeding</option>
+                                <option value="Bottle Feed">Bottle Feed</option>
+                                <option value="Mixed">Mixed</option>
                             </select>
                         </div>
 
                         <hr class="my-2 text-muted opacity-25">
 
-                        <!-- Vaccines Administered Today -->
-                        <div class="col-12 col-sm-6">
-                            <label for="editGrowthVaccines" class="form-label fw-semibold text-secondary">Vaccine / Intervention Note</label>
-                            <input type="text" name="vaccines_administered" id="editGrowthVaccines" class="form-control" placeholder="Optional note; record actual vaccine doses in Immunization Schedule above">
-                        </div>
-
-                        <!-- Supplementation Toggles -->
-                        <div class="col-12 col-sm-6 d-flex align-items-center gap-4 mt-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="vitamin_a_dose" value="1" id="edit_vit_a_check">
-                                <label class="form-check-label text-dark fw-semibold" for="edit_vit_a_check">Vitamin A Capsule Given</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="deworming_dose" value="1" id="edit_deworming_check">
-                                <label class="form-check-label text-dark fw-semibold" for="edit_deworming_check">Deworming Tablet Given</label>
-                            </div>
+                        <!-- Immunization Given -->
+                        <div class="col-12">
+                            <label for="editGrowthVaccines" class="form-label fw-semibold text-secondary">Immunization Given</label>
+                            <input type="text" name="vaccines_administered" id="editGrowthVaccines" class="form-control" placeholder="e.g. Pentavalent 1, OPV 1, ROTA 1">
                         </div>
 
                         <!-- TCB / Developmental Notes -->
@@ -769,8 +849,8 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                     <div class="col-6">
                         <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Supplements</span>
-                            <span class="fs-6 fw-bold text-dark" id="modalGrowthSupplements">--</span>
+                            <span class="text-muted small d-block">Immunization Given</span>
+                            <span class="fs-6 fw-bold text-dark" id="modalGrowthVaccines">--</span>
                         </div>
                     </div>
                 </div>
@@ -795,6 +875,96 @@ require dirname(__DIR__) . '/layout/header.php';
 <!-- Page JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const childDob = <?= json_encode(!empty($patient['dob']) && $patient['dob'] !== '0000-00-00' ? $patient['dob'] : null) ?>;
+
+    function calculatePediatricBreakdown(dobStr, checkupDateStr) {
+        if (!dobStr || !checkupDateStr) return { monthsDecimal: '', label: '' };
+        const p1 = dobStr.split('-');
+        const p2 = checkupDateStr.split('-');
+        if (p1.length !== 3 || p2.length !== 3) return { monthsDecimal: '', label: '' };
+
+        const y1 = parseInt(p1[0], 10), m1 = parseInt(p1[1], 10) - 1, d1 = parseInt(p1[2], 10);
+        const y2 = parseInt(p2[0], 10), m2 = parseInt(p2[1], 10) - 1, d2 = parseInt(p2[2], 10);
+
+        const dStart = new Date(y1, m1, d1);
+        const dEnd = new Date(y2, m2, d2);
+        if (dEnd < dStart) return { monthsDecimal: '0.0', label: '0 days old' };
+
+        let years = y2 - y1;
+        let months = m2 - m1;
+        let days = d2 - d1;
+
+        if (days < 0) {
+            months--;
+            const prevMonthDays = new Date(y2, m2, 0).getDate();
+            days += prevMonthDays;
+        }
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        const totalMonths = (years * 12) + months + (days / 30.4375);
+        const monthsDecimal = (Math.round(totalMonths * 10) / 10).toFixed(1);
+
+        let label = '';
+        if (years === 0 && months === 0) {
+            label = days === 0 ? 'Newborn (0 days)' : `${days} day${days > 1 ? 's' : ''} old`;
+        } else if (years === 0) {
+            label = days > 0 ? `${months} mos, ${days} days (${monthsDecimal} mos)` : `${months} mos (${monthsDecimal} mos)`;
+        } else {
+            const totM = (years * 12) + months;
+            label = `${years} yr${years > 1 ? 's' : ''}${months > 0 ? ', ' + months + ' mos' : ''} (${totM} mos)`;
+        }
+
+        return { monthsDecimal, label };
+    }
+
+    function calculateAgeInMonths(dobStr, checkupDateStr) {
+        return calculatePediatricBreakdown(dobStr, checkupDateStr).monthsDecimal;
+    }
+
+    // Auto-calculate exact age in months for Add Growth Log modal
+    const addLogDateInput = document.getElementById('add_log_date');
+    const addAgeMonthsInput = document.getElementById('add_age_months');
+    function syncAddModalAge() {
+        if (childDob && addLogDateInput && addAgeMonthsInput && addLogDateInput.value) {
+            const res = calculatePediatricBreakdown(childDob, addLogDateInput.value);
+            addAgeMonthsInput.value = res.monthsDecimal;
+            const helpEl = document.getElementById('add_age_months_help');
+            if (helpEl) {
+                helpEl.textContent = res.label ? `Equivalent: ${res.label}` : 'Auto-calculated from child\'s DOB';
+            }
+        }
+    }
+    if (addLogDateInput && addAgeMonthsInput) {
+        addLogDateInput.addEventListener('change', syncAddModalAge);
+        addLogDateInput.addEventListener('input', syncAddModalAge);
+
+        const addGrowthModalEl = document.getElementById('addGrowthLogModal');
+        if (addGrowthModalEl) {
+            addGrowthModalEl.addEventListener('show.bs.modal', syncAddModalAge);
+        }
+    }
+
+    // Auto-calculate exact age in months for Edit Growth Log modal
+    const editGrowthDateInput = document.getElementById('editGrowthDate');
+    const editGrowthAgeInput = document.getElementById('editGrowthAge');
+    function syncEditModalAge() {
+        if (childDob && editGrowthDateInput && editGrowthAgeInput && editGrowthDateInput.value) {
+            const res = calculatePediatricBreakdown(childDob, editGrowthDateInput.value);
+            editGrowthAgeInput.value = res.monthsDecimal;
+            const helpEl = document.getElementById('edit_age_months_help');
+            if (helpEl) {
+                helpEl.textContent = res.label ? `Equivalent: ${res.label}` : 'Auto-calculated from child\'s DOB';
+            }
+        }
+    }
+    if (editGrowthDateInput && editGrowthAgeInput) {
+        editGrowthDateInput.addEventListener('change', syncEditModalAge);
+        editGrowthDateInput.addEventListener('input', syncEditModalAge);
+    }
+
     // View Growth Log Details
     const viewGrowthLogModalEl = document.getElementById('viewGrowthLogModal');
     document.querySelectorAll('.btn-view-growth-log').forEach(btn => {
@@ -808,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const chest = this.getAttribute('data-chest') || '--';
             const temp = this.getAttribute('data-temp') || '--';
             const feeding = this.getAttribute('data-feeding') || '--';
-            const supplements = this.getAttribute('data-supplements') || 'None';
+            const vaccines = this.getAttribute('data-vaccines') || '--';
             const tcb = this.getAttribute('data-tcb') || '';
 
             const elDate = document.getElementById('modalGrowthDate');
@@ -819,7 +989,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const elChest = document.getElementById('modalGrowthChest');
             const elTemp = document.getElementById('modalGrowthTemp');
             const elFeeding = document.getElementById('modalGrowthFeeding');
-            const elSupplements = document.getElementById('modalGrowthSupplements');
+            const elVaccines = document.getElementById('modalGrowthVaccines');
             const elTcb = document.getElementById('modalGrowthTcb');
 
             if (elDate) elDate.textContent = date;
@@ -830,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (elChest) elChest.textContent = chest;
             if (elTemp) elTemp.textContent = temp;
             if (elFeeding) elFeeding.textContent = feeding;
-            if (elSupplements) elSupplements.textContent = supplements;
+            if (elVaccines) elVaccines.textContent = vaccines || '--';
 
             if (elTcb) {
                 if (tcb && tcb.trim()) {
@@ -864,9 +1034,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('editGrowthChest').value = this.getAttribute('data-chest') || '';
             document.getElementById('editGrowthTemp').value = this.getAttribute('data-temp') || '';
             document.getElementById('editGrowthFeeding').value = this.getAttribute('data-feeding') || 'LAM / Exclusive Breastfeeding';
-            
-            document.getElementById('edit_vit_a_check').checked = (this.getAttribute('data-vita') === '1');
-            document.getElementById('edit_deworming_check').checked = (this.getAttribute('data-deworm') === '1');
             document.getElementById('editGrowthVaccines').value = this.getAttribute('data-vaccines') || '';
             document.getElementById('editGrowthTcb').value = this.getAttribute('data-tcb') || '';
 
@@ -876,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // One-Click 'Today' Quick Date for Pending EPI inputs
+    // One-Click 'Today' Quick Date for Pending EPI / Supplement inputs
     document.querySelectorAll('.btn-set-today').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();

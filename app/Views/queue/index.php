@@ -21,8 +21,7 @@ require dirname(__DIR__) . '/layout/header.php';
         </div>
 
         <a href="<?= url('/queue/display') ?>" target="_blank" class="btn btn-outline-primary d-flex align-items-center px-3">
-            <i class="bi bi-display me-2 fs-5"></i>
-            <span>Open Public Display</span>
+            <span>Open Public Display &nearr;</span>
         </a>
         <a href="<?= url('/queue') ?>" class="btn btn-outline-secondary d-flex align-items-center px-2" title="Manual Refresh">
             <i class="bi bi-arrow-clockwise fs-5"></i>
@@ -49,7 +48,6 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
                 <div class="small text-muted mt-2 d-flex align-items-center gap-1 text-truncate" style="font-size: 0.75rem;" id="kpiServingService">
                     <?php if (!empty($queueStats['serving_no'])): ?>
-                        <i class="bi bi-person-fill text-primary"></i>
                         <span class="fw-semibold text-primary"><?= h($queueStats['serving_service'] ?: 'General OPD') ?></span>
                     <?php else: ?>
                         <span>No patient active</span>
@@ -145,10 +143,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium shadow-sm">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
                 <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-person-plus-fill text-primary me-2"></i>Intake &amp; Enqueue Patient
+                    Intake &amp; Enqueue Patient
                 </h3>
                 <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient">
-                    <i class="bi bi-arrow-repeat me-1"></i> Change Patient
+                    Change Patient
                 </button>
             </div>
             
@@ -179,7 +177,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             </button>
                         </div>
                         <div class="form-text small text-muted mb-3">
-                            <i class="bi bi-info-circle me-1"></i>Search by name, ID, or envelope. Unregistered? <a href="<?= url('/patients/create') ?>" target="_blank" class="fw-semibold text-primary">Register first</a>.
+                            Search by name, ID, or envelope. Unregistered? <a href="<?= url('/patients/create') ?>" target="_blank" class="fw-semibold text-primary">Register first</a>.
                         </div>
 
                         <!-- Live Search Results Dropdown List -->
@@ -246,7 +244,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                 <div class="card-footer bg-light py-3 border-top d-grid">
                     <button type="submit" class="btn btn-primary fw-semibold py-2">
-                        <i class="bi bi-plus-circle me-1"></i> Issue Ticket &amp; Add to Queue
+                        + Issue Ticket &amp; Add to Queue
                     </button>
                 </div>
             </form>
@@ -256,7 +254,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium shadow-sm mt-4" id="scheduledAppointmentsCard">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
                 <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-calendar-check text-primary me-2"></i>Today's Bookings
+                    Today's Bookings
                 </h3>
                 <?php
                     $enqueuedPatientIds = !empty($queueList) ? array_column($queueList, 'patient_id') : [];
@@ -300,7 +298,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </div>
                                     <div class="text-muted d-flex align-items-center gap-1.5 flex-wrap mt-0.5" style="font-size: 0.73rem;">
                                         <span class="badge bg-light text-secondary border font-monospace"><?= h($appt['patient_no']) ?></span>
-                                        <span><i class="bi bi-clock me-0.5"></i><?= date('h:i A', strtotime($appt['appointment_time'])) ?></span>
+                                        <span><?= date('h:i A', strtotime($appt['appointment_time'])) ?></span>
                                         <span>&bull;</span>
                                         <span class="badge bg-light text-primary border"><?= h($serviceVal) ?></span>
                                     </div>
@@ -308,7 +306,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <div class="flex-shrink-0 text-end">
                                     <?php if ($isAlreadyQueued): ?>
                                         <span class="badge bg-success-subtle text-success border border-success-subtle" title="Already added to today's queue">
-                                            <i class="bi bi-check2-circle me-1"></i>Queue #<?= $qNo ?>
+                                            Queue #<?= $qNo ?>
                                         </span>
                                     <?php else: ?>
                                         <form action="<?= url('/queue') ?>" method="POST" class="d-inline">
@@ -317,7 +315,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                             <input type="hidden" name="service_type" value="<?= h($serviceVal) ?>">
                                             <input type="hidden" name="appointment_id" value="<?= (int)$appt['id'] ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2.5 btn-queue-action" data-action="checkin" data-patient="<?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>" data-service="<?= h($serviceVal) ?>" title="Check-in to Queue">
-                                                <i class="bi bi-box-arrow-in-right me-1"></i>Check In
+                                                Check In
                                             </button>
                                         </form>
                                     <?php endif; ?>
@@ -335,11 +333,11 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium shadow-sm">
             <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-list-ol text-primary me-2"></i>Today's Active Queue List
+                    Today's Active Queue List
                 </h3>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-light text-secondary border font-monospace" title="Standard clinic intake order">
-                        <i class="bi bi-arrow-down-up me-1"></i>FCFS Order
+                        FCFS Order
                     </span>
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle small fw-semibold"><?= count($queueList) ?> total entries</span>
                 </div>
@@ -347,18 +345,18 @@ require dirname(__DIR__) . '/layout/header.php';
 
             <!-- Quick Status Filter Chips Toolbar -->
             <div class="px-3 py-2 bg-light border-bottom d-flex flex-wrap align-items-center gap-2" id="queueStatusFilters">
-                <span class="small fw-semibold text-muted me-1"><i class="bi bi-funnel me-1"></i>Filter:</span>
+                <span class="small fw-semibold text-muted me-1">Filter:</span>
                 <button type="button" class="btn btn-sm btn-primary active quick-queue-filter" data-filter="all">
                     All (<span id="filterCountAll"><?= count($queueList) ?></span>)
                 </button>
                 <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Waiting">
-                    <i class="bi bi-hourglass-split me-1 text-warning"></i>Waiting (<span id="filterCountWaiting"><?= (int)($queueStats['waiting'] ?? 0) ?></span>)
+                    Waiting (<span id="filterCountWaiting"><?= (int)($queueStats['waiting'] ?? 0) ?></span>)
                 </button>
                 <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Called|Serving">
-                    <i class="bi bi-megaphone me-1 text-info"></i>Called / Serving (<span id="filterCountCalledServing"><?= (int)(($queueStats['called'] ?? 0) + ($queueStats['serving'] ?? 0)) ?></span>)
+                    Called / Serving (<span id="filterCountCalledServing"><?= (int)(($queueStats['called'] ?? 0) + ($queueStats['serving'] ?? 0)) ?></span>)
                 </button>
                 <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Completed">
-                    <i class="bi bi-check-circle me-1 text-success"></i>Completed (<span id="filterCountCompleted"><?= (int)($queueStats['completed'] ?? 0) ?></span>)
+                    Completed (<span id="filterCountCompleted"><?= (int)($queueStats['completed'] ?? 0) ?></span>)
                 </button>
             </div>
             
@@ -431,7 +429,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     </span>
                                                 <?php else: ?>
                                                     <span class="badge bg-light text-muted border mt-1" style="font-size: 0.72rem;">
-                                                        <i class="bi bi-clock me-1"></i><?= $elapsedWaitMins ?>m wait
+                                                        <?= $elapsedWaitMins ?>m wait
                                                     </span>
                                                 <?php endif; ?>
                                             <?php endif; ?>
@@ -450,7 +448,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Called">
                                                         <button type="submit" class="btn btn-sm btn-primary px-2 py-1 btn-queue-action" data-action="call" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" data-service="<?= h($service) ?>" title="Call Patient">
-                                                            <i class="bi bi-megaphone me-1"></i> Call
+                                                            Call
                                                         </button>
                                                     </form>
                                                 <?php elseif ($q['status'] === 'Called'): ?>
@@ -459,7 +457,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Serving">
                                                         <button type="submit" class="btn btn-sm btn-info px-2 py-1 text-white btn-queue-action" data-action="serve" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Start Serving">
-                                                            <i class="bi bi-play-fill me-1"></i> Serve
+                                                            Serve
                                                         </button>
                                                     </form>
                                                     <!-- Re-call Patient (plays chime) -->
@@ -467,7 +465,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Called">
                                                         <button type="submit" class="btn btn-sm btn-outline-primary px-2 py-1 btn-queue-action" data-action="recall" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" title="Re-Call Patient (Audio chime)" data-confirm="Re-call Queue No: <?= sprintf('%03d', $q['queue_no']) ?>? This will re-trigger the chime on the public display.">
-                                                            <i class="bi bi-megaphone me-1"></i> Re-Call
+                                                            Re-Call
                                                         </button>
                                                     </form>
                                                 <?php elseif ($q['status'] === 'Serving'): ?>
@@ -476,7 +474,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Completed">
                                                         <button type="submit" class="btn btn-sm btn-success px-2 py-1 btn-queue-action" data-action="complete" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Complete Service">
-                                                            <i class="bi bi-check-lg me-1"></i> Complete
+                                                            Complete
                                                         </button>
                                                     </form>
                                                 <?php endif; ?>
@@ -653,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="text-end">
                         <span class="btn btn-sm btn-outline-primary py-1 px-3">
-                            <i class="bi bi-check-lg me-1"></i>Select
+                            Select
                         </span>
                     </div>
                 </div>
@@ -916,7 +914,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (elServingService) {
                 elServingService.innerHTML = stats.serving_no 
-                    ? '<i class="bi bi-person-fill text-primary"></i> <span class="fw-semibold text-primary">' + escapeHtml(stats.serving_service || 'General OPD') + '</span>'
+                    ? '<span class="fw-semibold text-primary">' + escapeHtml(stats.serving_service || 'General OPD') + '</span>'
                     : '<span>No patient active</span>';
             }
             if (elWaitingCount) elWaitingCount.textContent = stats.waiting || 0;

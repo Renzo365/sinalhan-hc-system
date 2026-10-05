@@ -13,7 +13,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <p class="text-secondary small mb-0">Modify appointment timing, change booking status, or append clinical notes.</p>
     </div>
     <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i> Back to Appointments List
+        &larr; Back to Appointments List
     </a>
 </div>
 
@@ -35,7 +35,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
                 <h3 class="card-title h5 mb-0 fw-bold text-primary-dark">
-                    <i class="bi bi-calendar2-range me-2 text-primary"></i>Appointment Update Details
+                    Appointment Update Details
                 </h3>
             </div>
             
@@ -48,8 +48,13 @@ require dirname(__DIR__) . '/layout/header.php';
                         <h4 class="h6 fw-bold text-dark mb-3 border-bottom pb-2">Patient Details</h4>
                         
                         <div class="card bg-light border-0 p-3 rounded-3 d-flex flex-row align-items-center gap-3">
-                            <div class="bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center fs-4" style="width: 48px; height: 48px;">
-                                <i class="bi bi-person-fill"></i>
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs" style="width: 48px; height: 48px; background-color: #0D7377; color: #fff;">
+                                <?php 
+                                    $ptInit = '';
+                                    if (!empty($appointment['patient_first'])) $ptInit .= mb_substr($appointment['patient_first'], 0, 1);
+                                    if (!empty($appointment['patient_last'])) $ptInit .= mb_substr($appointment['patient_last'], 0, 1);
+                                    echo strtoupper($ptInit ?: 'PT');
+                                ?>
                             </div>
                             <div>
                                 <span class="text-muted small fw-bold text-uppercase tracking-wider">Patient Record Linked</span>
@@ -68,7 +73,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 border-bottom pb-2 gap-2">
                             <h4 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger">*</span></h4>
                             <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
-                                <i class="bi bi-clock me-1"></i>Select a Time Slot
+                                Select a Time Slot
                             </span>
                         </div>
                         
@@ -76,15 +81,12 @@ require dirname(__DIR__) . '/layout/header.php';
                             <!-- Date Picker with Quick Sets -->
                             <div class="col-12 col-md-6">
                                 <label for="appointment_date" class="form-label fw-semibold text-secondary small">Appointment Date <span class="text-danger">*</span></label>
-                                <div class="input-group mb-2">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar-event"></i></span>
-                                    <input type="date" 
-                                           name="appointment_date" 
-                                           id="appointment_date" 
-                                           class="form-control bg-light border-start-0" 
-                                           value="<?= h($appointment['appointment_date']) ?>" 
-                                           required>
-                                </div>
+                                <input type="date" 
+                                       name="appointment_date" 
+                                       id="appointment_date" 
+                                       class="form-control bg-light mb-2" 
+                                       value="<?= h($appointment['appointment_date']) ?>" 
+                                       required>
                                 <div class="d-flex align-items-center gap-1">
                                     <span class="text-muted small me-1">Quick set:</span>
                                     <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="0">Today</button>
@@ -160,7 +162,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                             <!-- Slot Capacity Visual Legend -->
                             <div class="d-flex flex-wrap align-items-center gap-3 p-2 px-3 mb-2 bg-light rounded-2 border small" style="font-size: 0.75rem;">
-                                <span class="text-muted fw-semibold me-1"><i class="bi bi-info-circle me-1"></i>Capacity Guide:</span>
+                                <span class="text-muted fw-semibold me-1">Capacity Guide:</span>
                                 <span class="d-inline-flex align-items-center gap-1 text-secondary">
                                     <span class="badge rounded-circle p-1 bg-success" style="width: 8px; height: 8px;"> </span> Available
                                 </span>
@@ -187,7 +189,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <!-- Morning OPD Session -->
                             <div class="mb-3 p-3 bg-light rounded-3 border">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold small text-dark"><i class="bi bi-brightness-alt-high-fill text-warning me-1"></i> Morning OPD (08:30 AM - 12:00 PM)</span>
+                                    <span class="fw-bold small text-dark">Morning OPD (08:30 AM - 12:00 PM)</span>
                                 </div>
                                 <div class="row g-2" id="morningSlotsContainer" role="radiogroup" aria-label="Morning OPD Time Slots">
                                     <?php
@@ -229,7 +231,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <!-- Afternoon OPD Session -->
                             <div class="p-3 bg-light rounded-3 border">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold small text-dark"><i class="bi bi-sunset-fill text-danger me-1"></i> Afternoon OPD (01:00 PM - 04:30 PM)</span>
+                                    <span class="fw-bold small text-dark">Afternoon OPD (01:00 PM - 04:30 PM)</span>
                                 </div>
                                 <div class="row g-2" id="afternoonSlotsContainer" role="radiogroup" aria-label="Afternoon OPD Time Slots">
                                     <?php
@@ -524,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const sessionName = card.dataset.session || '';
         if (sessionIndicator && sessionName) {
-            sessionIndicator.innerHTML = `<i class="bi bi-clock-fill me-1"></i>Session: ${sessionName}`;
+            sessionIndicator.innerHTML = `Session: ${sessionName}`;
         }
 
         clearTimeSlotError();
@@ -607,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // If initial time is pre-selected, update session indicator
     const initialActive = document.querySelector('.time-slot-card.active');
     if (initialActive && initialActive.dataset.session && sessionIndicator) {
-        sessionIndicator.innerHTML = `<i class="bi bi-clock-fill me-1"></i>Session: ${initialActive.dataset.session}`;
+        sessionIndicator.innerHTML = `Session: ${initialActive.dataset.session}`;
     }
 });
 </script>

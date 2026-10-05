@@ -15,9 +15,8 @@ $todayMetrics = $todayMetrics ?? [
         <h2 class="h3 mb-1 fw-bold text-primary-dark">Appointment Directory</h2>
         <p class="text-secondary small mb-0">Manage and filter upcoming visits, schedule follow-ups, and update booking status.</p>
     </div>
-    <a href="<?= url('/appointments/create') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-xs">
-        <i class="bi bi-calendar-plus me-2 fs-5"></i>
-        <span class="fw-semibold">Schedule Appointment</span>
+    <a href="<?= url('/appointments/create') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-xs fw-semibold">
+        + Schedule Appointment
     </a>
 </div>
 
@@ -35,8 +34,7 @@ $todayMetrics = $todayMetrics ?? [
                         <i class="bi bi-calendar2-day fs-5"></i>
                     </div>
                 </div>
-                <div class="small text-muted mt-2 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
-                    <i class="bi bi-calendar-check text-primary"></i>
+                <div class="small text-muted mt-2" style="font-size: 0.75rem;">
                     <span class="fw-semibold text-primary"><?= date('M d, Y') ?></span>
                 </div>
             </div>
@@ -103,21 +101,21 @@ $todayMetrics = $todayMetrics ?? [
     <div class="card-body p-4">
         <!-- Quick Date Filter Chips -->
         <div class="d-flex flex-wrap align-items-center gap-2 mb-3 pb-3 border-bottom">
-            <span class="small fw-semibold text-muted me-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Filters:</span>
+            <span class="small fw-semibold text-muted me-1">Quick Filters:</span>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="all">
-                <i class="bi bi-asterisk me-1 text-muted"></i>All Dates
+                All Dates
             </button>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="today">
-                <i class="bi bi-calendar-check me-1 text-primary"></i>Today
+                Today
             </button>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="tomorrow">
-                <i class="bi bi-calendar-plus me-1 text-info"></i>Tomorrow
+                Tomorrow
             </button>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="this_week">
-                <i class="bi bi-calendar-range me-1 text-secondary"></i>Next 7 Days
+                Next 7 Days
             </button>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="pending_today">
-                <i class="bi bi-clock-history me-1 text-warning"></i>Pending Today
+                Pending Today
             </button>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn text-warning-emphasis" data-preset="overdue">
                 <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Overdue<?= !empty($todayMetrics['overdue_count']) ? ' <span class="badge bg-danger ms-1">' . $todayMetrics['overdue_count'] . '</span>' : '' ?>
@@ -142,29 +140,23 @@ $todayMetrics = $todayMetrics ?? [
             <!-- Date From -->
             <div class="col-12 col-sm-6 col-md-2">
                 <label for="date_from" class="form-label fw-semibold text-secondary small">Scheduled Date From</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar3"></i></span>
-                    <input type="date" 
-                           name="date_from" 
-                           id="date_from" 
-                           class="form-control bg-light border-start-0" 
-                           placeholder="YYYY-MM-DD" 
-                           value="<?= h($filters['date_from']) ?>">
-                </div>
+                <input type="date" 
+                       name="date_from" 
+                       id="date_from" 
+                       class="form-control bg-light" 
+                       placeholder="YYYY-MM-DD" 
+                       value="<?= h($filters['date_from']) ?>">
             </div>
 
             <!-- Date To -->
             <div class="col-12 col-sm-6 col-md-2">
                 <label for="date_to" class="form-label fw-semibold text-secondary small">Scheduled Date To</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar3"></i></span>
-                    <input type="date" 
-                           name="date_to" 
-                           id="date_to" 
-                           class="form-control bg-light border-start-0" 
-                           placeholder="YYYY-MM-DD" 
-                           value="<?= h($filters['date_to']) ?>">
-                </div>
+                <input type="date" 
+                       name="date_to" 
+                       id="date_to" 
+                       class="form-control bg-light" 
+                       placeholder="YYYY-MM-DD" 
+                       value="<?= h($filters['date_to']) ?>">
             </div>
 
             <!-- Category Filter -->
@@ -286,14 +278,14 @@ $todayMetrics = $todayMetrics ?? [
                         ?>
                             <tr>
                                 <td class="text-start ps-4 <?= $isPastDue ? 'text-warning-emphasis' : 'text-secondary' ?> fw-semibold" data-order="<?= h($a['appointment_date']) ?>" style="white-space: nowrap;">
-                                    <i class="bi <?= $isPastDue ? 'bi-clock-history text-warning' : 'bi-calendar3 text-muted' ?> me-1"></i><?= date('M d, Y', strtotime($a['appointment_date'])) ?>
+                                    <?= date('M d, Y', strtotime($a['appointment_date'])) ?>
                                 </td>
                                 <td class="fw-semibold text-dark text-center" data-order="<?= date('H:i:s', strtotime($a['appointment_time'])) ?>" style="white-space: nowrap;">
-                                    <i class="bi bi-clock me-1 text-muted"></i><?= date('h:i A', strtotime($a['appointment_time'])) ?>
+                                    <?= date('h:i A', strtotime($a['appointment_time'])) ?>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge-category-pill <?= $catClass ?>">
-                                        <i class="bi <?= $catIcon ?> me-1"></i><?= h($prog) ?>
+                                        <?= h($prog) ?>
                                     </span>
                                 </td>
                                 <td class="text-start text-dark fw-bold">
@@ -319,7 +311,7 @@ $todayMetrics = $todayMetrics ?? [
                                         <?php if ($isPastDue): ?>
                                             <!-- Past Due Scheduled Appointment: Primary action is Reschedule -->
                                             <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-warning text-dark px-2 py-1" title="Reschedule patient for a new date">
-                                                <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+                                                Reschedule
                                             </a>
 
                                             <!-- Secondary Actions Dropdown for Overdue -->
@@ -365,7 +357,7 @@ $todayMetrics = $todayMetrics ?? [
                                                 <?= csrf_field() ?>
                                                 <input type="hidden" name="status" value="Completed">
                                                 <button type="submit" class="btn btn-sm btn-outline-success px-2 py-1 action-confirm-btn" title="Complete appointment" data-confirm="Mark this appointment for <?= h($a['patient_first'] . ' ' . $a['patient_last']) ?> as Completed?">
-                                                    <i class="bi bi-check2-circle me-1"></i>Complete
+                                                    Complete
                                                 </button>
                                             </form>
 
@@ -405,12 +397,12 @@ $todayMetrics = $todayMetrics ?? [
                                         <?php elseif ($a['status'] === 'Completed'): ?>
                                             <!-- Completed: View / Edit details -->
                                             <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="View or edit appointment details">
-                                                <i class="bi bi-pencil-square me-1"></i>View / Edit
+                                                View / Edit
                                             </a>
                                         <?php else: ?>
                                             <!-- Missed or Cancelled: Allow Staff to Reschedule -->
                                             <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Reschedule patient for a new date">
-                                                <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+                                                Reschedule
                                             </a>
                                         <?php endif; ?>
                                     </div>

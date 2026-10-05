@@ -95,7 +95,7 @@ $initials = strtoupper($initials ?: 'PT');
                             </div>
                             <div class="text-md-end">
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill font-monospace small">
-                                    <i class="bi bi-calendar-check me-1"></i> Enrolled: <?= date('M d, Y', strtotime($episode['created_at'])) ?>
+                                    <i class="bi bi-calendar-check me-1"></i> Enrolled: <?= !empty($episode['created_at']) ? date('M d, Y', strtotime($episode['created_at'])) : 'Active' ?>
                                 </span>
                             </div>
                         </div>

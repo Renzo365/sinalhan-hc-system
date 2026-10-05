@@ -135,4 +135,140 @@ if (!function_exists('classify_bmi')) {
     }
 }
 
+if (!function_exists('calculate_age')) {
+    /**
+     * Calculate age in full completed years from date of birth.
+     *
+     * @param string|\DateTimeInterface|null $dob
+     * @param string|\DateTimeInterface|null $referenceDate
+     * @return int|null
+     */
+    function calculate_age($dob, $referenceDate = null): ?int {
+        if (empty($dob) || $dob === '0000-00-00') {
+            return null;
+        }
+
+        try {
+            $dobObj = ($dob instanceof \DateTimeInterface) ? clone $dob : new \DateTime($dob);
+            $refObj = $referenceDate 
+                ? (($referenceDate instanceof \DateTimeInterface) ? clone $referenceDate : new \DateTime($referenceDate)) 
+                : new \DateTime();
+
+            $dobObj->setTime(0, 0, 0);
+            $refObj->setTime(0, 0, 0);
+
+            if ($dobObj > $refObj) {
+                return 0;
+            }
+
+            return (int)$refObj->diff($dobObj)->y;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('calculate_pediatric_age')) {
+    /**
+     * Calculate readable pediatric age with days/months/years for clinical records.
+     * Guidelines:
+     * - Newborn / < 1 month: e.g. "15 days old" or "Newborn (0 days)"
+     * - < 1 year: e.g. "3 mos, 12 days (3.4 mos)" or "3 mos (3.0 mos)"
+     * - >= 1 year: e.g. "3 yrs, 2 mos (38 mos)" or "1 yr (12 mos)"
+     *
+     * @param string|\DateTimeInterface|null $dob
+     * @param string|\DateTimeInterface|null $referenceDate
+     * @return string
+     */
+    function calculate_pediatric_age($dob, $referenceDate = null): string {
+        if (empty($dob) || $dob === '0000-00-00') {
+            return 'N/A';
+        }
+
+        try {
+            $dobObj = ($dob instanceof \DateTimeInterface) ? clone $dob : new \DateTime($dob);
+            $refObj = $referenceDate 
+                ? (($referenceDate instanceof \DateTimeInterface) ? clone $referenceDate : new \DateTime($referenceDate)) 
+                : new \DateTime();
+
+            $dobObj->setTime(0, 0, 0);
+            $refObj->setTime(0, 0, 0);
+
+            if ($dobObj > $refObj) {
+                return '0 days old';
+            }
+
+            $diff = $refObj->diff($dobObj);
+
+            // < 1 month: show days
+            if ($diff->y === 0 && $diff->m === 0) {
+                $days = $diff->d;
+                if ($days === 0) {
+                    return 'Newborn (0 days)';
+                }
+                return $days === 1 ? '1 day old' : "{$days} days old";
+            }
+
+            // < 1 year: show months and days + decimal total months
+            if ($diff->y === 0) {
+                $months = $diff->m;
+                $days = $diff->d;
+                $totalMonths = round($months + ($days / 30.4375), 1);
+                $moUnit = ($months === 1) ? 'mo' : 'mos';
+                $dayUnit = ($days === 1) ? 'day' : 'days';
+                if ($days > 0) {
+                    return "{$months} {$moUnit}, {$days} {$dayUnit} ({$totalMonths} mos)";
+                }
+                return "{$months} {$moUnit} ({$totalMonths} mos)";
+            }
+
+            // >= 1 year: show years, months + total months in parentheses
+            $years = $diff->y;
+            $months = $diff->m;
+            $totalMonths = ($years * 12) + $months;
+            $yrLabel = $years === 1 ? '1 yr' : "{$years} yrs";
+            $moLabel = $months > 0 ? (', ' . $months . ($months === 1 ? ' mo' : ' mos')) : '';
+
+            return "{$yrLabel}{$moLabel} ({$totalMonths} mos)";
+        } catch (\Exception $e) {
+            return 'N/A';
+        }
+    }
+}
+
+if (!function_exists('calculate_age_in_months')) {
+    /**
+     * Calculate exact pediatric age in months rounded to 1 decimal place.
+     *
+     * @param string|\DateTimeInterface|null $dob
+     * @param string|\DateTimeInterface|null $referenceDate
+     * @return float
+     */
+    function calculate_age_in_months($dob, $referenceDate = null): float {
+        if (empty($dob) || $dob === '0000-00-00') {
+            return 0.0;
+        }
+
+        try {
+            $dobObj = ($dob instanceof \DateTimeInterface) ? clone $dob : new \DateTime($dob);
+            $refObj = $referenceDate 
+                ? (($referenceDate instanceof \DateTimeInterface) ? clone $referenceDate : new \DateTime($referenceDate)) 
+                : new \DateTime();
+
+            $dobObj->setTime(0, 0, 0);
+            $refObj->setTime(0, 0, 0);
+
+            if ($dobObj > $refObj) {
+                return 0.0;
+            }
+
+            $diff = $refObj->diff($dobObj);
+            $totalMonths = ($diff->y * 12) + $diff->m + ($diff->d / 30.4375);
+            return (float)round($totalMonths, 1);
+        } catch (\Exception $e) {
+            return 0.0;
+        }
+    }
+}
+
 

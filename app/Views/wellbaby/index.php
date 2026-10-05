@@ -167,8 +167,8 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                         <tr>
                             <th class="ps-4 py-3">Child / Patient</th>
                             <th class="py-3">Age</th>
-                            <th class="py-3">Linked Mother</th>
-                            <th class="py-3">Birth Circumstances</th>
+                            <th class="py-3">Mother</th>
+                            <th class="py-3">Birth History & Delivery</th>
                             <th class="py-3 text-center">EPI Vaccines</th>
                             <th class="py-3 text-center">Growth Logs</th>
                             <th class="pe-4 py-3 text-end">Action</th>
@@ -190,8 +190,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                             </tr>
                         <?php else: ?>
                             <?php foreach ($registeredRoster as $child): 
-                                $months = (int)($child['age_months'] ?? 0);
-                                $ageLabel = $months < 12 ? "{$months} mos" : floor($months / 12) . " yr " . ($months % 12) . " mos";
+                                $ageLabel = !empty($child['dob']) ? calculate_pediatric_age($child['dob']) : ((int)($child['age_months'] ?? 0) . ' mos');
                                 $sexBadge = strtolower($child['sex'] ?? '') === 'male' 
                                     ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">Male</span>'
                                     : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.7rem;">Female</span>';
@@ -211,7 +210,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-order="<?= calculate_age_in_months($child['dob'] ?? '') ?>">
                                         <span class="fw-bold text-dark"><?= $ageLabel ?></span>
                                         <div class="text-muted" style="font-size: 0.75rem;"><?= !empty($child['dob']) ? date('M d, Y', strtotime($child['dob'])) : '--' ?></div>
                                     </td>
@@ -221,8 +220,11 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                                 <?= h($child['mother_last_name']) ?>, <?= h($child['mother_first_name']) ?>
                                             </a>
                                             <div class="text-muted font-monospace" style="font-size: 0.72rem;"><?= h($child['mother_patient_no'] ?? '') ?></div>
+                                        <?php elseif (!empty(trim($child['mother_name'] ?? ''))): ?>
+                                            <span class="fw-medium text-dark d-block"><?= h(trim($child['mother_name'])) ?></span>
+                                            <span class="text-muted font-monospace" style="font-size: 0.72rem;">Unregistered Mother</span>
                                         <?php else: ?>
-                                            <span class="text-muted fst-italic">Not linked</span>
+                                            <span class="text-muted fst-italic">Not recorded</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
@@ -231,15 +233,15 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                             <strong><?= !empty($child['birth_length_cm']) ? h($child['birth_length_cm']) . ' cm' : '--' ?></strong>
                                         </div>
                                         <div class="text-muted text-truncate" style="max-width: 170px; font-size: 0.75rem;">
-                                            <?= h($child['place_of_delivery'] ?? 'Lying-in') ?>
+                                            <?= h($child['place_of_delivery'] ?? 'Lying-in') ?><?= !empty($child['place_of_delivery_other']) ? ' (' . h($child['place_of_delivery_other']) . ')' : '' ?>
                                         </div>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center" data-order="<?= (int)($child['imm_count'] ?? 0) ?>">
                                         <span class="badge rounded-pill bg-light text-success border border-success-subtle px-3 py-1 fw-bold">
-                                            <?= (int)($child['imm_count'] ?? 0) ?> doses
+                                            <?= (int)($child['imm_count'] ?? 0) ?> / 13 doses
                                         </span>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center" data-order="<?= (int)($child['growth_log_count'] ?? 0) ?>">
                                         <span class="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold">
                                             <?= (int)($child['growth_log_count'] ?? 0) ?> visits
                                         </span>
@@ -285,8 +287,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                         </thead>
                         <tbody>
                             <?php foreach ($unregisteredChildren as $unreg): 
-                                $uMonths = (int)($unreg['age_months'] ?? 0);
-                                $uAgeLabel = $uMonths < 12 ? "{$uMonths} mos" : floor($uMonths / 12) . " yr " . ($uMonths % 12) . " mos";
+                                $uAgeLabel = !empty($unreg['dob']) ? calculate_pediatric_age($unreg['dob']) : ((int)($unreg['age_months'] ?? 0) . ' mos');
                             ?>
                                 <tr>
                                     <td class="ps-4 py-3 fw-bold text-dark">
@@ -295,7 +296,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                     <td>
                                         <span class="badge bg-light text-secondary border font-monospace"><?= h($unreg['patient_no']) ?></span>
                                     </td>
-                                    <td>
+                                    <td data-order="<?= calculate_age_in_months($unreg['dob'] ?? '') ?>">
                                         <span class="fw-semibold"><?= $uAgeLabel ?></span>
                                         <div class="small text-muted"><?= !empty($unreg['dob']) ? date('M d, Y', strtotime($unreg['dob'])) : '--' ?></div>
                                     </td>

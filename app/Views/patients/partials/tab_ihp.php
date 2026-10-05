@@ -313,7 +313,7 @@
                                 </div>
                                 <?php if ($hasAnyIhpRecord): ?>
                                     <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-medium" onclick="enterIhpEditMode()">
-                                        <i class="bi bi-pencil-square me-1"></i>Edit IHP Record
+                                        Edit IHP Record
                                     </button>
                                 <?php endif; ?>
                             </div>
@@ -359,7 +359,7 @@
                                             <?php else: ?>
                                                 <div class="pt-1">
                                                     <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                        <i class="bi bi-check-circle text-success me-1"></i>No chronic illnesses or allergies recorded
+                                                        No chronic illnesses or allergies recorded
                                                     </span>
                                                 </div>
                                             <?php endif; ?>
@@ -405,7 +405,7 @@
                                             <?php else: ?>
                                                 <div class="pt-1">
                                                     <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                        <i class="bi bi-check-circle text-success me-1"></i>No hereditary family diseases declared
+                                                        No hereditary family diseases declared
                                                     </span>
                                                 </div>
                                             <?php endif; ?>
@@ -435,7 +435,7 @@
                                             <?php else: ?>
                                                 <div class="pt-1">
                                                     <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                        <i class="bi bi-check-circle text-success me-1"></i>No prior surgeries or hospitalizations declared
+                                                        No prior surgeries or hospitalizations declared
                                                     </span>
                                                 </div>
                                             <?php endif; ?>
@@ -572,7 +572,7 @@
                                                                         $immVaccinator = !empty($admImm['vaccinator_name']) ? (' by ' . h($admImm['vaccinator_name'])) : '';
                                                                     ?>
                                                                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" title="Given: <?= $immDate ?><?= $immVaccinator ?>">
-                                                                        <i class="bi bi-shield-check me-1"></i><?= h($admImm['vaccine_name'] ?? 'Vaccine') ?> (Dose <?= h($admImm['dose_number'] ?? '1') ?>)
+                                                                        <?= h($admImm['vaccine_name'] ?? 'Vaccine') ?> (Dose <?= h($admImm['dose_number'] ?? '1') ?>)
                                                                     </span>
                                                                 <?php endforeach; ?>
                                                             </div>
@@ -582,7 +582,7 @@
                                             <?php else: ?>
                                                 <div class="pt-1">
                                                     <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                        <i class="bi bi-shield-slash text-muted me-1"></i>No lifetime immunization history recorded
+                                                        No lifetime immunization history recorded
                                                     </span>
                                                 </div>
                                             <?php endif; ?>
@@ -676,7 +676,7 @@
                                             <?php else: ?>
                                                 <div class="pt-1">
                                                     <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                        <i class="bi bi-activity text-muted me-1"></i>No baseline vitals or anthropometrics recorded
+                                                        No baseline vitals or anthropometrics recorded
                                                     </span>
                                                 </div>
                                             <?php endif; ?>
@@ -689,7 +689,7 @@
                                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-1 mb-3 pb-2 border-bottom">
                                                 <div>
                                                     <h5 class="h6 fw-bold text-primary-dark mb-0">
-                                                        <i class="bi bi-clipboard2-pulse me-1.5 text-primary"></i>7. Pertinent Physical Examination Findings
+                                                        7. Pertinent Physical Examination Findings
                                                     </h5>
                                                     <span class="text-muted small">PhilHealth Annex A1: Systematic organ-systems physical examination</span>
                                                 </div>
@@ -715,25 +715,16 @@
                                                     'Flat',
                                                     'Full and equal pulses', 'Normal gait'
                                                 ];
-                                                $peSystemIcons = [
-                                                    'skin' => 'bi-person',
-                                                    'heent' => 'bi-eye',
-                                                    'chest_lungs' => 'bi-lungs',
-                                                    'heart' => 'bi-heart-pulse',
-                                                    'abdomen' => 'bi-shield-shaded',
-                                                    'extremities' => 'bi-person-walking'
-                                                ];
                                                 ?>
                                                 <div class="row g-2.5 small pt-1">
                                                     <?php foreach ($peSystems as $sKey => $sLabel): 
                                                         $findings = !empty($peSaved[$sKey]) && is_array($peSaved[$sKey]) ? $peSaved[$sKey] : [];
-                                                        $sysIcon = $peSystemIcons[$sKey] ?? 'bi-clipboard-check';
                                                     ?>
                                                         <div class="col-12 col-sm-6 col-md-4">
                                                             <div class="p-2.5 rounded-2 bg-light border h-100 d-flex flex-column">
                                                                 <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom">
                                                                     <span class="fw-bold text-dark d-flex align-items-center" style="font-size: 0.78rem;">
-                                                                        <i class="bi <?= $sysIcon ?> me-1.5 text-primary"></i><?= $sLabel ?>
+                                                                        <?= $sLabel ?>
                                                                     </span>
                                                                     <?php if (!empty($findings)): ?>
                                                                         <?php 
@@ -748,7 +739,7 @@
                                                                             </span>
                                                                         <?php else: ?>
                                                                             <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
-                                                                                <i class="bi bi-check-circle-fill me-1"></i>Normal
+                                                                                Normal
                                                                             </span>
                                                                         <?php endif; ?>
                                                                     <?php endif; ?>
@@ -765,7 +756,7 @@
                                                                                 </span>
                                                                             <?php elseif ($isNormal): ?>
                                                                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                                                                    <i class="bi bi-check2 me-1"></i><?= h($finding) ?>
+                                                                                    <?= h($finding) ?>
                                                                                 </span>
                                                                             <?php else: ?>
                                                                                 <span class="badge bg-white text-dark border px-2 py-1">
@@ -777,7 +768,7 @@
                                                                 <?php else: ?>
                                                                     <div class="mt-1">
                                                                         <span class="text-muted fst-italic" style="font-size: 0.75rem;">
-                                                                            <i class="bi bi-check-circle text-success me-1"></i>Normal / Unremarkable
+                                                                            Normal / Unremarkable
                                                                         </span>
                                                                     </div>
                                                                 <?php endif; ?>
@@ -789,7 +780,7 @@
                                                         <div class="col-12 mt-2">
                                                             <div class="p-2.5 rounded-2 bg-light border">
                                                                 <span class="text-secondary fw-bold d-block small mb-1">
-                                                                    <i class="bi bi-chat-square-quote me-1 text-primary"></i>Doctor's Clinical Notes / Detailed Findings:
+                                                                    Doctor's Clinical Notes / Detailed Findings:
                                                                 </span>
                                                                 <p class="text-dark small mb-0 fst-italic">"<?= nl2br(h($peSaved['remarks'])) ?>"</p>
                                                             </div>
@@ -799,7 +790,7 @@
                                             <?php else: ?>
                                                 <div class="pt-1">
                                                     <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                        <i class="bi bi-clipboard2-check text-muted me-1"></i>No physical examination findings on record
+                                                        No physical examination findings on record
                                                     </span>
                                                 </div>
                                             <?php endif; ?>
@@ -855,7 +846,7 @@
                                                 <?php else: ?>
                                                     <div class="pt-1">
                                                         <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                            <i class="bi bi-person text-pink me-1"></i>No menstrual or reproductive history recorded
+                                                            No menstrual or reproductive history recorded
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
@@ -894,7 +885,7 @@
                                                 <?php else: ?>
                                                     <div class="pt-1">
                                                         <span class="badge bg-light text-secondary border px-3 py-1.5 fs-7">
-                                                            <i class="bi bi-person text-pink me-1"></i>Nulliparous / No obstetric history recorded
+                                                            Nulliparous / No obstetric history recorded
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
@@ -942,7 +933,7 @@
 
                                 <!-- Quick Navigation Anchors -->
                                 <div class="d-flex flex-wrap align-items-center gap-1 p-2 bg-light rounded border mb-3 small" id="ihpSectionNav">
-                                    <span class="text-muted fw-semibold me-1 d-flex align-items-center"><i class="bi bi-compass me-1"></i>Jump to:</span>
+                                    <span class="text-muted fw-semibold me-1 d-flex align-items-center">Jump to:</span>
                                     <a href="#ihp-sec-pmh" class="badge bg-white text-primary border text-decoration-none py-1.5 px-2">1. Illnesses</a>
                                     <a href="#ihp-sec-family" class="badge bg-white text-primary border text-decoration-none py-1.5 px-2">2. Family</a>
                                     <a href="#ihp-sec-surgical" class="badge bg-white text-primary border text-decoration-none py-1.5 px-2">3. Surgeries</a>
@@ -963,7 +954,7 @@
                                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-1 mb-3 pb-2 border-bottom">
                                                 <div>
                                                     <h5 class="h6 fw-bold text-primary-dark mb-0">
-                                                        <i class="bi bi-file-earmark-medical me-1.5 text-primary"></i>1. Past Medical History
+                                                        1. Past Medical History
                                                     </h5>
                                                     <span class="text-muted small">PhilHealth Annex A1: Individual Health Profile illness checklist</span>
                                                 </div>
@@ -1008,7 +999,7 @@
                                                         Conditions Requiring Clinical Specifics
                                                     </span>
                                                     <span class="text-muted" style="font-size: 0.72rem;">
-                                                        <i class="bi bi-info-circle me-1"></i>Check condition to unlock detail input
+                                                        Check condition to unlock detail input
                                                     </span>
                                                 </div>
                                                 <div class="row g-3 small">
@@ -1176,7 +1167,7 @@
                                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-1 mb-3 pb-2 border-bottom">
                                                 <div>
                                                     <h5 class="h6 fw-bold text-primary-dark mb-0">
-                                                        <i class="bi bi-diagram-3 me-1.5 text-primary"></i>2. Family History (Hereditary Diseases)
+                                                        2. Family History (Hereditary Diseases)
                                                     </h5>
                                                     <span class="text-muted small">PhilHealth Annex A1: Hereditary conditions in patient's family</span>
                                                 </div>
@@ -1221,7 +1212,7 @@
                                                         Hereditary Conditions Requiring Specifics
                                                     </span>
                                                     <span class="text-muted" style="font-size: 0.72rem;">
-                                                        <i class="bi bi-info-circle me-1"></i>Check condition to unlock detail input
+                                                        Check condition to unlock detail input
                                                     </span>
                                                 </div>
                                                 <div class="row g-3 small">
@@ -1392,7 +1383,7 @@
                                                     3. Past Surgical History & Hospitalization
                                                 </h5>
                                                 <button type="button" class="btn btn-outline-primary btn-sm fw-medium shadow-xs" id="btnAddSurgeryRow" onclick="addIhpSurgeryRow()">
-                                                    <i class="bi bi-plus-circle me-1"></i>Add Surgery
+                                                    + Add Surgery
                                                 </button>
                                             </div>
                                             <div id="ihpSurgeriesContainer" class="d-flex flex-column gap-2 mb-2">
@@ -1435,7 +1426,7 @@
                                                 ?>
                                             </div>
                                             <div id="ihpSurgeriesEmpty" class="text-muted small p-3 bg-light rounded text-center <?= $hasSurgeryRows ? 'd-none' : '' ?>">
-                                                <i class="bi bi-info-circle me-1"></i>No surgical procedures recorded. Click <strong>+ Add Surgery</strong> if the patient has past operations.
+                                                No surgical procedures recorded. Click <strong>+ Add Surgery</strong> if the patient has past operations.
                                             </div>
                                         </div>
                                     </div>
@@ -1619,7 +1610,7 @@
                                                     <div class="p-2.5 border rounded-2 bg-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-2" id="ihpBmiWrapper">
                                                         <div>
                                                             <span class="text-secondary small fw-semibold d-block">
-                                                                <i class="bi bi-calculator me-1 text-primary"></i>Calculated Baseline BMI:
+                                                                Calculated Baseline BMI:
                                                             </span>
                                                             <span class="fw-bold text-dark fs-6" id="ihpBmiValue">
                                                                 <?php
@@ -1683,7 +1674,7 @@
                                                 </div>
                                                 <div class="d-flex align-items-center gap-2">
                                                     <button type="button" class="btn btn-success btn-sm px-3 fw-semibold shadow-xs d-inline-flex align-items-center" id="btnMarkAllNormal">
-                                                        <i class="bi bi-check2-circle me-1.5 fs-6"></i>Mark All Unremarkable / Normal
+                                                        Mark All Unremarkable / Normal
                                                     </button>
                                                 </div>
                                             </div>
@@ -1692,7 +1683,6 @@
                                             $peConfig = [
                                                 'skin' => [
                                                     'title' => 'Skin / Integument',
-                                                    'icon' => 'bi-person',
                                                     'badge_id' => 'pe_badge_skin',
                                                     'normal_text' => 'Good Turgor',
                                                     'normal_vals' => ['Good skin turgor'],
@@ -1706,7 +1696,6 @@
                                                 ],
                                                 'heent' => [
                                                     'title' => 'HEENT',
-                                                    'icon' => 'bi-eye',
                                                     'badge_id' => 'pe_badge_heent',
                                                     'normal_text' => 'Normal',
                                                     'normal_vals' => ['Anicteric sclerae', 'Pupils briskly reactive to light', 'Intact tympanic membrane'],
@@ -1726,7 +1715,6 @@
                                                 ],
                                                 'chest_lungs' => [
                                                     'title' => 'Chest & Lungs',
-                                                    'icon' => 'bi-lungs',
                                                     'badge_id' => 'pe_badge_chest',
                                                     'normal_text' => 'Clear',
                                                     'normal_vals' => ['Symmetrical chest expansion', 'Clear breath sounds'],
@@ -1741,7 +1729,6 @@
                                                 ],
                                                 'heart' => [
                                                     'title' => 'Heart (CVS)',
-                                                    'icon' => 'bi-heart-pulse',
                                                     'badge_id' => 'pe_badge_heart',
                                                     'normal_text' => 'Normal Rhythm',
                                                     'normal_vals' => ['Adynamic precordium', 'Normal rate regular rhythm'],
@@ -1755,7 +1742,6 @@
                                                 ],
                                                 'abdomen' => [
                                                     'title' => 'Abdomen',
-                                                    'icon' => 'bi-shield-shaded',
                                                     'badge_id' => 'pe_badge_abdo',
                                                     'normal_text' => 'Soft, Non-tender',
                                                     'normal_vals' => ['Flat'],
@@ -1771,7 +1757,6 @@
                                                 ],
                                                 'extremities' => [
                                                     'title' => 'Extremities',
-                                                    'icon' => 'bi-person-walking',
                                                     'badge_id' => 'pe_badge_ext',
                                                     'normal_text' => 'Equal Pulses',
                                                     'normal_vals' => ['Full and equal pulses', 'Normal gait'],
@@ -1799,19 +1784,15 @@
 
                                                     if ($hasAcute) {
                                                         $badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
-                                                        $badgeIcon = 'bi-exclamation-triangle-fill';
                                                         $badgeText = 'Abnormal Findings';
                                                     } elseif ($hasNormal) {
                                                         $badgeClass = 'bg-success-subtle text-success border border-success-subtle';
-                                                        $badgeIcon = 'bi-check-circle-fill';
                                                         $badgeText = $conf['normal_text'];
                                                     } elseif (!empty($savedSys)) {
                                                         $badgeClass = 'bg-info-subtle text-primary border border-info-subtle';
-                                                        $badgeIcon = 'bi-info-circle';
                                                         $badgeText = 'Recorded';
                                                     } else {
                                                         $badgeClass = 'bg-light text-muted border';
-                                                        $badgeIcon = 'bi-dash-circle';
                                                         $badgeText = 'Unspecified';
                                                     }
                                                 ?>
@@ -1819,10 +1800,10 @@
                                                     <div class="p-3 pe-system-card h-100 d-flex flex-column" data-system-card="<?= $sysKey ?>">
                                                         <div class="d-flex align-items-center justify-content-between mb-2.5 pb-2 border-bottom">
                                                             <span class="fw-bold text-dark d-flex align-items-center" style="font-size: 0.82rem;">
-                                                                <i class="bi <?= $conf['icon'] ?> me-1.5 text-primary"></i><?= $conf['title'] ?>
+                                                                <?= $conf['title'] ?>
                                                             </span>
                                                             <span id="<?= $conf['badge_id'] ?>" class="badge <?= $badgeClass ?> px-2 py-1 pe-system-badge" style="font-size: 0.7rem;">
-                                                                <i class="bi <?= $badgeIcon ?> me-1"></i><?= $badgeText ?>
+                                                                <?= $badgeText ?>
                                                             </span>
                                                         </div>
                                                         <div class="flex-grow-1 d-flex flex-column gap-1">
@@ -1860,7 +1841,7 @@
                                                 <div class="col-12 mt-2">
                                                     <div class="p-2.5 rounded-2 bg-light-subtle border">
                                                         <label class="form-label fw-bold text-dark small mb-1" for="pe_remarks">
-                                                            <i class="bi bi-chat-square-text me-1 text-primary"></i>Doctor's Clinical Notes / Detailed Findings
+                                                            Doctor's Clinical Notes / Detailed Findings
                                                         </label>
                                                         <textarea name="pe_remarks" id="pe_remarks" class="form-control form-control-sm rounded-2" rows="3" placeholder="Patient is well-nourished, alert and ambulatory. Record other physical examination findings or clinical notes..."><?= h($peSaved['remarks'] ?? '') ?></textarea>
                                                     </div>

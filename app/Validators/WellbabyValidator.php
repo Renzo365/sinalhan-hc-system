@@ -44,6 +44,16 @@ class WellbabyValidator extends BaseValidator {
             }
         }
 
+        $placeOfDelivery = $input['place_of_delivery'] ?? '';
+        if ($placeOfDelivery === 'Others' && empty(trim($input['place_of_delivery_other'] ?? ''))) {
+            $this->addError('Please specify the other place of delivery.');
+        }
+
+        $attendedBy = $input['attended_by'] ?? '';
+        if ($attendedBy === 'Others' && empty(trim($input['attended_by_other'] ?? ''))) {
+            $this->addError('Please specify the other attendant.');
+        }
+
         return $this->errors;
     }
 

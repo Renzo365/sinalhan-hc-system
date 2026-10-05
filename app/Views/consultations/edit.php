@@ -20,7 +20,7 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
     <div>
         <a href="<?= url('/patients/' . $patient['id'] . '#tab-consultations') ?>" class="btn btn-outline-secondary btn-cancel-consultation">
-            <i class="bi bi-arrow-left me-1"></i> Back to Profile
+            &larr; Back to Profile
         </a>
     </div>
 </div>
@@ -121,12 +121,12 @@ require dirname(__DIR__) . '/layout/header.php';
                         <span class="badge bg-light text-dark border font-monospace fs-7"><?= h($patient['patient_no']) ?></span>
                         <?php if (!empty($patient['envelope_no'])): ?>
                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
-                                <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
+                                Env #<?= h($patient['envelope_no']) ?>
                             </span>
                         <?php endif; ?>
                         <?php if (!empty($patient['family_no'])): ?>
                             <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
-                                <i class="bi bi-house-door-fill me-1"></i>Fam #<?= h($patient['family_no']) ?>
+                                Fam #<?= h($patient['family_no']) ?>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -146,7 +146,6 @@ require dirname(__DIR__) . '/layout/header.php';
                         <?php endif; ?>
                     </div>
                     <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
-                        <i class="bi bi-geo-alt text-muted flex-shrink-0"></i>
                         <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
                     </div>
                 </div>
@@ -156,11 +155,11 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="d-flex align-items-center gap-2">
                 <?php if (!empty($activePrenatal)): ?>
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#pregnancyDetailsCollapse" aria-expanded="false" aria-controls="pregnancyDetailsCollapse">
-                        <i class="bi bi-heart me-1 text-pink"></i> Obstetric Details <i class="bi bi-chevron-down ms-1"></i>
+                        Obstetric Details <i class="bi bi-chevron-down ms-1"></i>
                     </button>
                 <?php endif; ?>
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#medicalBackgroundCollapse" aria-expanded="false" aria-controls="medicalBackgroundCollapse">
-                    <i class="bi bi-file-medical me-1"></i> Medical Background <i class="bi bi-chevron-down ms-1"></i>
+                    Medical Background <i class="bi bi-chevron-down ms-1"></i>
                 </button>
             </div>
         </div>
@@ -181,7 +180,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="pt-2 mt-2 border-top small">
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <span class="badge bg-light text-pink border border-pink-subtle px-2 py-1 fw-semibold">
-                        <i class="bi bi-heart-pulse-fill me-1 text-pink"></i> Active Pregnancy
+                        Active Pregnancy
                     </span>
                     <span class="fw-bold text-dark">G<?= h($activePrenatal['gravida']) ?>P<?= h($activePrenatal['para']) ?></span>
                     <span class="text-muted">&bull;</span>
@@ -217,7 +216,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="row g-3 small">
                 <!-- Chronic Illnesses -->
                 <div class="col-12 col-md-3">
-                    <div class="fw-bold text-dark mb-1"><i class="bi bi-clipboard-pulse me-1 text-primary"></i>Past Medical History:</div>
+                    <div class="fw-bold text-dark mb-1">Past Medical History:</div>
                     <?php if (!empty($pmh)): ?>
                         <ul class="mb-0 ps-3 text-muted">
                             <?php foreach ($pmh as $cond => $detail): 
@@ -233,7 +232,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                 <!-- Surgical History -->
                 <div class="col-12 col-md-3">
-                    <div class="fw-bold text-dark mb-1"><i class="bi bi-scissors me-1 text-primary"></i>Surgical History:</div>
+                    <div class="fw-bold text-dark mb-1">Surgical History:</div>
                     <?php if (!empty($surg)): ?>
                         <ul class="mb-0 ps-3 text-muted">
                             <?php foreach ($surg as $s): 
@@ -253,7 +252,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                 <!-- Family Hereditary History -->
                 <div class="col-12 col-md-3">
-                    <div class="fw-bold text-dark mb-1"><i class="bi bi-people me-1 text-primary"></i>Family History:</div>
+                    <div class="fw-bold text-dark mb-1">Family History:</div>
                     <?php if (!empty($fam)): ?>
                         <ul class="mb-0 ps-3 text-muted">
                             <?php foreach ($fam as $cond => $detail): 
@@ -269,7 +268,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                 <!-- Habits & Lifestyle -->
                 <div class="col-12 col-md-3">
-                    <div class="fw-bold text-dark mb-1"><i class="bi bi-activity me-1 text-primary"></i>Social Habits:</div>
+                    <div class="fw-bold text-dark mb-1">Social Habits:</div>
                     <div class="text-muted">
                         <div>Smoking: <strong class="text-dark"><?= h($medicalHistory['smoking_status'] ?? 'Never') ?></strong><?= !empty($medicalHistory['smoking_pack_years']) ? ' (' . h($medicalHistory['smoking_pack_years']) . ' pack-years)' : '' ?></div>
                         <div>Alcohol: <strong class="text-dark"><?= h($medicalHistory['alcohol_status'] ?? 'Never') ?></strong><?= !empty($medicalHistory['alcohol_bottles_per_day']) ? ' (' . h($medicalHistory['alcohol_bottles_per_day']) . ' btls/day)' : '' ?></div>
@@ -292,7 +291,7 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="card card-premium mb-4">
         <div class="card-header bg-white py-3 border-bottom">
             <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                <i class="bi bi-journal-medical text-primary me-2"></i>Clinical Consultation Ledger Entry
+                Clinical Consultation Ledger Entry
             </h3>
         </div>
         <div class="card-body p-4">
@@ -328,26 +327,23 @@ require dirname(__DIR__) . '/layout/header.php';
                         <?php endforeach; ?>
                     </datalist>
                     <div class="form-text text-muted" style="font-size: 0.75rem;">
-                        <i class="bi bi-info-circle me-1"></i>Enter the clinician or midwife who conducted the consultation.
+                        Enter the clinician or midwife who conducted the consultation.
                     </div>
                 </div>
 
                 <!-- Consultation Date & Time -->
                 <div class="col-12 col-md-6">
                     <label for="consulted_at" class="form-label fw-semibold text-secondary small">Consultation Date & Time <span class="text-danger">*</span></label>
-                    <div class="input-group has-validation">
-                        <span class="input-group-text bg-light text-muted"><i class="bi bi-clock"></i></span>
-                        <input type="datetime-local" 
-                               name="consulted_at" 
-                               id="consulted_at" 
-                               class="form-control bg-light border-start-0 <?= $hasFieldError('consulted_at') ? 'is-invalid' : '' ?>" 
-                               value="<?= date('Y-m-d\TH:i', strtotime($input['consulted_at'] ?? $consultation['consulted_at'] ?? 'now')) ?>" 
-                               max="<?= date('Y-m-d\TH:i') ?>"
-                               required>
-                        <?php if ($hasFieldError('consulted_at')): ?>
-                            <div class="invalid-feedback"><?= h($getFieldError('consulted_at')) ?></div>
-                        <?php endif; ?>
-                    </div>
+                    <input type="datetime-local" 
+                           name="consulted_at" 
+                           id="consulted_at" 
+                           class="form-control bg-light <?= $hasFieldError('consulted_at') ? 'is-invalid' : '' ?>" 
+                           value="<?= date('Y-m-d\TH:i', strtotime($input['consulted_at'] ?? $consultation['consulted_at'] ?? 'now')) ?>" 
+                           max="<?= date('Y-m-d\TH:i') ?>"
+                           required>
+                    <?php if ($hasFieldError('consulted_at')): ?>
+                        <div class="invalid-feedback d-block"><?= h($getFieldError('consulted_at')) ?></div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -405,14 +401,13 @@ require dirname(__DIR__) . '/layout/header.php';
 
             <!-- Section B: Clinical Consultation Ledger Documentation -->
             <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
-                <span class="fw-bold text-dark fs-6"><i class="bi bi-file-earmark-medical text-primary me-2"></i>Clinical Consultation Documentation</span>
+                <span class="fw-bold text-dark fs-6">Clinical Consultation Documentation</span>
             </div>
 
             <!-- History of Present Illness -->
             <div class="mb-4">
-                <label for="subjective" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-1">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1"><i class="bi bi-file-earmark-medical"></i></span>
-                    <span>History of Present Illness <span class="text-danger">*</span></span>
+                <label for="subjective" class="form-label fw-bold text-dark mb-1">
+                    History of Present Illness <span class="text-danger">*</span>
                 </label>
                 <div class="form-text text-muted small mb-2">Patient's chief complaint, reported symptoms, timeline, and history of present illness.</div>
                 <textarea name="subjective" 
@@ -429,16 +424,15 @@ require dirname(__DIR__) . '/layout/header.php';
             <!-- Physical Exam -->
             <div class="mb-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
-                    <label for="objective" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1"><i class="bi bi-clipboard2-pulse"></i></span>
-                        <span>Physical Exam <span class="text-danger">*</span></span>
+                    <label for="objective" class="form-label fw-bold text-dark mb-0">
+                        Physical Exam <span class="text-danger">*</span>
                     </label>
                 </div>
                 <div class="form-text text-muted small mb-2">Physical examination observations, organ findings, and linked diagnostic indicators.</div>
                 
                 <!-- Quick PE Snippets Ribbon -->
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
-                    <span class="text-secondary small me-1"><i class="bi bi-lightning-charge text-warning"></i> Quick PE:</span>
+                    <span class="text-secondary small me-1">Quick PE:</span>
                     <button type="button" class="btn btn-xs consultation-snippet-btn rounded-pill" data-target="objective" data-snippet="Alert, conscious, not in cardiorespiratory distress. Clear breath sounds bilaterally, no rales or wheezing. Normal rate, regular rhythm. Soft, non-tender abdomen. Warm extremities, good capillary refill (<2s).">
                         ✓ Normal PE
                     </button>
@@ -467,16 +461,15 @@ require dirname(__DIR__) . '/layout/header.php';
             <!-- Assessment / Impression -->
             <div class="mb-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
-                    <label for="assessment" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-diagram-3"></i></span>
-                        <span>Assessment / Impression <span class="text-danger">*</span></span>
+                    <label for="assessment" class="form-label fw-bold text-dark mb-0">
+                        Assessment / Impression <span class="text-danger">*</span>
                     </label>
                 </div>
                 <div class="form-text text-muted small mb-2">Primary clinical diagnosis, secondary impressions, or differential diagnosis.</div>
                 
                 <!-- Quick Diagnoses Chips Ribbon -->
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
-                    <span class="text-secondary small me-1"><i class="bi bi-tag text-primary"></i> Diagnoses:</span>
+                    <span class="text-secondary small me-1">Diagnoses:</span>
                     <button type="button" class="btn btn-xs consultation-snippet-btn rounded-pill" data-target="assessment" data-snippet="Acute Upper Respiratory Tract Infection (URTI)">
                         + URTI
                     </button>
@@ -517,16 +510,15 @@ require dirname(__DIR__) . '/layout/header.php';
             <!-- Treatment -->
             <div class="mb-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
-                    <label for="plan" class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-prescription2"></i></span>
-                        <span>Treatment <span class="text-danger">*</span></span>
+                    <label for="plan" class="form-label fw-bold text-dark mb-0">
+                        Treatment <span class="text-danger">*</span>
                     </label>
                 </div>
                 <div class="form-text text-muted small mb-2">Non-pharmacological advice, lab recommendations, patient instructions, and follow-up return schedule.</div>
                 
                 <!-- Quick Advice Snippets Ribbon -->
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
-                    <span class="text-secondary small me-1"><i class="bi bi-lightning-charge text-success"></i> Quick Advice:</span>
+                    <span class="text-secondary small me-1">Quick Advice:</span>
                     <button type="button" class="btn btn-xs consultation-snippet-btn rounded-pill" data-target="plan" data-snippet="Increase oral fluid intake. Adequate bed rest. Steam inhalation as needed. Paracetamol for fever or body malaise. Return if high fever persists >3 days or shortness of breath develops.">
                         + URTI Care & Hydration
                     </button>
@@ -557,13 +549,13 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
                         <label class="form-label fw-bold text-dark d-flex align-items-center gap-2 mb-0">
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-capsule"></i> Rx</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5">Rx</span>
                             <span>Prescribed Medications (Structured)</span>
                         </label>
                         <div class="form-text text-muted small">Add individual medications dispensed or prescribed for this consultation.</div>
                     </div>
                     <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddPrescription">
-                        <i class="bi bi-plus-circle me-1"></i> Add Medication
+                        + Add Medication
                     </button>
                 </div>
 
@@ -606,7 +598,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                 <!-- SIG Frequency Quick-Chips Strip -->
                 <div class="d-flex flex-wrap align-items-center gap-1 py-1.5 mb-2 bg-light rounded border px-2">
-                    <span class="text-secondary small me-1"><i class="bi bi-clock-history text-primary"></i> SIG Chips:</span>
+                    <span class="text-secondary small me-1">SIG Chips:</span>
                     <button type="button" class="btn btn-xs btn-outline-primary rounded-pill sig-chip" data-sig="OD (Once daily)" title="Once daily">OD</button>
                     <button type="button" class="btn btn-xs btn-outline-primary rounded-pill sig-chip" data-sig="BID (Twice daily)" title="Twice daily">BID</button>
                     <button type="button" class="btn btn-xs btn-outline-primary rounded-pill sig-chip" data-sig="TID (3x a day)" title="Three times a day">TID</button>
@@ -646,7 +638,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <tbody id="prescriptionsTableBody">
                             <tr id="noPrescriptionsRow">
                                 <td colspan="6" class="text-center text-muted py-3 small">
-                                    No structured medications added yet. Click <strong>Add Medication</strong> to attach prescriptions.
+                                    No structured medications added yet. Click <strong>+ Add Medication</strong> to attach prescriptions.
                                 </td>
                             </tr>
                         </tbody>
@@ -660,12 +652,10 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="card border rounded-3 bg-light p-3 mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center text-muted small gap-2">
             <div>
-                <i class="bi bi-person-fill text-secondary me-1"></i>
                 <strong>Originally Recorded By:</strong> <?= h($consultation['creator_name'] ?? 'Staff') ?>
                 <span class="text-secondary">(<?= date('M d, Y h:i A', strtotime($consultation['created_at'])) ?>)</span>
             </div>
             <div>
-                <i class="bi bi-pencil-square text-primary me-1"></i>
                 <strong>This Update Will Be Recorded By:</strong> <?= h($_SESSION['user_name'] ?? 'Current User') ?>
             </div>
         </div>
@@ -676,7 +666,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card-body p-3 px-md-4 py-md-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <span class="text-secondary-emphasis small d-none d-md-inline">
-                    <i class="bi bi-info-circle me-1 text-primary"></i> Fields marked with (<span class="text-danger">*</span>) are mandatory.
+                    Fields marked with (<span class="text-danger">*</span>) are mandatory.
                 </span>
                 <span id="consultationDirtyIndicator" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small d-none align-items-center gap-1">
                     <i class="bi bi-circle-fill text-warning" style="font-size: 0.5rem;"></i> Unsaved changes
@@ -687,7 +677,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     Cancel
                 </a>
                 <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" id="btnSubmitConsultation">
-                    <i class="bi bi-check-circle-fill me-1"></i> Update Consultation
+                    Update Consultation
                 </button>
             </div>
         </div>
@@ -710,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!selectedOption || selectedOption.getAttribute('data-empty') === '1' || !selectedOption.value) {
             previewContainer.innerHTML = `
                 <div class="text-muted small text-center py-1">
-                    <i class="bi bi-info-circle me-1"></i> No vital signs record linked to this consultation encounter.
+                    No vital signs record linked to this consultation encounter.
                 </div>
             `;
             return;
@@ -821,7 +811,7 @@ document.addEventListener('DOMContentLoaded', function() {
         previewContainer.innerHTML = `
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div class="d-flex flex-wrap align-items-center gap-2 small">
-                    <span class="fw-bold text-dark me-1"><i class="bi bi-speedometer2 text-primary me-1"></i> ${escapeHtml(date)}:</span>
+                    <span class="fw-bold text-dark me-1">${escapeHtml(date)}:</span>
                     <span class="badge ${bpBadgeClass} py-2 px-2 fw-normal">
                         BP: <strong>${escapeHtml(bp)} mmHg</strong>${bpStatusLabel}
                     </span>

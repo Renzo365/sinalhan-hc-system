@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         vitalsHtml = `
                             <div class="p-3 bg-light rounded-3 mb-3 border">
                                 <div class="d-flex flex-wrap align-items-center gap-2 small">
-                                    <span class="fw-bold text-dark me-1"><i class="bi bi-speedometer2 text-primary me-1"></i> Linked Vital Signs:</span>
+                                    <span class="fw-bold text-dark me-1">Linked Vital Signs:</span>
                                     ${data.bp_systolic && data.bp_diastolic ? `
                                         <span class="badge ${isHighBp ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
                                             BP: <strong class="${isHighBp ? 'text-danger' : 'text-dark'}">${escapeHtml(data.bp_systolic)}/${escapeHtml(data.bp_diastolic)} mmHg</strong>
@@ -495,11 +495,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="row g-2 pb-3 mb-3 border-bottom align-items-center">
                             <div class="col-12 col-md-6">
                                 <span class="text-muted small d-block">Consultation Date & Time:</span>
-                                <strong class="text-dark"><i class="bi bi-calendar-event me-1 text-primary"></i>${escapeHtml(data.formatted_date || data.consulted_at)}</strong>
+                                <strong class="text-dark">${escapeHtml(data.formatted_date || data.consulted_at)}</strong>
                             </div>
                             <div class="col-12 col-md-6">
                                 <span class="text-muted small d-block">Attending Clinician:</span>
-                                <strong class="text-dark"><i class="bi bi-person-badge me-1 text-primary"></i>${escapeHtml(data.clinician_name || 'Unassigned Clinician')}</strong>
+                                <strong class="text-dark">${escapeHtml(data.clinician_name || 'Unassigned Clinician')}</strong>
                             </div>
                         </div>
 
@@ -509,8 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="d-flex flex-column gap-3">
                             <!-- History of Present Illness -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1"><i class="bi bi-file-earmark-medical"></i></span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
                                     <span class="fw-bold text-dark small text-uppercase">History of Present Illness</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.subjective || 'No history of present illness recorded.')}</div>
@@ -518,8 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             <!-- Physical Examination -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1"><i class="bi bi-clipboard2-pulse"></i></span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
                                     <span class="fw-bold text-dark small text-uppercase">Physical Examination</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.objective || 'No physical examination findings recorded.')}</div>
@@ -527,8 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             <!-- Assessment / Impression -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1"><i class="bi bi-diagram-3"></i></span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
                                     <span class="fw-bold text-dark small text-uppercase">Assessment / Impression</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small fw-medium" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.assessment || 'No clinical diagnosis recorded.')}</div>
@@ -536,8 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             <!-- Treatment / Management -->
                             <div class="card border rounded-3 bg-white">
-                                <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center gap-2">
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-prescription2"></i></span>
+                                <div class="card-header bg-light py-2 px-3 border-bottom">
                                     <span class="fw-bold text-dark small text-uppercase">Treatment / Management</span>
                                 </div>
                                 <div class="card-body p-3 text-dark small" style="white-space: pre-line; line-height: 1.6;">${escapeHtml(data.plan || 'No treatment plan recorded.')}</div>
@@ -548,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="card border rounded-3 bg-white">
                                 <div class="card-header bg-light py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-capsule"></i> Rx</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5">Rx</span>
                                         <span class="fw-bold text-dark small text-uppercase">Prescribed Medications</span>
                                     </div>
                                     <span class="badge bg-success">${data.prescriptions.length} item${data.prescriptions.length > 1 ? 's' : ''}</span>
@@ -585,8 +581,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <!-- Bottom Audit Footer Strip -->
                         <div class="d-flex flex-wrap justify-content-between align-items-center text-muted small border-top pt-2 mt-3">
-                            <span><i class="bi bi-person-check me-1 text-secondary"></i><strong>Recorded by:</strong> ${escapeHtml(data.creator_name || 'System')}${data.creator_role ? ` (${escapeHtml(data.creator_role)})` : ''} on ${escapeHtml(data.formatted_created || data.created_at)}</span>
-                            ${data.formatted_updated ? `<span><i class="bi bi-pencil-square me-1 text-secondary"></i><strong>Last modified:</strong> ${escapeHtml(data.updater_name || 'Staff')}${data.updater_role ? ` (${escapeHtml(data.updater_role)})` : ''} on ${escapeHtml(data.formatted_updated)}</span>` : ''}
+                            <span><strong>Recorded by:</strong> ${escapeHtml(data.creator_name || 'System')}${data.creator_role ? ` (${escapeHtml(data.creator_role)})` : ''} on ${escapeHtml(data.formatted_created || data.created_at)}</span>
+                            ${data.formatted_updated ? `<span><strong>Last modified:</strong> ${escapeHtml(data.updater_name || 'Staff')}${data.updater_role ? ` (${escapeHtml(data.updater_role)})` : ''} on ${escapeHtml(data.formatted_updated)}</span>` : ''}
                         </div>
                     `;
 
@@ -595,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (footerRight) {
                         let footerBtns = '';
                         if (data.can_edit) {
-                            footerBtns += `<a href="<?= url('/consultations/') ?>${data.id}/edit" class="btn btn-primary btn-sm px-3 d-inline-flex align-items-center"><i class="bi bi-pencil-square me-1.5"></i> Edit Consultation</a>`;
+                            footerBtns += `<a href="<?= url('/consultations/') ?>${data.id}/edit" class="btn btn-primary btn-sm px-3">Edit Consultation</a>`;
                         }
                         footerBtns += `<button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>`;
                         footerRight.innerHTML = footerBtns;
@@ -1200,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (checkedBoxes.length === 0) {
                 badgeEl.className = 'badge bg-light text-muted border px-2 py-1 pe-system-badge';
-                badgeEl.innerHTML = '<i class="bi bi-dash-circle me-1"></i>Unspecified';
+                badgeEl.textContent = 'Unspecified';
                 return;
             }
 
@@ -1209,13 +1205,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (hasAcute) {
                 badgeEl.className = 'badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 pe-system-badge';
-                badgeEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i>Abnormal Findings';
+                badgeEl.textContent = 'Abnormal Findings';
             } else if (hasNormal) {
                 badgeEl.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-1 pe-system-badge';
-                badgeEl.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${conf.normalText}`;
+                badgeEl.textContent = conf.normalText;
             } else {
                 badgeEl.className = 'badge bg-info-subtle text-primary border border-info-subtle px-2 py-1 pe-system-badge';
-                badgeEl.innerHTML = '<i class="bi bi-info-circle me-1"></i>Recorded';
+                badgeEl.textContent = 'Recorded';
             }
         }
 

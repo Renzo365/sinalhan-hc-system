@@ -93,7 +93,7 @@ class WellbabyController extends Controller {
             $name = trim($p['last_name'] . ', ' . $p['first_name'] . ' ' . (!empty($p['middle_name']) ? mb_substr($p['middle_name'], 0, 1) . '.' : '') . ' ' . ($p['suffix'] ?? ''));
             $address = !empty(trim($p['address'] ?? '')) ? trim($p['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna';
             $months = (int)($p['age_months'] ?? 0);
-            $ageLabel = $months < 12 ? "{$months} mos" : floor($months / 12) . " yr " . ($months % 12) . " mos";
+            $ageLabel = !empty($p['dob']) ? calculate_pediatric_age($p['dob']) : ($months < 12 ? "{$months} mos" : floor($months / 12) . " yr " . ($months % 12) . " mos");
 
             return [
                 'id' => (int)$p['id'],
@@ -164,7 +164,8 @@ class WellbabyController extends Controller {
         $birthWeight = !empty($_POST['birth_weight_kg']) ? (float)$_POST['birth_weight_kg'] : 0;
         $birthLength = !empty($_POST['birth_length_cm']) ? (float)$_POST['birth_length_cm'] : 0;
         $screeningDone = !empty($_POST['newborn_screening_done']) ? 1 : 0;
-        $screeningDate = !empty($_POST['newborn_screening_date']) ? $_POST['newborn_screening_date'] : null;
+        $screeningDate = ($screeningDone && !empty($_POST['newborn_screening_date'])) ? $_POST['newborn_screening_date'] : null;
+        $screeningResult = ($screeningDone && !empty($_POST['newborn_screening_result'])) ? trim($_POST['newborn_screening_result']) : null;
         $motherPatientId = !empty($_POST['mother_patient_id']) ? (int)$_POST['mother_patient_id'] : null;
 
         $userId = $_SESSION['user_id'] ?? 1;
@@ -188,18 +189,25 @@ class WellbabyController extends Controller {
         $this->patientModel->updateParentalInfo($patientId, $fatherName, $fatherDob, $motherName, $motherDob, $userId);
 
         // 2. Create the Well-Baby record
+        $placeOfDelivery = $_POST['place_of_delivery'] ?? 'Lying-in';
+        $placeOfDeliveryOther = ($placeOfDelivery === 'Others') ? trim($_POST['place_of_delivery_other'] ?? '') : null;
+        $attendedBy = trim($_POST['attended_by'] ?? 'Midwife');
+        $attendedByOther = ($attendedBy === 'Others') ? trim($_POST['attended_by_other'] ?? '') : null;
+
         $data = [
             'patient_id' => $patientId,
             'mother_patient_id' => $motherPatientId,
             'birth_time' => !empty($_POST['birth_time']) ? $_POST['birth_time'] : null,
             'birth_weight_kg' => $birthWeight,
             'birth_length_cm' => $birthLength,
-            'place_of_delivery' => $_POST['place_of_delivery'] ?? 'Lying-in',
+            'place_of_delivery' => $placeOfDelivery,
+            'place_of_delivery_other' => $placeOfDeliveryOther,
             'delivery_type' => $_POST['delivery_type'] ?? 'Normal Spontaneous Delivery (NSD)',
-            'attended_by' => trim($_POST['attended_by'] ?? 'Midwife'),
+            'attended_by' => $attendedBy,
+            'attended_by_other' => $attendedByOther,
             'newborn_screening_done' => $screeningDone,
             'newborn_screening_date' => $screeningDate,
-            'newborn_screening_result' => trim($_POST['newborn_screening_result'] ?? ''),
+            'newborn_screening_result' => $screeningResult,
             'mother_cpab_tt' => trim($_POST['mother_cpab_tt'] ?? ''),
             'feeding_method' => $_POST['feeding_method'] ?? 'LAM / Exclusive Breastfeeding',
             'created_by' => $userId
@@ -317,7 +325,8 @@ class WellbabyController extends Controller {
         $birthWeight = !empty($_POST['birth_weight_kg']) ? (float)$_POST['birth_weight_kg'] : 0;
         $birthLength = !empty($_POST['birth_length_cm']) ? (float)$_POST['birth_length_cm'] : 0;
         $screeningDone = !empty($_POST['newborn_screening_done']) ? 1 : 0;
-        $screeningDate = !empty($_POST['newborn_screening_date']) ? $_POST['newborn_screening_date'] : null;
+        $screeningDate = ($screeningDone && !empty($_POST['newborn_screening_date'])) ? $_POST['newborn_screening_date'] : null;
+        $screeningResult = ($screeningDone && !empty($_POST['newborn_screening_result'])) ? trim($_POST['newborn_screening_result']) : null;
         $motherPatientId = !empty($_POST['mother_patient_id']) ? (int)$_POST['mother_patient_id'] : null;
 
         $userId = $_SESSION['user_id'] ?? 1;
@@ -340,20 +349,28 @@ class WellbabyController extends Controller {
 
         $this->patientModel->updateParentalInfo($patientId, $fatherName, $fatherDob, $motherName, $motherDob, $userId);
 
+        $existingWb = $this->wbModel->findByPatientId($patientId);
+        $placeOfDelivery = $_POST['place_of_delivery'] ?? ($existingWb['place_of_delivery'] ?? 'Lying-in');
+        $placeOfDeliveryOther = ($placeOfDelivery === 'Others') ? trim($_POST['place_of_delivery_other'] ?? '') : null;
+        $attendedBy = trim($_POST['attended_by'] ?? ($existingWb['attended_by'] ?? 'Midwife'));
+        $attendedByOther = ($attendedBy === 'Others') ? trim($_POST['attended_by_other'] ?? '') : null;
+
         $data = [
             'patient_id' => $patientId,
             'mother_patient_id' => $motherPatientId,
             'birth_time' => !empty($_POST['birth_time']) ? $_POST['birth_time'] : null,
             'birth_weight_kg' => $birthWeight,
             'birth_length_cm' => $birthLength,
-            'place_of_delivery' => $_POST['place_of_delivery'] ?? 'Lying-in',
-            'delivery_type' => $_POST['delivery_type'] ?? 'Normal Spontaneous Delivery (NSD)',
-            'attended_by' => trim($_POST['attended_by'] ?? 'Midwife'),
+            'place_of_delivery' => $placeOfDelivery,
+            'place_of_delivery_other' => $placeOfDeliveryOther,
+            'delivery_type' => $_POST['delivery_type'] ?? ($existingWb['delivery_type'] ?? 'Normal Spontaneous Delivery (NSD)'),
+            'attended_by' => $attendedBy,
+            'attended_by_other' => $attendedByOther,
             'newborn_screening_done' => $screeningDone,
             'newborn_screening_date' => $screeningDate,
-            'newborn_screening_result' => trim($_POST['newborn_screening_result'] ?? ''),
+            'newborn_screening_result' => $screeningResult,
             'mother_cpab_tt' => trim($_POST['mother_cpab_tt'] ?? ''),
-            'feeding_method' => $_POST['feeding_method'] ?? 'LAM / Exclusive Breastfeeding',
+            'feeding_method' => $_POST['feeding_method'] ?? ($existingWb['feeding_method'] ?? 'LAM / Exclusive Breastfeeding'),
             'created_by' => $userId
         ];
 
@@ -552,6 +569,11 @@ class WellbabyController extends Controller {
                 $doseNo = isset($parts[1]) ? (int)$parts[1] : 1;
 
                 if (!empty($dateVal)) {
+                    $isSupplement = str_contains($vacKey, 'Vitamin_A') || str_contains($vacKey, 'Deworming');
+                    $remarks = $isSupplement 
+                        ? 'National Micronutrient Supplementation Program' 
+                        : 'EPI Routine Infant Program';
+
                     $this->immModel->recordDose([
                         'patient_id' => $patientId,
                         'vaccine_name' => $vacName,
@@ -559,7 +581,7 @@ class WellbabyController extends Controller {
                         'administered_date' => $dateVal,
                         'source' => 'Health Center',
                         'documentation_status' => 'Administered',
-                        'remarks' => 'EPI Routine Infant Program',
+                        'remarks' => $remarks,
                         'administered_by' => $userId
                     ]);
                     $savedCount++;
@@ -584,9 +606,9 @@ class WellbabyController extends Controller {
             }
             $actionDesc = implode(' and ', $msgParts);
             AuditLog::log('EPI_SCHEDULE_SAVED', 'Immunization', "Successfully {$actionDesc} for Child {$patient['patient_no']}");
-            $_SESSION['success_message'] = "Successfully {$actionDesc} in the EPI immunization schedule!";
+            $_SESSION['success_message'] = "Successfully {$actionDesc} in the immunization & supplementation schedule!";
         } else {
-            $_SESSION['info_message'] = 'No changes were detected in the EPI vaccination schedule.';
+            $_SESSION['info_message'] = 'No changes were detected in the immunization & supplementation schedule.';
         }
 
         $this->redirect("/well-baby/{$patientId}");

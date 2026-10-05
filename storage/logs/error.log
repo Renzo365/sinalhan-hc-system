@@ -63,3 +63,35 @@ Stack Trace:
 #6 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
 #7 {main}
 --------------------------------------------------------------------------------
+[2026-10-04 14:20:49] [ErrorException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/well-baby
+Exception: ErrorException: Undefined array key "prominent" in C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\index.php:216
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\index.php(216): App\Core\ErrorHandler::handleError(2, 'Undefined array...', 'C:\\xampp\\htdocs...', 216)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\WellbabyController.php(39): App\Core\Controller->view('wellbaby/index', Array)
+#3 [internal function]: App\Controllers\WellbabyController->index()
+#4 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#5 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#6 {main}
+--------------------------------------------------------------------------------
+[2026-10-04 14:21:44] [ErrorException] User: admin | IP: ::1 | URI: /sinalhan-hc-system/public/well-baby/336
+Exception: ErrorException: Undefined array key "prominent" in C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\show.php:110
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Views\wellbaby\show.php(110): App\Core\ErrorHandler::handleError(2, 'Undefined array...', 'C:\\xampp\\htdocs...', 110)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Controller.php(17): require('C:\\xampp\\htdocs...')
+#2 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\WellbabyController.php(274): App\Core\Controller->view('wellbaby/show', Array)
+#3 [internal function]: App\Controllers\WellbabyController->show('336')
+#4 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#5 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhan-hc-sy...', 'GET')
+#6 {main}
+--------------------------------------------------------------------------------
+[2026-10-04 14:55:23] [PDOException] User: admin | IP: ::1 | URI: /sinalhealth/public/well-baby/register
+Exception: PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php:695
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\app\Models\Patient.php(695): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\WellbabyController.php(206): App\Models\Patient->findMatchingMother('Alyssa Enriquez', '1982-05-20')
+#2 [internal function]: App\Controllers\WellbabyController->store()
+#3 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#4 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'POST')
+#5 {main}
+--------------------------------------------------------------------------------

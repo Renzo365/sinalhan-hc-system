@@ -396,7 +396,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                 <div class="list-group-item p-2.5 d-flex align-items-center justify-content-between gap-2">
                                     <div class="min-w-0">
                                         <div>
-                                            <a href="<?= url('/maternal/' . $del['id']) ?>" class="link-primary-dark fw-bold text-decoration-none small text-truncate d-inline-block" style="max-width: 220px;" title="View Prenatal Episode">
+                                            <a href="<?= url('/prenatal/' . $del['patient_id']) ?>" class="link-primary-dark fw-bold text-decoration-none small text-truncate d-inline-block" style="max-width: 220px;" title="View Prenatal Episode">
                                                 <?= h($del['last_name']) ?>, <?= h($del['first_name']) ?>
                                             </a>
                                         </div>

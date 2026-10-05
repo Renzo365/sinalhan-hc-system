@@ -18,6 +18,8 @@ $initialMotherName = $preselectedPatient['mother_name'] ?? '';
 $initialMotherDob = $preselectedPatient['mother_dob'] ?? '';
 $initialFatherName = $preselectedPatient['father_name'] ?? '';
 $initialFatherDob = $preselectedPatient['father_dob'] ?? '';
+$initialMotherAge = !empty($initialMotherDob) ? calculate_age($initialMotherDob) : '';
+$initialFatherAge = !empty($initialFatherDob) ? calculate_age($initialFatherDob) : '';
 $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
 ?>
 
@@ -181,17 +183,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
                                             <span class="fw-bold text-dark" id="cardAge">
-                                                <?php 
-                                                    if (!empty($preselectedPatient['dob'])) {
-                                                        $dobTime = new \DateTime($preselectedPatient['dob']);
-                                                        $nowTime = new \DateTime();
-                                                        $diff = $nowTime->diff($dobTime);
-                                                        $m = ($diff->y * 12) + $diff->m;
-                                                        echo $m < 12 ? "{$m} mos old" : "{$diff->y} yr " . ($diff->m ? "{$diff->m} mos" : "");
-                                                    } else {
-                                                        echo '--';
-                                                    }
-                                                ?>
+                                                <?= !empty($preselectedPatient['dob']) ? calculate_pediatric_age($preselectedPatient['dob']) : '--' ?>
                                             </span>
                                         </div>
                                     </div>
@@ -215,94 +207,11 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                     </div>
                 </div>
 
-                <!-- Step 2: Parental Information -->
-                <div id="parentalInfoSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
-                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">2</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Parental Information</h5>
-                    </div>
-                    <div class="card-body p-4 bg-white">
-                        <input type="hidden" name="mother_patient_id" id="mother_patient_id" value="">
-
-                        <!-- Parent Form Fields -->
-                        <div class="row g-3">
-                            <!-- Mother's Name -->
-                            <div class="col-12 col-md-6">
-                                <label for="mother_name" class="form-label fw-semibold text-secondary small">
-                                    Mother's Full Name
-                                </label>
-                                <input type="text" 
-                                       name="mother_name" 
-                                       id="mother_name" 
-                                       class="form-control" 
-                                       placeholder="e.g. Maria Santos Dela Cruz" 
-                                       value="<?= h($initialMotherName) ?>"
-                                       autocomplete="new-password"
-                                       data-lpignore="true">
-                            </div>
-
-                            <!-- Mother's DOB -->
-                            <div class="col-12 col-md-6">
-                                <label for="mother_dob" class="form-label fw-semibold text-secondary small">
-                                    Mother's Date of Birth
-                                </label>
-                                <input type="date" 
-                                       name="mother_dob" 
-                                       id="mother_dob" 
-                                       class="form-control" 
-                                       max="<?= date('Y-m-d') ?>" 
-                                       value="<?= h($initialMotherDob) ?>">
-                            </div>
-
-                            <!-- Father's Name -->
-                            <div class="col-12 col-md-6">
-                                <label for="father_name" class="form-label fw-semibold text-secondary small">
-                                    Father's Full Name
-                                </label>
-                                <input type="text" 
-                                       name="father_name" 
-                                       id="father_name" 
-                                       class="form-control" 
-                                       placeholder="e.g. Juan Bautista Dela Cruz" 
-                                       value="<?= h($initialFatherName) ?>"
-                                       autocomplete="new-password"
-                                       data-lpignore="true">
-                            </div>
-
-                            <!-- Father's DOB -->
-                            <div class="col-12 col-md-6">
-                                <label for="father_dob" class="form-label fw-semibold text-secondary small">
-                                    Father's Date of Birth
-                                </label>
-                                <input type="date" 
-                                       name="father_dob" 
-                                       id="father_dob" 
-                                       class="form-control" 
-                                       max="<?= date('Y-m-d') ?>" 
-                                       value="<?= h($initialFatherDob) ?>">
-                            </div>
-
-                            <!-- Maternal CPAB TT Status -->
-                            <div class="col-12">
-                                <label for="mother_cpab_tt" class="form-label fw-semibold text-secondary small">
-                                    Maternal CPAB TT Status (Child Protected at Birth)
-                                </label>
-                                <input type="text" 
-                                       name="mother_cpab_tt" 
-                                       id="mother_cpab_tt" 
-                                       class="form-control" 
-                                       placeholder="e.g. Protected at Birth (TT2 given in 2025)" 
-                                       value="Protected at Birth">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Birth Circumstances & Newborn Screening -->
+                <!-- Step 2: Child Information & Birth History -->
                 <div id="birthCircumstancesSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">3</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Birth Circumstances &amp; Newborn Screening</h5>
+                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">2</span>
+                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Child Information &amp; Birth History</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
                         <div class="row g-3">
@@ -354,63 +263,76 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                             <!-- Place of Delivery -->
                             <div class="col-12 col-sm-6 col-md-4">
                                 <label for="place_of_delivery" class="form-label fw-semibold text-secondary small">
-                                    Place of Delivery
+                                    Place of Delivery <span class="text-danger">*</span>
                                 </label>
-                                <select name="place_of_delivery" id="place_of_delivery" class="form-select">
-                                    <option value="Lying-in">Lying-in Clinic</option>
+                                <select name="place_of_delivery" id="place_of_delivery" class="form-select" required>
                                     <option value="Hospital">Hospital</option>
-                                    <option value="Barangay Health Station (BHS)">Barangay Health Station (BHS)</option>
+                                    <option value="Lying-in" selected>Lying-in</option>
                                     <option value="Home">Home</option>
-                                    <option value="Other">Other</option>
+                                    <option value="Others">Others</option>
                                 </select>
                             </div>
 
-                            <!-- Delivery Type -->
+                            <!-- Place of Delivery Other (Dynamic) -->
+                            <div class="col-12 col-sm-6 col-md-4 d-none" id="place_of_delivery_other_wrapper">
+                                <label for="place_of_delivery_other" class="form-label fw-semibold text-secondary small">
+                                    Specify Place of Delivery <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       name="place_of_delivery_other" 
+                                       id="place_of_delivery_other" 
+                                       class="form-control" 
+                                       placeholder="e.g. In Transit, Clinic Name">
+                            </div>
+
+                            <!-- Type of Delivery -->
                             <div class="col-12 col-sm-6 col-md-4">
                                 <label for="delivery_type" class="form-label fw-semibold text-secondary small">
-                                    Delivery Type
+                                    Type of Delivery
                                 </label>
                                 <select name="delivery_type" id="delivery_type" class="form-select">
-                                    <option value="Normal Spontaneous Delivery (NSD)">Normal Spontaneous Delivery (NSD)</option>
-                                    <option value="Cesarean Section (CS)">Cesarean Section (CS)</option>
-                                    <option value="Breech Extraction">Breech Extraction</option>
-                                    <option value="Vacuum Assisted">Vacuum Assisted</option>
-                                    <option value="Other">Other</option>
+                                    <option value="Normal Spontaneous Delivery (NSD)" selected>Normal Spontaneous Delivery (NSD)</option>
+                                    <option value="Caesarean Section (CS)">Caesarean Section (CS)</option>
+                                    <option value="Others">Others</option>
                                 </select>
                             </div>
 
                             <!-- Attended By -->
                             <div class="col-12 col-sm-6 col-md-4">
                                 <label for="attended_by" class="form-label fw-semibold text-secondary small">
-                                    Attended By
+                                    Attended By <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" 
-                                       name="attended_by" 
-                                       id="attended_by" 
-                                       class="form-control" 
-                                       placeholder="e.g. Midwife Ramos, Dr. Santos" 
-                                       value="Midwife">
+                                <select name="attended_by" id="attended_by" class="form-select" required>
+                                    <option value="Doctor">Doctor</option>
+                                    <option value="Nurse">Nurse</option>
+                                    <option value="Midwife" selected>Midwife</option>
+                                    <option value="Hilot/TBA">Hilot/TBA</option>
+                                    <option value="Others">Others</option>
+                                </select>
                             </div>
 
-                            <!-- Feeding Method -->
-                            <div class="col-12">
-                                <label for="feeding_method" class="form-label fw-semibold text-secondary small">
-                                    Initial Infant Feeding Practice
+                            <!-- Attended By Other (Dynamic) -->
+                            <div class="col-12 col-sm-6 col-md-4 d-none" id="attended_by_other_wrapper">
+                                <label for="attended_by_other" class="form-label fw-semibold text-secondary small">
+                                    Specify Attendant <span class="text-danger">*</span>
                                 </label>
-                                <select name="feeding_method" id="feeding_method" class="form-select">
-                                    <option value="LAM (Exclusive Breastfeeding)">LAM (Exclusive Breastfeeding)</option>
-                                    <option value="Bottle Feeding">Bottle Feeding</option>
-                                    <option value="Mixed Feeding">Mixed Feeding</option>
-                                </select>
+                                <input type="text" 
+                                       name="attended_by_other" 
+                                       id="attended_by_other" 
+                                       class="form-control" 
+                                       placeholder="Specify attendant title/name">
                             </div>
 
                             <!-- Newborn Screening (NBS) Box -->
                             <div class="col-12 mt-4">
                                 <div class="p-3 bg-light rounded-3 border">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <h6 class="fw-bold text-dark mb-0">
-                                            Newborn Screening (NBS) Certificate
-                                        </h6>
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-0">
+                                                Newborn Screening (NBS)
+                                            </h6>
+                                            <span class="text-muted small">Record status and certification if performed</span>
+                                        </div>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" name="newborn_screening_done" value="1" id="newborn_screening_done">
                                             <label class="form-check-label fw-semibold text-success small" for="newborn_screening_done">
@@ -428,7 +350,8 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                                    name="newborn_screening_date" 
                                                    id="newborn_screening_date" 
                                                    class="form-control" 
-                                                   max="<?= date('Y-m-d') ?>">
+                                                   max="<?= date('Y-m-d') ?>"
+                                                   disabled>
                                         </div>
                                         <div class="col-12 col-md-6">
                                             <label for="newborn_screening_result" class="form-label fw-semibold text-secondary small">
@@ -439,15 +362,173 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                                    id="newborn_screening_result" 
                                                    class="form-control" 
                                                    placeholder="e.g. Normal (Cert # NBS-2026-09)" 
-                                                   value="Normal">
+                                                   value="Normal"
+                                                   disabled>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Footer Action Bar inside Card -->
+                <!-- Step 3: Parental Information -->
+                <div id="parentalInfoSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
+                    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
+                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">3</span>
+                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Parental Information</h5>
+                    </div>
+                    <div class="card-body p-4 bg-white">
+                        <!-- Smart Mother Linker (Optional Central Registry Integration) -->
+                        <div class="mb-4 p-3 bg-light rounded-3 border">
+                            <label for="motherSearchInput" class="form-label fw-semibold text-secondary small d-flex justify-content-between align-items-center mb-2">
+                                <span><i class="bi bi-search-heart text-success me-1"></i> Search Registered Mother in Directory (Optional)</span>
+                                <span class="badge bg-secondary-subtle text-secondary" id="linkedMotherBadge">Not Linked</span>
+                            </label>
+
+                            <input type="hidden" name="mother_patient_id" id="mother_patient_id" value="">
+
+                            <!-- Search Input for Mother -->
+                            <div class="input-group mb-2" id="motherSearchWrapper">
+                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-search"></i></span>
+                                <input type="text" 
+                                       id="motherSearchInput" 
+                                       class="form-control bg-white" 
+                                       placeholder="Type mother's name or patient ID to link and auto-fill..." 
+                                       autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherSearch">
+                                    <i class="bi bi-x-circle me-1"></i> Clear
+                                </button>
+                            </div>
+
+                            <!-- Mother Live Search Results Dropdown -->
+                            <div id="motherSearchResults" class="list-group shadow-sm rounded-3 border mb-2 d-none" style="max-height: 220px; overflow-y: auto;"></div>
+
+                            <!-- Mother Selected Card -->
+                            <div id="motherSelectedCard" class="d-none p-2 px-3 bg-white rounded border border-success-subtle d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-check-fill text-success fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold text-dark small" id="linkedMotherName">--</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;" id="linkedMotherDetails">--</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="btnRemoveMotherLink">
+                                    <i class="bi bi-x-circle me-1"></i> Unlink Mother
+                                </button>
+                            </div>
+
+                            <div class="form-text text-muted small mt-1">
+                                <i class="bi bi-info-circle me-1"></i> If the mother is registered in the health center, selecting her will automatically fill her details and link her profile. If not registered, simply leave this unlinked and type her information below.
+                            </div>
+                        </div>
+
+                        <!-- Parent Form Fields -->
+                        <div class="row g-3">
+                            <!-- Mother's Name -->
+                            <div class="col-12 col-md-5">
+                                <label for="mother_name" class="form-label fw-semibold text-secondary small">
+                                    Mother's Full Name
+                                </label>
+                                <input type="text" 
+                                       name="mother_name" 
+                                       id="mother_name" 
+                                       class="form-control" 
+                                       placeholder="e.g. Maria Santos Dela Cruz" 
+                                       value="<?= h($initialMotherName) ?>"
+                                       autocomplete="new-password"
+                                       data-lpignore="true">
+                            </div>
+
+                            <!-- Mother's DOB -->
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <label for="mother_dob" class="form-label fw-semibold text-secondary small">
+                                    Mother's Date of Birth
+                                </label>
+                                <input type="date" 
+                                       name="mother_dob" 
+                                       id="mother_dob" 
+                                       class="form-control" 
+                                       max="<?= date('Y-m-d') ?>" 
+                                       value="<?= h($initialMotherDob) ?>">
+                            </div>
+
+                            <!-- Mother's Age (Auto-calculated) -->
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label for="mother_age" class="form-label fw-semibold text-secondary small">
+                                    Mother's Age
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" 
+                                           id="mother_age" 
+                                           class="form-control bg-light" 
+                                           placeholder="Auto" 
+                                           value="<?= h($initialMotherAge) ?>"
+                                           readonly>
+                                    <span class="input-group-text bg-light text-muted small">yrs</span>
+                                </div>
+                            </div>
+
+                            <!-- Father's Name -->
+                            <div class="col-12 col-md-5">
+                                <label for="father_name" class="form-label fw-semibold text-secondary small">
+                                    Father's Full Name
+                                </label>
+                                <input type="text" 
+                                       name="father_name" 
+                                       id="father_name" 
+                                       class="form-control" 
+                                       placeholder="e.g. Juan Bautista Dela Cruz" 
+                                       value="<?= h($initialFatherName) ?>"
+                                       autocomplete="new-password"
+                                       data-lpignore="true">
+                            </div>
+
+                            <!-- Father's DOB -->
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <label for="father_dob" class="form-label fw-semibold text-secondary small">
+                                    Father's Date of Birth
+                                </label>
+                                <input type="date" 
+                                       name="father_dob" 
+                                       id="father_dob" 
+                                       class="form-control" 
+                                       max="<?= date('Y-m-d') ?>" 
+                                       value="<?= h($initialFatherDob) ?>">
+                            </div>
+
+                            <!-- Father's Age (Auto-calculated) -->
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label for="father_age" class="form-label fw-semibold text-secondary small">
+                                    Father's Age
+                                </label>
+                                <div class="input-group">
+                                    <input type="number" 
+                                           id="father_age" 
+                                           class="form-control bg-light" 
+                                           placeholder="Auto" 
+                                           value="<?= h($initialFatherAge) ?>"
+                                           readonly>
+                                    <span class="input-group-text bg-light text-muted small">yrs</span>
+                                </div>
+                            </div>
+
+                            <!-- Maternal CPAB TT Status -->
+                            <div class="col-12">
+                                <label for="mother_cpab_tt" class="form-label fw-semibold text-secondary small">
+                                    CPAB (TT given to Mother)
+                                </label>
+                                <input type="text" 
+                                       name="mother_cpab_tt" 
+                                       id="mother_cpab_tt" 
+                                       class="form-control" 
+                                       placeholder="e.g. Protected at Birth (TT2 given in 2025)" 
+                                       value="Protected at Birth">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Action Bar inside Step 3 Card -->
                     <div class="card-footer bg-light py-3 px-4 border-0 d-flex justify-content-between align-items-center" style="pointer-events: auto !important;">
                         <a href="<?= url('/well-baby') ?>" class="btn btn-outline-secondary">
                             Cancel
@@ -622,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         document.getElementById('cardDob').textContent = child.dob_formatted;
-        document.getElementById('cardAge').textContent = child.age_label + ' old';
+        document.getElementById('cardAge').textContent = child.age_label;
         document.getElementById('cardAddress').textContent = child.address;
 
         // Fill existing parental text if present
@@ -630,6 +711,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (motherDobInput) motherDobInput.value = child.mother_dob || '';
         if (fatherNameInput) fatherNameInput.value = child.father_name || '';
         if (fatherDobInput) fatherDobInput.value = child.father_dob || '';
+        unlinkMother();
+        updateParentAges();
 
         // Hide search, show card
         patientSearchSection.classList.add('d-none');
@@ -641,6 +724,217 @@ document.addEventListener('DOMContentLoaded', function() {
         parentalInfoSection.classList.remove('opacity-50', 'pointer-events-none');
         birthCircumstancesSection.classList.remove('opacity-50', 'pointer-events-none');
         setClinicalInputsDisabled(false);
+    }
+
+    // --- Smart Mother Linker Handlers ---
+    const motherSearchInput = document.getElementById('motherSearchInput');
+    const motherSearchWrapper = document.getElementById('motherSearchWrapper');
+    const motherSearchResults = document.getElementById('motherSearchResults');
+    const motherPatientIdInput = document.getElementById('mother_patient_id');
+    const linkedMotherBadge = document.getElementById('linkedMotherBadge');
+    const motherSelectedCard = document.getElementById('motherSelectedCard');
+    const linkedMotherName = document.getElementById('linkedMotherName');
+    const linkedMotherDetails = document.getElementById('linkedMotherDetails');
+    const btnClearMotherSearch = document.getElementById('btnClearMotherSearch');
+    const btnRemoveMotherLink = document.getElementById('btnRemoveMotherLink');
+
+    let motherSearchTimer = null;
+
+    if (motherSearchInput) {
+        motherSearchInput.addEventListener('input', function() {
+            clearTimeout(motherSearchTimer);
+            const query = this.value.trim();
+
+            if (btnClearMotherSearch) {
+                btnClearMotherSearch.classList.toggle('d-none', query.length === 0);
+            }
+
+            if (query.length < 2) {
+                motherSearchResults.classList.add('d-none');
+                motherSearchResults.innerHTML = '';
+                return;
+            }
+
+            motherSearchTimer = setTimeout(() => {
+                fetch('<?= url('/api/patients/search/female?q=') ?>' + encodeURIComponent(query))
+                    .then(res => res.json())
+                    .then(data => {
+                        motherSearchResults.innerHTML = '';
+                        if (!data.results || data.results.length === 0) {
+                            motherSearchResults.innerHTML = '<div class="p-3 text-muted text-center small"><i class="bi bi-info-circle me-1"></i> No registered female patients found matching "' + escapeHtml(query) + '"</div>';
+                            motherSearchResults.classList.remove('d-none');
+                            return;
+                        }
+
+                        data.results.forEach(mom => {
+                            const item = document.createElement('a');
+                            item.href = '#';
+                            item.className = 'list-group-item list-group-item-action p-2 px-3 d-flex align-items-center justify-content-between small';
+                            item.innerHTML = `
+                                <div>
+                                    <span class="fw-bold text-dark">${escapeHtml(mom.name)}</span>
+                                    <span class="badge bg-light text-secondary border font-monospace ms-1">${escapeHtml(mom.patient_no)}</span>
+                                    <div class="text-muted" style="font-size: 0.72rem;">
+                                        ${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'} • ${mom.age ? mom.age + ' yrs' : ''} • Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
+                                    </div>
+                                </div>
+                                <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7 rounded-pill">Select &amp; Link</span>
+                            `;
+                            item.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                linkMother(mom);
+                            });
+                            motherSearchResults.appendChild(item);
+                        });
+
+                        motherSearchResults.classList.remove('d-none');
+                    })
+                    .catch(() => {
+                        motherSearchResults.classList.add('d-none');
+                    });
+            }, 300);
+        });
+    }
+
+    if (btnClearMotherSearch) {
+        btnClearMotherSearch.addEventListener('click', function() {
+            if (motherSearchInput) {
+                motherSearchInput.value = '';
+                motherSearchInput.focus();
+            }
+            btnClearMotherSearch.classList.add('d-none');
+            motherSearchResults.classList.add('d-none');
+            motherSearchResults.innerHTML = '';
+        });
+    }
+
+    function linkMother(mom) {
+        if (motherPatientIdInput) motherPatientIdInput.value = mom.id;
+        if (linkedMotherName) linkedMotherName.textContent = mom.name + ' (' + mom.patient_no + ')';
+        if (linkedMotherDetails) linkedMotherDetails.textContent = (mom.dob_formatted || '') + ' • ' + (mom.age ? mom.age + ' years old' : '') + ' • ' + (mom.address || '');
+
+        if (motherSelectedCard) motherSelectedCard.classList.remove('d-none');
+        if (motherSearchWrapper) motherSearchWrapper.classList.add('d-none');
+        if (motherSearchResults) motherSearchResults.classList.add('d-none');
+        if (linkedMotherBadge) {
+            linkedMotherBadge.className = 'badge bg-success-subtle text-success border border-success-subtle';
+            linkedMotherBadge.textContent = 'Linked: Patient #' + mom.patient_no;
+        }
+
+        // Auto-fill mother's text fields directly
+        if (mom.first_name || mom.last_name) {
+            const formattedName = (mom.first_name + ' ' + (mom.middle_name ? mom.middle_name + ' ' : '') + mom.last_name).trim();
+            if (motherNameInput) motherNameInput.value = formattedName;
+        }
+        if (mom.dob && motherDobInput) {
+            motherDobInput.value = mom.dob;
+        }
+        updateParentAges();
+    }
+
+    function unlinkMother() {
+        if (motherPatientIdInput) motherPatientIdInput.value = '';
+        if (motherSelectedCard) motherSelectedCard.classList.add('d-none');
+        if (motherSearchWrapper) motherSearchWrapper.classList.remove('d-none');
+        if (motherSearchInput) motherSearchInput.value = '';
+        if (btnClearMotherSearch) btnClearMotherSearch.classList.add('d-none');
+        if (motherSearchResults) {
+            motherSearchResults.classList.add('d-none');
+            motherSearchResults.innerHTML = '';
+        }
+        if (linkedMotherBadge) {
+            linkedMotherBadge.className = 'badge bg-secondary-subtle text-secondary';
+            linkedMotherBadge.textContent = 'Not Linked';
+        }
+    }
+
+    if (btnRemoveMotherLink) {
+        btnRemoveMotherLink.addEventListener('click', unlinkMother);
+    }
+
+    function calculateAgeYears(dobStr) {
+        if (!dobStr) return '';
+        const parts = dobStr.split('-');
+        if (parts.length !== 3) return '';
+        const birthYear = parseInt(parts[0], 10);
+        const birthMonth = parseInt(parts[1], 10) - 1;
+        const birthDay = parseInt(parts[2], 10);
+        if (isNaN(birthYear) || isNaN(birthMonth) || isNaN(birthDay)) return '';
+
+        const today = new Date();
+        let age = today.getFullYear() - birthYear;
+        const m = today.getMonth() - birthMonth;
+        if (m < 0 || (m === 0 && today.getDate() < birthDay)) {
+            age--;
+        }
+        return age >= 0 ? age : 0;
+    }
+
+    function updateParentAges() {
+        const motherAgeEl = document.getElementById('mother_age');
+        const fatherAgeEl = document.getElementById('father_age');
+        if (motherAgeEl && motherDobInput) {
+            motherAgeEl.value = calculateAgeYears(motherDobInput.value);
+        }
+        if (fatherAgeEl && fatherDobInput) {
+            fatherAgeEl.value = calculateAgeYears(fatherDobInput.value);
+        }
+    }
+
+    function updateDynamicDropdowns() {
+        const placeSelect = document.getElementById('place_of_delivery');
+        const placeOtherWrapper = document.getElementById('place_of_delivery_other_wrapper');
+        const placeOtherInput = document.getElementById('place_of_delivery_other');
+        if (placeSelect && placeOtherWrapper && placeOtherInput) {
+            if (placeSelect.value === 'Others') {
+                placeOtherWrapper.classList.remove('d-none');
+                placeOtherInput.setAttribute('required', 'required');
+            } else {
+                placeOtherWrapper.classList.add('d-none');
+                placeOtherInput.removeAttribute('required');
+                placeOtherInput.value = '';
+            }
+        }
+
+        const attendedSelect = document.getElementById('attended_by');
+        const attendedOtherWrapper = document.getElementById('attended_by_other_wrapper');
+        const attendedOtherInput = document.getElementById('attended_by_other');
+        if (attendedSelect && attendedOtherWrapper && attendedOtherInput) {
+            if (attendedSelect.value === 'Others') {
+                attendedOtherWrapper.classList.remove('d-none');
+                attendedOtherInput.setAttribute('required', 'required');
+            } else {
+                attendedOtherWrapper.classList.add('d-none');
+                attendedOtherInput.removeAttribute('required');
+                attendedOtherInput.value = '';
+            }
+        }
+    }
+
+    function updateNbsState() {
+        const nbsCheckbox = document.getElementById('newborn_screening_done');
+        const nbsDate = document.getElementById('newborn_screening_date');
+        const nbsResult = document.getElementById('newborn_screening_result');
+        if (!nbsCheckbox || !nbsDate || !nbsResult) return;
+
+        const isNbsDone = nbsCheckbox.checked;
+        const isSectionActive = selectedPatientId && selectedPatientId.value;
+
+        if (isSectionActive && isNbsDone) {
+            nbsDate.disabled = false;
+            nbsResult.disabled = false;
+            nbsDate.setAttribute('required', 'required');
+            if (!nbsDate.value) {
+                nbsDate.value = new Date().toISOString().split('T')[0];
+            }
+            if (!nbsResult.value) {
+                nbsResult.value = 'Normal';
+            }
+        } else {
+            nbsDate.disabled = true;
+            nbsResult.disabled = true;
+            nbsDate.removeAttribute('required');
+        }
     }
 
     function setClinicalInputsDisabled(disabled) {
@@ -655,14 +949,50 @@ document.addEventListener('DOMContentLoaded', function() {
         if (submitBtn) {
             submitBtn.disabled = disabled || <?= $alreadyRegistered ? 'true' : 'false' ?>;
         }
+
+        if (!disabled) {
+            updateNbsState();
+            updateDynamicDropdowns();
+        }
+    }
+
+    // Attach parental age listeners
+    if (motherDobInput) {
+        motherDobInput.addEventListener('input', updateParentAges);
+        motherDobInput.addEventListener('change', updateParentAges);
+    }
+    if (fatherDobInput) {
+        fatherDobInput.addEventListener('input', updateParentAges);
+        fatherDobInput.addEventListener('change', updateParentAges);
+    }
+
+    // Attach dynamic dropdown listeners
+    const placeSelect = document.getElementById('place_of_delivery');
+    if (placeSelect) {
+        placeSelect.addEventListener('change', updateDynamicDropdowns);
+    }
+    const attendedSelect = document.getElementById('attended_by');
+    if (attendedSelect) {
+        attendedSelect.addEventListener('change', updateDynamicDropdowns);
+    }
+
+    // Attach NBS toggle listener
+    const nbsCheckbox = document.getElementById('newborn_screening_done');
+    if (nbsCheckbox) {
+        nbsCheckbox.addEventListener('change', updateNbsState);
     }
 
     // Initial state: disable clinical sections if no child is selected
     if (!selectedPatientId || !selectedPatientId.value) {
         setClinicalInputsDisabled(true);
-    } else if (<?= $alreadyRegistered ? 'true' : 'false' ?>) {
-        const submitBtn = document.getElementById('btnSubmitRegistration');
-        if (submitBtn) submitBtn.disabled = true;
+    } else {
+        updateDynamicDropdowns();
+        updateNbsState();
+        updateParentAges();
+        if (<?= $alreadyRegistered ? 'true' : 'false' ?>) {
+            const submitBtn = document.getElementById('btnSubmitRegistration');
+            if (submitBtn) submitBtn.disabled = true;
+        }
     }
 
     if (btnChangePatient) {
@@ -676,33 +1006,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchInput.focus();
             }
             if (clearSearchBtn) clearSearchBtn.classList.add('d-none');
+            unlinkMother();
             if (motherNameInput) motherNameInput.value = '';
             if (motherDobInput) motherDobInput.value = '';
             if (fatherNameInput) fatherNameInput.value = '';
             if (fatherDobInput) fatherDobInput.value = '';
+            const motherAgeEl = document.getElementById('mother_age');
+            const fatherAgeEl = document.getElementById('father_age');
+            if (motherAgeEl) motherAgeEl.value = '';
+            if (fatherAgeEl) fatherAgeEl.value = '';
             parentalInfoSection.classList.add('opacity-50', 'pointer-events-none');
             birthCircumstancesSection.classList.add('opacity-50', 'pointer-events-none');
             setClinicalInputsDisabled(true);
         });
     }
 
-    // 3. NBS Checkbox Toggle requirement
-    const nbsCheckbox = document.getElementById('newborn_screening_done');
-    const nbsDate = document.getElementById('newborn_screening_date');
-    if (nbsCheckbox && nbsDate) {
-        nbsCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                if (!nbsDate.value) {
-                    nbsDate.value = new Date().toISOString().split('T')[0];
-                }
-                nbsDate.setAttribute('required', 'required');
-            } else {
-                nbsDate.removeAttribute('required');
-            }
-        });
-    }
-
-    // 4. Form Validation
+    // Form Validation
     if (form) {
         form.addEventListener('submit', function(e) {
             if (!selectedPatientId.value) {
@@ -729,10 +1048,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
+            const nbsDate = document.getElementById('newborn_screening_date');
             if (nbsCheckbox && nbsCheckbox.checked && !nbsDate.value) {
                 e.preventDefault();
                 alert('Please provide the Newborn Screening (NBS) date.');
                 nbsDate.focus();
+                return;
+            }
+
+            const placeVal = placeSelect ? placeSelect.value : '';
+            const placeOther = document.getElementById('place_of_delivery_other');
+            if (placeVal === 'Others' && placeOther && !placeOther.value.trim()) {
+                e.preventDefault();
+                alert('Please specify the Place of Delivery.');
+                placeOther.focus();
+                return;
+            }
+
+            const attendedVal = attendedSelect ? attendedSelect.value : '';
+            const attendedOther = document.getElementById('attended_by_other');
+            if (attendedVal === 'Others' && attendedOther && !attendedOther.value.trim()) {
+                e.preventDefault();
+                alert('Please specify who attended the birth.');
+                attendedOther.focus();
                 return;
             }
         });

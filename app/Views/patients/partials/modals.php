@@ -223,7 +223,7 @@
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-white py-3 border-bottom" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
                 <h5 class="modal-title fw-bold text-dark" id="viewConsultationModalLabel">
-                    <i class="bi bi-journal-medical text-primary me-2"></i>Clinical Consultation Record
+                    Clinical Consultation Record
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -238,8 +238,8 @@
             </div>
             
             <div class="modal-footer bg-light py-2.5 px-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                <button type="button" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center" onclick="window.print()">
-                    <i class="bi bi-printer me-1.5"></i> Print Record
+                <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="window.print()">
+                    Print Record
                 </button>
                 <div class="d-flex align-items-center gap-2" id="consultationModalFooterRight">
                     <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>

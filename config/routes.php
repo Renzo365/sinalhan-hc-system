@@ -57,11 +57,17 @@ return function (\App\Core\Router $router) {
     $router->post('/past-obstetric/{id}/delete', 'PrenatalController@deletePastObstetric', [AuthMiddleware::class]);
     $router->post('/past-obstetric/{id}/update', 'PrenatalController@updatePastObstetric', [AuthMiddleware::class]);
     $router->post('/prenatal/{id}/update', 'PrenatalController@updateEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/{id}/update', 'PrenatalController@updateEpisode', [AuthMiddleware::class]); // Backward compatibility alias
     $router->post('/prenatal/{id}/visit', 'PrenatalController@storeVisit', [AuthMiddleware::class]);
+    $router->post('/maternal/{id}/visit', 'PrenatalController@storeVisit', [AuthMiddleware::class]); // Backward compatibility alias
     $router->post('/prenatal/{id}/conclude', 'PrenatalController@concludeEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/{id}/conclude', 'PrenatalController@concludeEpisode', [AuthMiddleware::class]); // Backward compatibility alias
     $router->post('/prenatal/{id}/cancel', 'PrenatalController@cancelEpisode', [AuthMiddleware::class]);
+    $router->post('/maternal/{id}/cancel', 'PrenatalController@cancelEpisode', [AuthMiddleware::class]); // Backward compatibility alias
     $router->post('/prenatal/visit/{id}/delete', 'PrenatalController@deleteVisit', [AuthMiddleware::class]);
+    $router->post('/maternal/visit/{id}/delete', 'PrenatalController@deleteVisit', [AuthMiddleware::class]); // Backward compatibility alias
     $router->post('/prenatal/visit/{id}/update', 'PrenatalController@updateVisit', [AuthMiddleware::class]);
+    $router->post('/maternal/visit/{id}/update', 'PrenatalController@updateVisit', [AuthMiddleware::class]); // Backward compatibility alias
 
     // Patient AJAX Search & Data APIs
     $router->get('/api/patients/search/female', 'PatientController@searchFemale', [AuthMiddleware::class]);

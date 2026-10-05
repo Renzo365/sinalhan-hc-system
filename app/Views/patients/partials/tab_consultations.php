@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="h6 fw-bold text-dark mb-0">Clinical Consultation Ledger</h5>
         <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> New Consultation Entry
+            + New Consultation Entry
         </a>
     </div>
     <div class="table-responsive">
