@@ -2,7 +2,7 @@
 $title = 'Reschedule Appointment';
 $breadcrumbs = [
     'Appointments' => '/appointments',
-    'Edit Appointment' => null
+    'Reschedule Appointment' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 ?>

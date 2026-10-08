@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Models\VitalSigns;
 use App\Models\Patient;
 use App\Models\AuditLog;
+use App\Validators\VitalSignsValidator;
 
 class VitalSignsController extends Controller {
     protected $vitalsModel;
@@ -41,29 +42,18 @@ class VitalSignsController extends Controller {
             return;
         }
 
-        // Validate that at least one metric is filled
-        $metrics = [
-            'bp_systolic', 'bp_diastolic', 'heart_rate', 
-            'respiratory_rate', 'temperature', 'weight', 
-            'height', 'oxygen_saturation', 'notes'
-        ];
-
-        $hasMetric = false;
-        foreach ($metrics as $metric) {
-            if (isset($_POST[$metric]) && trim($_POST[$metric]) !== '') {
-                $hasMetric = true;
-                break;
-            }
-        }
-
         $redirectTo = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : "/patients/{$patientId}#tab-vitals";
 
-        if (!$hasMetric) {
+        $validator = new VitalSignsValidator();
+        $errors = $validator->validate($_POST);
+
+        if (!empty($errors)) {
+            $errorMsg = implode(' ', $errors);
             if ($isAjax) {
-                $this->json(['success' => false, 'message' => 'At least one vital sign value must be filled.'], 422);
+                $this->json(['success' => false, 'message' => $errorMsg, 'errors' => $errors], 422);
                 return;
             }
-            $_SESSION['error_message'] = 'At least one vital sign value must be filled.';
+            $_SESSION['error_message'] = $errorMsg;
             $this->redirect($redirectTo);
             return;
         }
@@ -178,6 +168,15 @@ class VitalSignsController extends Controller {
         $userRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
         if (!in_array($userRole, ['admin', 'super_admin', 'staff'], true)) {
             $_SESSION['error_message'] = 'Unauthorized: You do not have permission to update vital signs records.';
+            $this->redirect("/patients/{$patientId}#tab-vitals");
+            return;
+        }
+
+        $validator = new VitalSignsValidator();
+        $errors = $validator->validate($_POST);
+
+        if (!empty($errors)) {
+            $_SESSION['error_message'] = implode(' ', $errors);
             $this->redirect("/patients/{$patientId}#tab-vitals");
             return;
         }

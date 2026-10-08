@@ -9,11 +9,16 @@
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h6 class="fw-bold mb-0 text-dark small">Scheduled Appointments</h6>
                                         <a href="<?= url('/appointments/create?patient_id=' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary px-2 py-1">
-                                            <i class="bi bi-plus-circle me-1"></i> Book
+                                            <i class="bi bi-plus-circle me-1"></i> Schedule Appointment
                                         </a>
                                     </div>
                                     <?php if (empty($appointmentsHistory)): ?>
-                                        <p class="text-muted small text-center py-3 mb-0">No upcoming appointments scheduled.</p>
+                                        <div class="text-muted small text-center py-3">
+                                            <div class="mb-2">No upcoming appointments scheduled.</div>
+                                            <a href="<?= url('/appointments/create?patient_id=' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-plus-circle me-1"></i> Schedule Appointment
+                                            </a>
+                                        </div>
                                     <?php else: ?>
                                         <ul class="list-group list-group-flush small">
                                             <?php foreach ($appointmentsHistory as $a): ?>

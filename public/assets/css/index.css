@@ -976,6 +976,39 @@ a:hover {
   border-radius: 14px !important;
 }
 
+/* Compact workstation navigation and table controls on small screens. */
+@media (max-width: 767.98px) {
+  .workstation-tabs-wrapper {
+    padding: 0 0.25rem;
+  }
+
+  #workstationTabs {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+
+  #workstationTabs .nav-link {
+    font-size: 0.8rem;
+    padding: 0.7rem 0.7rem 0.6rem !important;
+  }
+
+  .workstation-tab-scroll-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .dataTables_wrapper .dataTables_filter {
+    float: none;
+    text-align: left;
+    margin-bottom: 0.75rem;
+  }
+
+  .dataTables_wrapper .dataTables_filter input {
+    width: min(100%, 18rem);
+    margin-left: 0.35rem;
+  }
+}
+
 /* ==========================================================================
    PROFESSIONAL HEALTHCARE PRINT STYLESHEET (@media print)
    ========================================================================== */
@@ -1421,5 +1454,3 @@ a:hover {
   color: #334155 !important;
   border: 1px solid #e2e8f0 !important;
 }
-
-

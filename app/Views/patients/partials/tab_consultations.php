@@ -3,9 +3,9 @@
    ============================================================== -->
 <div class="tab-pane fade" id="tab-consultations" role="tabpanel">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="h6 fw-bold text-dark mb-0">Clinical Consultation Ledger</h5>
+        <h5 class="h6 fw-bold text-dark mb-0">Consultations</h5>
         <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-sm btn-primary">
-            + New Consultation Entry
+            <i class="bi bi-plus-lg me-1"></i> Add Consultation
         </a>
     </div>
     <div class="table-responsive">
@@ -24,7 +24,10 @@
                     <tr>
                         <td colspan="5" class="text-center py-5 text-muted">
                             <i class="bi bi-clipboard2-x fs-3 d-block mb-2 text-secondary"></i>
-                            No clinical consultation records exist for this patient.
+                            <div class="mb-2">No consultations recorded.</div>
+                            <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-plus-lg me-1"></i> Add Consultation
+                            </a>
                         </td>
                     </tr>
                 <?php else: ?>

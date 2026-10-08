@@ -108,7 +108,7 @@ class ConsultationController extends Controller {
         $data = $_POST;
         $data['vital_signs_id'] = $vitalSignsId;
         $data['consulting_provider'] = trim($_POST['consulting_provider'] ?? '');
-        $data['status'] = !empty($_POST['status']) ? $_POST['status'] : 'Completed';
+        $data['status'] = 'Completed';
         $data['created_by'] = $_SESSION['user_id'];
 
         $newId = $this->consultationModel->create($data);

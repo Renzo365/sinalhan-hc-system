@@ -43,8 +43,7 @@ require_once dirname(__DIR__) . '/app/helpers.php';
 
 // Verify CSRF token for all state-changing operations (POST requests)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $token = $_POST['csrf_token'] ?? '';
-    if (empty($token) || !hash_equals(csrf_token(), $token)) {
+    if (!verify_csrf_token()) {
         http_response_code(403);
         // Clean session and throw error page
         die("Security Exception: CSRF verification failed. Please refresh the page and try again.");

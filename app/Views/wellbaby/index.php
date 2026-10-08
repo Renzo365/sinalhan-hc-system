@@ -7,7 +7,7 @@
 
 $title = 'Well-Baby & EPI Workstation';
 $breadcrumbs = [
-    'Well-Baby / EPI' => null
+    'Well-Baby & EPI' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 

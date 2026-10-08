@@ -8,7 +8,7 @@
 
 $title = 'Register Infant for Well-Baby Care';
 $breadcrumbs = [
-    'Well-Baby / EPI' => '/well-baby',
+    'Well-Baby & EPI' => '/well-baby',
     'Register Infant' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';

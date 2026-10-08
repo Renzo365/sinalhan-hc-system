@@ -23,7 +23,7 @@ if (!empty($suffix)) {
 
 $title = 'Edit Well-Baby Record: ' . $fullNameFormatted;
 $breadcrumbs = [
-    'Well-Baby / EPI' => '/well-baby',
+    'Well-Baby & EPI' => '/well-baby',
     $fullNameFormatted => '/well-baby/' . $patient['id'],
     'Edit Birth Record' => null
 ];

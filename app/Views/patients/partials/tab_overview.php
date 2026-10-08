@@ -429,9 +429,7 @@
                                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-medium">
                                                     <?= date('M d, Y', strtotime($latestConsultation['consulted_at'])) ?>
                                                 </span>
-                                                <span class="badge <?= ($latestConsultation['status'] ?? '') === 'Completed' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' ?> fw-medium">
-                                                    <?= h($latestConsultation['status'] ?? 'Open') ?>
-                                                </span>
+
                                                 <span class="text-muted small">
                                                     Clinician: <strong><?= h($latestConsultation['clinician_name'] ?? 'Clinician') ?></strong>
                                                 </span>
@@ -563,9 +561,9 @@
                                         <h5 class="h6 mb-0 fw-bold text-dark">
                                             <i class="bi bi-clipboard2-check text-primary me-2"></i>IHP Health Summary
                                         </h5>
-                                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="editIhpFromOverview();">
+                                        <a href="<?= url('/patients/' . $patient['id'] . '/ihp/edit') ?>" class="btn btn-sm btn-outline-primary py-1 px-2">
                                             Edit IHP
-                                        </button>
+                                        </a>
                                     </div>
                                     <div class="card-body p-3 small">
                                         <?php if ($medicalHistory): ?>
@@ -691,7 +689,7 @@
                                             </div>
                                         <?php else: ?>
                                             <p class="text-muted mb-0 py-2 text-center">
-                                                No IHP medical history recorded. <a href="javascript:void(0)" onclick="editIhpFromOverview();">Complete IHP Form</a>.
+                                                No IHP medical history recorded. <a href="<?= url('/patients/' . $patient['id'] . '/ihp/edit') ?>">Complete IHP Form</a>.
                                             </p>
                                         <?php endif; ?>
                                     </div>

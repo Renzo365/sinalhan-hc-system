@@ -37,9 +37,9 @@ if (!empty($firstName) || !empty($lastName)) {
     );
 }
 
-$title = 'Well-Baby / EPI: ' . $fullNameFormatted;
+$title = 'Well-Baby & EPI: ' . $fullNameFormatted;
 $breadcrumbs = [
-    'Well-Baby / EPI' => '/well-baby',
+    'Well-Baby & EPI' => '/well-baby',
     $fullNameFormatted => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
@@ -102,7 +102,10 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
 
                         <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
-                            <span><strong><?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : h($patient['age'] ?? 'Infant') . ' yrs' ?></strong> &bull; <?= h($patient['gender'] ?? $patient['sex'] ?? 'Child') ?></span>
+                            <span>
+                                <strong><?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : (!empty($patient['age']) ? h($patient['age']) . ' yrs' : 'Age not recorded') ?></strong>
+                                &bull; <?= !empty($patient['gender'] ?? $patient['sex'] ?? '') ? h($patient['gender'] ?? $patient['sex']) : 'Sex not recorded' ?>
+                            </span>
                             <span class="text-muted">&bull;</span>
                             <span>DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
                             <span class="text-muted">&bull;</span>

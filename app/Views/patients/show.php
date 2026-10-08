@@ -28,10 +28,18 @@
  * @var array $cdsAlerts Clinical decision support alert flags
  */
 
-$title = 'Patient Profile';
+// Robust patient full name formatting
+$lastName = trim($patient['last_name'] ?? '');
+$firstName = trim($patient['first_name'] ?? '');
+$middleName = trim($patient['middle_name'] ?? '');
+$suffix = trim($patient['suffix'] ?? '');
+
+$fullNameFormatted = format_patient_name($patient);
+
+$title = 'Patient Profile: ' . $fullNameFormatted;
 $breadcrumbs = [
     'Patients' => '/patients',
-    'Profile' => null
+    $fullNameFormatted => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 
@@ -39,28 +47,6 @@ $patientSex = !empty($patient['sex']) ? trim($patient['sex']) : '';
 $isFemale = (strtolower($patientSex) === 'female');
 $hasNumericAge = (isset($patient['age']) && $patient['age'] !== '' && is_numeric($patient['age']));
 $isChild = ($hasNumericAge && (int)$patient['age'] <= 5) || !empty($wellbabyRecord);
-
-// Robust patient full name formatting
-$lastName = trim($patient['last_name'] ?? '');
-$firstName = trim($patient['first_name'] ?? '');
-$middleName = trim($patient['middle_name'] ?? '');
-$suffix = trim($patient['suffix'] ?? '');
-
-if (!empty($lastName) && !empty($firstName)) {
-    $fullNameFormatted = $lastName . ', ' . $firstName;
-    if (!empty($middleName)) {
-        $fullNameFormatted .= ' ' . mb_substr($middleName, 0, 1) . '.';
-    }
-    if (!empty($suffix)) {
-        $fullNameFormatted .= ' ' . $suffix;
-    }
-} elseif (!empty($lastName)) {
-    $fullNameFormatted = $lastName . (!empty($suffix) ? ' ' . $suffix : '');
-} elseif (!empty($firstName)) {
-    $fullNameFormatted = $firstName . (!empty($suffix) ? ' ' . $suffix : '');
-} else {
-    $fullNameFormatted = 'Unnamed Patient';
-}
 
 // Avatar Initials or fallback icon
 $avatarInitials = '';
@@ -111,14 +97,37 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                 </button>
             </li>
                     
-            <!-- Tab 2: IHP Medical History -->
+            <!-- Tab 2: Clinical Consultations -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-consultations-btn" data-bs-toggle="tab" data-bs-target="#tab-consultations" type="button" role="tab">
+                    Consultations
+                    <span class="badge bg-light text-secondary border ms-1"><?= count($consultationsHistory) ?></span>
+                </button>
+            </li>
+
+            <!-- Tab 3: Vital Signs History -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-vitals-btn" data-bs-toggle="tab" data-bs-target="#tab-vitals" type="button" role="tab">
+                    Vital Signs
+                    <span class="badge bg-light text-secondary border ms-1"><?= count($vitalsHistory) ?></span>
+                </button>
+            </li>
+
+            <!-- Tab 4: Appointments & Queue -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-appointments-btn" data-bs-toggle="tab" data-bs-target="#tab-appointments" type="button" role="tab">
+                    Appointments &amp; Queue
+                </button>
+            </li>
+
+            <!-- Tab 5: IHP Medical History -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-ihp-btn" data-bs-toggle="tab" data-bs-target="#tab-ihp" type="button" role="tab">
                     IHP History
                 </button>
             </li>
 
-            <!-- Tab 3: PHIC / PCB Ledger (Page 3) -->
+            <!-- Tab 6: PHIC / PCB Ledger (Page 3) -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-pcb-btn" data-bs-toggle="tab" data-bs-target="#tab-pcb" type="button" role="tab">
                     PHIC / PCB Ledger
@@ -128,23 +137,7 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                 </button>
             </li>
 
-            <!-- Tab 4: Clinical Consultation Ledger -->
-            <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-consultations-btn" data-bs-toggle="tab" data-bs-target="#tab-consultations" type="button" role="tab">
-                    Consultations
-                    <span class="badge bg-light text-secondary border ms-1"><?= count($consultationsHistory) ?></span>
-                </button>
-            </li>
-
-            <!-- Tab 5: Vital Signs History -->
-            <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-vitals-btn" data-bs-toggle="tab" data-bs-target="#tab-vitals" type="button" role="tab">
-                    Vitals Log
-                    <span class="badge bg-light text-secondary border ms-1"><?= count($vitalsHistory) ?></span>
-                </button>
-            </li>
-
-            <!-- Tab 6: Universal Immunizations -->
+            <!-- Tab 7: Universal Immunizations -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-semibold text-nowrap" id="tab-immunizations-btn" data-bs-toggle="tab" data-bs-target="#tab-immunizations" type="button" role="tab">
                     Immunizations
@@ -152,12 +145,6 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                 </button>
             </li>
 
-            <!-- Tab 7: Appointments & Queue -->
-            <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-appointments-btn" data-bs-toggle="tab" data-bs-target="#tab-appointments" type="button" role="tab">
-                    Appointments
-                </button>
-            </li>
         </ul>
         <button type="button" class="workstation-tab-scroll-btn scroll-next" id="tabScrollNext" title="Scroll right" aria-label="Scroll tabs right">
             <i class="bi bi-chevron-right"></i>

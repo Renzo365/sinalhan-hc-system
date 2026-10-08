@@ -487,12 +487,16 @@ class PatientController extends Controller {
             $sql .= " AND (p.first_name LIKE :q1 
                         OR p.last_name LIKE :q2 
                         OR p.patient_no LIKE :q3 
-                        OR p.envelope_no LIKE :q4)";
+                        OR p.envelope_no LIKE :q4
+                        OR CONCAT(p.first_name, ' ', p.last_name) LIKE :q5
+                        OR CONCAT(p.last_name, ', ', p.first_name) LIKE :q6)";
             $param = '%' . $query . '%';
             $params['q1'] = $param;
             $params['q2'] = $param;
             $params['q3'] = $param;
             $params['q4'] = $param;
+            $params['q5'] = $param;
+            $params['q6'] = $param;
         }
 
         $sql .= " ORDER BY p.last_name ASC, p.first_name ASC LIMIT 25";

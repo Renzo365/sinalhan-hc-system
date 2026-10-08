@@ -28,17 +28,21 @@
             <?php if (isset($title)): ?>
                 <nav aria-label="breadcrumb" class="mb-4">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="<?= url('/dashboard') ?>">Home</a></li>
-                        <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
-                            <?php foreach ($breadcrumbs as $label => $link): ?>
-                                <?php if ($link !== null): ?>
-                                    <li class="breadcrumb-item"><a href="<?= url($link) ?>"><?= h($label) ?></a></li>
-                                <?php else: ?>
-                                    <li class="breadcrumb-item active" aria-current="page"><?= h($label) ?></li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
+                        <?php if ($title === 'Dashboard'): ?>
+                            <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-speedometer2 me-1"></i> Dashboard</li>
                         <?php else: ?>
-                            <li class="breadcrumb-item active" aria-current="page"><?= h($title) ?></li>
+                            <li class="breadcrumb-item"><a href="<?= url('/dashboard') ?>">Home</a></li>
+                            <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
+                                <?php foreach ($breadcrumbs as $label => $link): ?>
+                                    <?php if ($link !== null): ?>
+                                        <li class="breadcrumb-item"><a href="<?= url($link) ?>"><?= h($label) ?></a></li>
+                                    <?php else: ?>
+                                        <li class="breadcrumb-item active" aria-current="page"><?= h($label) ?></li>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="breadcrumb-item active" aria-current="page"><?= h($title) ?></li>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </ol>
                 </nav>

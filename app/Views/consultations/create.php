@@ -1,8 +1,9 @@
 <?php
-$title = 'New Consultation';
+$fullNameFormatted = format_patient_name($patient);
+$title = 'New Consultation: ' . $fullNameFormatted;
 $breadcrumbs = [
     'Patients' => '/patients',
-    'Profile' => '/patients/' . $patient['id'],
+    $fullNameFormatted => '/patients/' . $patient['id'] . '#tab-consultations',
     'New Consultation' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
@@ -280,7 +281,6 @@ require dirname(__DIR__) . '/layout/header.php';
 <form action="<?= url('/consultations') ?>" method="POST" autocomplete="off" id="consultationForm">
     <?= csrf_field() ?>
     <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-    <input type="hidden" name="status" value="Completed">
 
     <!-- 2. Unified Clinical Consultation Ledger Entry Card -->
     <div class="card card-premium mb-4">

@@ -3,7 +3,7 @@
                        ============================================================== -->
                     <div class="tab-pane fade" id="tab-vitals" role="tabpanel">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="h6 fw-bold text-dark mb-0">Vital Signs Log</h5>
+                            <h5 class="h6 fw-bold text-dark mb-0">Vital Signs</h5>
                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
                                 <i class="bi bi-plus-lg me-1"></i> Record Vitals
                             </button>
@@ -27,7 +27,10 @@
                                         <tr>
                                             <td colspan="8" class="text-center py-5 text-muted">
                                                 <i class="bi bi-activity fs-3 d-block mb-2 text-secondary"></i>
-                                                No vital signs records exist for this patient.
+                                                <div class="mb-2">No vital signs recorded.</div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
+                                                    <i class="bi bi-plus-lg me-1"></i> Record Vitals
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php else: ?>

@@ -1,8 +1,7 @@
 <?php
 $title = 'Archived Records Hub';
 $breadcrumbs = [
-    'Archive' => '/archive',
-    'Records Hub' => null
+    'Archived Records' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';
 

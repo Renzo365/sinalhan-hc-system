@@ -95,3 +95,59 @@ Stack Trace:
 #4 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'POST')
 #5 {main}
 --------------------------------------------------------------------------------
+[2026-10-07 21:54:57] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-10-07 21:54:59] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-10-07 21:55:00] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-10-07 21:55:00] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-10-07 21:55:00] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-10-07 21:55:00] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------
+[2026-10-07 21:55:25] [Error] User: admin | IP: ::1 | URI: /sinalhealth/public/patients/357/ihp/edit
+Exception: Error: Class "App\Models\PrenatalEpisode" not found in C:\xampp\htdocs\sinalhan-hc-system\app\Controllers\PatientMedicalHistoryController.php:41
+Stack Trace:
+#0 [internal function]: App\Controllers\PatientMedicalHistoryController->edit('357')
+#1 C:\xampp\htdocs\sinalhan-hc-system\app\Core\Router.php(89): call_user_func_array(Array, Array)
+#2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
+#3 {main}
+--------------------------------------------------------------------------------

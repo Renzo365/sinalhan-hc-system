@@ -17,6 +17,44 @@ class PatientMedicalHistoryController extends Controller {
     }
 
     /**
+     * Display the dedicated edit form for Annex A1 IHP Medical History.
+     * 
+     * @param int $patientId
+     */
+    public function edit($patientId) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $patient = $this->patientModel->findById($patientId);
+        if (!$patient) {
+            http_response_code(404);
+            $this->view('errors/404');
+            return;
+        }
+
+        $medicalHistory = $this->pmhModel->findByPatientId($patientId);
+        $latestVitals = (new \App\Models\VitalSigns())->latestByPatientId($patientId);
+        $immModel = new \App\Models\Immunization();
+        $patientImmunizations = $immModel->findByPatientId($patientId);
+        $cdsAlerts = \App\Services\ClinicalDecisionService::getAlertsForPatient($patientId);
+        $activePrenatal = false;
+        if (strtolower($patient['sex'] ?? '') === 'female') {
+            $prenatalModel = new \App\Models\PrenatalRecord();
+            $activePrenatal = $prenatalModel->findActiveByPatientId($patientId);
+        }
+
+        $this->view('patients/ihp_edit', [
+            'patient' => $patient,
+            'medicalHistory' => $medicalHistory,
+            'latestVitals' => $latestVitals,
+            'patientImmunizations' => $patientImmunizations,
+            'cdsAlerts' => $cdsAlerts,
+            'activePrenatal' => $activePrenatal
+        ]);
+    }
+
+    /**
      * Save or update Annex A1 IHP Medical History for a patient.
      * 
      * @param int $patientId
@@ -53,7 +91,7 @@ class PatientMedicalHistoryController extends Controller {
                 if ($value < $range[0] || $value > $range[1]) {
                     $_SESSION['error_message'] = ucfirst(str_replace('_', ' ', $field)) . ' is outside the allowed range.';
                     $_SESSION['ihp_form_input'] = $_POST;
-                    $this->redirect("/patients/{$patientId}#tab-ihp");
+                    $this->redirect("/patients/{$patientId}/ihp/edit");
                     return;
                 }
             }
@@ -64,7 +102,7 @@ class PatientMedicalHistoryController extends Controller {
             if (!$lmpDate || $lmpDate->format('Y-m-d') !== $_POST['lmp'] || $_POST['lmp'] > date('Y-m-d')) {
                 $_SESSION['error_message'] = 'Last Menstrual Period must be a valid date that is not in the future.';
                 $_SESSION['ihp_form_input'] = $_POST;
-                $this->redirect("/patients/{$patientId}#tab-ihp");
+                $this->redirect("/patients/{$patientId}/ihp/edit");
                 return;
             }
         }
@@ -74,7 +112,7 @@ class PatientMedicalHistoryController extends Controller {
         if (!in_array($smokingStatus, ['Never', 'Yes', 'Quit'], true) || !in_array($alcoholStatus, ['Never', 'Yes', 'Quit'], true)) {
             $_SESSION['error_message'] = 'Invalid smoking or alcohol history status.';
             $_SESSION['ihp_form_input'] = $_POST;
-            $this->redirect("/patients/{$patientId}#tab-ihp");
+            $this->redirect("/patients/{$patientId}/ihp/edit");
             return;
         }
 
@@ -260,11 +298,11 @@ class PatientMedicalHistoryController extends Controller {
             AuditLog::log('PATIENT_IHP_UPDATED', 'Patients', "Updated PhilHealth IHP Medical History for {$patient['patient_no']} ({$patient['first_name']} {$patient['last_name']})");
             $_SESSION['success_message'] = 'Individual Health Profile (IHP) Medical History saved successfully!';
             unset($_SESSION['ihp_form_input']);
+            $this->redirect("/patients/{$patientId}#tab-ihp");
         } else {
             $_SESSION['error_message'] = 'Failed to save Medical History. Please check input values.';
             $_SESSION['ihp_form_input'] = $_POST;
+            $this->redirect("/patients/{$patientId}/ihp/edit");
         }
-
-        $this->redirect("/patients/{$patientId}#tab-ihp");
     }
 }

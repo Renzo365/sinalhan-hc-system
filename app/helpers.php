@@ -29,6 +29,23 @@ if (!function_exists('csrf_field')) {
     }
 }
 
+if (!function_exists('verify_csrf_token')) {
+    /**
+     * Verify CSRF token from input, POST payload, or request header against session.
+     *
+     * @param string|null $token
+     * @return bool
+     */
+    function verify_csrf_token(?string $token = null): bool {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $token = $token ?? $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+        $sessionToken = $_SESSION['csrf_token'] ?? null;
+        return !empty($token) && !empty($sessionToken) && hash_equals($sessionToken, $token);
+    }
+}
+
 if (!function_exists('url')) {
     function url($path = '') {
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/sinalhealth/public/index.php';
@@ -267,6 +284,64 @@ if (!function_exists('calculate_age_in_months')) {
             return (float)round($totalMonths, 1);
         } catch (\Exception $e) {
             return 0.0;
+        }
+    }
+}
+
+if (!function_exists('format_patient_name')) {
+    /**
+     * Standard patient name formatter across SinalHealth.
+     * Default format ($lastFirst = true): "Lastname, Firstname M. Suffix"
+     * Alternate format ($lastFirst = false): "Firstname M. Lastname Suffix"
+     * Handles missing names and joined appointment query aliases gracefully.
+     *
+     * @param array|object|null $patient
+     * @param bool $lastFirst
+     * @return string
+     */
+    function format_patient_name($patient, bool $lastFirst = true): string {
+        if (empty($patient)) {
+            return 'Unnamed Patient';
+        }
+
+        if (is_object($patient)) {
+            $patient = (array)$patient;
+        }
+
+        if (!is_array($patient)) {
+            return 'Unnamed Patient';
+        }
+
+        $first = trim($patient['first_name'] ?? $patient['patient_first'] ?? '');
+        $last = trim($patient['last_name'] ?? $patient['patient_last'] ?? '');
+        $middle = trim($patient['middle_name'] ?? $patient['patient_middle'] ?? '');
+        $suffix = trim($patient['suffix'] ?? $patient['patient_suffix'] ?? '');
+
+        $middleInitial = !empty($middle) ? mb_substr($middle, 0, 1) . '.' : '';
+
+        if ($lastFirst) {
+            if (!empty($last) && !empty($first)) {
+                $name = $last . ', ' . $first;
+                if (!empty($middleInitial)) {
+                    $name .= ' ' . $middleInitial;
+                }
+                if (!empty($suffix)) {
+                    $name .= ' ' . $suffix;
+                }
+                return $name;
+            } elseif (!empty($last)) {
+                return $last . (!empty($suffix) ? ' ' . $suffix : '');
+            } elseif (!empty($first)) {
+                return $first . (!empty($suffix) ? ' ' . $suffix : '');
+            }
+            return 'Unnamed Patient';
+        } else {
+            $parts = [];
+            if (!empty($first)) $parts[] = $first;
+            if (!empty($middleInitial)) $parts[] = $middleInitial;
+            if (!empty($last)) $parts[] = $last;
+            if (!empty($suffix)) $parts[] = $suffix;
+            return !empty($parts) ? implode(' ', $parts) : 'Unnamed Patient';
         }
     }
 }

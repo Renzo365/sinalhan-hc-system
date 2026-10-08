@@ -1,8 +1,9 @@
 <?php
-$title = 'Edit Patient Demographics';
+$fullNameFormatted = format_patient_name($patient);
+$title = 'Edit Demographics: ' . $fullNameFormatted;
 $breadcrumbs = [
     'Patients' => '/patients',
-    'Profile' => '/patients/' . $patient['id'],
+    $fullNameFormatted => '/patients/' . $patient['id'],
     'Edit Demographics' => null
 ];
 require dirname(__DIR__) . '/layout/header.php';

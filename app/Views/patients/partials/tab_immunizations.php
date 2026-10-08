@@ -4,11 +4,11 @@
                     <div class="tab-pane fade" id="tab-immunizations" role="tabpanel">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <h5 class="h6 fw-bold text-dark mb-0">Universal Immunization Records</h5>
+                                <h5 class="h6 fw-bold text-dark mb-0">Immunizations</h5>
                                 <span class="text-muted small">Tracks vaccines administered across all life stages (EPI Routine Infant, HPV, COVID-19, Flu, Pneumococcal).</span>
                             </div>
                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#recordImmunizationModal">
-                                <i class="bi bi-plus-lg me-1"></i> Record Vaccine Dose
+                                <i class="bi bi-plus-lg me-1"></i> Record Immunization
                             </button>
                         </div>
 
@@ -58,7 +58,10 @@
                                         <tr>
                                             <td colspan="7" class="text-center py-5 text-muted">
                                                 <i class="bi bi-shield-slash fs-3 d-block mb-2 text-secondary"></i>
-                                                No immunization records recorded for this patient.
+                                                <div class="mb-2">No immunizations recorded.</div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recordImmunizationModal">
+                                                    <i class="bi bi-plus-lg me-1"></i> Record Immunization
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php else: ?>
@@ -67,6 +70,7 @@
                                             $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
                                         ?>
                                         <?php foreach ($patientImmunizations as $imm): 
+                                            $canEditImm = in_array($curRole, ['admin', 'super_admin', 'staff'], true);
                                             $canDeleteImm = is_admin();
                                             $docStatus = $imm['documentation_status'] ?? 'Administered';
                                         ?>
@@ -101,18 +105,20 @@
                                                             aria-label="View immunization details">
                                                             <i class="bi bi-eye"></i>
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-secondary shadow-2xs btn-edit-immunization"
-                                                            data-id="<?= $imm['id'] ?>"
-                                                            data-vaccine="<?= h($imm['vaccine_name']) ?>"
-                                                            data-dose="<?= h($imm['dose_number']) ?>"
-                                                            data-date="<?= h($imm['administered_date']) ?>"
-                                                            data-source="<?= h($imm['source'] ?? 'Health Center') ?>"
-                                                            data-status="<?= h($imm['documentation_status'] ?? 'Administered') ?>"
-                                                            data-remarks="<?= h($imm['remarks'] ?? '') ?>"
-                                                            title="Edit Immunization"
-                                                            aria-label="Edit immunization">
-                                                            <i class="bi bi-pencil-square"></i>
-                                                        </button>
+                                                        <?php if ($canEditImm): ?>
+                                                            <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-secondary shadow-2xs btn-edit-immunization"
+                                                                data-id="<?= $imm['id'] ?>"
+                                                                data-vaccine="<?= h($imm['vaccine_name']) ?>"
+                                                                data-dose="<?= h($imm['dose_number']) ?>"
+                                                                data-date="<?= h($imm['administered_date']) ?>"
+                                                                data-source="<?= h($imm['source'] ?? 'Health Center') ?>"
+                                                                data-status="<?= h($imm['documentation_status'] ?? 'Administered') ?>"
+                                                                data-remarks="<?= h($imm['remarks'] ?? '') ?>"
+                                                                title="Edit Immunization"
+                                                                aria-label="Edit immunization">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                        <?php endif; ?>
                                                         <?php if ($canDeleteImm): ?>
                                                             <button type="button" class="btn btn-sm btn-light border px-2 py-1 text-danger shadow-2xs btn-delete-immunization" data-id="<?= $imm['id'] ?>" data-vaccine="<?= h($imm['vaccine_name']) ?>" data-dose="<?= h($imm['dose_number']) ?>" title="Delete Record" aria-label="Delete immunization record">
                                                                 <i class="bi bi-trash"></i>

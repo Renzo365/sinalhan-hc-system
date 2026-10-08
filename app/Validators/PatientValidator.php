@@ -111,10 +111,11 @@ class PatientValidator extends BaseValidator {
         // 5. PhilHealth ID Number Validation (XX-XXXXXXXXX-X format)
         if (!empty($input['philhealth_no']) && trim($input['philhealth_no']) !== '') {
             $philhealthNo = trim($input['philhealth_no']);
+            $phicStatus = $input['phic_status'] ?? null;
             if (!preg_match('/^\d{2}-\d{9}-\d{1}$/', $philhealthNo)) {
                 $this->addError('PhilHealth ID No. must follow the standard 12-digit format: XX-XXXXXXXXX-X (e.g. 12-345678901-2).');
-            } elseif ($this->patientModel && !$this->patientModel->isPhilHealthUnique($philhealthNo, $excludePatientId)) {
-                $this->addError('PhilHealth ID number is already registered to another patient record.');
+            } elseif ($this->patientModel && !$this->patientModel->isPhilHealthUnique($philhealthNo, $excludePatientId, $phicStatus)) {
+                $this->addError('PhilHealth ID number is already registered to another principal member record.');
             }
         }
 

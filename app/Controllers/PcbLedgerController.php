@@ -113,6 +113,13 @@ class PcbLedgerController extends Controller {
         $errors = [];
         if (empty($serviceDate)) {
             $errors[] = 'Service date is required.';
+        } else {
+            $d = \DateTime::createFromFormat('Y-m-d', $serviceDate);
+            if (!$d || $d->format('Y-m-d') !== $serviceDate) {
+                $errors[] = 'Service encounter date must be a valid date in YYYY-MM-DD format.';
+            } elseif ($serviceDate > date('Y-m-d')) {
+                $errors[] = 'Service encounter date cannot be in the future.';
+            }
         }
         if (empty($serviceType)) {
             $errors[] = 'Service or diagnostic test name is required.';
@@ -220,7 +227,52 @@ class PcbLedgerController extends Controller {
             return;
         }
 
-        $updated = $this->pcbModel->updateServiceLog($id, $_POST);
+        $serviceCategory = trim($_POST['service_category'] ?? ($log['service_category'] ?? 'Diagnostic'));
+        if (!in_array($serviceCategory, ['Diagnostic', 'PCB1', 'Other'], true)) {
+            $serviceCategory = 'Diagnostic';
+        }
+
+        $serviceDate = trim($_POST['service_date'] ?? '');
+        $serviceType = trim($_POST['service_type'] ?? '');
+        $diagnosis = trim($_POST['diagnosis'] ?? '');
+        $statusGiven = !empty($_POST['status_given']) ? 1 : 0;
+        $statusReferred = !empty($_POST['status_referred']) ? 1 : 0;
+        $referredTo = trim($_POST['referred_to'] ?? '');
+        $remarks = trim($_POST['remarks'] ?? '');
+
+        $errors = [];
+        if (empty($serviceDate)) {
+            $errors[] = 'Service date is required.';
+        } else {
+            $d = \DateTime::createFromFormat('Y-m-d', $serviceDate);
+            if (!$d || $d->format('Y-m-d') !== $serviceDate) {
+                $errors[] = 'Service encounter date must be a valid date in YYYY-MM-DD format.';
+            } elseif ($serviceDate > date('Y-m-d')) {
+                $errors[] = 'Service encounter date cannot be in the future.';
+            }
+        }
+        if (empty($serviceType)) {
+            $errors[] = 'Service or diagnostic test name is required.';
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['form_errors'] = $errors;
+            $this->redirectPcbTab($patientId);
+            return;
+        }
+
+        $updateData = [
+            'service_category' => $serviceCategory,
+            'service_date' => $serviceDate,
+            'diagnosis' => $diagnosis,
+            'service_type' => $serviceType,
+            'status_given' => $statusGiven,
+            'status_referred' => $statusReferred,
+            'referred_to' => $referredTo,
+            'remarks' => $remarks
+        ];
+
+        $updated = $this->pcbModel->updateServiceLog($id, $updateData);
         if ($updated) {
             AuditLog::log('PCB_SERVICE_UPDATED', 'Patients', "Updated PhilHealth PCB service entry #{$id} for Patient ID #{$patientId}");
             $_SESSION['success_message'] = "PhilHealth PCB service encounter updated.";

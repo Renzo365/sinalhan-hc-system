@@ -38,6 +38,9 @@ return function (\App\Core\Router $router) {
     $router->get('/patients/{id}', 'PatientController@show', [AuthMiddleware::class]);
     $router->get('/patients/{id}/edit', 'PatientController@edit', [AuthMiddleware::class]);
     $router->post('/patients/{id}', 'PatientController@update', [AuthMiddleware::class]);
+    $router->get('/patients/{id}/ihp/edit', 'PatientMedicalHistoryController@edit', [AuthMiddleware::class]);
+    $router->get('/patients/{id}/medical-history/edit', 'PatientMedicalHistoryController@edit', [AuthMiddleware::class]);
+    $router->post('/patients/{id}/ihp/edit', 'PatientMedicalHistoryController@save', [AuthMiddleware::class]);
     $router->post('/patients/{id}/medical-history', 'PatientMedicalHistoryController@save', [AuthMiddleware::class]);
     // Prenatal Care Workstation Routes
     $router->get('/prenatal', 'MaternalController@index', [AuthMiddleware::class]);
@@ -109,7 +112,6 @@ return function (\App\Core\Router $router) {
     $router->get('/consultations/{id}', 'ConsultationController@show', [AuthMiddleware::class]);
     $router->get('/consultations/{id}/edit', 'ConsultationController@edit', [AuthMiddleware::class]);
     $router->post('/consultations/{id}', 'ConsultationController@update', [AuthMiddleware::class]);
-    $router->post('/consultations/{id}/cancel', 'ConsultationController@cancel', [AuthMiddleware::class]);
     $router->post('/consultations/{id}/archive', 'ConsultationController@archive', [AuthMiddleware::class]);
     $router->post('/archive/consultations/{id}/restore', 'ConsultationController@restore', [AdminMiddleware::class]);
 

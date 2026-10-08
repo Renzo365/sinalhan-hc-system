@@ -101,7 +101,14 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
 
                         <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
-                            <span><strong><?= h($patient['age'] ?? 'Adult') ?></strong> yrs &bull; <?= h($patient['sex'] ?? 'Female') ?></span>
+                            <span>
+                                <?php if (isset($patient['age']) && $patient['age'] !== ''): ?>
+                                    <strong><?= h($patient['age']) ?></strong> yrs
+                                <?php else: ?>
+                                    <strong>Age not recorded</strong>
+                                <?php endif; ?>
+                                &bull; <?= !empty($patient['sex']) ? h($patient['sex']) : 'Sex not recorded' ?>
+                            </span>
                             <span class="text-muted">&bull;</span>
                             <span>DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
                             <span class="text-muted">&bull;</span>

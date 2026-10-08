@@ -38,7 +38,7 @@ if (!function_exists('isActive')) {
 
         <a href="<?= url('/well-baby') ?>" class="sidebar-item <?= isActive('/well-baby', $uri) ?>">
             <i class="bi bi-emoji-smile-fill"></i>
-            <span>Well-Baby / EPI</span>
+            <span>Well-Baby &amp; EPI</span>
         </a>
         
         <a href="<?= url('/appointments') ?>" class="sidebar-item <?= isActive('/appointments', $uri) ?>">

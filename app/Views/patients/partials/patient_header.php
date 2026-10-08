@@ -97,58 +97,30 @@
 
             <!-- Right: Patient-Level Action Controls -->
             <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
-                <?php if (!empty($activePrenatal)): ?>
-                    <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Open Prenatal Care Workstation">
-                        <i class="bi bi-heart-pulse-fill me-1 text-danger"></i> Prenatal
-                    </a>
-                <?php elseif (strtolower($patient['sex'] ?? '') === 'female' && ($ageVal === null || ($ageVal >= 10 && $ageVal <= 55))): ?>
-                    <a href="<?= url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Enroll Female Patient in Prenatal Care">
-                        <i class="bi bi-plus-circle me-1 text-danger"></i> Enroll Prenatal
-                    </a>
-                <?php endif; ?>
-                <?php if (!empty($wellbabyRecord)): ?>
-                    <a href="<?= url('/well-baby/' . $patient['id']) ?>" class="btn btn-outline-success btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Open Well-Baby Workstation">
-                        <i class="bi bi-emoji-smile-fill me-1"></i> Well-Baby
-                    </a>
-                <?php elseif ($isChild): ?>
-                    <a href="<?= url('/well-baby/register?patient_id=' . $patient['id']) ?>" class="btn btn-outline-success btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Enroll Child in Well-Baby Care">
-                        <i class="bi bi-plus-circle me-1"></i> Enroll Well-Baby
-                    </a>
-                <?php endif; ?>
                 <button type="button" class="btn btn-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#enqueuePatientModal" title="Check-in Patient to Today's Queue">
                     <i class="bi bi-person-check-fill me-1"></i> Check-in to Queue
                 </button>
                 <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" title="Edit Patient Identity & Demographics">
-                    <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                    <i class="bi bi-pencil-square me-1"></i> Edit Patient Information
                 </a>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm px-2.5 py-1.5 shadow-xs d-flex align-items-center" type="button" id="patientMoreActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="More Actions">
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1" aria-labelledby="patientMoreActionsDropdown">
-                        <?php if (!empty($activePrenatal)): ?>
+                        <?php if (!empty($activePrenatal) || (strtolower($patient['sex'] ?? '') === 'female' && ($ageVal === null || ($ageVal >= 10 && $ageVal <= 55)))): ?>
                             <li>
-                                <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-danger">
-                                    <i class="bi bi-heart-pulse-fill me-2 text-danger"></i> Prenatal Workstation
-                                </a>
-                            </li>
-                        <?php elseif (strtolower($patient['sex'] ?? '') === 'female' && ($ageVal === null || ($ageVal >= 10 && $ageVal <= 55))): ?>
-                            <li>
-                                <a href="<?= url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-danger">
-                                    <i class="bi bi-plus-circle me-2 text-danger"></i> Enroll in Prenatal Care
+                                <a href="<?= !empty($activePrenatal) ? url('/prenatal/' . $patient['id']) : url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-danger">
+                                    <i class="bi <?= !empty($activePrenatal) ? 'bi-heart-pulse-fill' : 'bi-plus-circle' ?> me-2 text-danger"></i>
+                                    <?= !empty($activePrenatal) ? 'Open Prenatal Workstation' : 'Enroll in Prenatal Care' ?>
                                 </a>
                             </li>
                         <?php endif; ?>
-                        <?php if (!empty($wellbabyRecord)): ?>
+                        <?php if (!empty($wellbabyRecord) || $isChild): ?>
                             <li>
-                                <a href="<?= url('/well-baby/' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-success">
-                                    <i class="bi bi-emoji-smile-fill me-2 text-success"></i> Well-Baby Workstation
-                                </a>
-                            </li>
-                        <?php elseif ($isChild): ?>
-                            <li>
-                                <a href="<?= url('/well-baby/register?patient_id=' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-success">
-                                    <i class="bi bi-plus-circle me-2 text-success"></i> Enroll in Well-Baby
+                                <a href="<?= !empty($wellbabyRecord) ? url('/well-baby/' . $patient['id']) : url('/well-baby/register?patient_id=' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-success">
+                                    <i class="bi <?= !empty($wellbabyRecord) ? 'bi-emoji-smile-fill' : 'bi-plus-circle' ?> me-2 text-success"></i>
+                                    <?= !empty($wellbabyRecord) ? 'Open Well-Baby Workstation' : 'Enroll in Well-Baby Care' ?>
                                 </a>
                             </li>
                         <?php endif; ?>

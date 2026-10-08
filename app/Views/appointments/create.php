@@ -1,12 +1,14 @@
 <?php
-$title = 'Schedule Appointment';
 if (isset($patient) && $patient) {
+    $fullNameFormatted = format_patient_name($patient);
+    $title = 'Schedule Appointment: ' . $fullNameFormatted;
     $breadcrumbs = [
         'Patients' => '/patients',
-        'Profile' => '/patients/' . $patient['id'],
+        $fullNameFormatted => '/patients/' . $patient['id'] . '#tab-appointments',
         'Schedule Appointment' => null
     ];
 } else {
+    $title = 'Schedule Appointment';
     $breadcrumbs = [
         'Appointments' => '/appointments',
         'Schedule Appointment' => null

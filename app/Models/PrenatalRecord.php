@@ -80,7 +80,7 @@ class PrenatalRecord extends Model {
      */
     public function findById($id) {
         $sql = "SELECT pr.*, 
-                       p.first_name, p.last_name, p.patient_no, p.dob, p.contact_no, p.address, p.barangay,
+                       p.first_name, p.last_name, p.patient_no, p.dob, p.contact_no, p.address,
                        TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
                        CONCAT(u.first_name, ' ', u.last_name) AS creator_name
                 FROM prenatal_records pr
@@ -320,7 +320,7 @@ class PrenatalRecord extends Model {
     public function getActiveRoster($search = '') {
         $sql = "SELECT pr.*, 
                        p.id AS patient_id, p.patient_no, p.envelope_no, p.first_name, p.last_name, 
-                       p.middle_name, p.suffix, p.dob, p.contact_no, p.address, p.barangay,
+                       p.middle_name, p.suffix, p.dob, p.contact_no, p.address,
                        TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
                        CONCAT(u.first_name, ' ', u.last_name) AS creator_name,
                        (SELECT COUNT(*) FROM prenatal_visits pv 
@@ -336,7 +336,7 @@ class PrenatalRecord extends Model {
         
         $params = [];
         if (!empty($search)) {
-            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR p.address LIKE :s5 OR p.barangay LIKE :s6)";
+            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR p.envelope_no LIKE :s4 OR p.address LIKE :s5 OR CONCAT(p.first_name, ' ', p.last_name) LIKE :s6)";
             $term = '%' . trim($search) . '%';
             $params['s1'] = $term;
             $params['s2'] = $term;
@@ -371,7 +371,7 @@ class PrenatalRecord extends Model {
         $intDays = (int)$days;
         $sql = "SELECT pr.*, 
                        p.id AS patient_id, p.patient_no, p.envelope_no, p.first_name, p.last_name, 
-                       p.middle_name, p.suffix, p.dob, p.contact_no, p.address, p.barangay,
+                       p.middle_name, p.suffix, p.dob, p.contact_no, p.address,
                        TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS patient_age,
                        (SELECT COUNT(*) FROM prenatal_visits pv 
                         WHERE pv.prenatal_id = pr.id AND pv.deleted_at IS NULL) AS visit_count

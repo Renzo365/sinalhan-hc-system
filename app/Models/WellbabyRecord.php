@@ -213,7 +213,7 @@ class WellbabyRecord extends Model {
 
         $sql = "SELECT wb.*, 
                        p.id AS patient_id, p.patient_no, p.envelope_no, p.family_no, p.first_name, p.last_name, 
-                       p.middle_name, p.suffix, p.dob, p.sex, p.address, p.barangay, p.mother_name, p.father_name,
+                       p.middle_name, p.suffix, p.dob, p.sex, p.address, p.mother_name, p.father_name,
                        TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) AS age_months,
                        TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) AS age_years,
                        m.id AS mother_id, m.first_name AS mother_first_name, m.last_name AS mother_last_name, m.patient_no AS mother_patient_no,

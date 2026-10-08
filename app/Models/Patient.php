@@ -28,7 +28,10 @@ class Patient extends Model {
                         OR p.family_no LIKE :search_family
                         OR p.contact_no LIKE :search_contact 
                         OR p.philhealth_no LIKE :search_phic
-                        OR p.address LIKE :search_address)";
+                        OR p.address LIKE :search_address
+                        OR CONCAT(p.first_name, ' ', p.last_name) LIKE :search_full1
+                        OR CONCAT(p.last_name, ', ', p.first_name) LIKE :search_full2
+                        OR CONCAT(p.last_name, ' ', p.first_name) LIKE :search_full3)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
@@ -38,6 +41,9 @@ class Patient extends Model {
             $params['search_contact'] = $searchTerm;
             $params['search_phic'] = $searchTerm;
             $params['search_address'] = $searchTerm;
+            $params['search_full1'] = $searchTerm;
+            $params['search_full2'] = $searchTerm;
+            $params['search_full3'] = $searchTerm;
         }
 
         // Filter by Sex
@@ -53,13 +59,13 @@ class Patient extends Model {
                     $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5";
                     break;
                 case 'infant':
-                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 1";
+                    $sql .= " AND TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) < 12";
                     break;
                 case 'toddler':
-                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 2 AND 5";
+                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 1 AND 4";
                     break;
                 case 'child':
-                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 6 AND 12";
+                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 5 AND 12";
                     break;
                 case 'teen':
                     $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) BETWEEN 13 AND 19";
@@ -154,7 +160,7 @@ class Patient extends Model {
             'last_name' => trim($lastName)
         ];
 
-        $sql = "SELECT id, patient_no, envelope_no, first_name, middle_name, last_name, suffix, dob, sex, address, barangay 
+        $sql = "SELECT id, patient_no, envelope_no, first_name, middle_name, last_name, suffix, dob, sex, address 
                 FROM patients 
                 WHERE deleted_at IS NULL";
 
@@ -192,13 +198,13 @@ class Patient extends Model {
         $sql = "INSERT INTO patients (
                     patient_no, envelope_no, family_no, first_name, middle_name, last_name, suffix, dob, sex, 
                     civil_status, civil_status_other, blood_type, religion, occupation, education_attainment,
-                    contact_no, barangay, address, phic_status, phic_type, philhealth_no,
+                    contact_no, address, phic_status, phic_type, philhealth_no,
                     father_name, father_dob, mother_name, mother_dob, spouse_name, spouse_dob,
                     emergency_name, emergency_relationship, emergency_no, created_by
                 ) VALUES (
                     :patient_no, :envelope_no, :family_no, :first_name, :middle_name, :last_name, :suffix, :dob, :sex, 
                     :civil_status, :civil_status_other, :blood_type, :religion, :occupation, :education_attainment,
-                    :contact_no, :barangay, :address, :phic_status, :phic_type, :philhealth_no,
+                    :contact_no, :address, :phic_status, :phic_type, :philhealth_no,
                     :father_name, :father_dob, :mother_name, :mother_dob, :spouse_name, :spouse_dob,
                     :emergency_name, :emergency_relationship, :emergency_no, :created_by
                 )";
@@ -227,7 +233,6 @@ class Patient extends Model {
                     'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
                     'education_attainment' => !empty($data['education_attainment']) ? $data['education_attainment'] : null,
                     'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
-                    'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
                     'address' => !empty($data['address']) ? trim($data['address']) : '',
                     'phic_status' => !empty($data['phic_status']) ? $data['phic_status'] : 'Non-Member',
                     'phic_type' => !empty($data['phic_type']) ? trim($data['phic_type']) : null,
@@ -291,7 +296,6 @@ class Patient extends Model {
                     occupation = :occupation,
                     education_attainment = :education_attainment,
                     contact_no = :contact_no,
-                    barangay = :barangay,
                     address = :address,
                     phic_status = :phic_status,
                     phic_type = :phic_type,
@@ -327,7 +331,6 @@ class Patient extends Model {
             'occupation' => !empty($data['occupation']) ? trim($data['occupation']) : null,
             'education_attainment' => !empty($data['education_attainment']) ? $data['education_attainment'] : null,
             'contact_no' => !empty($data['contact_no']) ? trim($data['contact_no']) : null,
-            'barangay' => !empty($data['barangay']) ? trim($data['barangay']) : 'Sinalhan',
             'address' => !empty($data['address']) ? trim($data['address']) : '',
             'phic_status' => !empty($data['phic_status']) ? $data['phic_status'] : 'Non-Member',
             'phic_type' => !empty($data['phic_type']) ? trim($data['phic_type']) : null,
@@ -385,8 +388,8 @@ class Patient extends Model {
     protected function generatePatientNo() {
         $year = date('Y');
         
-        // Find the last patient_no created in this year
-        $stmt = $this->db->prepare("SELECT patient_no FROM patients WHERE patient_no LIKE :prefix ORDER BY id DESC LIMIT 1");
+        // Find the last patient_no created in this year by numeric sequence suffix
+        $stmt = $this->db->prepare("SELECT patient_no FROM patients WHERE patient_no LIKE :prefix ORDER BY CAST(SUBSTRING_INDEX(patient_no, '-', -1) AS UNSIGNED) DESC, id DESC LIMIT 1");
         $stmt->execute(['prefix' => "P-{$year}-%"]);
         $lastPatientNo = $stmt->fetchColumn();
 
@@ -401,23 +404,33 @@ class Patient extends Model {
     }
 
     /**
-     * Check if a PhilHealth number is unique, ignoring a specific patient (for edits).
+     * Check if a PhilHealth number is unique among active principal members.
+     * Legal dependents sharing a principal member's PIN are permitted.
      * 
      * @param string $philhealthNo
      * @param int|null $excludeId Patient ID to exclude
+     * @param string|null $phicStatus Membership status ('Member', 'Dependent', 'Non-Member')
      * @return bool
      */
-    public function isPhilHealthUnique($philhealthNo, $excludeId = null) {
+    public function isPhilHealthUnique($philhealthNo, $excludeId = null, $phicStatus = null) {
         if (empty($philhealthNo)) return true;
-        
-        $sql = "SELECT COUNT(*) FROM patients WHERE philhealth_no = :philhealth_no";
+
+        // Dependents legally share the principal member's PhilHealth PIN
+        if ($phicStatus === 'Dependent') {
+            return true;
+        }
+
+        $sql = "SELECT COUNT(*) FROM patients WHERE philhealth_no = :philhealth_no AND deleted_at IS NULL";
         $params = ['philhealth_no' => $philhealthNo];
-        
+
         if ($excludeId !== null) {
             $sql .= " AND id != :exclude_id";
-            $params['exclude_id'] = $excludeId;
+            $params['exclude_id'] = (int)$excludeId;
         }
-        
+
+        // Only enforce uniqueness against other principal members
+        $sql .= " AND (phic_status = 'Member' OR phic_status IS NULL)";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchColumn() == 0;
@@ -441,12 +454,18 @@ class Patient extends Model {
             $sql .= " AND (p.first_name LIKE :search_first 
                         OR p.last_name LIKE :search_last 
                         OR p.patient_no LIKE :search_no
-                        OR p.envelope_no LIKE :search_envelope)";
+                        OR p.envelope_no LIKE :search_envelope
+                        OR CONCAT(p.first_name, ' ', p.last_name) LIKE :search_full1
+                        OR CONCAT(p.last_name, ', ', p.first_name) LIKE :search_full2
+                        OR CONCAT(p.last_name, ' ', p.first_name) LIKE :search_full3)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
             $params['search_no'] = $searchTerm;
             $params['search_envelope'] = $searchTerm;
+            $params['search_full1'] = $searchTerm;
+            $params['search_full2'] = $searchTerm;
+            $params['search_full3'] = $searchTerm;
         }
 
         if (!empty($filters['date_from'])) {
