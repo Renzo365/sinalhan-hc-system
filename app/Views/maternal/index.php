@@ -29,22 +29,19 @@ foreach ($activeRoster as $row) {
 $deliveredCount = count($recentlyDelivered);
 ?>
 
-<div class="container-fluid py-4">
-    <!-- Header Title Banner -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <div>
-            <h2 class="fw-bold mb-1 text-dark">
-                <i class="bi bi-heart-pulse-fill text-danger me-2"></i>Prenatal Care Workstation
-            </h2>
-            <p class="text-muted mb-0">Active pregnancy cohorts, prenatal checkup tracking, and delivery outcomes.</p>
-        </div>
-        <div>
-            <a href="<?= url('/prenatal/register') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-sm">
-                <i class="bi bi-plus-lg me-2"></i>
-                <span>Register Pregnancy</span>
-            </a>
-        </div>
+<!-- Header Title Banner -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Prenatal Care Workstation</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Active pregnancy cohorts, prenatal checkup tracking, and delivery outcomes.</p>
     </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="<?= url('/prenatal/register') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-sm">
+            <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>
+            <span>Register Pregnancy</span>
+        </a>
+    </div>
+</div>
 
     <!-- Prenatal Cohort Operational KPI Summary Cards -->
     <div class="row g-3 mb-4">
@@ -55,10 +52,10 @@ $deliveredCount = count($recentlyDelivered);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Active Pregnancies</div>
-                            <div class="h3 mb-0 fw-bold text-primary mt-1"><?= $totalActive ?></div>
+                            <div class="h3 mb-0 fw-bold text-primary mt-1" style="font-variant-numeric: tabular-nums;"><?= $totalActive ?></div>
                         </div>
                         <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-person-hearts fs-5"></i>
+                            <i class="bi bi-person-hearts fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -75,10 +72,10 @@ $deliveredCount = count($recentlyDelivered);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Near Term (≥37w)</div>
-                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1"><?= $nearTermCount ?></div>
+                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1" style="font-variant-numeric: tabular-nums;"><?= $nearTermCount ?></div>
                         </div>
                         <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-bell fs-5"></i>
+                            <i class="bi bi-bell fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -95,10 +92,10 @@ $deliveredCount = count($recentlyDelivered);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">High-Risk / Overdue</div>
-                            <div class="h3 mb-0 fw-bold <?= $overdueCount > 0 ? 'text-danger' : 'text-secondary' ?> mt-1"><?= $overdueCount ?></div>
+                            <div class="h3 mb-0 fw-bold <?= $overdueCount > 0 ? 'text-danger' : 'text-secondary' ?> mt-1" style="font-variant-numeric: tabular-nums;"><?= $overdueCount ?></div>
                         </div>
                         <div class="<?= $overdueCount > 0 ? 'bg-danger-subtle text-danger' : 'bg-light text-secondary' ?> rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-exclamation-triangle fs-5"></i>
+                            <i class="bi bi-exclamation-triangle fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -115,10 +112,10 @@ $deliveredCount = count($recentlyDelivered);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Recent Deliveries</div>
-                            <div class="h3 mb-0 fw-bold text-success mt-1"><?= $deliveredCount ?></div>
+                            <div class="h3 mb-0 fw-bold text-success mt-1" style="font-variant-numeric: tabular-nums;"><?= $deliveredCount ?></div>
                         </div>
                         <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-check-circle fs-5"></i>
+                            <i class="bi bi-check-circle fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -137,12 +134,14 @@ $deliveredCount = count($recentlyDelivered);
                 <div class="col-12 col-md-6">
                     <label for="search" class="form-label fw-semibold text-secondary small">Search Mother / Patient</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search" aria-hidden="true"></i></span>
                         <input type="text" 
                                name="search" 
                                id="search" 
                                class="form-control bg-light border-start-0" 
-                               placeholder="Search mother name, ID, envelope..." 
+                               placeholder="Search mother name, ID, envelope…" 
+                               autocomplete="off"
+                               spellcheck="false"
                                value="<?= h($search) ?>">
                     </div>
                 </div>
@@ -164,8 +163,8 @@ $deliveredCount = count($recentlyDelivered);
                     <button type="submit" class="btn btn-primary flex-grow-1">
                         Filter
                     </button>
-                    <a href="<?= url('/prenatal') ?>" class="btn btn-outline-secondary" title="Clear Filters">
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                    <a href="<?= url('/prenatal') ?>" class="btn btn-outline-secondary" title="Clear Filters" aria-label="Clear Filters">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                     </a>
                 </div>
             </form>
@@ -176,10 +175,10 @@ $deliveredCount = count($recentlyDelivered);
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="fw-bold mb-0 text-dark">Active Pregnant Mothers Cohort</h5>
-                <small class="text-muted">Mothers currently enrolled in active pregnancy episodes</small>
+                <h2 class="h5 fw-bold mb-0 text-dark" style="text-wrap: balance;">Active Pregnant Mothers Cohort</h2>
+                <small class="text-muted" style="text-wrap: pretty;">Mothers currently enrolled in active pregnancy episodes</small>
             </div>
-            <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace">
+            <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                 Active Records: <strong class="text-dark"><?= count($activeRoster) ?></strong>
             </span>
         </div>
@@ -202,7 +201,7 @@ $deliveredCount = count($recentlyDelivered);
                         <?php if (empty($activeRoster)): ?>
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-muted">
-                                    <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary opacity-50" aria-hidden="true"></i>
                                     <?php if (!empty($search) || !empty($stage)): ?>
                                         No active pregnant patients match your search/filter criteria.
                                         <div class="mt-2"><a href="<?= url('/prenatal') ?>" class="btn btn-sm btn-outline-primary">Clear Filters</a></div>
@@ -234,17 +233,21 @@ $deliveredCount = count($recentlyDelivered);
                                                 <?= h($row['last_name']) ?>, <?= h($row['first_name']) ?> <?= !empty($row['middle_name']) ? h(mb_substr($row['middle_name'], 0, 1)) . '.' : '' ?>
                                             </a>
                                             <div class="small text-muted d-flex align-items-center gap-1 mt-1">
-                                                <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem;"><?= h($row['patient_no']) ?></span>
+                                                <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                    <span class="visually-hidden">Patient ID: </span><?= h($row['patient_no']) ?>
+                                                </span>
                                                 <?php if (!empty($row['envelope_no'])): ?>
-                                                    <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.72rem;">Env #<?= h($row['envelope_no']) ?></span>
+                                                    <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                        <span class="visually-hidden">Envelope No: </span>Env #<?= h($row['envelope_no']) ?>
+                                                    </span>
                                                 <?php endif; ?>
                                                 <span class="ms-1"><?= h($row['patient_age']) ?> yrs</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-pink text-white px-2 py-1 fw-bold">G<?= h($row['gravida']) ?> P<?= h($row['para']) ?></span>
-                                        <div class="text-muted font-monospace mt-1" style="font-size: 0.75rem;">
+                                        <span class="badge bg-pink text-white px-2 py-1 fw-bold" style="font-variant-numeric: tabular-nums;">G<?= h($row['gravida']) ?> P<?= h($row['para']) ?></span>
+                                        <div class="text-muted font-monospace mt-1" style="font-size: 0.75rem; font-variant-numeric: tabular-nums;">
                                             T:<?= (int)$row['term_births'] ?> P:<?= (int)$row['preterm_births'] ?> A:<?= (int)$row['abortions'] ?> L:<?= (int)$row['living_children'] ?>
                                         </div>
                                     </td>
@@ -254,24 +257,24 @@ $deliveredCount = count($recentlyDelivered);
                                     <td>
                                         <div class="fw-bold text-dark"><?= date('M d, Y', strtotime($row['edc'])) ?></div>
                                         <?php if ($daysLeft > 0): ?>
-                                            <span class="badge bg-info-subtle text-info border small mt-1">In <?= $daysLeft ?> days</span>
+                                            <span class="badge bg-info-subtle text-info border small mt-1" style="font-variant-numeric: tabular-nums;">In <?= $daysLeft ?> days</span>
                                         <?php elseif ($daysLeft === 0): ?>
                                             <span class="badge bg-warning text-dark small mt-1">Due Today!</span>
                                         <?php else: ?>
-                                            <span class="badge bg-danger-subtle text-danger border small mt-1"><?= abs($daysLeft) ?> days overdue</span>
+                                            <span class="badge bg-danger-subtle text-danger border small mt-1" style="font-variant-numeric: tabular-nums;"><?= abs($daysLeft) ?> days overdue</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-between align-items-center small mb-1">
-                                            <span class="fw-bold text-dark"><?= h($row['calculated_aog']['formatted'] ?? '0 weeks') ?></span>
-                                            <span class="text-muted"><?= $progressPct ?>%</span>
+                                            <span class="fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><?= h($row['calculated_aog']['formatted'] ?? '0 weeks') ?></span>
+                                            <span class="text-muted" style="font-variant-numeric: tabular-nums;"><?= $progressPct ?>%</span>
                                         </div>
                                         <div class="progress" style="height: 5px;">
-                                            <div class="progress-bar <?= $progressClass ?>" role="progressbar" style="width: <?= $progressPct ?>%;" aria-valuenow="<?= $progressPct ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar <?= $progressClass ?>" role="progressbar" style="width: <?= $progressPct ?>%;" aria-valuenow="<?= $progressPct ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Gestational progress: <?= $progressPct ?>%"></div>
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold">
+                                        <span class="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold" style="font-variant-numeric: tabular-nums;">
                                             <?= (int)$row['visit_count'] ?>
                                         </span>
                                     </td>
@@ -293,8 +296,8 @@ $deliveredCount = count($recentlyDelivered);
     <?php if (!empty($recentlyDelivered)): ?>
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-0 py-3 px-4">
-                <h5 class="fw-bold mb-0 text-dark">Recently Delivered / Concluded (Last 90 Days)</h5>
-                <small class="text-muted">Postpartum mothers and recently concluded pregnancy episodes</small>
+                <h2 class="h5 fw-bold mb-0 text-dark" style="text-wrap: balance;">Recently Delivered / Concluded (Last 90 Days)</h2>
+                <small class="text-muted" style="text-wrap: pretty;">Postpartum mothers and recently concluded pregnancy episodes</small>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -352,7 +355,6 @@ $deliveredCount = count($recentlyDelivered);
             </div>
         </div>
     <?php endif; ?>
-</div>
 
 <style>
 .hover-primary:hover {
@@ -377,8 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "info": true,
             "autoWidth": false,
             "responsive": true,
-            "pageLength": 10,
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "pageLength": <?= (int)user_pref('default_page_size', 10) ?>,
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             "order": [[3, "asc"]], // Order by EDC ascending
             "columnDefs": [
                 { "orderable": false, "targets": 6 } // Disable sorting on Action column (index 6)

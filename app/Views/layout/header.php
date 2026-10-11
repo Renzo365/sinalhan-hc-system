@@ -12,7 +12,7 @@
     <!-- Custom Style -->
     <link rel="stylesheet" href="<?= asset('css/index.css') ?>">
 </head>
-<body>
+<body class="<?= (function_exists('user_pref') && user_pref('table_density') === 'compact') ? 'compact-tables' : '' ?>">
 <?php if (isset($_SESSION['user_id']) && !isset($disable_layout)): ?>
 <div class="app-wrapper">
     <!-- Topbar (Full-width across top) -->
@@ -25,24 +25,20 @@
     <div class="app-main">
         <div class="app-content">
             <!-- Breadcrumbs / Page Header -->
-            <?php if (isset($title)): ?>
+            <?php if (isset($title) && $title !== 'Dashboard'): ?>
                 <nav aria-label="breadcrumb" class="mb-4">
                     <ol class="breadcrumb">
-                        <?php if ($title === 'Dashboard'): ?>
-                            <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-speedometer2 me-1"></i> Dashboard</li>
+                        <li class="breadcrumb-item"><a href="<?= url('/dashboard') ?>">Home</a></li>
+                        <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
+                            <?php foreach ($breadcrumbs as $label => $link): ?>
+                                <?php if ($link !== null): ?>
+                                    <li class="breadcrumb-item"><a href="<?= url($link) ?>"><?= h($label) ?></a></li>
+                                <?php else: ?>
+                                    <li class="breadcrumb-item active" aria-current="page"><?= h($label) ?></li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
                         <?php else: ?>
-                            <li class="breadcrumb-item"><a href="<?= url('/dashboard') ?>">Home</a></li>
-                            <?php if (isset($breadcrumbs) && is_array($breadcrumbs)): ?>
-                                <?php foreach ($breadcrumbs as $label => $link): ?>
-                                    <?php if ($link !== null): ?>
-                                        <li class="breadcrumb-item"><a href="<?= url($link) ?>"><?= h($label) ?></a></li>
-                                    <?php else: ?>
-                                        <li class="breadcrumb-item active" aria-current="page"><?= h($label) ?></li>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <li class="breadcrumb-item active" aria-current="page"><?= h($title) ?></li>
-                            <?php endif; ?>
+                            <li class="breadcrumb-item active" aria-current="page"><?= h($title) ?></li>
                         <?php endif; ?>
                     </ol>
                 </nav>

@@ -4,8 +4,8 @@ require __DIR__ . '/layout/header.php';
 ?>
 
 <div class="mb-4">
-    <h2 class="h3 mb-1 fw-bold text-primary-dark">Dashboard</h2>
-    <p class="text-secondary small mb-0">Welcome back, <strong class="text-dark"><?= h($userFullName ?? 'Staff') ?></strong>. Daily health center summary, active queue counts, and today's appointments schedule.</p>
+    <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Dashboard</h1>
+    <p class="text-secondary small mb-0" style="text-wrap: pretty;">Welcome back, <strong class="text-dark"><?= h($userFullName ?? 'Staff') ?></strong>. Daily health center summary, active queue counts, and today's appointments schedule.</p>
 </div>
 
 <?php
@@ -30,16 +30,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Traffic Today</div>
-                            <div class="h3 mb-0 fw-bold text-primary-dark mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-primary-dark mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($trafficToday) ?>
                             </div>
                         </div>
                         <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-people-fill fs-5"></i>
+                            <i class="bi bi-people-fill fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <span><strong class="text-dark"><?= number_format($apptsCompleted) ?></strong> Appts &bull; <strong class="text-dark"><?= number_format($stats['today_visits'] ?? 0) ?></strong> Walk-ins</span>
+                        <span><strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= number_format($apptsCompleted) ?></strong> Appts <span aria-hidden="true">&bull;</span> <strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= number_format($stats['today_visits'] ?? 0) ?></strong> Walk-ins</span>
                     </div>
                 </div>
             </div>
@@ -54,16 +54,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Appointments</div>
-                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($apptsTotal) ?>
                             </div>
                         </div>
                         <div class="bg-info-subtle text-info-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-calendar2-check-fill fs-5"></i>
+                            <i class="bi bi-calendar2-check-fill fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <span><strong class="text-dark"><?= $apptsCompleted ?></strong> Completed (<?= $apptsPct ?>% attendance)</span>
+                        <span><strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= $apptsCompleted ?></strong> Completed (<span style="font-variant-numeric: tabular-nums;"><?= $apptsPct ?>%</span> attendance)</span>
                     </div>
                 </div>
             </div>
@@ -78,16 +78,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Waiting in Lobby</div>
-                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($waitingLobby) ?>
                             </div>
                         </div>
                         <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-ticket-perforated-fill fs-5"></i>
+                            <i class="bi bi-ticket-perforated-fill fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <span>Now Serving: <strong class="text-dark font-monospace"><?= !empty($queueStats['serving_no']) ? sprintf('%03d', $queueStats['serving_no']) : '--' ?></strong></span>
+                        <span>Now Serving: <strong class="text-dark font-monospace" style="font-variant-numeric: tabular-nums;"><?= !empty($queueStats['serving_no']) ? sprintf('%03d', $queueStats['serving_no']) : '--' ?></strong></span>
                     </div>
                 </div>
             </div>
@@ -102,16 +102,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Community Census</div>
-                            <div class="h3 mb-0 fw-bold text-success mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-success mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($totalPatients) ?>
                             </div>
                         </div>
                         <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-shield-check fs-5"></i>
+                            <i class="bi bi-shield-check fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <span><strong class="text-dark"><?= $phicPct ?>%</strong> PhilHealth &bull; <strong class="text-dark"><?= number_format($households) ?></strong> families</span>
+                        <span><strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= $phicPct ?>%</strong> PhilHealth <span aria-hidden="true">&bull;</span> <strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= number_format($households) ?></strong> families</span>
                     </div>
                 </div>
             </div>
@@ -124,9 +124,9 @@ $households = (int)($censusMetrics['households'] ?? 0);
     <div class="col-12 col-lg-7">
         <div class="card card-premium h-100">
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-calendar3 me-2 text-primary"></i>Today's Scheduled Appointments
-                </h3>
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
+                    <i class="bi bi-calendar3 me-2 text-primary" aria-hidden="true"></i>Today's Scheduled Appointments
+                </h2>
                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1">Today</span>
             </div>
             <div class="card-body p-0">
@@ -134,22 +134,22 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <table class="table align-middle mb-0 table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th class="ps-4" style="width: 95px;">Time</th>
-                                <th style="min-width: 175px;">Patient Details</th>
-                                <th>Program &amp; Purpose</th>
-                                <th style="width: 110px;">Status</th>
-                                <th class="pe-4 text-end" style="width: 115px;">Action</th>
+                                <th scope="col" class="ps-4" style="width: 95px;">Time</th>
+                                <th scope="col" style="min-width: 175px;">Patient Details</th>
+                                <th scope="col">Program &amp; Purpose</th>
+                                <th scope="col" style="width: 110px;">Status</th>
+                                <th scope="col" class="pe-4 text-end" style="width: 115px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($todayAppointments)): ?>
                                 <tr>
                                     <td colspan="5" class="text-center py-5 text-muted">
-                                        <i class="bi bi-calendar-check fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                        <div class="fw-semibold text-dark mb-1">No appointments scheduled for today</div>
-                                        <p class="small text-secondary mb-3">All clear! You can book new appointments in the calendar module.</p>
-                                        <a href="<?= url('/appointments/create') ?>" class="btn btn-sm btn-outline-primary px-3">
-                                            <i class="bi bi-calendar-plus me-1"></i> Book New Appointment
+                                        <i class="bi bi-calendar-check fs-1 d-block mb-2 text-secondary opacity-50" aria-hidden="true"></i>
+                                        <div class="fw-semibold text-dark mb-1" style="text-wrap: balance;">No appointments scheduled for today</div>
+                                        <p class="small text-secondary mb-3" style="text-wrap: pretty;">All clear! You can book new appointments in the calendar module.</p>
+                                        <a href="<?= url('/appointments/create') ?>" class="btn btn-sm btn-outline-primary px-3" style="min-height: 32px; display: inline-flex; align-items: center;">
+                                            <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i> Book New Appointment
                                         </a>
                                     </td>
                                 </tr>
@@ -168,7 +168,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                     $qNo = $isEnqueued ? $enqueuedMap[$appt['patient_id']] : null;
                                 ?>
                                     <tr>
-                                        <td class="ps-4 fw-semibold text-secondary font-monospace small" style="white-space: nowrap;">
+                                        <td class="ps-4 fw-semibold text-secondary font-monospace small" style="white-space: nowrap; font-variant-numeric: tabular-nums;">
                                             <?= date('h:i A', strtotime($appt['appointment_time'])) ?>
                                         </td>
                                         <td>
@@ -178,14 +178,14 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 </a>
                                             </div>
                                             <div class="text-muted small d-flex align-items-center gap-1.5 mt-0.5" style="font-size: 0.75rem; white-space: nowrap;">
-                                                <a href="<?= url('/patients/' . $appt['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" title="View Patient Record">
+                                                <a href="<?= url('/patients/' . $appt['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" style="font-variant-numeric: tabular-nums;" title="View Patient Record">
                                                     <?= h($appt['patient_no']) ?>
                                                 </a>
                                                 <?php if (!empty($appt['contact_no'])): ?>
-                                                    <span>&bull;</span>
-                                                    <span><?= h($appt['contact_no']) ?></span>
+                                                    <span aria-hidden="true">&bull;</span>
+                                                    <span style="font-variant-numeric: tabular-nums;"><?= h($appt['contact_no']) ?></span>
                                                 <?php else: ?>
-                                                    <span>&bull;</span>
+                                                    <span aria-hidden="true">&bull;</span>
                                                     <span>Brgy. Sinalhan</span>
                                                 <?php endif; ?>
                                             </div>
@@ -223,7 +223,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                         </td>
                                         <td class="pe-4 text-end">
                                             <?php if ($isEnqueued): ?>
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle py-1.5 px-2" title="Patient is already enqueued today">
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle py-1.5 px-2" style="font-variant-numeric: tabular-nums;" title="Patient is already enqueued today">
                                                     Queue #<?= $qNo ?>
                                                 </span>
                                             <?php elseif ($appt['status'] === 'Scheduled'): ?>
@@ -233,7 +233,8 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                     <input type="hidden" name="service_type" value="<?= h($serviceVal) ?>">
                                                     <input type="hidden" name="appointment_id" value="<?= (int)$appt['id'] ?>">
                                                     <input type="hidden" name="redirect_to" value="<?= url('/dashboard') ?>">
-                                                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2.5 d-inline-flex align-items-center shadow-xs" title="Issue Queue Ticket for <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2.5 d-inline-flex align-items-center shadow-xs" style="min-height: 31px;" title="Issue Queue Ticket for <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>" aria-label="Check in <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?> to queue">
+                                                        <i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i>
                                                         <span>Check In</span>
                                                     </button>
                                                 </form>
@@ -259,20 +260,20 @@ $households = (int)($censusMetrics['households'] ?? 0);
     <div class="col-12 col-lg-5">
         <div class="card card-premium h-100">
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-play-circle-fill me-2 text-warning"></i>Daily Queue Overview
-                </h3>
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
+                    <i class="bi bi-play-circle-fill me-2 text-warning" aria-hidden="true"></i>Daily Queue Overview
+                </h2>
                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Active</span>
             </div>
             <div class="card-body py-4 d-flex flex-column justify-content-between">
                 <div>
                     <div class="text-center py-3">
-                        <div class="display-3 fw-bold text-primary mb-1 font-monospace"><?= !empty($queueStats['serving_no']) ? sprintf('%03d', $queueStats['serving_no']) : '000' ?></div>
+                        <div class="display-3 fw-bold text-primary mb-1 font-monospace" style="font-variant-numeric: tabular-nums;"><?= !empty($queueStats['serving_no']) ? sprintf('%03d', $queueStats['serving_no']) : '000' ?></div>
                         <div class="text-muted small text-uppercase fw-semibold tracking-wider">Current Queue Number</div>
                         <?php if (!empty($queueStats['serving_service'])): ?>
                             <div class="mt-2">
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1">
-                                    <i class="bi bi-hospital me-1"></i><?= h($queueStats['serving_service']) ?>
+                                    <i class="bi bi-hospital me-1" aria-hidden="true"></i><?= h($queueStats['serving_service']) ?>
                                 </span>
                             </div>
                         <?php endif; ?>
@@ -282,26 +283,26 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     
                     <div class="d-flex justify-content-around text-center mt-3">
                         <div>
-                            <div class="fs-4 fw-bold text-warning font-monospace"><?= number_format($queueStats['waiting']) ?></div>
+                            <div class="fs-4 fw-bold text-warning font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['waiting']) ?></div>
                             <div class="text-muted small">Waiting</div>
                         </div>
                         <div>
-                            <div class="fs-4 fw-bold text-primary font-monospace"><?= number_format($queueStats['called']) ?></div>
+                            <div class="fs-4 fw-bold text-primary font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['called']) ?></div>
                             <div class="text-muted small">Called</div>
                         </div>
                         <div>
-                            <div class="fs-4 fw-bold text-success font-monospace"><?= number_format($queueStats['completed']) ?></div>
+                            <div class="fs-4 fw-bold text-success font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['completed']) ?></div>
                             <div class="text-muted small">Completed</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-3 border-top d-flex gap-2">
-                    <a href="<?= url('/queue') ?>" class="btn btn-primary fw-semibold flex-grow-1 py-2 d-inline-flex align-items-center justify-content-center shadow-sm">
-                        <i class="bi bi-card-checklist me-2"></i> Manage Live Queue
+                    <a href="<?= url('/queue') ?>" class="btn btn-primary fw-semibold flex-grow-1 py-2 d-inline-flex align-items-center justify-content-center shadow-sm" style="min-height: 38px;">
+                        <i class="bi bi-card-checklist me-2" aria-hidden="true"></i> Manage Live Queue
                     </a>
-                    <a href="<?= url('/queue/display') ?>" target="_blank" class="btn btn-outline-secondary fw-semibold py-2 px-3 d-inline-flex align-items-center justify-content-center" title="Open Public Display in New Tab">
-                        <i class="bi bi-display me-1"></i> Display
+                    <a href="<?= url('/queue/display') ?>" target="_blank" class="btn btn-outline-secondary fw-semibold py-2 px-3 d-inline-flex align-items-center justify-content-center" style="min-height: 38px;" title="Open Public Display in New Tab" aria-label="Open Public Display in New Tab">
+                        <i class="bi bi-display me-1" aria-hidden="true"></i> Display
                     </a>
                 </div>
             </div>
@@ -317,16 +318,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
                 <div class="d-flex align-items-center gap-2">
                     <div class="bg-danger-subtle text-danger rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-heart-pulse-fill fs-6"></i>
+                        <i class="bi bi-heart-pulse-fill fs-6" aria-hidden="true"></i>
                     </div>
                     <div>
-                        <h3 class="card-title h6 mb-0 fw-bold text-dark">Prenatal Delivery Radar</h3>
-                        <div class="text-muted small" style="font-size: 0.72rem;">Active pregnancies &amp; EDC delivery countdown</div>
+                        <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">Prenatal Delivery Radar</h2>
+                        <div class="text-muted small" style="font-size: 0.72rem; text-wrap: pretty;">Active pregnancies &amp; EDC delivery countdown</div>
                     </div>
                 </div>
-                <a href="<?= url('/prenatal') ?>" class="btn btn-sm btn-outline-danger px-2.5 py-1 d-inline-flex align-items-center gap-1" title="Open Full Prenatal Registry">
+                <a href="<?= url('/prenatal') ?>" class="btn btn-sm btn-outline-danger px-2.5 py-1 d-inline-flex align-items-center gap-1" style="min-height: 32px;" title="Open Full Prenatal Registry" aria-label="Open Full Prenatal Registry">
                     <span class="small">Registry</span>
-                    <i class="bi bi-arrow-right"></i>
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
             <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -336,7 +337,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div class="col-4">
                             <div class="p-2.5 rounded-3 bg-light border text-center">
                                 <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Active Cases</div>
-                                <div class="h4 mb-0 fw-bold text-danger mt-0.5 font-monospace">
+                                <div class="h4 mb-0 fw-bold text-danger mt-0.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                                     <?= number_format($maternalWatch['active_pregnancies'] ?? 0) ?>
                                 </div>
                                 <div class="text-muted" style="font-size: 0.7rem;">Enrolled mothers</div>
@@ -345,7 +346,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div class="col-4">
                             <div class="p-2.5 rounded-3 bg-warning-subtle border border-warning-subtle text-center">
                                 <div class="text-warning-emphasis small fw-semibold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Due This Month</div>
-                                <div class="h4 mb-0 fw-bold text-warning-emphasis mt-0.5 font-monospace">
+                                <div class="h4 mb-0 fw-bold text-warning-emphasis mt-0.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                                     <?= number_format($maternalWatch['due_this_month'] ?? 0) ?>
                                 </div>
                                 <div class="text-warning-emphasis" style="font-size: 0.7rem;">&le; 30 days left</div>
@@ -354,7 +355,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div class="col-4">
                             <div class="p-2.5 rounded-3 bg-light border text-center">
                                 <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Overdue Watch</div>
-                                <div class="h4 mb-0 fw-bold text-dark mt-0.5 font-monospace">
+                                <div class="h4 mb-0 fw-bold text-dark mt-0.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                                     <?= number_format($maternalWatch['past_due'] ?? 0) ?>
                                 </div>
                                 <div class="text-muted" style="font-size: 0.7rem;">Past EDC date</div>
@@ -365,16 +366,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <!-- Upcoming Deliveries Table / Feed -->
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            <i class="bi bi-clock-history me-1 text-danger"></i>Upcoming Deliveries (Next <?= count($upcomingDeliveries) ?> Due)
+                            <i class="bi bi-clock-history me-1 text-danger" aria-hidden="true"></i>Upcoming Deliveries (Next <span style="font-variant-numeric: tabular-nums;"><?= count($upcomingDeliveries) ?></span> Due)
                         </span>
                         <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.7rem;">EDC Tracking</span>
                     </div>
 
                     <?php if (empty($upcomingDeliveries)): ?>
                         <div class="text-center py-4 text-muted border rounded-3 bg-light-subtle">
-                            <i class="bi bi-heart fs-3 d-block mb-1 text-secondary opacity-50"></i>
-                            <div class="small fw-semibold text-dark">No upcoming deliveries scheduled</div>
-                            <div class="small text-muted" style="font-size: 0.75rem;">All registered prenatal mothers are beyond the immediate delivery window.</div>
+                            <i class="bi bi-heart fs-3 d-block mb-1 text-secondary opacity-50" aria-hidden="true"></i>
+                            <div class="small fw-semibold text-dark" style="text-wrap: balance;">No upcoming deliveries scheduled</div>
+                            <div class="small text-muted" style="font-size: 0.75rem; text-wrap: pretty;">All registered prenatal mothers are beyond the immediate delivery window.</div>
                         </div>
                     <?php else: ?>
                         <div class="list-group list-group-flush border rounded-3 overflow-hidden">
@@ -401,19 +402,19 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                             </a>
                                         </div>
                                         <div class="text-muted d-flex align-items-center gap-1.5 flex-wrap mt-0.5" style="font-size: 0.72rem;">
-                                            <a href="<?= url('/patients/' . $del['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" title="View Patient Record">
+                                            <a href="<?= url('/patients/' . $del['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" style="font-variant-numeric: tabular-nums;" title="View Patient Record">
                                                 <?= h($del['patient_no']) ?>
                                             </a>
-                                            <span>&bull;</span>
-                                            <span>EDC: <strong><?= date('M d, Y', strtotime($del['edc'])) ?></strong></span>
+                                            <span aria-hidden="true">&bull;</span>
+                                            <span>EDC: <strong style="font-variant-numeric: tabular-nums;"><?= date('M d, Y', strtotime($del['edc'])) ?></strong></span>
                                             <?php if (!empty($del['contact_no'])): ?>
-                                                <span>&bull;</span>
-                                                <span><?= h($del['contact_no']) ?></span>
+                                                <span aria-hidden="true">&bull;</span>
+                                                <span style="font-variant-numeric: tabular-nums;"><?= h($del['contact_no']) ?></span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="flex-shrink-0 text-end">
-                                        <span class="badge <?= $daysBadgeClass ?>" style="font-size: 0.72rem;">
+                                        <span class="badge <?= $daysBadgeClass ?>" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                             <?= $daysLabel ?>
                                         </span>
                                     </div>
@@ -425,10 +426,10 @@ $households = (int)($censusMetrics['households'] ?? 0);
 
                 <div class="pt-3 mt-3 border-top d-flex align-items-center justify-content-between">
                     <span class="text-muted small" style="font-size: 0.75rem;">
-                        <i class="bi bi-info-circle me-1 text-primary"></i>Calculated from Last Menstrual Period (LMP + 280d)
+                        <i class="bi bi-info-circle me-1 text-primary" aria-hidden="true"></i>Calculated from Last Menstrual Period (LMP + 280d)
                     </span>
-                    <a href="<?= url('/prenatal/register') ?>" class="btn btn-sm btn-link text-danger p-0 fw-semibold text-decoration-none" style="font-size: 0.75rem;">
-                        <i class="bi bi-plus-circle me-0.5"></i>New Episode
+                    <a href="<?= url('/prenatal/register') ?>" class="btn btn-sm btn-link text-danger p-0 fw-semibold text-decoration-none d-inline-flex align-items-center" style="font-size: 0.75rem; min-height: 32px;">
+                        <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>New Episode
                     </a>
                 </div>
             </div>
@@ -441,16 +442,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
                 <div class="d-flex align-items-center gap-2">
                     <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-shield-shaded fs-6"></i>
+                        <i class="bi bi-shield-shaded fs-6" aria-hidden="true"></i>
                     </div>
                     <div>
-                        <h3 class="card-title h6 mb-0 fw-bold text-dark">Child Health &amp; Immunization (EPI)</h3>
-                        <div class="text-muted small" style="font-size: 0.72rem;">Under-5 cohort census &amp; vaccine coverage</div>
+                        <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">Child Health &amp; Immunization (EPI)</h2>
+                        <div class="text-muted small" style="font-size: 0.72rem; text-wrap: pretty;">Under-5 cohort census &amp; vaccine coverage</div>
                     </div>
                 </div>
-                <a href="<?= url('/well-baby') ?>" class="btn btn-sm btn-outline-primary px-2.5 py-1 d-inline-flex align-items-center gap-1" title="Open Full Well-Baby &amp; EPI Registry">
+                <a href="<?= url('/well-baby') ?>" class="btn btn-sm btn-outline-primary px-2.5 py-1 d-inline-flex align-items-center gap-1" style="min-height: 32px;" title="Open Full Well-Baby &amp; EPI Registry" aria-label="Open Full Well-Baby &amp; EPI Registry">
                     <span class="small">Registry</span>
-                    <i class="bi bi-arrow-right"></i>
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
             <div class="card-body p-3 d-flex flex-column justify-content-between">
@@ -460,7 +461,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div class="col-4">
                             <div class="p-2.5 rounded-3 bg-light border text-center">
                                 <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Under-5 Cohort</div>
-                                <div class="h4 mb-0 fw-bold text-primary mt-0.5 font-monospace">
+                                <div class="h4 mb-0 fw-bold text-primary mt-0.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                                     <?= number_format($childHealth['total_under5'] ?? 0) ?>
                                 </div>
                                 <div class="text-muted" style="font-size: 0.7rem;">Children 0-5 yrs</div>
@@ -469,7 +470,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div class="col-4">
                             <div class="p-2.5 rounded-3 bg-info-subtle border border-info-subtle text-center">
                                 <div class="text-info-emphasis small fw-semibold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Infants (&lt; 1 yr)</div>
-                                <div class="h4 mb-0 fw-bold text-info-emphasis mt-0.5 font-monospace">
+                                <div class="h4 mb-0 fw-bold text-info-emphasis mt-0.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                                     <?= number_format($childHealth['infants_under1'] ?? 0) ?>
                                 </div>
                                 <div class="text-info-emphasis" style="font-size: 0.7rem;">Primary EPI targets</div>
@@ -478,7 +479,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div class="col-4">
                             <div class="p-2.5 rounded-3 bg-success-subtle border border-success-subtle text-center">
                                 <div class="text-success small fw-semibold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Doses Given</div>
-                                <div class="h4 mb-0 fw-bold text-success mt-0.5 font-monospace">
+                                <div class="h4 mb-0 fw-bold text-success mt-0.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                                     <?= number_format($childHealth['total_immunizations'] ?? 0) ?>
                                 </div>
                                 <div class="text-success" style="font-size: 0.7rem;">Vaccines logged</div>
@@ -490,24 +491,24 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <div class="border rounded-3 p-3 bg-light-subtle mb-2">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <span class="text-dark small fw-bold">
-                                <i class="bi bi-eyedropper text-success me-1"></i>DOH Routine Vaccine Schedule
+                                <i class="bi bi-eyedropper text-success me-1" aria-hidden="true"></i>DOH Routine Vaccine Schedule
                             </span>
                             <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;">EPI Active</span>
                         </div>
-                        <div class="text-muted small mb-2.5" style="font-size: 0.74rem;">
+                        <div class="text-muted small mb-2.5" style="font-size: 0.74rem; text-wrap: pretty;">
                             Target antigens for Barangay Sinalhan infants include: <strong>BCG</strong>, <strong>Hepatitis B</strong>, <strong>Pentavalent (DPT-HepB-HiB)</strong>, <strong>OPV / IPV</strong>, <strong>PCV</strong>, and <strong>Measles-Rubella (MMR)</strong>.
                         </div>
                         
                         <div class="row g-2 pt-2 border-top">
                             <div class="col-6">
                                 <div class="lh-1">
-                                    <div class="fw-bold text-dark small font-monospace"><?= number_format($childHealth['total_wellbaby'] ?? 0) ?> Folders</div>
+                                    <div class="fw-bold text-dark small font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($childHealth['total_wellbaby'] ?? 0) ?> Folders</div>
                                     <span class="text-muted" style="font-size: 0.68rem;">Well-Baby Growth Logs</span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="lh-1">
-                                    <div class="fw-bold text-dark small font-monospace"><?= number_format($childHealth['infants_under1'] ?? 0) ?> Infants</div>
+                                    <div class="fw-bold text-dark small font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($childHealth['infants_under1'] ?? 0) ?> Infants</div>
                                     <span class="text-muted" style="font-size: 0.68rem;">Under-1 Cohort Target</span>
                                 </div>
                             </div>
@@ -517,10 +518,10 @@ $households = (int)($censusMetrics['households'] ?? 0);
 
                 <div class="pt-3 mt-3 border-top d-flex align-items-center justify-content-between">
                     <span class="text-muted small" style="font-size: 0.75rem;">
-                        <i class="bi bi-shield-check me-1 text-success"></i>DOH National Immunization Program (NIP) standards
+                        <i class="bi bi-shield-check me-1 text-success" aria-hidden="true"></i>DOH National Immunization Program (NIP) standards
                     </span>
-                    <a href="<?= url('/well-baby/register') ?>" class="btn btn-sm btn-link text-primary p-0 fw-semibold text-decoration-none" style="font-size: 0.75rem;">
-                        <i class="bi bi-plus-circle me-0.5"></i>Enroll Child
+                    <a href="<?= url('/well-baby/register') ?>" class="btn btn-sm btn-link text-primary p-0 fw-semibold text-decoration-none d-inline-flex align-items-center" style="font-size: 0.75rem; min-height: 32px;">
+                        <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Enroll Child
                     </a>
                 </div>
             </div>
@@ -535,16 +536,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
                 <div class="d-flex align-items-center gap-2">
                     <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                        <i class="bi bi-journal-medical fs-6"></i>
+                        <i class="bi bi-journal-medical fs-6" aria-hidden="true"></i>
                     </div>
                     <div>
-                        <h3 class="card-title h6 mb-0 fw-bold text-dark">Recent Clinical Encounters</h3>
-                        <div class="text-muted small" style="font-size: 0.72rem;">Latest outpatient consultations, chief complaints &amp; primary diagnoses</div>
+                        <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">Recent Clinical Encounters</h2>
+                        <div class="text-muted small" style="font-size: 0.72rem; text-wrap: pretty;">Latest outpatient consultations, chief complaints &amp; primary diagnoses</div>
                     </div>
                 </div>
-                <a href="<?= url('/patients') ?>" class="btn btn-sm btn-outline-primary px-2.5 py-1 d-inline-flex align-items-center gap-1" title="Open Full Patient Records Directory">
+                <a href="<?= url('/patients') ?>" class="btn btn-sm btn-outline-primary px-2.5 py-1 d-inline-flex align-items-center gap-1" style="min-height: 32px;" title="Open Full Patient Records Directory" aria-label="Open Full Patient Records Directory">
                     <span class="small">Patient Records</span>
-                    <i class="bi bi-arrow-right"></i>
+                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
             <div class="card-body p-0">
@@ -552,30 +553,30 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
                         <thead class="table-light text-secondary">
                             <tr>
-                                <th class="ps-4" style="width: 170px;">Date &amp; Time</th>
-                                <th>Patient Details</th>
-                                <th>Clinical Assessment &amp; Complaint</th>
-                                <th>Attending Clinician</th>
-                                <th class="pe-4 text-end" style="width: 140px;">Action</th>
+                                <th scope="col" class="ps-4" style="width: 170px;">Date &amp; Time</th>
+                                <th scope="col">Patient Details</th>
+                                <th scope="col">Clinical Assessment &amp; Complaint</th>
+                                <th scope="col">Attending Clinician</th>
+                                <th scope="col" class="pe-4 text-end" style="width: 140px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($recentConsultations)): ?>
                                 <tr>
                                     <td colspan="5" class="text-center py-5 text-muted">
-                                        <i class="bi bi-journal-text fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                        <div class="fw-semibold text-dark mb-1">No clinical encounters recorded yet</div>
-                                        <p class="small text-secondary mb-0">Consultations conducted will automatically appear in this operational log.</p>
+                                        <i class="bi bi-journal-text fs-1 d-block mb-2 text-secondary opacity-50" aria-hidden="true"></i>
+                                        <div class="fw-semibold text-dark mb-1" style="text-wrap: balance;">No clinical encounters recorded yet</div>
+                                        <p class="small text-secondary mb-0" style="text-wrap: pretty;">Consultations conducted will automatically appear in this operational log.</p>
                                     </td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($recentConsultations as $enc): ?>
                                     <tr>
                                         <td class="ps-4" style="white-space: nowrap;">
-                                            <div class="fw-semibold text-dark small">
+                                            <div class="fw-semibold text-dark small" style="font-variant-numeric: tabular-nums;">
                                                 <?= date('M d, Y', strtotime($enc['consulted_at'])) ?>
                                             </div>
-                                            <div class="text-muted small font-monospace mt-0.5" style="font-size: 0.72rem;">
+                                            <div class="text-muted small font-monospace mt-0.5" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                 <?= date('h:i A', strtotime($enc['consulted_at'])) ?>
                                             </div>
                                         </td>
@@ -586,11 +587,11 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 </a>
                                             </div>
                                             <div class="text-muted small d-flex align-items-center gap-1.5 mt-0.5" style="font-size: 0.75rem; white-space: nowrap;">
-                                                <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" title="View Patient Profile">
+                                                <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" style="font-variant-numeric: tabular-nums;" title="View Patient Profile">
                                                     <?= h($enc['patient_no']) ?>
                                                 </a>
-                                                <span>&bull;</span>
-                                                <span><?= (int)$enc['age'] ?> yrs, <?= h($enc['sex'] ?? 'Unknown') ?></span>
+                                                <span aria-hidden="true">&bull;</span>
+                                                <span><span style="font-variant-numeric: tabular-nums;"><?= (int)$enc['age'] ?></span> yrs, <?= h($enc['sex'] ?? 'Unknown') ?></span>
                                             </div>
                                         </td>
                                         <td>
@@ -609,7 +610,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                             </div>
                                         </td>
                                         <td class="pe-4 text-end">
-                                            <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2.5 d-inline-flex align-items-center shadow-xs" title="Open Patient Medical Chart">
+                                            <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2.5 d-inline-flex align-items-center shadow-xs" style="min-height: 32px;" title="Open Patient Medical Chart" aria-label="Open Medical Chart for <?= h($enc['first_name'] . ' ' . $enc['last_name']) ?>">
                                                 <span>View Chart</span>
                                             </a>
                                         </td>
@@ -622,10 +623,10 @@ $households = (int)($censusMetrics['households'] ?? 0);
             </div>
             <div class="card-footer bg-light-subtle py-2.5 px-4 d-flex align-items-center justify-content-between border-top">
                 <span class="text-muted small" style="font-size: 0.75rem;">
-                    <i class="bi bi-info-circle me-1 text-secondary"></i>Showing 5 most recent outpatient consultations &bull; Synchronized with medical records
+                    <i class="bi bi-info-circle me-1 text-secondary" aria-hidden="true"></i>Showing 5 most recent outpatient consultations <span aria-hidden="true">&bull;</span> Synchronized with medical records
                 </span>
-                <a href="<?= url('/patients') ?>" class="btn btn-sm btn-link text-primary p-0 fw-semibold text-decoration-none" style="font-size: 0.75rem;">
-                    Browse All Records <i class="bi bi-chevron-right ms-0.5"></i>
+                <a href="<?= url('/patients') ?>" class="btn btn-sm btn-link text-primary p-0 fw-semibold text-decoration-none d-inline-flex align-items-center" style="font-size: 0.75rem; min-height: 32px;">
+                    Browse All Records <i class="bi bi-chevron-right ms-0.5" aria-hidden="true"></i>
                 </a>
             </div>
         </div>

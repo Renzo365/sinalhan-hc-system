@@ -27,14 +27,14 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
     <!-- Page Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h2 class="h3 mb-1 fw-bold text-dark">
+            <h1 class="h3 mb-1 fw-bold text-dark" style="text-wrap: balance;">
                 Register Infant for Well-Baby Care
-            </h2>
-            <p class="text-secondary small mb-0">Enroll an eligible infant or child (aged 0–5 years) into the Well-Baby &amp; EPI Immunization Program.</p>
+            </h1>
+            <p class="text-secondary small mb-0" style="text-wrap: pretty;">Enroll an eligible infant or child (aged 0–5 years) into the Well-Baby &amp; EPI Immunization Program.</p>
         </div>
         <div>
             <a href="<?= ($alreadyRegistered && !empty($initialPatientId)) ? url('/well-baby/' . $initialPatientId) : url('/well-baby') ?>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to <?= ($alreadyRegistered && !empty($initialPatientId)) ? 'Workstation' : 'Well-Baby Registry' ?>
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to <?= ($alreadyRegistered && !empty($initialPatientId)) ? 'Workstation' : 'Well-Baby Registry' ?>
             </a>
         </div>
     </div>
@@ -42,7 +42,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
     <!-- Flash Alert Messages -->
     <?php if (isset($_SESSION['error_message'])): ?>
         <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-xs mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i><?= $_SESSION['error_message'] ?>
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i><?= $_SESSION['error_message'] ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <?php unset($_SESSION['error_message']); ?>
@@ -55,16 +55,16 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
             <div id="alreadyRegisteredWarning" class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 <?= $alreadyRegistered ? '' : 'd-none' ?>">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center">
-                        <i class="bi bi-exclamation-circle-fill text-warning fs-3 me-3"></i>
+                        <i class="bi bi-exclamation-circle-fill text-warning fs-3 me-3" aria-hidden="true"></i>
                         <div>
                             <h6 class="fw-bold mb-1 text-dark">Well-Baby Record Already Exists</h6>
-                            <p class="mb-0 small text-secondary">
+                            <p class="mb-0 small text-secondary" style="text-wrap: pretty;">
                                 This child already has an active Well-Baby health profile and birth circumstances on file.
                             </p>
                         </div>
                     </div>
                     <a href="<?= !empty($initialPatientId) ? url('/well-baby/' . $initialPatientId) : '#' ?>" id="btnViewExistingWorkstation" class="btn btn-warning btn-sm fw-semibold">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Open Workstation
+                        <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i> Open Workstation
                     </a>
                 </div>
             </div>
@@ -78,16 +78,16 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                 <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
-                            <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">1</span>
-                            <h5 class="card-title h6 fw-bold mb-0 text-dark">Child / Infant Selection</h5>
+                            <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">1</span>
+                            <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Child / Infant Selection</h2>
                         </div>
                         <?php if ($isLockedPatient): ?>
                             <span class="badge bg-light text-secondary border px-3 py-2">
-                                <i class="bi bi-lock-fill me-1 text-muted"></i> Child Locked
+                                <i class="bi bi-lock-fill me-1 text-muted" aria-hidden="true"></i> Child Locked
                             </span>
                         <?php else: ?>
-                            <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient">
-                                <i class="bi bi-arrow-repeat me-1"></i> Change Child
+                            <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient" aria-label="Change selected child">
+                                <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Change Child
                             </button>
                         <?php endif; ?>
                     </div>
@@ -98,27 +98,32 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 Search Unregistered Infant / Child (Aged 0–5) <span class="text-danger">*</span>
                             </label>
                             <div class="input-group input-group-lg mb-2 shadow-xs">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                                <input type="text" 
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search" aria-hidden="true"></i></span>
+                                <input type="search" 
                                        id="patientSearchInput" 
                                        class="form-control bg-light border-start-0 fs-6" 
-                                       placeholder="Type child's name, patient ID (e.g. P-2026-), or envelope #..." 
-                                       autocomplete="off">
-                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch">
-                                    <i class="bi bi-x-lg"></i>
+                                       placeholder="Type child's name, patient ID (e.g. P-2026-), or envelope #…" 
+                                       autocomplete="off"
+                                       spellcheck="false"
+                                       role="combobox"
+                                       aria-autocomplete="list"
+                                       aria-expanded="false"
+                                       aria-controls="searchResultsContainer">
+                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch" aria-label="Clear search input">
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <div class="form-text small text-muted mb-3">
+                            <div class="form-text small text-muted mb-3" style="text-wrap: pretty;">
                                 Only children aged 0–5 registered in the patient directory who do not yet have a Well-Baby record will appear in search results.
                             </div>
 
                             <!-- Live Search Results Dropdown List -->
-                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" style="max-height: 280px; overflow-y: auto;">
+                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" role="region" aria-live="polite" aria-label="Search results" style="max-height: 280px; overflow-y: auto;">
                                 <!-- Injected dynamically via JS -->
                             </div>
-                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none">
-                                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
-                                <span class="small">Searching eligible children...</span>
+                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none" role="status" aria-live="polite">
+                                <div class="spinner-border spinner-border-sm text-success me-2" role="status" aria-hidden="true"></div>
+                                <span class="small">Searching eligible children…</span>
                             </div>
                         </div>
 
@@ -139,21 +144,21 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         </div>
                                         <div>
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <h5 class="h6 fw-bold text-dark mb-0" id="cardFullName">
+                                                <h3 class="h6 fw-bold text-dark mb-0" id="cardFullName">
                                                     <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '') . ' ' . ($preselectedPatient['suffix'] ?? '')) : '--' ?>
-                                                </h5>
+                                                </h3>
                                                 <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'male') ? 'bg-primary' : 'bg-danger' ?>" id="cardSex">
                                                     <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : 'Child' ?>
                                                 </span>
-                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo">
-                                                    <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
+                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
+                                                    <span class="visually-hidden">Patient ID: </span><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
                                                 </span>
-                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge">
-                                                    Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
+                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge" style="font-variant-numeric: tabular-nums;">
+                                                    <span class="visually-hidden">Envelope No: </span>Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
                                                 </span>
                                                 <?php if (!empty($preselectedPatient['family_no'])): ?>
-                                                    <span class="badge bg-info-subtle text-dark border font-monospace" id="cardFamilyBadge">
-                                                        Fam #<span id="cardFamilyNo"><?= h($preselectedPatient['family_no']) ?></span>
+                                                    <span class="badge bg-info-subtle text-dark border font-monospace" id="cardFamilyBadge" style="font-variant-numeric: tabular-nums;">
+                                                        <span class="visually-hidden">Family No: </span>Fam #<span id="cardFamilyNo"><?= h($preselectedPatient['family_no']) ?></span>
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
@@ -164,7 +169,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     </div>
                                     <div class="text-md-end">
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small">
-                                            <i class="bi bi-check-circle-fill me-1"></i> Child Selected
+                                            <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i> Child Selected
                                         </span>
                                     </div>
                                 </div>
@@ -174,7 +179,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-12 col-sm-6 col-md-3">
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Date of Birth</span>
-                                            <span class="fw-bold text-dark" id="cardDob">
+                                            <span class="fw-bold text-dark" id="cardDob" style="font-variant-numeric: tabular-nums;">
                                                 <?= !empty($preselectedPatient['dob']) ? date('M d, Y', strtotime($preselectedPatient['dob'])) : '--' ?>
                                             </span>
                                         </div>
@@ -182,7 +187,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-12 col-sm-6 col-md-3">
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
-                                            <span class="fw-bold text-dark" id="cardAge">
+                                            <span class="fw-bold text-dark" id="cardAge" style="font-variant-numeric: tabular-nums;">
                                                 <?= !empty($preselectedPatient['dob']) ? calculate_pediatric_age($preselectedPatient['dob']) : '--' ?>
                                             </span>
                                         </div>
@@ -210,8 +215,8 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                 <!-- Step 2: Child Information & Birth History -->
                 <div id="birthCircumstancesSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">2</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Child Information &amp; Birth History</h5>
+                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">2</span>
+                        <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Child Information &amp; Birth History</h2>
                     </div>
                     <div class="card-body p-4 bg-white">
                         <div class="row g-3">
@@ -227,6 +232,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                            id="birth_weight_kg" 
                                            class="form-control" 
                                            placeholder="e.g. 3.20" 
+                                           inputmode="decimal"
                                            required>
                                     <span class="input-group-text bg-light text-muted">kg</span>
                                 </div>
@@ -244,6 +250,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                            id="birth_length_cm" 
                                            class="form-control" 
                                            placeholder="e.g. 50.0" 
+                                           inputmode="decimal"
                                            required>
                                     <span class="input-group-text bg-light text-muted">cm</span>
                                 </div>
@@ -328,10 +335,10 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 <div class="p-3 bg-light rounded-3 border">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div>
-                                            <h6 class="fw-bold text-dark mb-0">
+                                            <h3 class="h6 fw-bold text-dark mb-0">
                                                 Newborn Screening (NBS)
-                                            </h6>
-                                            <span class="text-muted small">Record status and certification if performed</span>
+                                            </h3>
+                                            <span class="text-muted small" style="text-wrap: pretty;">Record status and certification if performed</span>
                                         </div>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" name="newborn_screening_done" value="1" id="newborn_screening_done">
@@ -375,14 +382,14 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                 <!-- Step 3: Parental Information -->
                 <div id="parentalInfoSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">3</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Parental Information</h5>
+                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">3</span>
+                        <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Parental Information</h2>
                     </div>
                     <div class="card-body p-4 bg-white">
                         <!-- Smart Mother Linker (Optional Central Registry Integration) -->
                         <div class="mb-4 p-3 bg-light rounded-3 border">
                             <label for="motherSearchInput" class="form-label fw-semibold text-secondary small d-flex justify-content-between align-items-center mb-2">
-                                <span><i class="bi bi-search-heart text-success me-1"></i> Search Registered Mother in Directory (Optional)</span>
+                                <span><i class="bi bi-search-heart text-success me-1" aria-hidden="true"></i> Search Registered Mother in Directory (Optional)</span>
                                 <span class="badge bg-secondary-subtle text-secondary" id="linkedMotherBadge">Not Linked</span>
                             </label>
 
@@ -390,36 +397,37 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
 
                             <!-- Search Input for Mother -->
                             <div class="input-group mb-2" id="motherSearchWrapper">
-                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-search"></i></span>
+                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-search" aria-hidden="true"></i></span>
                                 <input type="text" 
                                        id="motherSearchInput" 
                                        class="form-control bg-white" 
-                                       placeholder="Type mother's name or patient ID to link and auto-fill..." 
-                                       autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherSearch">
-                                    <i class="bi bi-x-circle me-1"></i> Clear
+                                       placeholder="Type mother's name or patient ID to link and auto-fill…" 
+                                       autocomplete="off"
+                                       spellcheck="false">
+                                <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherSearch" aria-label="Clear mother search">
+                                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Clear
                                 </button>
                             </div>
 
                             <!-- Mother Live Search Results Dropdown -->
-                            <div id="motherSearchResults" class="list-group shadow-sm rounded-3 border mb-2 d-none" style="max-height: 220px; overflow-y: auto;"></div>
+                            <div id="motherSearchResults" class="list-group shadow-sm rounded-3 border mb-2 d-none" role="region" aria-live="polite" aria-label="Mother search results" style="max-height: 220px; overflow-y: auto;"></div>
 
                             <!-- Mother Selected Card -->
                             <div id="motherSelectedCard" class="d-none p-2 px-3 bg-white rounded border border-success-subtle d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-check-fill text-success fs-5"></i>
+                                    <i class="bi bi-person-check-fill text-success fs-5" aria-hidden="true"></i>
                                     <div>
                                         <div class="fw-bold text-dark small" id="linkedMotherName">--</div>
                                         <div class="text-muted" style="font-size: 0.75rem;" id="linkedMotherDetails">--</div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="btnRemoveMotherLink">
-                                    <i class="bi bi-x-circle me-1"></i> Unlink Mother
+                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="btnRemoveMotherLink" aria-label="Unlink mother profile">
+                                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Unlink Mother
                                 </button>
                             </div>
 
-                            <div class="form-text text-muted small mt-1">
-                                <i class="bi bi-info-circle me-1"></i> If the mother is registered in the health center, selecting her will automatically fill her details and link her profile. If not registered, simply leave this unlinked and type her information below.
+                            <div class="form-text text-muted small mt-1" style="text-wrap: pretty;">
+                                <i class="bi bi-info-circle me-1" aria-hidden="true"></i> If the mother is registered in the health center, selecting her will automatically fill her details and link her profile. If not registered, simply leave this unlinked and type her information below.
                             </div>
                         </div>
 
@@ -436,8 +444,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                        class="form-control" 
                                        placeholder="e.g. Maria Santos Dela Cruz" 
                                        value="<?= h($initialMotherName) ?>"
-                                       autocomplete="new-password"
-                                       data-lpignore="true">
+                                       autocomplete="name">
                             </div>
 
                             <!-- Mother's DOB -->
@@ -449,6 +456,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                        name="mother_dob" 
                                        id="mother_dob" 
                                        class="form-control" 
+                                       style="font-variant-numeric: tabular-nums;"
                                        max="<?= date('Y-m-d') ?>" 
                                        value="<?= h($initialMotherDob) ?>">
                             </div>
@@ -462,6 +470,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <input type="number" 
                                            id="mother_age" 
                                            class="form-control bg-light" 
+                                           style="font-variant-numeric: tabular-nums;"
                                            placeholder="Auto" 
                                            value="<?= h($initialMotherAge) ?>"
                                            readonly>
@@ -480,8 +489,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                        class="form-control" 
                                        placeholder="e.g. Juan Bautista Dela Cruz" 
                                        value="<?= h($initialFatherName) ?>"
-                                       autocomplete="new-password"
-                                       data-lpignore="true">
+                                       autocomplete="name">
                             </div>
 
                             <!-- Father's DOB -->
@@ -493,6 +501,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                        name="father_dob" 
                                        id="father_dob" 
                                        class="form-control" 
+                                       style="font-variant-numeric: tabular-nums;"
                                        max="<?= date('Y-m-d') ?>" 
                                        value="<?= h($initialFatherDob) ?>">
                             </div>
@@ -506,6 +515,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <input type="number" 
                                            id="father_age" 
                                            class="form-control bg-light" 
+                                           style="font-variant-numeric: tabular-nums;"
                                            placeholder="Auto" 
                                            value="<?= h($initialFatherAge) ?>"
                                            readonly>
@@ -534,7 +544,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                             Cancel
                         </a>
                         <button type="submit" class="btn btn-success text-white px-4 py-2 fw-semibold shadow-sm" id="btnSubmitRegistration" <?= $alreadyRegistered ? 'disabled' : '' ?>>
-                            <i class="bi bi-check-circle-fill me-1"></i> Register Infant &amp; Open Workstation
+                            <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i> Register Infant &amp; Open Workstation
                         </button>
                     </div>
                 </div>
@@ -640,6 +650,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             html += `
                 <button type="button" class="list-group-item list-group-item-action p-3 text-start btn-select-child" 
+                        aria-label="Select infant ${child.name}"
                         data-child='${JSON.stringify(child).replace(/'/g, "&apos;")}'>
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
@@ -650,14 +661,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="fw-bold text-dark">${child.name}</div>
                                 <div class="small text-muted">
                                     <span class="badge ${sexBadgeClass} text-white" style="font-size: 0.68rem;">${child.sex}</span>
-                                    <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.68rem;">${child.patient_no}</span>
-                                    ${child.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.68rem;">Env #${child.envelope_no}</span>` : ''}
-                                    &bull; Age: <strong>${child.age_label}</strong> (DOB: ${child.dob_formatted})
+                                    <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${child.patient_no}</span>
+                                    ${child.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;"><span class="visually-hidden">Envelope No: </span>Env #${child.envelope_no}</span>` : ''}
+                                    <span aria-hidden="true">&bull;</span> Age: <strong style="font-variant-numeric: tabular-nums;">${child.age_label}</strong> (DOB: <span style="font-variant-numeric: tabular-nums;">${child.dob_formatted}</span>)
                                 </div>
                             </div>
                         </div>
                         <span class="btn btn-sm btn-outline-success rounded-pill px-3">
-                            Select <i class="bi bi-chevron-right ms-1"></i>
+                            Select <i class="bi bi-chevron-right ms-1" aria-hidden="true"></i>
                         </span>
                     </div>
                 </button>
@@ -769,13 +780,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         data.results.forEach(mom => {
                             const item = document.createElement('a');
                             item.href = '#';
+                            item.setAttribute('role', 'button');
+                            item.setAttribute('aria-label', 'Select and link mother ' + escapeHtml(mom.name));
                             item.className = 'list-group-item list-group-item-action p-2 px-3 d-flex align-items-center justify-content-between small';
                             item.innerHTML = `
                                 <div>
                                     <span class="fw-bold text-dark">${escapeHtml(mom.name)}</span>
-                                    <span class="badge bg-light text-secondary border font-monospace ms-1">${escapeHtml(mom.patient_no)}</span>
+                                    <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${escapeHtml(mom.patient_no)}</span>
                                     <div class="text-muted" style="font-size: 0.72rem;">
-                                        ${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'} • ${mom.age ? mom.age + ' yrs' : ''} • Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
+                                        <span style="font-variant-numeric: tabular-nums;">${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'}</span> <span aria-hidden="true">•</span> <span style="font-variant-numeric: tabular-nums;">${mom.age ? mom.age + ' yrs' : ''}</span> <span aria-hidden="true">•</span> Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
                                     </div>
                                 </div>
                                 <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7 rounded-pill">Select &amp; Link</span>

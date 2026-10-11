@@ -10,6 +10,15 @@ class SuperAdminMiddleware {
             || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
 
         if (!is_super_admin()) {
+            $uri = $_SERVER['REQUEST_URI'] ?? '/audit-logs';
+            $userLabel = ($_SESSION['username'] ?? 'User #' . ($_SESSION['user_id'] ?? 'unknown')) . ' (' . ($_SESSION['user_role'] ?? 'guest') . ')';
+
+            \App\Models\AuditLog::log(
+                'UNAUTHORIZED_ACCESS_BLOCKED',
+                'Security',
+                "Blocked unauthorized access probe to Super Admin endpoint [{$uri}] by {$userLabel}"
+            );
+
             if ($isAjax) {
                 http_response_code(403);
                 header('Content-Type: application/json');

@@ -165,7 +165,7 @@ $defaultWaist = $medicalHistory['baseline_waist_circumference'] ?? '';
 // Format demographics items identically to Clinical Care Workstation
 $demographicsItems = [];
 if (!empty($patientAge)) {
-    $demographicsItems[] = '<span><strong>' . h($patientAge) . '</strong> yrs &bull; ' . h(ucfirst($patient['sex'] ?? 'Unknown')) . '</span>';
+    $demographicsItems[] = '<span><strong>' . h($patientAge) . '</strong> yrs <span class="text-muted" aria-hidden="true">&bull;</span> ' . h(ucfirst($patient['sex'] ?? 'Unknown')) . '</span>';
 } else {
     $demographicsItems[] = '<span>' . h(ucfirst($patient['sex'] ?? 'Unknown')) . '</span>';
 }
@@ -188,12 +188,55 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <style>
 .ihp-section-card {
-    scroll-margin-top: 5.5rem;
+    scroll-margin-top: 6.5rem;
 }
 .hover-primary:hover {
     background-color: var(--color-primary-soft) !important;
     color: var(--color-primary) !important;
     border-color: var(--color-primary-light) !important;
+}
+.ihp-jump-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ihp-jump-badge:focus-visible {
+    outline: none !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important;
+}
+.ihp-condition-box:focus-within {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+.ihp-checklist-tile:focus-within {
+    border-color: var(--color-primary) !important;
+    background-color: var(--color-primary-soft) !important;
+}
+#ihpSectionNav {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: calc(var(--topbar-height) + 1rem) !important;
+    z-index: 980 !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.ihp-bottom-action-dock {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    bottom: 1.25rem !important;
+    z-index: 985 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    background-color: #ffffff !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(13, 115, 119, 0.22) !important;
+    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.14), 0 6px 12px -4px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 14px !important;
 }
 </style>
 
@@ -201,16 +244,16 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- Page Header & Action Controls -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h2 class="h3 mb-1 fw-bold text-dark">
+            <h1 class="h3 mb-1 fw-bold text-dark" style="text-wrap: balance;">
                 <?= h($actionTitle) ?>
-            </h2>
-            <p class="text-secondary small mb-0">
+            </h1>
+            <p class="text-secondary small mb-0" style="text-wrap: pretty;">
                 <?= h($actionSubtitle) ?>
             </p>
         </div>
         <div class="d-flex align-items-center gap-2">
             <button type="button" class="btn btn-outline-secondary" onclick="confirmCancelIhpEdit()">
-                <i class="bi bi-arrow-left me-1"></i> Back to Patient Record
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to Patient Record
             </button>
         </div>
     </div>
@@ -219,7 +262,7 @@ require dirname(__DIR__) . '/layout/header.php';
     <?php if (isset($_SESSION['error_message'])): ?>
         <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-xs mb-4" role="alert">
             <div class="d-flex align-items-center">
-                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0"></i>
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 flex-shrink-0" aria-hidden="true"></i>
                 <div class="flex-grow-1">
                     <strong>Validation Error:</strong> <?= h($_SESSION['error_message']) ?>
                 </div>
@@ -239,45 +282,46 @@ require dirname(__DIR__) . '/layout/header.php';
                         
                         <!-- Left: Avatar, Name, Badges & Baseline Demographics -->
                         <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                            <div class="avatar-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.15rem;">
+                            <div class="avatar-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.15rem;" aria-hidden="true">
                                 <?= h($initials) ?>
                             </div>
 
                             <div class="min-w-0">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                    <h3 class="h5 fw-bold text-primary-dark mb-0 lh-1">
-                                        <?= h($fullNameFormatted) ?>
-                                    </h3>
                                     <span class="badge bg-light text-dark border font-monospace fs-7">
-                                        <?= h($patient['patient_no'] ?? 'N/A') ?>
+                                        <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no'] ?? 'N/A') ?>
                                     </span>
                                     <?php if (!empty($patient['envelope_no'])): ?>
                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
-                                            Env #<?= h($patient['envelope_no']) ?>
+                                            <span class="visually-hidden">Envelope Number: </span>Env #<?= h($patient['envelope_no']) ?>
                                         </span>
                                     <?php endif; ?>
                                     <?php if (!empty($patient['family_no'])): ?>
                                         <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7" title="Family No.">
-                                            Fam #<?= h($patient['family_no']) ?>
+                                            <span class="visually-hidden">Family Number: </span>Fam #<?= h($patient['family_no']) ?>
                                         </span>
                                     <?php endif; ?>
                                     <?php if (!empty($activePrenatal)): ?>
                                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-7">
-                                            <i class="bi bi-heart-pulse-fill me-1"></i> Pregnant
+                                            <span class="visually-hidden">Maternal Status: </span>Pregnant
                                         </span>
                                     <?php endif; ?>
                                 </div>
 
+                                <h2 class="h5 fw-bold text-primary-dark mb-1 lh-1" style="text-wrap: balance;">
+                                    <?= h($fullNameFormatted) ?>
+                                </h2>
+
                                 <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary">
-                                    <?= implode('<span class="text-muted">&bull;</span>', $demographicsItems) ?>
+                                    <?= implode('<span class="text-muted" aria-hidden="true">&bull;</span>', $demographicsItems) ?>
                                 </div>
 
                                 <?php if (!empty($cdsAlerts['has_alerts'])): ?>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mt-2 pt-2 border-top small">
-                                        <span class="text-muted small fw-semibold me-1"><i class="bi bi-shield-exclamation text-danger me-1"></i>Clinical Alerts:</span>
+                                        <span class="text-muted small fw-semibold me-1"><i class="bi bi-shield-exclamation text-danger me-1" aria-hidden="true"></i>Clinical Alerts:</span>
                                         <?php foreach ($cdsAlerts['flags'] as $flag): ?>
                                             <span class="badge <?= $flag['class'] ?> px-2 py-1">
-                                                <i class="bi <?= $flag['icon'] ?> me-1"></i><?= h($flag['label']) ?>
+                                                <i class="bi <?= $flag['icon'] ?> me-1" aria-hidden="true"></i><?= h($flag['label']) ?>
                                             </span>
                                         <?php endforeach; ?>
                                     </div>
@@ -288,7 +332,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <!-- Right: Context link back to profile -->
                         <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
                             <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" onclick="confirmCancelIhpEdit()" title="Return to Clinical Care Workstation">
-                                <i class="bi bi-person-badge me-1"></i> View Patient Profile
+                                <i class="bi bi-person-badge me-1" aria-hidden="true"></i> View Patient Profile
                             </button>
                         </div>
                     </div>
@@ -296,27 +340,27 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
 
             <!-- Sticky Section Jump Bar -->
-            <div class="sticky-top bg-white border rounded-3 p-2 shadow-xs mb-4" style="top: 1rem; z-index: 1020;" id="ihpSectionNav">
+            <nav class="border rounded-3 p-2 shadow-xs mb-4" id="ihpSectionNav" aria-label="Section Quick Jump">
                 <div class="d-flex align-items-center gap-1.5 overflow-auto py-1 px-1 text-nowrap">
                     <span class="text-muted fw-semibold small me-1 d-flex align-items-center flex-shrink-0">
-                        <i class="bi bi-compass me-1"></i> Jump:
+                        <i class="bi bi-compass me-1" aria-hidden="true"></i> Jump:
                     </span>
-                    <a href="#ihp-sec-pmh" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">1. Past Medical</a>
-                    <a href="#ihp-sec-family" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">2. Family Heredity</a>
-                    <a href="#ihp-sec-surgical" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">3. Surgeries</a>
-                    <a href="#ihp-sec-lifestyle" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">4. Habits</a>
-                    <a href="#ihp-sec-imm" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">5. Vaccines</a>
-                    <a href="#ihp-sec-vitals" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">6. Baseline Vitals</a>
-                    <a href="#ihp-sec-pe" class="badge bg-light text-dark border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">7. Physical Exam</a>
+                    <a href="#ihp-sec-pmh" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">1. Past Medical</a>
+                    <a href="#ihp-sec-family" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">2. Family Heredity</a>
+                    <a href="#ihp-sec-surgical" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">3. Surgeries</a>
+                    <a href="#ihp-sec-lifestyle" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">4. Habits</a>
+                    <a href="#ihp-sec-imm" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">5. Vaccines</a>
+                    <a href="#ihp-sec-vitals" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">6. Baseline Vitals</a>
+                    <a href="#ihp-sec-pe" class="badge bg-light text-dark border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">7. Physical Exam</a>
                     <?php if ($isFemale): ?>
-                        <a href="#ihp-sec-reproductive" class="badge bg-light text-pink border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">8. Menstrual / FP</a>
-                        <a href="#ihp-sec-obstetric" class="badge bg-light text-pink border text-decoration-none py-1.5 px-2.5 hover-primary flex-shrink-0">9. Obstetric Score</a>
+                        <a href="#ihp-sec-reproductive" class="badge bg-light text-pink border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">8. Menstrual / FP</a>
+                        <a href="#ihp-sec-obstetric" class="badge bg-light text-pink border text-decoration-none ihp-jump-badge hover-primary flex-shrink-0">9. Obstetric Score</a>
                     <?php endif; ?>
                 </div>
-            </div>
+            </nav>
 
             <!-- The Main IHP Form -->
-            <form action="<?= url('/patients/' . $patient['id'] . '/ihp/edit') ?>" method="POST" id="ihpForm">
+            <form action="<?= url('/patients/' . $patient['id'] . '/ihp/edit') ?>" method="POST" id="ihpForm" autocomplete="off" style="padding-bottom: 5.5rem;">
                 <?= csrf_field() ?>
 
                 <div class="row g-4">
@@ -325,9 +369,9 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="card card-premium shadow-sm border-0 p-4 mb-4 ihp-section-card" id="ihp-sec-pmh">
                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-1 mb-3 pb-2.5 border-bottom">
                                 <div>
-                                    <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                    <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                         1. Past Medical History
-                                    </h5>
+                                    </h3>
                                     <span class="text-muted small">PhilHealth Annex A1: Individual Health Profile illness checklist</span>
                                 </div>
                             </div>
@@ -483,7 +527,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 <span class="badge bg-light text-secondary border px-2 py-0.5" style="font-size: 0.7rem; font-weight: 600;">Specify Illness</span>
                                             </div>
                                             <div class="mt-1">
-                                                <input type="text" id="pmh_others_specify" name="pmh_other_specify" class="form-control form-control-sm ihp-specifics-input <?= $pmhOtherChecked ? 'bg-white' : 'bg-light text-muted' ?>" placeholder="Specify other illnesses or chronic conditions..." value="<?= h($pmhOtherVal) ?>" <?= $pmhOtherChecked ? '' : 'disabled' ?>>
+                                                <input type="text" id="pmh_others_specify" name="pmh_other_specify" class="form-control form-control-sm ihp-specifics-input <?= $pmhOtherChecked ? 'bg-white' : 'bg-light text-muted' ?>" placeholder="Specify other illnesses or chronic conditions…" value="<?= h($pmhOtherVal) ?>" <?= $pmhOtherChecked ? '' : 'disabled' ?>>
                                             </div>
                                         </div>
                                     </div>
@@ -535,9 +579,9 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="card card-premium shadow-sm border-0 p-4 mb-4 ihp-section-card" id="ihp-sec-family">
                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-1 mb-3 pb-2.5 border-bottom">
                                 <div>
-                                    <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                    <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                         2. Family History (Hereditary Diseases)
-                                    </h5>
+                                    </h3>
                                     <span class="text-muted small">PhilHealth Annex A1: Hereditary conditions in patient's family</span>
                                 </div>
                             </div>
@@ -693,7 +737,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 <span class="badge bg-light text-secondary border px-2 py-0.5" style="font-size: 0.7rem; font-weight: 600;">Specify Illness</span>
                                             </div>
                                             <div class="mt-1">
-                                                <input type="text" id="fam_others_specify" name="family_other" class="form-control form-control-sm ihp-specifics-input <?= $famOtherChecked ? 'bg-white' : 'bg-light text-muted' ?>" placeholder="Specify other hereditary illnesses..." value="<?= h($famOtherVal) ?>" <?= $famOtherChecked ? '' : 'disabled' ?>>
+                                                <input type="text" id="fam_others_specify" name="family_other" class="form-control form-control-sm ihp-specifics-input <?= $famOtherChecked ? 'bg-white' : 'bg-light text-muted' ?>" placeholder="Specify other hereditary illnesses…" value="<?= h($famOtherVal) ?>" <?= $famOtherChecked ? '' : 'disabled' ?>>
                                             </div>
                                         </div>
                                     </div>
@@ -746,13 +790,13 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="card card-premium shadow-sm border-0 p-4 h-100 mb-4 ihp-section-card" id="ihp-sec-surgical">
                             <div class="d-flex align-items-center justify-content-between mb-3 pb-2.5 border-bottom">
                                 <div>
-                                    <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                    <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                         3. Past Surgical History
-                                    </h5>
+                                    </h3>
                                     <span class="text-muted small">Hospital operations & procedures</span>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-sm fw-medium shadow-xs" id="btnAddSurgeryRow" onclick="addIhpSurgeryRow()">
-                                    <i class="bi bi-plus-circle me-1"></i> Add Surgery
+                                    <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Add Surgery
                                 </button>
                             </div>
                             <div id="ihpSurgeriesContainer" class="d-flex flex-column gap-2 mb-2">
@@ -770,20 +814,20 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <div class="ihp-surgery-row p-2.5 border rounded-2 bg-light-subtle position-relative">
                                             <div class="row g-2 align-items-end">
                                                 <div class="col-12 col-sm-5">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Operation / Procedure</label>
-                                                    <input type="text" name="surgical_procedures[<?= $sIdx ?>][operation]" class="form-control form-control-sm bg-white" placeholder="e.g. Appendectomy" value="<?= h($opName) ?>" required>
+                                                    <label class="form-label fw-semibold text-secondary small mb-1" for="surg_op_<?= $sIdx ?>">Operation / Procedure</label>
+                                                    <input type="text" name="surgical_procedures[<?= $sIdx ?>][operation]" id="surg_op_<?= $sIdx ?>" class="form-control form-control-sm bg-white" placeholder="e.g. Appendectomy" value="<?= h($opName) ?>" required>
                                                 </div>
                                                 <div class="col-6 col-sm-3">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Date / Year</label>
-                                                    <input type="text" name="surgical_procedures[<?= $sIdx ?>][date]" class="form-control form-control-sm bg-white" placeholder="YYYY or Date" value="<?= h($opDate) ?>">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1" for="surg_dt_<?= $sIdx ?>">Date / Year</label>
+                                                    <input type="text" name="surgical_procedures[<?= $sIdx ?>][date]" id="surg_dt_<?= $sIdx ?>" class="form-control form-control-sm bg-white" placeholder="YYYY or Date" value="<?= h($opDate) ?>">
                                                 </div>
                                                 <div class="col-6 col-sm-3">
-                                                    <label class="form-label fw-semibold text-secondary small mb-1">Hospital / Clinic</label>
-                                                    <input type="text" name="surgical_procedures[<?= $sIdx ?>][hospital]" class="form-control form-control-sm bg-white" placeholder="e.g. Health Center" value="<?= h($opHosp) ?>">
+                                                    <label class="form-label fw-semibold text-secondary small mb-1" for="surg_hp_<?= $sIdx ?>">Hospital / Clinic</label>
+                                                    <input type="text" name="surgical_procedures[<?= $sIdx ?>][hospital]" id="surg_hp_<?= $sIdx ?>" class="form-control form-control-sm bg-white" placeholder="e.g. Health Center" value="<?= h($opHosp) ?>">
                                                 </div>
                                                 <div class="col-12 col-sm-1 text-end text-sm-center">
-                                                    <button type="button" class="btn btn-outline-danger btn-sm p-1 px-2" onclick="removeIhpSurgeryRow(this)" title="Remove procedure">
-                                                        <i class="bi bi-trash"></i>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm p-1 px-2" onclick="removeIhpSurgeryRow(this)" title="Remove procedure" aria-label="Remove procedure">
+                                                        <i class="bi bi-trash" aria-hidden="true"></i>
                                                     </button>
                                                 </div>
                                             </div>
@@ -795,7 +839,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 ?>
                             </div>
                             <div id="ihpSurgeriesEmpty" class="text-muted small p-3 bg-light rounded text-center <?= $hasSurgeryRows ? 'd-none' : '' ?>">
-                                <i class="bi bi-journal-medical fs-5 d-block mb-1 text-secondary"></i>
+                                <i class="bi bi-journal-medical fs-5 d-block mb-1 text-secondary" aria-hidden="true"></i>
                                 No surgical procedures recorded. Click <strong>+ Add Surgery</strong> if the patient has past operations.
                             </div>
                         </div>
@@ -805,9 +849,9 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 col-lg-6">
                         <div class="card card-premium shadow-sm border-0 p-4 h-100 mb-4 ihp-section-card" id="ihp-sec-lifestyle">
                             <div class="mb-3 pb-2.5 border-bottom">
-                                <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                     4. Personal / Social History
-                                </h5>
+                                </h3>
                                 <span class="text-muted small">Smoking, alcohol drinking, and substance use</span>
                             </div>
                             <div class="row g-2.5 small">
@@ -821,7 +865,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <label class="form-label fw-semibold text-secondary small mb-1" for="smoking_pack_years">No. of Pack Years</label>
-                                    <input type="number" step="0.1" name="smoking_pack_years" id="smoking_pack_years" class="form-control form-control-sm <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'bg-light text-muted' : 'bg-white' ?>" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'disabled' : '' ?>>
+                                    <input type="number" step="0.1" inputmode="decimal" name="smoking_pack_years" id="smoking_pack_years" class="form-control form-control-sm <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'bg-light text-muted' : 'bg-white' ?>" placeholder="e.g. 5.0" value="<?= h($medicalHistory['smoking_pack_years'] ?? '') ?>" <?= ($medicalHistory['smoking_status'] ?? 'Never') === 'Never' ? 'disabled' : '' ?>>
                                 </div>
 
                                 <div class="col-12 col-sm-6">
@@ -834,7 +878,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <label class="form-label fw-semibold text-secondary small mb-1" for="alcohol_bottles_per_day">No. of Bottles / Day</label>
-                                    <input type="number" step="0.1" name="alcohol_bottles_per_day" id="alcohol_bottles_per_day" class="form-control form-control-sm <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'bg-light text-muted' : 'bg-white' ?>" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'disabled' : '' ?>>
+                                    <input type="number" step="0.1" inputmode="decimal" name="alcohol_bottles_per_day" id="alcohol_bottles_per_day" class="form-control form-control-sm <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'bg-light text-muted' : 'bg-white' ?>" placeholder="e.g. 2.0" value="<?= h($medicalHistory['alcohol_bottles_per_day'] ?? '') ?>" <?= ($medicalHistory['alcohol_status'] ?? 'Never') === 'Never' ? 'disabled' : '' ?>>
                                 </div>
 
                                 <div class="col-12">
@@ -851,9 +895,9 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 col-lg-6">
                         <div class="card card-premium shadow-sm border-0 p-4 h-100 mb-4 ihp-section-card" id="ihp-sec-imm">
                             <div class="mb-3 pb-2.5 border-bottom">
-                                <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                     5. Lifetime Immunizations (Annex A1)
-                                </h5>
+                                </h3>
                                 <span class="text-muted small">PhilHealth Annex A1 age-specific vaccination history</span>
                             </div>
                             <div class="small">
@@ -927,8 +971,8 @@ require dirname(__DIR__) . '/layout/header.php';
 
                                 <!-- Others specify -->
                                 <div class="border-top pt-2">
-                                    <label class="form-label fw-semibold text-secondary small mb-1">Others (Specify)</label>
-                                    <input type="text" name="imm_others_specify" class="form-control form-control-sm" placeholder="Specify other vaccines received..." value="<?= h($immSaved['others'] ?? '') ?>">
+                                    <label class="form-label fw-semibold text-secondary small mb-1" for="imm_others_specify">Others (Specify)</label>
+                                    <input type="text" name="imm_others_specify" id="imm_others_specify" class="form-control form-control-sm" placeholder="Specify other vaccines received…" value="<?= h($immSaved['others'] ?? '') ?>">
                                 </div>
                             </div>
                         </div>
@@ -938,33 +982,33 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 col-lg-6">
                         <div class="card card-premium shadow-sm border-0 p-4 h-100 mb-4 ihp-section-card" id="ihp-sec-vitals">
                             <div class="mb-3 pb-2.5 border-bottom">
-                                <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                     6. Baseline Vitals & Anthropometrics
-                                </h5>
+                                </h3>
                                 <span class="text-muted small">Baseline vitals with live WHO Asian BMI classification</span>
                             </div>
                             <div class="row g-2.5 small">
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold text-secondary small mb-1">Baseline Blood Pressure</label>
+                                    <label class="form-label fw-semibold text-secondary small mb-1" id="lbl_baseline_bp">Baseline Blood Pressure</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" name="baseline_bp_systolic" id="ihp_baseline_bp_systolic" class="form-control" placeholder="Systolic (e.g. 120)" min="50" max="300" value="<?= h($defaultBpSystolic) ?>">
-                                        <span class="input-group-text">/</span>
-                                        <input type="number" name="baseline_bp_diastolic" id="ihp_baseline_bp_diastolic" class="form-control" placeholder="Diastolic (e.g. 80)" min="30" max="200" value="<?= h($defaultBpDiastolic) ?>">
+                                        <input type="number" name="baseline_bp_systolic" id="ihp_baseline_bp_systolic" class="form-control" placeholder="Systolic (e.g. 120)" min="50" max="300" inputmode="numeric" aria-labelledby="lbl_baseline_bp" aria-label="Baseline Systolic Blood Pressure" value="<?= h($defaultBpSystolic) ?>">
+                                        <span class="input-group-text" aria-hidden="true">/</span>
+                                        <input type="number" name="baseline_bp_diastolic" id="ihp_baseline_bp_diastolic" class="form-control" placeholder="Diastolic (e.g. 80)" min="30" max="200" inputmode="numeric" aria-labelledby="lbl_baseline_bp" aria-label="Baseline Diastolic Blood Pressure" value="<?= h($defaultBpDiastolic) ?>">
                                         <span class="input-group-text">mmHg</span>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary small mb-1">Heart Rate</label>
+                                    <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_baseline_heart_rate">Heart Rate</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" name="baseline_heart_rate" class="form-control" placeholder="e.g. 72" min="30" max="250" value="<?= h($defaultHeartRate) ?>">
+                                        <input type="number" name="baseline_heart_rate" id="ihp_baseline_heart_rate" class="form-control" placeholder="e.g. 72" min="30" max="250" inputmode="numeric" value="<?= h($defaultHeartRate) ?>">
                                         <span class="input-group-text">bpm</span>
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6">
-                                    <label class="form-label fw-semibold text-secondary small mb-1">Respiratory Rate</label>
+                                    <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_baseline_respiratory_rate">Respiratory Rate</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" name="baseline_respiratory_rate" class="form-control" placeholder="e.g. 18" min="8" max="60" value="<?= h($defaultRespiratoryRate) ?>">
+                                        <input type="number" name="baseline_respiratory_rate" id="ihp_baseline_respiratory_rate" class="form-control" placeholder="e.g. 18" min="8" max="60" inputmode="numeric" value="<?= h($defaultRespiratoryRate) ?>">
                                         <span class="input-group-text">cpm</span>
                                     </div>
                                 </div>
@@ -972,26 +1016,26 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <div class="col-12 col-sm-6">
                                     <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_baseline_height">Height</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" step="0.1" name="baseline_height" id="ihp_baseline_height" class="form-control" placeholder="e.g. 165" min="30" max="250" value="<?= h($defaultHeight) ?>">
+                                        <input type="number" step="0.1" name="baseline_height" id="ihp_baseline_height" class="form-control" placeholder="e.g. 165" min="30" max="250" inputmode="decimal" value="<?= h($defaultHeight) ?>">
                                         <span class="input-group-text">cm</span>
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-6">
                                     <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_baseline_weight">Weight</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" step="0.1" name="baseline_weight" id="ihp_baseline_weight" class="form-control" placeholder="e.g. 60" min="1" max="300" value="<?= h($defaultWeight) ?>">
+                                        <input type="number" step="0.1" name="baseline_weight" id="ihp_baseline_weight" class="form-control" placeholder="e.g. 60" min="1" max="300" inputmode="decimal" value="<?= h($defaultWeight) ?>">
                                         <span class="input-group-text">kg</span>
                                     </div>
                                 </div>
 
                                 <!-- Real-Time Baseline BMI Calculator & WHO Asian Classification -->
                                 <div class="col-12">
-                                    <div class="p-2.5 border rounded-2 bg-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-2" id="ihpBmiWrapper">
+                                    <div class="p-2.5 border rounded-2 bg-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-2" id="ihpBmiWrapper" aria-live="polite" aria-atomic="true">
                                         <div>
                                             <span class="text-secondary small fw-semibold d-block">
                                                 Calculated Baseline BMI:
                                             </span>
-                                            <span class="fw-bold text-dark fs-6" id="ihpBmiValue">
+                                            <span class="fw-bold text-dark fs-6" id="ihpBmiValue" style="font-variant-numeric: tabular-nums;">
                                                 <?php
                                                 $h = !empty($defaultHeight) ? (float)$defaultHeight : 0;
                                                 $w = !empty($defaultWeight) ? (float)$defaultWeight : 0;
@@ -1005,7 +1049,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 $bClass = 'bg-secondary-subtle text-secondary border border-secondary-subtle';
                                                 $bCat = 'Normal';
                                                 if ($initBmi < 18.5) { 
-                                                    $bClass = 'bg-info-subtle text-info border border-info-subtle'; 
+                                                     $bClass = 'bg-info-subtle text-info border border-info-subtle'; 
                                                     $bCat = 'Underweight'; 
                                                 } elseif ($initBmi <= 22.9) { 
                                                     $bClass = 'bg-success-subtle text-success border border-success-subtle'; 
@@ -1028,9 +1072,9 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
 
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold text-secondary small mb-1">Waist Circumference</label>
+                                    <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_baseline_waist_circumference">Waist Circumference</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="number" step="0.1" name="baseline_waist_circumference" class="form-control" placeholder="e.g. 78" min="20" max="200" value="<?= h($defaultWaist) ?>">
+                                        <input type="number" step="0.1" name="baseline_waist_circumference" id="ihp_baseline_waist_circumference" class="form-control" placeholder="e.g. 78" min="20" max="200" inputmode="decimal" value="<?= h($defaultWaist) ?>">
                                         <span class="input-group-text">cm</span>
                                     </div>
                                 </div>
@@ -1043,14 +1087,14 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="card card-premium shadow-sm border-0 p-4 mb-4 ihp-section-card" id="ihp-sec-pe">
                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3 pb-2.5 border-bottom">
                                 <div>
-                                    <h5 class="h6 fw-bold text-primary-dark mb-0">
+                                    <h3 class="h6 fw-bold text-primary-dark mb-0" style="text-wrap: balance;">
                                         7. Pertinent Physical Examination Checklist (PhilHealth Annex A1)
-                                    </h5>
+                                    </h3>
                                     <span class="text-muted small">Rapid body-systems organ checklist. Mark abnormalities systematically.</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <button type="button" class="btn btn-success btn-sm px-3 fw-semibold shadow-xs d-inline-flex align-items-center" id="btnMarkAllNormal">
-                                        <i class="bi bi-check-all me-1"></i> Mark All Unremarkable / Normal
+                                        <i class="bi bi-check-all me-1" aria-hidden="true"></i> Mark All Unremarkable / Normal
                                     </button>
                                 </div>
                             </div>
@@ -1178,7 +1222,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                             <span class="fw-bold text-dark d-flex align-items-center" style="font-size: 0.82rem;">
                                                 <?= $conf['title'] ?>
                                             </span>
-                                            <span id="<?= $conf['badge_id'] ?>" class="badge <?= $badgeClass ?> px-2 py-1 pe-system-badge" style="font-size: 0.7rem;">
+                                            <span id="<?= $conf['badge_id'] ?>" class="badge <?= $badgeClass ?> px-2 py-1 pe-system-badge" style="font-size: 0.7rem;" aria-live="polite" aria-atomic="true">
                                                 <?= $badgeText ?>
                                             </span>
                                         </div>
@@ -1219,7 +1263,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <label class="form-label fw-bold text-dark small mb-1" for="pe_remarks">
                                             Doctor's Clinical Notes / Detailed Findings
                                         </label>
-                                        <textarea name="pe_remarks" id="pe_remarks" class="form-control form-control-sm rounded-2" rows="3" placeholder="Patient is well-nourished, alert and ambulatory. Record other physical examination findings or clinical notes..."><?= h($peSaved['remarks'] ?? '') ?></textarea>
+                                        <textarea name="pe_remarks" id="pe_remarks" class="form-control form-control-sm rounded-2" rows="3" spellcheck="true" placeholder="Patient is well-nourished, alert and ambulatory. Record other physical examination findings or clinical notes…"><?= h($peSaved['remarks'] ?? '') ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -1231,19 +1275,19 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-lg-6">
                             <div class="card card-premium shadow-sm border-0 p-4 h-100 mb-4 ihp-section-card" id="ihp-sec-reproductive">
                                 <div class="mb-3 pb-2.5 border-bottom">
-                                    <h5 class="h6 fw-bold text-pink mb-0">
+                                    <h3 class="h6 fw-bold text-pink mb-0" style="text-wrap: balance;">
                                         8. Female Menstrual & Reproductive History
-                                    </h5>
+                                    </h3>
                                     <span class="text-muted small">Menarche, LMP, flow characteristics, and contraception</span>
                                 </div>
                                 <div class="row g-2.5 small">
                                     <div class="col-6 col-sm-4">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Menarche Age</label>
-                                        <input type="number" name="menarche_age" class="form-control form-control-sm" placeholder="e.g. 13" min="8" max="25" value="<?= h($medicalHistory['menarche_age'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_menarche_age">Menarche Age</label>
+                                        <input type="number" name="menarche_age" id="ihp_menarche_age" class="form-control form-control-sm" placeholder="e.g. 13" min="8" max="25" inputmode="numeric" value="<?= h($medicalHistory['menarche_age'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-sm-4">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Sexual Onset</label>
-                                        <input type="number" name="sexual_onset_age" class="form-control form-control-sm" placeholder="e.g. 20" min="10" max="60" value="<?= h($medicalHistory['sexual_onset_age'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_sexual_onset_age">Sexual Onset</label>
+                                        <input type="number" name="sexual_onset_age" id="ihp_sexual_onset_age" class="form-control form-control-sm" placeholder="e.g. 20" min="10" max="60" inputmode="numeric" value="<?= h($medicalHistory['sexual_onset_age'] ?? '') ?>">
                                     </div>
                                     <div class="col-12 col-sm-4">
                                         <label class="form-label fw-semibold text-secondary small mb-1" for="lmp_date">LMP Date</label>
@@ -1251,16 +1295,16 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </div>
 
                                     <div class="col-6 col-sm-4">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Duration (days)</label>
-                                        <input type="number" name="period_duration_days" class="form-control form-control-sm" placeholder="e.g. 5" min="1" max="15" value="<?= h($medicalHistory['period_duration_days'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_period_duration_days">Duration (days)</label>
+                                        <input type="number" name="period_duration_days" id="ihp_period_duration_days" class="form-control form-control-sm" placeholder="e.g. 5" min="1" max="15" inputmode="numeric" value="<?= h($medicalHistory['period_duration_days'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-sm-4">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Cycle (days)</label>
-                                        <input type="number" name="cycle_interval_days" class="form-control form-control-sm" placeholder="e.g. 28" min="15" max="60" value="<?= h($medicalHistory['cycle_interval_days'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_cycle_interval_days">Cycle (days)</label>
+                                        <input type="number" name="cycle_interval_days" id="ihp_cycle_interval_days" class="form-control form-control-sm" placeholder="e.g. 28" min="15" max="60" inputmode="numeric" value="<?= h($medicalHistory['cycle_interval_days'] ?? '') ?>">
                                     </div>
                                     <div class="col-12 col-sm-4">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Pads / Day</label>
-                                        <input type="number" name="pads_per_day" class="form-control form-control-sm" placeholder="e.g. 3" min="1" max="20" value="<?= h($medicalHistory['pads_per_day'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_pads_per_day">Pads / Day</label>
+                                        <input type="number" name="pads_per_day" id="ihp_pads_per_day" class="form-control form-control-sm" placeholder="e.g. 3" min="1" max="20" inputmode="numeric" value="<?= h($medicalHistory['pads_per_day'] ?? '') ?>">
                                     </div>
 
                                     <div class="col-12 col-sm-6">
@@ -1271,12 +1315,12 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </div>
                                     <div class="col-12 col-sm-6">
                                         <label class="form-label fw-semibold text-secondary small mb-1" for="menopause_age">Menopause Age (years)</label>
-                                        <input type="number" name="menopause_age" id="menopause_age" class="form-control form-control-sm <?= empty($medicalHistory['is_menopausal']) ? 'bg-light text-muted' : 'bg-white' ?>" placeholder="Menopause Age (e.g. 50)" min="30" max="70" value="<?= h($medicalHistory['menopause_age'] ?? '') ?>" <?= empty($medicalHistory['is_menopausal']) ? 'disabled' : '' ?>>
+                                        <input type="number" name="menopause_age" id="menopause_age" class="form-control form-control-sm <?= empty($medicalHistory['is_menopausal']) ? 'bg-light text-muted' : 'bg-white' ?>" placeholder="Menopause Age (e.g. 50)" min="30" max="70" inputmode="numeric" value="<?= h($medicalHistory['menopause_age'] ?? '') ?>" <?= empty($medicalHistory['is_menopausal']) ? 'disabled' : '' ?>>
                                     </div>
 
                                     <div class="col-12">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Family Planning Method in Use</label>
-                                        <input type="text" name="birth_control_method" class="form-control form-control-sm" placeholder="e.g. Pills, BTL, IUD, Injectable, Condom, None" value="<?= h($medicalHistory['birth_control_method'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_birth_control_method">Family Planning Method in Use</label>
+                                        <input type="text" name="birth_control_method" id="ihp_birth_control_method" class="form-control form-control-sm" placeholder="e.g. Pills, BTL, IUD, Injectable, Condom, None" value="<?= h($medicalHistory['birth_control_method'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
@@ -1286,40 +1330,40 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-lg-6">
                             <div class="card card-premium shadow-sm border-0 p-4 h-100 mb-4 ihp-section-card" id="ihp-sec-obstetric">
                                 <div class="mb-3 pb-2.5 border-bottom">
-                                    <h5 class="h6 fw-bold text-pink mb-0">
+                                    <h3 class="h6 fw-bold text-pink mb-0" style="text-wrap: balance;">
                                         9. Pregnancy & Obstetric History (Annex A1)
-                                    </h5>
+                                    </h3>
                                     <span class="text-muted small">GTPAL obstetric score, pre-eclampsia, and delivery mode</span>
                                 </div>
                                 <div class="row g-2.5 small">
                                     <div class="col-6 col-sm-3">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Gravida</label>
-                                        <input type="number" name="gravida" class="form-control form-control-sm" min="0" max="25" placeholder="G" value="<?= h($medicalHistory['gravida'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_gravida">Gravida</label>
+                                        <input type="number" name="gravida" id="ihp_gravida" class="form-control form-control-sm" min="0" max="25" inputmode="numeric" placeholder="G" value="<?= h($medicalHistory['gravida'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-sm-3">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Parity</label>
-                                        <input type="number" name="para" class="form-control form-control-sm" min="0" max="25" placeholder="P" value="<?= h($medicalHistory['para'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_para">Parity</label>
+                                        <input type="number" name="para" id="ihp_para" class="form-control form-control-sm" min="0" max="25" inputmode="numeric" placeholder="P" value="<?= h($medicalHistory['para'] ?? '') ?>">
                                     </div>
                                     <div class="col-12 col-sm-6">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Type of Delivery</label>
-                                        <input type="text" name="delivery_type" class="form-control form-control-sm" placeholder="e.g. NSD, CS, Forceps" value="<?= h($medicalHistory['delivery_type'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_delivery_type">Type of Delivery</label>
+                                        <input type="text" name="delivery_type" id="ihp_delivery_type" class="form-control form-control-sm" placeholder="e.g. NSD, CS, Forceps" value="<?= h($medicalHistory['delivery_type'] ?? '') ?>">
                                     </div>
 
                                     <div class="col-6 col-sm-3">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Full Term (F)</label>
-                                        <input type="number" name="term_births" class="form-control form-control-sm" min="0" max="25" placeholder="F" value="<?= h($medicalHistory['term_births'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_term_births">Full Term (F)</label>
+                                        <input type="number" name="term_births" id="ihp_term_births" class="form-control form-control-sm" min="0" max="25" inputmode="numeric" placeholder="F" value="<?= h($medicalHistory['term_births'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-sm-3">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Premature (P)</label>
-                                        <input type="number" name="preterm_births" class="form-control form-control-sm" min="0" max="25" placeholder="P" value="<?= h($medicalHistory['preterm_births'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_preterm_births">Premature (P)</label>
+                                        <input type="number" name="preterm_births" id="ihp_preterm_births" class="form-control form-control-sm" min="0" max="25" inputmode="numeric" placeholder="P" value="<?= h($medicalHistory['preterm_births'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-sm-3">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Abortion (A)</label>
-                                        <input type="number" name="abortions" class="form-control form-control-sm" min="0" max="25" placeholder="A" value="<?= h($medicalHistory['abortions'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_abortions">Abortion (A)</label>
+                                        <input type="number" name="abortions" id="ihp_abortions" class="form-control form-control-sm" min="0" max="25" inputmode="numeric" placeholder="A" value="<?= h($medicalHistory['abortions'] ?? '') ?>">
                                     </div>
                                     <div class="col-6 col-sm-3">
-                                        <label class="form-label fw-semibold text-secondary small mb-1">Living Children (L)</label>
-                                        <input type="number" name="living_children" class="form-control form-control-sm" min="0" max="25" placeholder="L" value="<?= h($medicalHistory['living_children'] ?? '') ?>">
+                                        <label class="form-label fw-semibold text-secondary small mb-1" for="ihp_living_children">Living Children (L)</label>
+                                        <input type="number" name="living_children" id="ihp_living_children" class="form-control form-control-sm" min="0" max="25" inputmode="numeric" placeholder="L" value="<?= h($medicalHistory['living_children'] ?? '') ?>">
                                     </div>
 
                                     <div class="col-12 col-sm-6 border-top pt-2 mt-2">
@@ -1329,13 +1373,13 @@ require dirname(__DIR__) . '/layout/header.php';
                                         </div>
                                     </div>
                                     <div class="col-12 col-sm-6 border-top pt-2 mt-2">
-                                        <label class="form-label fw-semibold text-secondary small mb-1 d-block">Access to Family Planning Counselling</label>
+                                        <span class="form-label fw-semibold text-secondary small mb-1 d-block" id="lbl_fp_counselling">Access to Family Planning Counselling</span>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="fp_counselling" id="fp_counselling_yes" value="1" <?= (!isset($medicalHistory['fp_counselling']) || (int)$medicalHistory['fp_counselling'] === 1) ? 'checked' : '' ?>>
+                                            <input class="form-check-input" type="radio" name="fp_counselling" id="fp_counselling_yes" value="1" aria-labelledby="lbl_fp_counselling" <?= (!isset($medicalHistory['fp_counselling']) || (int)$medicalHistory['fp_counselling'] === 1) ? 'checked' : '' ?>>
                                             <label class="form-check-label small cursor-pointer" for="fp_counselling_yes">Yes</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="fp_counselling" id="fp_counselling_no" value="0" <?= (isset($medicalHistory['fp_counselling']) && (int)$medicalHistory['fp_counselling'] === 0) ? 'checked' : '' ?>>
+                                            <input class="form-check-input" type="radio" name="fp_counselling" id="fp_counselling_no" value="0" aria-labelledby="lbl_fp_counselling" <?= (isset($medicalHistory['fp_counselling']) && (int)$medicalHistory['fp_counselling'] === 0) ? 'checked' : '' ?>>
                                             <label class="form-check-label small cursor-pointer" for="fp_counselling_no">No</label>
                                         </div>
                                     </div>
@@ -1346,10 +1390,10 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
 
                 <!-- Sticky Bottom Action Bar -->
-                <div class="sticky-bottom sticky-bottom-action-bar py-3 px-4 border rounded-3 mt-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="ihp-bottom-action-dock py-3 px-4 mt-4 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div>
                         <span class="text-muted small">
-                            <i class="bi bi-info-circle me-1"></i>
+                            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
                             <?= $isExistingRecord 
                                 ? 'Changes will update the PhilHealth Annex A1 baseline profile for this patient.' 
                                 : 'Saving will create the PhilHealth Annex A1 baseline profile for this patient.' ?>
@@ -1360,7 +1404,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             Cancel
                         </button>
                         <button type="submit" id="ihpSubmitBtn" class="btn btn-primary px-4 fw-semibold shadow-xs">
-                            <i class="bi bi-check2-circle me-1"></i> <?= $isExistingRecord ? 'Save Changes' : 'Save IHP Profile' ?>
+                            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i> <?= $isExistingRecord ? 'Save Changes' : 'Save IHP Profile' ?>
                         </button>
                     </div>
                 </div>
@@ -1425,14 +1469,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Anchor smooth jump with highlight feedback
+    // Anchor smooth jump with highlight feedback (respects prefers-reduced-motion)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.querySelectorAll('#ihpSectionNav a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             const targetCard = document.querySelector(targetId);
             if (targetCard) {
-                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetCard.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
                 targetCard.classList.add('border-primary', 'shadow');
                 setTimeout(() => {
                     targetCard.classList.remove('border-primary', 'shadow');
@@ -1792,7 +1837,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitBtn = document.getElementById('ihpSubmitBtn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving IHP...';
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving IHP…';
             }
         });
     }

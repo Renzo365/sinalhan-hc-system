@@ -66,14 +66,14 @@ if (!empty($wellbabyRecord['mother_age'])) {
     <!-- Page Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h2 class="h3 mb-1 fw-bold text-dark">
+            <h1 class="h3 mb-1 fw-bold text-dark" style="text-wrap: balance;">
                 Edit Well-Baby Birth Record
-            </h2>
-            <p class="text-secondary small mb-0">Update infant birth circumstances, newborn screening certificate, and parental information.</p>
+            </h1>
+            <p class="text-secondary small mb-0" style="text-wrap: pretty;">Update infant birth circumstances, newborn screening certificate, and parental information.</p>
         </div>
         <div>
             <a href="<?= url('/well-baby/' . $patient['id']) ?>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to Workstation
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to Workstation
             </a>
         </div>
     </div>
@@ -81,7 +81,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
     <!-- Flash Alert Messages -->
     <?php if (isset($_SESSION['error_message'])): ?>
         <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-xs mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i><?= $_SESSION['error_message'] ?>
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i><?= $_SESSION['error_message'] ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <?php unset($_SESSION['error_message']); ?>
@@ -93,10 +93,10 @@ if (!empty($wellbabyRecord['mother_age'])) {
             <!-- Compact Child Identity Card (Locked) -->
             <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
                 <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
-                    <h5 class="card-title h6 fw-bold mb-0 text-dark">
+                    <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">
                         Infant / Child Demographic Profile
-                    </h5>
-                    <span class="badge bg-success text-white font-monospace">Record #<?= h($wellbabyRecord['id']) ?></span>
+                    </h2>
+                    <span class="badge bg-success text-white font-monospace" style="font-variant-numeric: tabular-nums;">Record #<?= h($wellbabyRecord['id']) ?></span>
                 </div>
                 <div class="card-body p-4 bg-white">
                     <div class="p-3 p-md-4 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25">
@@ -107,26 +107,32 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                 </div>
                                 <div>
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <h5 class="h6 fw-bold text-dark mb-0"><?= h($fullNameFormatted) ?></h5>
+                                        <h3 class="h6 fw-bold text-dark mb-0"><?= h($fullNameFormatted) ?></h3>
                                         <span class="badge <?= (strtolower($patient['sex'] ?? '') === 'male') ? 'bg-primary' : 'bg-danger' ?>">
                                             <?= ucfirst(h($patient['sex'] ?? 'Child')) ?>
                                         </span>
-                                        <span class="badge bg-light text-secondary border font-monospace"><?= h($patient['patient_no']) ?></span>
+                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">
+                                            <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no']) ?>
+                                        </span>
                                         <?php if (!empty($patient['envelope_no'])): ?>
-                                            <span class="badge bg-warning-subtle text-dark border font-monospace">Env #<?= h($patient['envelope_no']) ?></span>
+                                            <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">
+                                                <span class="visually-hidden">Envelope No: </span>Env #<?= h($patient['envelope_no']) ?>
+                                            </span>
                                         <?php endif; ?>
                                         <?php if (!empty($patient['family_no'])): ?>
-                                            <span class="badge bg-info-subtle text-dark border font-monospace">Fam #<?= h($patient['family_no']) ?></span>
+                                            <span class="badge bg-info-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">
+                                                <span class="visually-hidden">Family No: </span>Fam #<?= h($patient['family_no']) ?>
+                                            </span>
                                         <?php endif; ?>
                                     </div>
                                     <small class="text-muted">
-                                        <i class="bi bi-geo-alt me-1"></i><?= h(!empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan') ?> &bull; Contact: <?= h($patient['contact_no'] ?? 'N/A') ?>
+                                        <i class="bi bi-geo-alt me-1" aria-hidden="true"></i><?= h(!empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan') ?> <span aria-hidden="true">&bull;</span> Contact: <span style="font-variant-numeric: tabular-nums;"><?= h($patient['contact_no'] ?? 'N/A') ?></span>
                                     </small>
                                 </div>
                             </div>
                             <div class="text-md-end">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small">
-                                    <i class="bi bi-calendar-check me-1"></i> Registered: <?= date('M d, Y', strtotime($wellbabyRecord['created_at'])) ?>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small" style="font-variant-numeric: tabular-nums;">
+                                    <i class="bi bi-calendar-check me-1" aria-hidden="true"></i> Registered: <?= date('M d, Y', strtotime($wellbabyRecord['created_at'])) ?>
                                 </span>
                             </div>
                         </div>
@@ -136,7 +142,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                             <div class="col-12 col-sm-6 col-md-3">
                                 <div class="p-2 bg-white rounded-3 border">
                                     <span class="text-muted d-block" style="font-size: 0.75rem;">Date of Birth</span>
-                                    <span class="fw-bold text-dark">
+                                    <span class="fw-bold text-dark" style="font-variant-numeric: tabular-nums;">
                                         <?= !empty($patient['dob']) ? date('M d, Y', strtotime($patient['dob'])) : '--' ?>
                                     </span>
                                 </div>
@@ -144,7 +150,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                             <div class="col-12 col-sm-6 col-md-3">
                                 <div class="p-2 bg-white rounded-3 border">
                                     <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
-                                    <span class="fw-bold text-dark">
+                                    <span class="fw-bold text-dark" style="font-variant-numeric: tabular-nums;">
                                         <?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : h($patient['age'] ?? '--') . ' yrs' ?>
                                     </span>
                                 </div>
@@ -169,8 +175,8 @@ if (!empty($wellbabyRecord['mother_age'])) {
                 <!-- Section 1: Child Information & Birth History -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">1</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Child Information &amp; Birth History</h5>
+                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">1</span>
+                        <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Child Information &amp; Birth History</h2>
                     </div>
                     <div class="card-body p-4 bg-white">
                         <div class="row g-3">
@@ -187,6 +193,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                            class="form-control" 
                                            placeholder="e.g. 3.20" 
                                            value="<?= h($wellbabyRecord['birth_weight_kg'] ?? '') ?>" 
+                                           inputmode="decimal"
                                            required>
                                     <span class="input-group-text bg-light text-muted">kg</span>
                                 </div>
@@ -205,6 +212,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                            class="form-control" 
                                            placeholder="e.g. 50.0" 
                                            value="<?= h($wellbabyRecord['birth_length_cm'] ?? '') ?>" 
+                                           inputmode="decimal"
                                            required>
                                     <span class="input-group-text bg-light text-muted">cm</span>
                                 </div>
@@ -334,10 +342,10 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                 <div class="p-3 bg-light rounded-3 border">
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div>
-                                            <h6 class="fw-bold text-dark mb-0">
+                                            <h3 class="h6 fw-bold text-dark mb-0">
                                                 Newborn Screening (NBS)
-                                            </h6>
-                                            <span class="text-muted small">Record status and certification if performed</span>
+                                            </h3>
+                                            <span class="text-muted small" style="text-wrap: pretty;">Record status and certification if performed</span>
                                         </div>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" 
@@ -361,6 +369,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                                    name="newborn_screening_date" 
                                                    id="newborn_screening_date" 
                                                    class="form-control" 
+                                                   style="font-variant-numeric: tabular-nums;"
                                                    max="<?= date('Y-m-d') ?>" 
                                                    value="<?= h($wellbabyRecord['newborn_screening_date'] ?? '') ?>"
                                                    <?= empty($wellbabyRecord['newborn_screening_done']) ? 'disabled' : '' ?>>
@@ -387,14 +396,14 @@ if (!empty($wellbabyRecord['mother_age'])) {
                 <!-- Section 2: Parental Information -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">2</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Parental Information</h5>
+                        <span class="badge bg-success rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">2</span>
+                        <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Parental Information</h2>
                     </div>
                     <div class="card-body p-4 bg-white">
                         <!-- Smart Mother Linker (Optional Central Registry Integration) -->
                         <div class="mb-4 p-3 bg-light rounded-3 border">
                             <label for="motherSearchInput" class="form-label fw-semibold text-secondary small d-flex justify-content-between align-items-center mb-2">
-                                <span><i class="bi bi-search-heart text-success me-1"></i> Search Registered Mother in Directory (Optional)</span>
+                                <span><i class="bi bi-search-heart text-success me-1" aria-hidden="true"></i> Search Registered Mother in Directory (Optional)</span>
                                 <span class="badge <?= !empty($motherLinkedId) ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-secondary' ?>" id="linkedMotherBadge">
                                     <?= !empty($motherLinkedId) ? 'Linked: Patient #' . h($motherLinkedPatientNo) : 'Not Linked' ?>
                                 </span>
@@ -404,24 +413,25 @@ if (!empty($wellbabyRecord['mother_age'])) {
 
                             <!-- Search Input for Mother -->
                             <div class="input-group mb-2 <?= !empty($motherLinkedId) ? 'd-none' : '' ?>" id="motherSearchWrapper">
-                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-search"></i></span>
+                                <span class="input-group-text bg-white text-muted"><i class="bi bi-person-search" aria-hidden="true"></i></span>
                                 <input type="text" 
                                        id="motherSearchInput" 
                                        class="form-control bg-white" 
-                                       placeholder="Type mother's name or patient ID to link and auto-fill..." 
-                                       autocomplete="off">
-                                <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherSearch">
-                                    <i class="bi bi-x-circle me-1"></i> Clear
+                                       placeholder="Type mother's name or patient ID to link and auto-fill…" 
+                                       autocomplete="off"
+                                       spellcheck="false">
+                                <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherSearch" aria-label="Clear mother search">
+                                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Clear
                                 </button>
                             </div>
 
                             <!-- Mother Live Search Results Dropdown -->
-                            <div id="motherSearchResults" class="list-group shadow-sm rounded-3 border mb-2 d-none" style="max-height: 220px; overflow-y: auto;"></div>
+                            <div id="motherSearchResults" class="list-group shadow-sm rounded-3 border mb-2 d-none" role="region" aria-live="polite" aria-label="Mother search results" style="max-height: 220px; overflow-y: auto;"></div>
 
                             <!-- Mother Selected Card -->
                             <div id="motherSelectedCard" class="<?= empty($motherLinkedId) ? 'd-none' : '' ?> p-2 px-3 bg-white rounded border border-success-subtle d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-check-fill text-success fs-5"></i>
+                                    <i class="bi bi-person-check-fill text-success fs-5" aria-hidden="true"></i>
                                     <div>
                                         <div class="fw-bold text-dark small" id="linkedMotherName">
                                             <?= !empty($motherLinkedName) ? h($motherLinkedName) . ' (' . h($motherLinkedPatientNo) . ')' : '--' ?>
@@ -431,13 +441,13 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="btnRemoveMotherLink">
-                                    <i class="bi bi-x-circle me-1"></i> Unlink Mother
+                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" id="btnRemoveMotherLink" aria-label="Unlink mother profile">
+                                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Unlink Mother
                                 </button>
                             </div>
 
-                            <div class="form-text text-muted small mt-1">
-                                <i class="bi bi-info-circle me-1"></i> If the mother is registered in the health center, selecting her will automatically fill her details and link her profile. If not registered, simply leave this unlinked and type her information below.
+                            <div class="form-text text-muted small mt-1" style="text-wrap: pretty;">
+                                <i class="bi bi-info-circle me-1" aria-hidden="true"></i> If the mother is registered in the health center, selecting her will automatically fill her details and link her profile. If not registered, simply leave this unlinked and type her information below.
                             </div>
                         </div>
 
@@ -454,8 +464,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                        class="form-control" 
                                        placeholder="e.g. Maria Santos Dela Cruz" 
                                        value="<?= h($motherName) ?>"
-                                       autocomplete="new-password"
-                                       data-lpignore="true">
+                                       autocomplete="name">
                             </div>
 
                             <!-- Mother's DOB -->
@@ -467,6 +476,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                        name="mother_dob" 
                                        id="mother_dob" 
                                        class="form-control" 
+                                       style="font-variant-numeric: tabular-nums;"
                                        max="<?= date('Y-m-d') ?>" 
                                        value="<?= h($motherDob) ?>">
                             </div>
@@ -480,6 +490,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                     <input type="number" 
                                            id="mother_age" 
                                            class="form-control bg-light" 
+                                           style="font-variant-numeric: tabular-nums;"
                                            placeholder="Auto" 
                                            value="<?= h($motherAge) ?>"
                                            readonly>
@@ -498,8 +509,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                        class="form-control" 
                                        placeholder="e.g. Juan Bautista Dela Cruz" 
                                        value="<?= h($fatherName) ?>"
-                                       autocomplete="new-password"
-                                       data-lpignore="true">
+                                       autocomplete="name">
                             </div>
 
                             <!-- Father's DOB -->
@@ -511,6 +521,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                        name="father_dob" 
                                        id="father_dob" 
                                        class="form-control" 
+                                       style="font-variant-numeric: tabular-nums;"
                                        max="<?= date('Y-m-d') ?>" 
                                        value="<?= h($fatherDob) ?>">
                             </div>
@@ -524,6 +535,7 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                     <input type="number" 
                                            id="father_age" 
                                            class="form-control bg-light" 
+                                           style="font-variant-numeric: tabular-nums;"
                                            placeholder="Auto" 
                                            value="<?= h($fatherAge) ?>"
                                            readonly>
@@ -552,6 +564,10 @@ if (!empty($wellbabyRecord['mother_age'])) {
                             Cancel
                         </a>
                         <button type="submit" class="btn btn-success text-white px-4 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-save me-1" aria-hidden="true"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
                             <i class="bi bi-save me-1"></i> Save Changes
                         </button>
                     </div>
@@ -618,13 +634,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         data.results.forEach(mom => {
                             const item = document.createElement('a');
                             item.href = '#';
+                            item.setAttribute('role', 'button');
+                            item.setAttribute('aria-label', 'Select and link mother ' + escapeHtml(mom.name));
                             item.className = 'list-group-item list-group-item-action p-2 px-3 d-flex align-items-center justify-content-between small';
                             item.innerHTML = `
                                 <div>
                                     <span class="fw-bold text-dark">${escapeHtml(mom.name)}</span>
-                                    <span class="badge bg-light text-secondary border font-monospace ms-1">${escapeHtml(mom.patient_no)}</span>
+                                    <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${escapeHtml(mom.patient_no)}</span>
                                     <div class="text-muted" style="font-size: 0.72rem;">
-                                        ${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'} • ${mom.age ? mom.age + ' yrs' : ''} • Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
+                                        <span style="font-variant-numeric: tabular-nums;">${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'}</span> <span aria-hidden="true">•</span> <span style="font-variant-numeric: tabular-nums;">${mom.age ? mom.age + ' yrs' : ''}</span> <span aria-hidden="true">•</span> Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
                                     </div>
                                 </div>
                                 <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7 rounded-pill">Select &amp; Link</span>

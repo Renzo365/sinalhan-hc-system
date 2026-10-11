@@ -124,7 +124,12 @@ class ConsultationController extends Controller {
                 );
             }
 
-            AuditLog::log('CONSULTATION_CREATED', 'Clinical', "Recorded new consultation ledger entry for patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})");
+            $rxCount = (!empty($_POST['prescriptions']) && is_array($_POST['prescriptions'])) 
+                ? count(array_filter($_POST['prescriptions'], function($r) { return !empty(trim($r['medicine_name'] ?? '')); })) 
+                : 0;
+            $rxNote = $rxCount > 0 ? " with {$rxCount} prescription(s)" : "";
+
+            AuditLog::log('CONSULTATION_CREATED', 'Clinical', "Recorded new consultation ledger entry for patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}){$rxNote}");
             
             $_SESSION['success_message'] = 'Consultation record saved successfully!';
             $this->redirect("/patients/{$patientId}#tab-consultations");
@@ -265,7 +270,9 @@ class ConsultationController extends Controller {
             );
 
             $patientLabel = $patient ? "{$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})" : "Patient #{$patientId}";
-            AuditLog::log('CONSULTATION_UPDATED', 'Clinical', "Updated consultation ledger entry (#{$id}) for patient: {$patientLabel}");
+            $rxUpdatedCount = count($prescriptionItems);
+            $rxNote = $rxUpdatedCount > 0 ? " with {$rxUpdatedCount} synchronized prescription(s)" : "";
+            AuditLog::log('CONSULTATION_UPDATED', 'Clinical', "Updated consultation ledger entry (#{$id}) for patient: {$patientLabel}{$rxNote}");
 
             $_SESSION['success_message'] = 'Consultation record updated successfully!';
             $this->redirect("/patients/{$patientId}#tab-consultations");
@@ -374,11 +381,13 @@ class ConsultationController extends Controller {
         }
 
         $reason = trim($_POST['reason'] ?? '') ?: 'Archived by administrator';
-        $this->consultationModel->archive($id, $currentUserId, $reason);
+        if ($this->consultationModel->archive($id, $currentUserId, $reason)) {
+            AuditLog::log('CONSULTATION_ARCHIVED', 'Clinical', "Archived consultation ID #{$id} for patient: {$consultation['pat_first']} {$consultation['pat_last']}");
+            $_SESSION['success_message'] = 'Consultation record archived successfully.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to archive consultation record. Please try again.';
+        }
 
-        AuditLog::log('CONSULTATION_ARCHIVED', 'Consultations', "Archived consultation ID #{$id} for patient: {$consultation['pat_first']} {$consultation['pat_last']}");
-
-        $_SESSION['success_message'] = 'Consultation record archived successfully.';
         $this->redirect("/patients/{$patientId}#tab-consultations");
     }
 
@@ -429,7 +438,7 @@ class ConsultationController extends Controller {
         }
 
         if ($this->consultationModel->restore($id)) {
-            AuditLog::log('CONSULTATION_RESTORED', 'Consultations', "Restored consultation ID #{$id}");
+            AuditLog::log('CONSULTATION_RESTORED', 'Clinical', "Restored consultation ID #{$id}");
             $_SESSION['success_message'] = 'Consultation record restored successfully.';
         } else {
             $_SESSION['error_message'] = 'Failed to restore consultation. Please try again.';

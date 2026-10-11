@@ -1,7 +1,7 @@
                     <!-- ==============================================================
                        TAB 5: VITAL SIGNS HISTORY
                        ============================================================== -->
-                    <div class="tab-pane fade" id="tab-vitals" role="tabpanel">
+                    <div class="tab-pane fade" id="tab-vitals" role="tabpanel" aria-labelledby="tab-vitals-btn" tabindex="0">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="h6 fw-bold text-dark mb-0">Vital Signs</h5>
                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addVitalsModal">

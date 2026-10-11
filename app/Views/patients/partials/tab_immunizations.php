@@ -1,7 +1,7 @@
                     <!-- ==============================================================
                        TAB 6: UNIVERSAL IMMUNIZATIONS
                        ============================================================== -->
-                    <div class="tab-pane fade" id="tab-immunizations" role="tabpanel">
+                    <div class="tab-pane fade" id="tab-immunizations" role="tabpanel" aria-labelledby="tab-immunizations-btn" tabindex="0">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <h5 class="h6 fw-bold text-dark mb-0">Immunizations</h5>

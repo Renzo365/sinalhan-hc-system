@@ -103,7 +103,7 @@ class ProfileController extends Controller {
             // Synchronize active session full name immediately
             $_SESSION['user_fullname'] = trim($firstName . ' ' . $lastName);
 
-            AuditLog::log('PROFILE_UPDATED', 'users', $userId, 'Updated personal profile details');
+            AuditLog::log('PROFILE_UPDATED', 'Users', "Updated personal profile details for User #{$userId}");
             $_SESSION['success_message'] = 'Your profile details have been successfully updated.';
         } else {
             $_SESSION['error_message'] = 'Failed to update profile details. Please try again.';
@@ -176,7 +176,7 @@ class ProfileController extends Controller {
                 session_regenerate_id(true);
             }
 
-            AuditLog::log('USER_PASSWORD_CHANGED', 'users', $userId, 'Voluntarily updated account password');
+            AuditLog::log('USER_PASSWORD_CHANGED', 'Users', "Voluntarily updated account password for User #{$userId}");
             $_SESSION['success_message'] = 'Your password has been changed successfully.';
         } else {
             $_SESSION['error_message'] = 'Failed to update your password. Please try again.';
@@ -184,4 +184,61 @@ class ProfileController extends Controller {
 
         $this->redirect('/profile#password-settings');
     }
+
+    /**
+     * Update personal display, audio, and accessibility preferences.
+     */
+    public function updatePreferences() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/profile#preferences-settings');
+            return;
+        }
+
+        if (!verify_csrf_token()) {
+            $_SESSION['error_message'] = 'Security validation failed (CSRF token mismatch). Please try again.';
+            $this->redirect('/profile#preferences-settings');
+            return;
+        }
+
+        $userId = (int)$_SESSION['user_id'];
+
+        $tableDensity = trim($_POST['table_density'] ?? 'comfortable');
+        if (!in_array($tableDensity, ['comfortable', 'compact'], true)) {
+            $tableDensity = 'comfortable';
+        }
+
+        $queueChime = trim($_POST['queue_chime'] ?? 'chime');
+        if (!in_array($queueChime, ['chime', 'muted'], true)) {
+            $queueChime = 'chime';
+        }
+
+        $pageSize = (int)($_POST['default_page_size'] ?? 10);
+        if (!in_array($pageSize, [10, 25, 50, 100], true)) {
+            $pageSize = 10;
+        }
+
+        $landingPage = trim($_POST['landing_page'] ?? 'dashboard');
+        if (!in_array($landingPage, ['dashboard', 'patients', 'queue', 'appointments'], true)) {
+            $landingPage = 'dashboard';
+        }
+
+        $preferences = [
+            'table_density' => $tableDensity,
+            'queue_chime' => $queueChime,
+            'default_page_size' => $pageSize,
+            'landing_page' => $landingPage,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->userModel->updatePreferences($userId, $preferences)) {
+            $_SESSION['user_preferences'] = $preferences;
+            AuditLog::log('PREFERENCES_UPDATED', 'Users', "Updated personal accessibility preferences for User #{$userId}");
+            $_SESSION['success_message'] = 'Personal display & accessibility preferences saved successfully.';
+        } else {
+            $_SESSION['error_message'] = 'Failed to save preferences. Please try again.';
+        }
+
+        $this->redirect('/profile#preferences-settings');
+    }
 }
+

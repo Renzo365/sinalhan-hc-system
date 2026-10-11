@@ -782,6 +782,10 @@
 
 
 
+<form id="voidAppointmentPatientForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+    <input type="hidden" name="void_reason" id="patientTabVoidReasonInput" value="">
+</form>
 <form id="cancelAppointmentForm" method="POST" class="d-none">
     <?= csrf_field() ?>
     <input type="hidden" name="status" value="Cancelled">
@@ -831,9 +835,9 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold" id="enqueuePatientModalLabel">
-                    <i class="bi bi-person-check-fill me-2"></i>Check-in Patient to Today's Queue
-                </h5>
+                <h2 class="modal-title h5 fw-bold mb-0" id="enqueuePatientModalLabel" style="text-wrap: balance;">
+                    <i class="bi bi-person-check-fill me-2" aria-hidden="true"></i>Check-in Patient to Today's Queue
+                </h2>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="<?= url('/queue') ?>" method="POST">
@@ -841,8 +845,8 @@
                 <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
                 <input type="hidden" name="redirect_to" value="<?= url('/patients/' . $patient['id'] . '#tab-appointments') ?>">
                 <div class="modal-body p-4 bg-white">
-                    <div class="alert alert-info py-2 px-3 small mb-3">
-                        <i class="bi bi-info-circle me-1"></i>Checking in <strong><?= h($fullNameFormatted) ?></strong> (<?= h($patient['patient_no']) ?>) to the active health center queue for today (<?= date('F d, Y') ?>).
+                    <div class="alert alert-info py-2 px-3 small mb-3" style="text-wrap: pretty;">
+                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>Checking in <strong><?= h($fullNameFormatted) ?></strong> (<span style="font-variant-numeric: tabular-nums;"><?= h($patient['patient_no']) ?></span>) to the active health center queue for today (<span style="font-variant-numeric: tabular-nums;"><?= date('F d, Y') ?></span>).
                     </div>
                     <div class="mb-3">
                         <label for="modal_queue_service_type" class="form-label fw-semibold text-secondary small">Service / Consultation Category <span class="text-danger">*</span></label>
@@ -858,9 +862,9 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light py-2 px-4 border-top" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
-                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold">
-                        <i class="bi bi-check-lg me-1"></i> Issue Queue Number
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal" style="min-height: 38px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold" style="min-height: 38px;">
+                        <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Issue Queue Number
                     </button>
                 </div>
             </form>

@@ -238,7 +238,8 @@ class Consultation extends Model {
      * @return array List of archived consultations
      */
     public function allArchived($filters = []) {
-        $sql = "SELECT c.*, p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last,
+        $sql = "SELECT c.*, p.patient_no, p.first_name AS pat_first, p.middle_name AS pat_middle, p.last_name AS pat_last, p.suffix AS pat_suffix,
+                       p.deleted_at AS patient_deleted_at,
                        COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name,
                        CONCAT(archiver.first_name, ' ', archiver.last_name) AS archiver_name,
                        vs.bp_systolic, vs.bp_diastolic, vs.heart_rate, vs.temperature, vs.respiratory_rate, vs.weight, vs.height, vs.bmi
@@ -250,9 +251,23 @@ class Consultation extends Model {
                 WHERE c.deleted_at IS NOT NULL";
         $params = [];
         if (!empty($filters['search'])) {
-            $sql .= " AND (p.first_name LIKE :s1 OR p.last_name LIKE :s2 OR p.patient_no LIKE :s3 OR c.assessment LIKE :s4)";
+            $sql .= " AND (p.first_name LIKE :s1 
+                        OR p.last_name LIKE :s2 
+                        OR p.patient_no LIKE :s3 
+                        OR c.assessment LIKE :s4
+                        OR c.archive_reason LIKE :s5
+                        OR CONCAT(p.first_name, ' ', p.last_name) LIKE :s6
+                        OR CONCAT(p.last_name, ', ', p.first_name) LIKE :s7
+                        OR CONCAT(p.last_name, ' ', p.first_name) LIKE :s8)";
             $term = '%' . $filters['search'] . '%';
-            $params['s1'] = $term; $params['s2'] = $term; $params['s3'] = $term; $params['s4'] = $term;
+            $params['s1'] = $term; 
+            $params['s2'] = $term; 
+            $params['s3'] = $term; 
+            $params['s4'] = $term;
+            $params['s5'] = $term;
+            $params['s6'] = $term;
+            $params['s7'] = $term;
+            $params['s8'] = $term;
         }
         if (!empty($filters['date_from'])) {
             $sql .= " AND DATE(c.deleted_at) >= :date_from";

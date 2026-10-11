@@ -12,11 +12,11 @@ $todayMetrics = $todayMetrics ?? [
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Appointment Directory</h2>
-        <p class="text-secondary small mb-0">Manage and filter upcoming visits, schedule follow-ups, and update booking status.</p>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Appointment Directory</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Manage and filter upcoming visits, schedule follow-ups, and update booking status.</p>
     </div>
     <a href="<?= url('/appointments/create') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-xs fw-semibold">
-        + Schedule Appointment
+        <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i> Schedule Appointment
     </a>
 </div>
 
@@ -28,14 +28,14 @@ $todayMetrics = $todayMetrics ?? [
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Today's Visits</div>
-                        <div class="h3 mb-0 fw-bold text-dark mt-1"><?= (int)$todayMetrics['total_today'] ?></div>
+                        <div class="h3 mb-0 fw-bold text-dark mt-1" style="font-variant-numeric: tabular-nums;"><?= (int)$todayMetrics['total_today'] ?></div>
                     </div>
-                    <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-calendar2-day fs-5"></i>
                     </div>
                 </div>
                 <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                    <span class="fw-semibold text-primary"><?= date('M d, Y') ?></span>
+                    <span class="fw-semibold text-primary" style="font-variant-numeric: tabular-nums;"><?= date('M d, Y') ?></span>
                 </div>
             </div>
         </div>
@@ -46,9 +46,9 @@ $todayMetrics = $todayMetrics ?? [
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Pending / Scheduled</div>
-                        <div class="h3 mb-0 fw-bold text-info-emphasis mt-1"><?= (int)$todayMetrics['scheduled_today'] ?></div>
+                        <div class="h3 mb-0 fw-bold text-info-emphasis mt-1" style="font-variant-numeric: tabular-nums;"><?= (int)$todayMetrics['scheduled_today'] ?></div>
                     </div>
-                    <div class="bg-info-subtle text-info rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-info-subtle text-info rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-hourglass-split fs-5"></i>
                     </div>
                 </div>
@@ -64,9 +64,9 @@ $todayMetrics = $todayMetrics ?? [
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Completed Today</div>
-                        <div class="h3 mb-0 fw-bold text-success mt-1"><?= (int)$todayMetrics['completed_today'] ?></div>
+                        <div class="h3 mb-0 fw-bold text-success mt-1" style="font-variant-numeric: tabular-nums;"><?= (int)$todayMetrics['completed_today'] ?></div>
                     </div>
-                    <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-check-circle fs-5"></i>
                     </div>
                 </div>
@@ -82,9 +82,9 @@ $todayMetrics = $todayMetrics ?? [
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Missed / Cancelled</div>
-                        <div class="h3 mb-0 fw-bold text-secondary mt-1"><?= (int)$todayMetrics['missed_cancelled_today'] ?></div>
+                        <div class="h3 mb-0 fw-bold text-secondary mt-1" style="font-variant-numeric: tabular-nums;"><?= (int)$todayMetrics['missed_cancelled_today'] ?></div>
                     </div>
-                    <div class="bg-light text-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-light text-secondary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-x-circle fs-5"></i>
                     </div>
                 </div>
@@ -118,7 +118,7 @@ $todayMetrics = $todayMetrics ?? [
                 Pending Today
             </button>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn text-warning-emphasis" data-preset="overdue">
-                <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Overdue<?= !empty($todayMetrics['overdue_count']) ? ' <span class="badge bg-danger ms-1">' . $todayMetrics['overdue_count'] . '</span>' : '' ?>
+                <i class="bi bi-exclamation-triangle-fill me-1 text-warning" aria-hidden="true"></i>Overdue<?= !empty($todayMetrics['overdue_count']) ? ' <span class="badge bg-danger ms-1" style="font-variant-numeric: tabular-nums;">' . $todayMetrics['overdue_count'] . '</span>' : '' ?>
             </button>
         </div>
 
@@ -127,12 +127,15 @@ $todayMetrics = $todayMetrics ?? [
             <div class="col-12 col-md-3">
                 <label for="search" class="form-label fw-semibold text-secondary small">Search Patient</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-search"></i></span>
                     <input type="text" 
                            name="search" 
                            id="search" 
                            class="form-control bg-light border-start-0" 
-                           placeholder="Name or Patient No..." 
+                           placeholder="Name or Patient No…" 
+                           autocomplete="off"
+                           spellcheck="false"
+                           inputmode="search"
                            value="<?= h($filters['search']) ?>">
                 </div>
             </div>
@@ -144,7 +147,6 @@ $todayMetrics = $todayMetrics ?? [
                        name="date_from" 
                        id="date_from" 
                        class="form-control bg-light" 
-                       placeholder="YYYY-MM-DD" 
                        value="<?= h($filters['date_from']) ?>">
             </div>
 
@@ -155,7 +157,6 @@ $todayMetrics = $todayMetrics ?? [
                        name="date_to" 
                        id="date_to" 
                        class="form-control bg-light" 
-                       placeholder="YYYY-MM-DD" 
                        value="<?= h($filters['date_to']) ?>">
             </div>
 
@@ -188,11 +189,11 @@ $todayMetrics = $todayMetrics ?? [
 
             <!-- Action Buttons -->
             <div class="col-12 col-sm-6 col-md-1 d-flex gap-1">
-                <button type="submit" class="btn btn-primary flex-grow-1" title="Filter Records">
-                    <i class="bi bi-funnel"></i>
+                <button type="submit" class="btn btn-primary flex-grow-1 d-inline-flex align-items-center justify-content-center" title="Filter Records" aria-label="Filter records" style="min-width: 38px; min-height: 38px;">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
                 </button>
-                <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary" title="Clear Filters">
-                    <i class="bi bi-arrow-counterclockwise"></i>
+                <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" title="Clear Filters" aria-label="Clear filters" style="min-width: 38px; min-height: 38px;">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                 </a>
             </div>
         </form>
@@ -206,20 +207,20 @@ $todayMetrics = $todayMetrics ?? [
             <table class="table table-hover align-middle mb-0 small" id="appointmentsTable">
                 <thead class="table-light">
                     <tr>
-                        <th class="text-start ps-4">Scheduled Date</th>
-                        <th>Time</th>
-                        <th>Category</th>
-                        <th class="text-start">Patient Name</th>
-                        <th class="text-start">Purpose</th>
-                        <th>Status</th>
-                        <th class="pe-4 text-end">Action</th>
+                        <th scope="col" class="text-start ps-4">Scheduled Date</th>
+                        <th scope="col" class="text-center">Time</th>
+                        <th scope="col" class="text-center">Category</th>
+                        <th scope="col" class="text-start">Patient Name</th>
+                        <th scope="col" class="text-start">Purpose</th>
+                        <th scope="col" class="text-center">Status</th>
+                        <th scope="col" class="pe-4 text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($appointments)): ?>
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="bi bi-calendar-x d-block fs-3 mb-2 text-muted"></i>
+                                <i class="bi bi-calendar-x d-block fs-3 mb-2 text-muted" aria-hidden="true"></i>
                                 No appointments found matching the selected filters.
                             </td>
                         </tr>
@@ -277,11 +278,11 @@ $todayMetrics = $todayMetrics ?? [
                             }
                         ?>
                             <tr>
-                                <td class="text-start ps-4 <?= $isPastDue ? 'text-warning-emphasis' : 'text-secondary' ?> fw-semibold" data-order="<?= h($a['appointment_date']) ?>" style="white-space: nowrap;">
-                                    <?= date('M d, Y', strtotime($a['appointment_date'])) ?>
+                                <td class="text-start ps-4 <?= $isPastDue ? 'text-warning-emphasis' : 'text-secondary' ?> fw-semibold" data-order="<?= h($a['appointment_date']) ?>" style="white-space: nowrap; font-variant-numeric: tabular-nums;">
+                                     <?= date('M d, Y', strtotime($a['appointment_date'])) ?>
                                 </td>
-                                <td class="fw-semibold text-dark text-center" data-order="<?= date('H:i:s', strtotime($a['appointment_time'])) ?>" style="white-space: nowrap;">
-                                    <?= date('h:i A', strtotime($a['appointment_time'])) ?>
+                                <td class="fw-semibold text-dark text-center" data-order="<?= date('H:i:s', strtotime($a['appointment_time'])) ?>" style="white-space: nowrap; font-variant-numeric: tabular-nums;">
+                                     <?= date('h:i A', strtotime($a['appointment_time'])) ?>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge-category-pill <?= $catClass ?>">
@@ -291,7 +292,7 @@ $todayMetrics = $todayMetrics ?? [
                                 <td class="text-start text-dark fw-bold">
                                     <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="link-primary-dark text-decoration-none">
                                         <?= h($a['patient_last']) ?>, <?= h($a['patient_first']) ?> 
-                                        <span class="text-muted fw-normal font-monospace fs-7">(<?= h($a['patient_no']) ?>)</span>
+                                        <span class="text-muted fw-normal font-monospace fs-7" style="font-variant-numeric: tabular-nums;">(<?= h($a['patient_no']) ?>)</span>
                                     </a>
                                 </td>
                                 <td class="text-start text-truncate text-secondary" style="max-width: 220px;" title="<?= h($a['purpose']) ?>">
@@ -299,112 +300,240 @@ $todayMetrics = $todayMetrics ?? [
                                 </td>
                                 <td class="text-center">
                                     <?php if ($isPastDue): ?>
-                                        <span class="<?= $badgeClass ?> px-2 py-1" title="Scheduled date was <?= date('M d, Y', strtotime($a['appointment_date'])) ?> (<?= $daysPastDue ?> days ago)">
-                                            <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Past Due (<?= $daysPastDue ?>d ago)
+                                        <span class="<?= $badgeClass ?> px-2 py-1" title="Scheduled date was <?= date('M d, Y', strtotime($a['appointment_date'])) ?> (<?= $daysPastDue ?> days ago)" style="font-variant-numeric: tabular-nums;">
+                                            <i class="bi bi-exclamation-triangle-fill me-1 text-warning" aria-hidden="true"></i>Past Due (<?= $daysPastDue ?>d ago)
                                         </span>
                                     <?php else: ?>
                                         <span class="<?= $badgeClass ?> px-2 py-1"><?= h($a['status']) ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="pe-4 text-end" style="white-space: nowrap;">
-                                    <div class="d-inline-flex align-items-center gap-1">
-                                        <?php if ($isPastDue): ?>
-                                            <!-- Past Due Scheduled Appointment: Primary action is Reschedule -->
-                                            <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-warning text-dark px-2 py-1" title="Reschedule patient for a new date">
-                                                Reschedule
-                                            </a>
+                                    <div class="dropdown d-inline-block">
+                                        <button class="btn btn-sm btn-outline-secondary px-2.5 py-1 dropdown-toggle d-inline-flex align-items-center justify-content-center shadow-2xs" 
+                                                type="button" 
+                                                data-bs-toggle="dropdown" 
+                                                aria-expanded="false" 
+                                                aria-label="Actions for appointment with <?= h($a['patient_first'] . ' ' . $a['patient_last']) ?>"
+                                                title="Appointment actions"
+                                                style="min-width: 86px;">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-2" style="min-width: 220px;">
+                                            <?php if ($isPastDue): ?>
+                                                <!-- Past Due Scheduled Appointment -->
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Past Due Actions</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="dropdown-item small text-warning-emphasis fw-medium d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-calendar-event text-warning fs-6" aria-hidden="true"></i>
+                                                        <span>Reschedule for New Date</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="status" value="Missed">
+                                                        <button type="submit" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Mark appointment as Missed? This flags the patient as a no-show for this past date.">
+                                                            <i class="bi bi-clock-history text-secondary fs-6" aria-hidden="true"></i>
+                                                            <span>Mark as Missed (No-Show)</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="status" value="Completed">
+                                                        <button type="submit" class="dropdown-item small text-success d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Mark this past appointment as Completed?">
+                                                            <i class="bi bi-check2-circle text-success fs-6" aria-hidden="true"></i>
+                                                            <span>Mark as Completed (Late)</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="status" value="Cancelled">
+                                                        <button type="submit" class="dropdown-item small text-danger d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Are you sure you want to Cancel this appointment?">
+                                                            <i class="bi bi-x-circle text-danger fs-6" aria-hidden="true"></i>
+                                                            <span>Cancel Appointment</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Patient Record</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-folder2-open text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Open Patient Chart</span>
+                                                    </a>
+                                                </li>
 
-                                            <!-- Secondary Actions Dropdown for Overdue -->
-                                            <div class="dropdown d-inline-block">
-                                                <button class="btn btn-sm btn-outline-secondary px-2 py-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More actions">
-                                                    <i class="bi bi-three-dots-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
-                                                    <li>
-                                                        <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
-                                                            <?= csrf_field() ?>
-                                                            <input type="hidden" name="status" value="Missed">
-                                                            <button type="submit" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Mark appointment as Missed? This flags the patient as a no-show for this past date.">
-                                                                <i class="bi bi-clock-history text-secondary"></i> Mark as Missed (No-Show)
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider my-1"></li>
-                                                    <li>
-                                                        <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
-                                                            <?= csrf_field() ?>
-                                                            <input type="hidden" name="status" value="Completed">
-                                                            <button type="submit" class="dropdown-item small text-success d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Mark this past appointment as Completed?">
-                                                                <i class="bi bi-check2-circle text-success"></i> Mark as Completed (Late)
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider my-1"></li>
-                                                    <li>
-                                                        <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
-                                                            <?= csrf_field() ?>
-                                                            <input type="hidden" name="status" value="Cancelled">
-                                                            <button type="submit" class="dropdown-item small text-danger d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Are you sure you want to Cancel this appointment?">
-                                                                <i class="bi bi-x-circle text-danger"></i> Cancel Appointment
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        <?php elseif ($a['status'] === 'Scheduled'): ?>
-                                            <!-- Primary Action: Complete -->
-                                            <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
-                                                <?= csrf_field() ?>
-                                                <input type="hidden" name="status" value="Completed">
-                                                <button type="submit" class="btn btn-sm btn-outline-success px-2 py-1 action-confirm-btn" title="Complete appointment" data-confirm="Mark this appointment for <?= h($a['patient_first'] . ' ' . $a['patient_last']) ?> as Completed?">
-                                                    Complete
-                                                </button>
-                                            </form>
+                                            <?php elseif ($a['status'] === 'Scheduled'): ?>
+                                                <!-- Active Scheduled Appointment -->
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Encounter Actions</h6>
+                                                </li>
+                                                <li>
+                                                    <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="status" value="Completed">
+                                                        <button type="submit" class="dropdown-item small text-success fw-medium d-flex align-items-center gap-2 py-2 action-confirm-btn" title="Complete appointment" data-confirm="Mark this appointment for <?= h($a['patient_first'] . ' ' . $a['patient_last']) ?> as Completed?">
+                                                            <i class="bi bi-check2-circle text-success fs-6" aria-hidden="true"></i>
+                                                            <span>Mark as Completed</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-pencil-square text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Reschedule / Edit</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/queue?patient_id=' . $a['patient_id']) ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-ticket-perforated text-info fs-6" aria-hidden="true"></i>
+                                                        <span>Check In to Queue</span>
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Exceptions</h6>
+                                                </li>
+                                                <li>
+                                                    <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="status" value="Missed">
+                                                        <button type="submit" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Mark appointment as Missed? This flags the patient as a no-show for this consultation date.">
+                                                            <i class="bi bi-clock-history text-secondary fs-6" aria-hidden="true"></i>
+                                                            <span>Mark as Missed (No-Show)</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="status" value="Cancelled">
+                                                        <button type="submit" class="dropdown-item small text-danger d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Are you sure you want to Cancel this appointment? Cancelled appointments cannot be restored directly.">
+                                                            <i class="bi bi-x-circle text-danger fs-6" aria-hidden="true"></i>
+                                                            <span>Cancel Appointment</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Patient Record</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-folder2-open text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Open Patient Chart</span>
+                                                    </a>
+                                                </li>
 
-                                            <!-- More Actions Dropdown -->
-                                            <div class="dropdown d-inline-block">
-                                                <button class="btn btn-sm btn-outline-secondary px-2 py-1 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="More actions">
-                                                    <i class="bi bi-three-dots-vertical"></i>
-                                                </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
-                                                    <li>
-                                                        <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
-                                                            <i class="bi bi-pencil-square text-primary"></i> Edit Details
-                                                        </a>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider my-1"></li>
-                                                    <li>
-                                                        <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
-                                                            <?= csrf_field() ?>
-                                                            <input type="hidden" name="status" value="Missed">
-                                                            <button type="submit" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Mark appointment as Missed? This flags the patient as a no-show for this consultation date.">
-                                                                <i class="bi bi-clock-history text-secondary"></i> Mark as Missed (No-Show)
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                    <li><hr class="dropdown-divider my-1"></li>
-                                                    <li>
-                                                        <form action="<?= url('/appointments/' . $a['id'] . '/status') ?>" method="POST" class="d-inline">
-                                                            <?= csrf_field() ?>
-                                                            <input type="hidden" name="status" value="Cancelled">
-                                                            <button type="submit" class="dropdown-item small text-danger d-flex align-items-center gap-2 py-2 action-confirm-btn" data-confirm="Are you sure you want to Cancel this appointment? Cancelled appointments cannot be restored directly.">
-                                                                <i class="bi bi-x-circle text-danger"></i> Cancel Appointment
-                                                            </button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        <?php elseif ($a['status'] === 'Completed'): ?>
-                                            <!-- Completed: View / Edit details -->
-                                            <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="View or edit appointment details">
-                                                View / Edit
-                                            </a>
-                                        <?php else: ?>
-                                            <!-- Missed or Cancelled: Allow Staff to Reschedule -->
-                                            <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Reschedule patient for a new date">
-                                                Reschedule
-                                            </a>
-                                        <?php endif; ?>
+                                            <?php elseif ($a['status'] === 'Completed'): ?>
+                                                <!-- Completed Appointment -->
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Completed Encounter</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-file-earmark-text text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>View / Edit Details</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/create?patient_id=' . $a['patient_id']) ?>" class="dropdown-item small text-success d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-calendar-plus text-success fs-6" aria-hidden="true"></i>
+                                                        <span>Book Follow-up</span>
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Patient Record</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-folder2-open text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Open Patient Chart</span>
+                                                    </a>
+                                                </li>
+
+                                            <?php elseif ($a['status'] === 'Missed'): ?>
+                                                <!-- Missed Appointment -->
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Missed Appointment</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/create?patient_id=' . $a['patient_id']) ?>" class="dropdown-item small text-primary fw-medium d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-calendar-plus text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Reschedule (Book New)</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-pencil-square text-secondary fs-6" aria-hidden="true"></i>
+                                                        <span>View / Edit Record</span>
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Patient Record</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-folder2-open text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Open Patient Chart</span>
+                                                    </a>
+                                                </li>
+
+                                            <?php else: ?>
+                                                <!-- Cancelled Appointment -->
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Cancelled Appointment</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/create?patient_id=' . $a['patient_id']) ?>" class="dropdown-item small text-primary fw-medium d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-calendar-plus text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Book New Appointment</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/appointments/' . $a['id'] . '/edit') ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-file-earmark-text text-secondary fs-6" aria-hidden="true"></i>
+                                                        <span>View / Edit Record</span>
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-secondary small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Patient Record</h6>
+                                                </li>
+                                                <li>
+                                                    <a href="<?= url('/patients/' . $a['patient_id']) ?>" class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2">
+                                                        <i class="bi bi-folder2-open text-primary fs-6" aria-hidden="true"></i>
+                                                        <span>Open Patient Chart</span>
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
+                                            <?php if (is_admin()): ?>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <h6 class="dropdown-header text-uppercase text-danger small py-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">Administration</h6>
+                                                </li>
+                                                <li>
+                                                    <button type="button" 
+                                                            class="dropdown-item small text-danger d-flex align-items-center gap-2 py-2 btn-void-appointment" 
+                                                            data-id="<?= $a['id'] ?>" 
+                                                            data-patient="<?= h($a['patient_first'] . ' ' . $a['patient_last']) ?>"
+                                                            data-date="<?= date('M d, Y', strtotime($a['appointment_date'])) . ' ' . date('h:i A', strtotime($a['appointment_time'])) ?>">
+                                                        <i class="bi bi-trash3 text-danger fs-6" aria-hidden="true"></i>
+                                                        <span>Void (Booked in Error)</span>
+                                                    </button>
+                                                </li>
+                                            <?php endif; ?>
+                                        </ul>
                                     </div>
                                 </td>
                             </tr>
@@ -416,6 +545,11 @@ $todayMetrics = $todayMetrics ?? [
     </div>
 </div>
 
+<!-- Hidden Form for Voiding Appointment -->
+<form id="voidAppointmentGlobalForm" method="POST" class="d-none">
+    <?= csrf_field() ?>
+    <input type="hidden" name="void_reason" id="voidReasonInput" value="">
+</form>
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>
 
 <script>
@@ -549,6 +683,66 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }, true);
+
+    // Admin Void Appointment Confirmation with SweetAlert
+    $(document).on('click', '.btn-void-appointment', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const apptId = $(this).attr('data-id');
+        const patient = $(this).attr('data-patient') || 'this patient';
+        const date = $(this).attr('data-date') || 'this date';
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Void Appointment Record?',
+                html: `
+                    <div class="text-start small">
+                        <p class="text-secondary mb-2">
+                            You are about to void the appointment for <strong>${patient}</strong> scheduled on <strong>${date}</strong>.
+                        </p>
+                        <div class="alert alert-warning py-2 px-3 small border-0 mb-3" style="background-color: #fffbeb; color: #b45309;">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            <strong>Administrative Void:</strong> This removes the appointment from active schedules and capacity counters without penalizing the patient's record.
+                        </div>
+                        <label class="form-label fw-semibold text-secondary mb-1">Reason for Voiding:</label>
+                        <select id="swalVoidReason" class="form-select form-select-sm mb-2">
+                            <option value="Created in error / wrong patient selected" selected>Created in error / wrong patient selected</option>
+                            <option value="Duplicate booking entry">Duplicate booking entry</option>
+                            <option value="Test / system training entry">Test / system training entry</option>
+                            <option value="Other administrative mistake">Other administrative mistake</option>
+                        </select>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Void Appointment',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const reasonSelect = document.getElementById('swalVoidReason');
+                    const reason = reasonSelect ? reasonSelect.value : 'Created in error';
+                    const form = document.getElementById('voidAppointmentGlobalForm');
+                    if (form) {
+                        form.action = `<?= url('/appointments/') ?>${apptId}/void`;
+                        document.getElementById('voidReasonInput').value = reason;
+                        form.submit();
+                    }
+                }
+            });
+        } else {
+            if (confirm(`Void appointment #${apptId} for ${patient}?`)) {
+                const form = document.getElementById('voidAppointmentGlobalForm');
+                if (form) {
+                    form.action = `<?= url('/appointments/') ?>${apptId}/void`;
+                    document.getElementById('voidReasonInput').value = 'Voided by administrator (Created in error)';
+                    form.submit();
+                }
+            }
+        }
+    });
 
     // Initialize DataTable
     <?php if (!empty($appointments)): ?>

@@ -39,8 +39,8 @@ if ($user['role'] === 'super_admin') {
 ?>
 
 <div class="mb-4">
-    <h2 class="h3 mb-1 fw-bold text-primary-dark">User Account Profile</h2>
-    <p class="text-secondary small mb-0">View your assigned account role, update personal contact details, and manage your access password.</p>
+    <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">User Account Profile</h1>
+    <p class="text-secondary small mb-0" style="text-wrap: pretty;">View your assigned account role, update personal contact details, and manage your access password.</p>
 </div>
 
 <div class="row g-4 mb-5">
@@ -52,11 +52,12 @@ if ($user['role'] === 'super_admin') {
                     <!-- Circular Avatar with Two-Letter Initials -->
                     <div class="mx-auto mb-3" 
                          id="profileAvatar"
-                         style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25); transition: all 0.3s ease;">
+                         aria-hidden="true"
+                         style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25); transition: all 0.3s ease; user-select: none;">
                         <?= h($initials) ?>
                     </div>
 
-                    <h3 class="h5 fw-bold text-dark mb-1" id="profileFullName"><?= h($fullName ?: $user['username']) ?></h3>
+                    <h2 class="h5 fw-bold text-dark mb-1" id="profileFullName" style="text-wrap: balance;"><?= h($fullName ?: $user['username']) ?></h2>
                     <div class="mb-3">
                         <span class="<?= $roleBadgeClass ?>" style="<?= $roleBadgeStyle ?>">
                             <?= h($roleDisplay) ?>
@@ -64,7 +65,7 @@ if ($user['role'] === 'super_admin') {
                     </div>
 
                     <div class="p-2 rounded bg-light border text-secondary small mb-3">
-                        <i class="bi bi-briefcase me-1 text-primary"></i> <span id="profileJobText"><?= !empty($jobTitle) ? h($jobTitle) : 'Staff Member' ?></span>
+                        <i class="bi bi-briefcase me-1 text-primary" aria-hidden="true"></i> <span id="profileJobText"><?= !empty($jobTitle) ? h($jobTitle) : 'Staff Member' ?></span>
                     </div>
 
                     <hr class="my-3 text-muted">
@@ -72,36 +73,52 @@ if ($user['role'] === 'super_admin') {
                     <!-- Read-only Details List -->
                     <div class="text-start small">
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted"><i class="bi bi-hash me-2 text-primary"></i>Account ID</span>
-                            <span class="fw-bold font-monospace text-dark">#<?= h($user['id']) ?></span>
+                            <span class="text-muted"><i class="bi bi-hash me-2 text-primary" aria-hidden="true"></i>Account ID</span>
+                            <span class="fw-bold font-monospace text-dark" style="font-variant-numeric: tabular-nums;">#<?= h($user['id']) ?></span>
                         </div>
 
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted"><i class="bi bi-person-badge me-2 text-primary"></i>Username</span>
+                            <span class="text-muted"><i class="bi bi-person-badge me-2 text-primary" aria-hidden="true"></i>Username</span>
                             <span class="fw-semibold text-dark font-monospace">@<?= h($user['username']) ?></span>
                         </div>
 
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted"><i class="bi bi-shield-check me-2 text-primary"></i>Status</span>
+                            <span class="text-muted"><i class="bi bi-shield-check me-2 text-primary" aria-hidden="true"></i>Status</span>
                             <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5">Active</span>
                         </div>
 
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted"><i class="bi bi-calendar3 me-2 text-primary"></i>Member Since</span>
-                            <span class="fw-semibold text-dark"><?= date('M d, Y', strtotime($user['created_at'])) ?></span>
+                            <span class="text-muted"><i class="bi bi-calendar3 me-2 text-primary" aria-hidden="true"></i>Member Since</span>
+                            <span class="fw-semibold text-dark" style="font-variant-numeric: tabular-nums;"><?= date('M d, Y', strtotime($user['created_at'])) ?></span>
                         </div>
 
                         <div class="d-flex justify-content-between py-2">
-                            <span class="text-muted"><i class="bi bi-clock-history me-2 text-primary"></i>Last Login</span>
-                            <span class="fw-semibold text-dark"><?= !empty($user['last_login_at']) ? date('M d, Y h:i A', strtotime($user['last_login_at'])) : '<span class="text-muted fst-italic">Never</span>' ?></span>
+                            <span class="text-muted"><i class="bi bi-clock-history me-2 text-primary" aria-hidden="true"></i>Last Login</span>
+                            <span class="fw-semibold text-dark" style="font-variant-numeric: tabular-nums;"><?= !empty($user['last_login_at']) ? date('M d, Y h:i A', strtotime($user['last_login_at'])) : '<span class="text-muted fst-italic">Never</span>' ?></span>
                         </div>
+                    </div>
+
+                    <!-- Quick Section Nav -->
+                    <div class="list-group list-group-flush text-start mt-3 border rounded overflow-hidden">
+                        <a href="#contact-details" class="list-group-item list-group-item-action py-2 px-3 small d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-person-lines-fill me-2 text-primary"></i> Contact Details</span>
+                            <i class="bi bi-chevron-right text-muted small"></i>
+                        </a>
+                        <a href="#password-settings" class="list-group-item list-group-item-action py-2 px-3 small d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-shield-lock me-2 text-primary"></i> Password Settings</span>
+                            <i class="bi bi-chevron-right text-muted small"></i>
+                        </a>
+                        <a href="#preferences-settings" class="list-group-item list-group-item-action py-2 px-3 small d-flex align-items-center justify-content-between">
+                            <span><i class="bi bi-sliders me-2 text-primary"></i> Accessibility &amp; Density</span>
+                            <i class="bi bi-chevron-right text-muted small"></i>
+                        </a>
                     </div>
 
                     <!-- Admin Constraint Note -->
                     <div class="alert alert-light border text-start p-3 mt-3 mb-0 small text-muted" style="border-radius: 8px;">
                         <div class="d-flex">
-                            <i class="bi bi-shield-check text-primary fs-5 me-2 flex-shrink-0"></i>
-                            <div>
+                            <i class="bi bi-shield-check text-primary fs-5 me-2 flex-shrink-0" aria-hidden="true"></i>
+                            <div style="text-wrap: pretty;">
                                 <strong>Account Permissions:</strong> System access level and username are governed by administrative personnel. You can freely update your clinical job designation and contact details.
                             </div>
                         </div>
@@ -114,11 +131,11 @@ if ($user['role'] === 'super_admin') {
     <!-- Right Column: Personal Details & Password Forms -->
     <div class="col-12 col-lg-8 col-md-7">
         <!-- Card 1: Personal & Contact Details -->
-        <div class="card card-premium shadow-sm border-0 mb-4" style="border-radius: 12px;">
+        <div class="card card-premium shadow-sm border-0 mb-4" id="contact-details" style="border-radius: 12px;">
             <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center">
-                    <i class="bi bi-person-lines-fill me-2 text-primary"></i>Personal & Contact Information
-                </h5>
+                <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                    <i class="bi bi-person-lines-fill me-2 text-primary" aria-hidden="true"></i>Personal & Contact Information
+                </h2>
             </div>
             <div class="card-body p-4">
                 <?php if (!empty($profileErrors)): ?>
@@ -152,7 +169,9 @@ if ($user['role'] === 'super_admin') {
                                    class="form-control" 
                                    value="<?= h($firstName) ?>" 
                                    required 
-                                   maxlength="50">
+                                   maxlength="50"
+                                   autocomplete="given-name"
+                                   autocapitalize="words">
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -165,7 +184,9 @@ if ($user['role'] === 'super_admin') {
                                    class="form-control" 
                                    value="<?= h($middleName) ?>" 
                                    placeholder="Optional"
-                                   maxlength="50">
+                                   maxlength="50"
+                                   autocomplete="additional-name"
+                                   autocapitalize="words">
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -178,7 +199,9 @@ if ($user['role'] === 'super_admin') {
                                    class="form-control" 
                                    value="<?= h($lastName) ?>" 
                                    required 
-                                   maxlength="50">
+                                   maxlength="50"
+                                   autocomplete="family-name"
+                                   autocapitalize="words">
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -186,14 +209,15 @@ if ($user['role'] === 'super_admin') {
                                 Clinic Job Title <span class="text-muted fw-normal">(Optional)</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-briefcase"></i></span>
+                                <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-briefcase"></i></span>
                                 <input type="text" 
                                        name="job_title" 
                                        id="job_title" 
                                        class="form-control border-start-0" 
                                        placeholder="e.g. Midwife, Nurse, BHW" 
                                        value="<?= h($jobTitle) ?>" 
-                                       maxlength="50">
+                                       maxlength="50"
+                                       autocapitalize="words">
                             </div>
                         </div>
 
@@ -202,14 +226,17 @@ if ($user['role'] === 'super_admin') {
                                 Email Address <span class="text-muted fw-normal">(Optional)</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                                <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-envelope"></i></span>
                                 <input type="email" 
                                        name="email" 
                                        id="email" 
                                        class="form-control border-start-0" 
                                        placeholder="user@example.com" 
                                        value="<?= h($email) ?>" 
-                                       maxlength="100">
+                                       maxlength="100"
+                                       inputmode="email"
+                                       autocomplete="email"
+                                       spellcheck="false">
                             </div>
                         </div>
 
@@ -218,21 +245,24 @@ if ($user['role'] === 'super_admin') {
                                 Contact Number <span class="text-muted fw-normal">(Optional)</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone"></i></span>
-                                <input type="text" 
+                                <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-telephone"></i></span>
+                                <input type="tel" 
                                        name="contact_no" 
                                        id="contact_no" 
                                        class="form-control border-start-0" 
                                        placeholder="e.g. 09171234567" 
                                        value="<?= h($contactNo) ?>" 
-                                       maxlength="20">
+                                       maxlength="20"
+                                       inputmode="tel"
+                                       autocomplete="tel"
+                                       style="font-variant-numeric: tabular-nums;">
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-4 d-flex align-items-center">
-                            <i class="bi bi-check2-circle me-2"></i>Save Profile Changes
+                        <button type="submit" class="btn btn-primary px-4 d-flex align-items-center" style="min-height: 42px;">
+                            <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>Save Profile Changes
                         </button>
                     </div>
                 </form>
@@ -242,15 +272,15 @@ if ($user['role'] === 'super_admin') {
         <!-- Card 2: Security & Password Settings -->
         <div class="card card-premium shadow-sm border-0 mb-4" id="password-settings" style="border-radius: 12px;">
             <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center">
-                    <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Security & Password Settings
-                </h5>
+                <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                    <i class="bi bi-shield-lock-fill me-2 text-primary" aria-hidden="true"></i>Security & Password Settings
+                </h2>
             </div>
             <div class="card-body p-4">
                 <?php if (!empty($passwordErrors)): ?>
                     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 8px;">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+                            <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger" aria-hidden="true"></i>
                             <div>
                                 <strong class="d-block small fw-bold">Password update could not be completed:</strong>
                                 <ul class="mb-0 ps-3 small">
@@ -274,7 +304,7 @@ if ($user['role'] === 'super_admin') {
                                 Current Password <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key-fill"></i></span>
+                                <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-key-fill"></i></span>
                                 <input type="password" 
                                        name="current_password" 
                                        id="current_password" 
@@ -282,8 +312,8 @@ if ($user['role'] === 'super_admin') {
                                        placeholder="Enter your current password" 
                                        required 
                                        autocomplete="current-password">
-                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -294,7 +324,7 @@ if ($user['role'] === 'super_admin') {
                                 New Password <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
+                                <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
                                 <input type="password" 
                                        name="new_password" 
                                        id="new_password" 
@@ -303,12 +333,12 @@ if ($user['role'] === 'super_admin') {
                                        required 
                                        minlength="8" 
                                        autocomplete="new-password">
-                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <div class="form-text small text-muted">
-                                <i class="bi bi-info-circle me-1"></i>Must be at least 8 characters long.
+                                <i class="bi bi-info-circle me-1" aria-hidden="true"></i>Must be at least 8 characters long.
                             </div>
                         </div>
 
@@ -318,7 +348,7 @@ if ($user['role'] === 'super_admin') {
                                 Confirm New Password <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
+                                <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
                                 <input type="password" 
                                        name="confirm_password" 
                                        id="confirm_password" 
@@ -327,8 +357,8 @@ if ($user['role'] === 'super_admin') {
                                        required 
                                        minlength="8" 
                                        autocomplete="new-password">
-                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <div class="form-text small text-muted" id="profilePasswordMatchText">
@@ -337,20 +367,20 @@ if ($user['role'] === 'super_admin') {
                         </div>
 
                         <!-- Real-Time Password Security Feedback -->
-                        <div class="col-12" id="passwordChecklistSection">
+                        <div class="col-12" id="passwordChecklistSection" role="region" aria-live="polite" aria-label="Password Security Strength Feedback">
                             <div class="p-3 bg-light rounded border">
                                 <div class="row g-2 small text-muted" style="font-size: 0.75rem;">
                                     <div class="col-12 col-sm-3" id="reqLength">
-                                        <i class="bi bi-circle text-muted me-1"></i> At least 8 characters
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> At least 8 characters
                                     </div>
                                     <div class="col-12 col-sm-3" id="reqComplexity">
-                                        <i class="bi bi-circle text-muted me-1"></i> Letters & numbers/symbols
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> Letters & numbers/symbols
                                     </div>
                                     <div class="col-12 col-sm-3" id="reqDifferent">
-                                        <i class="bi bi-circle text-muted me-1"></i> New & different
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> New & different
                                     </div>
                                     <div class="col-12 col-sm-3" id="reqMatch">
-                                        <i class="bi bi-circle text-muted me-1"></i> Passwords match
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> Passwords match
                                     </div>
                                 </div>
                             </div>
@@ -358,8 +388,118 @@ if ($user['role'] === 'super_admin') {
                     </div>
 
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary px-4 d-flex align-items-center">
-                            <i class="bi bi-key-fill me-2"></i>Update Password
+                        <button type="submit" class="btn btn-primary px-4 d-flex align-items-center" style="min-height: 42px;">
+                            <i class="bi bi-key-fill me-2" aria-hidden="true"></i>Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card 3: Personal Preferences & Accessibility -->
+        <div class="card card-premium shadow-sm border-0 mb-4" id="preferences-settings" style="border-radius: 12px;">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                    <i class="bi bi-sliders me-2 text-primary" aria-hidden="true"></i>Personal Display &amp; Accessibility Preferences
+                </h2>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-4">
+                    Tailor your personal SinalHealth workstation interface to suit your daily clinical workflow and screen size. These preferences are unique to your account.
+                </p>
+
+                <form action="<?= url('/profile/preferences') ?>" method="POST" id="preferencesUpdateForm">
+                    <?= csrf_field() ?>
+
+                    <?php
+                    $userDensity = user_pref('table_density', 'comfortable');
+                    $userChime = user_pref('queue_chime', 'chime');
+                    $userPageSize = (int)user_pref('default_page_size', 10);
+                    $userLanding = user_pref('landing_page', 'dashboard');
+                    ?>
+
+                    <div class="row g-4">
+                        <!-- Table Density -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-secondary small mb-2">
+                                <i class="bi bi-table me-1 text-primary"></i> Data Table Row Density
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="table_density" id="densityComfortable" value="comfortable" <?= $userDensity !== 'compact' ? 'checked' : '' ?>>
+                                    <label class="form-check-label ms-1" for="densityComfortable">
+                                        <strong class="d-block text-dark small">Comfortable (Standard)</strong>
+                                        <span class="text-muted small">Standard spacing with generous touch targets. Ideal for touch screens and tablets.</span>
+                                    </label>
+                                </div>
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="table_density" id="densityCompact" value="compact" <?= $userDensity === 'compact' ? 'checked' : '' ?>>
+                                    <label class="form-check-label ms-1" for="densityCompact">
+                                        <strong class="d-block text-dark small">Compact (High Efficiency)</strong>
+                                        <span class="text-muted small">Tighter row padding to view more patients on desktop monitors without vertical scrolling.</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Queue Calling Chime -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold text-secondary small mb-2">
+                                <i class="bi bi-volume-up me-1 text-primary"></i> Live Queue Audio Chime
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="queue_chime" id="chimeEnabled" value="chime" <?= $userChime !== 'muted' ? 'checked' : '' ?>>
+                                    <label class="form-check-label ms-1" for="chimeEnabled">
+                                        <strong class="d-block text-dark small">Audible Hospital Chime (Enabled)</strong>
+                                        <span class="text-muted small">Plays a pleasant two-tone hospital chime when calling a patient number in the queue.</span>
+                                    </label>
+                                </div>
+                                <div class="form-check p-3 border rounded bg-light">
+                                    <input class="form-check-input" type="radio" name="queue_chime" id="chimeMuted" value="muted" <?= $userChime === 'muted' ? 'checked' : '' ?>>
+                                    <label class="form-check-label ms-1" for="chimeMuted">
+                                        <strong class="d-block text-dark small">Silent (Muted)</strong>
+                                        <span class="text-muted small">Disables audio playback for quiet examination rooms or consultation desks.</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-end">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnTestChime">
+                                    <i class="bi bi-play-circle me-1"></i> Test Audio Chime
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Default Page Size -->
+                        <div class="col-12 col-md-6">
+                            <label for="default_page_size" class="form-label fw-semibold text-secondary small">
+                                <i class="bi bi-list-ol me-1 text-primary"></i> Default Records Per Table Page
+                            </label>
+                            <select name="default_page_size" id="default_page_size" class="form-select">
+                                <option value="10" <?= $userPageSize === 10 ? 'selected' : '' ?>>10 records per page</option>
+                                <option value="25" <?= $userPageSize === 25 ? 'selected' : '' ?>>25 records per page</option>
+                                <option value="50" <?= $userPageSize === 50 ? 'selected' : '' ?>>50 records per page</option>
+                                <option value="100" <?= $userPageSize === 100 ? 'selected' : '' ?>>100 records per page</option>
+                            </select>
+                        </div>
+
+                        <!-- Default Landing Page -->
+                        <div class="col-12 col-md-6">
+                            <label for="landing_page" class="form-label fw-semibold text-secondary small">
+                                <i class="bi bi-box-arrow-in-right me-1 text-primary"></i> Preferred Initial Workstation Page
+                            </label>
+                            <select name="landing_page" id="landing_page" class="form-select">
+                                <option value="dashboard" <?= $userLanding === 'dashboard' ? 'selected' : '' ?>>Dashboard (Overview)</option>
+                                <option value="patients" <?= $userLanding === 'patients' ? 'selected' : '' ?>>Patients Directory</option>
+                                <option value="queue" <?= $userLanding === 'queue' ? 'selected' : '' ?>>Live OPD Queue</option>
+                                <option value="appointments" <?= $userLanding === 'appointments' ? 'selected' : '' ?>>Appointments Calendar</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-primary px-4 d-flex align-items-center" style="min-height: 42px;">
+                            <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>Save Preferences
                         </button>
                     </div>
                 </form>
@@ -487,5 +627,32 @@ document.addEventListener('DOMContentLoaded', function() {
             el.addEventListener('input', checkPasswordMatch);
         }
     });
+
+    // Password visibility toggle handler
+    document.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('input');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
+    });
+
+    // Test Audio Chime Trigger
+    const btnTestChime = document.getElementById('btnTestChime');
+    if (btnTestChime) {
+        btnTestChime.addEventListener('click', function() {
+            if (typeof window.playHospitalChime === 'function') {
+                window.playHospitalChime(true);
+            }
+        });
+    }
 });
 </script>

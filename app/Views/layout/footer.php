@@ -11,6 +11,14 @@
 <script src="<?= asset('vendor/chartjs/chart.umd.js') ?>"></script>
 <script src="<?= asset('vendor/datatables/js/jquery.dataTables.min.js') ?>"></script>
 <script src="<?= asset('vendor/datatables/js/dataTables.bootstrap5.min.js') ?>"></script>
+<script>
+if (typeof $ !== 'undefined' && typeof $.fn.dataTable !== 'undefined') {
+    $.extend(true, $.fn.dataTable.defaults, {
+        pageLength: <?= (int)user_pref('default_page_size', 10) ?>,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+    });
+}
+</script>
 
 <!-- SweetAlert Flash Messages & System-Wide Event Handlers -->
 <script>
@@ -123,10 +131,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Inactivity Auto-Logout Monitor with Pre-Warning Modal (Configurable via config/app.php)
+    // Inactivity Auto-Logout Monitor with Pre-Warning Modal (Configurable via system_settings & config/app.php)
     <?php if (isset($_SESSION['user_id'])): ?>
     <?php
-        $idleTimeoutSec = (int)config('session.idle_timeout', 7200);
+        $idleTimeoutSec = (int)setting('session_idle_timeout', config('session.idle_timeout', 7200));
         $warningThresholdSec = max(60, $idleTimeoutSec - 120); // Show warning 2 minutes before timeout
     ?>
     (function() {
@@ -260,6 +268,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }, CHECK_INTERVAL_MS);
     })();
     <?php endif; ?>
+
+    // Global Web Audio Hospital Chime (Zero audio asset dependencies)
+    window.playHospitalChime = function(force = false) {
+        <?php if (function_exists('user_pref') && user_pref('queue_chime') === 'muted'): ?>
+        if (!force) return;
+        <?php endif; ?>
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            
+            function playTone(freq, startTime, duration) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.25, startTime + 0.04);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            }
+
+            const now = ctx.currentTime;
+            playTone(659.25, now, 0.35);        // E5
+            playTone(523.25, now + 0.22, 0.55); // C5
+        } catch (e) {
+            console.warn('Web Audio chime could not play:', e);
+        }
+    };
 });
 </script>
 </body>

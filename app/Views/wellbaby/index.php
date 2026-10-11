@@ -17,22 +17,19 @@ $ficCount = (int)($metrics['fic_count'] ?? 0);
 $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
 ?>
 
-<div class="container-fluid py-4">
-    <!-- Header Title Banner -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <div>
-            <h2 class="fw-bold mb-1 text-dark">
-                Well-Baby &amp; EPI Workstation
-            </h2>
-            <p class="text-muted mb-0">Infant birth circumstances, DOH EPI immunization schedule tracking, and pediatric growth logs.</p>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <a href="<?= url('/well-baby/register') ?>" class="btn btn-success d-flex align-items-center py-2 px-3 shadow-sm text-white">
-                <i class="bi bi-person-plus-fill me-2 fs-5"></i>
-                <span>Register Infant</span>
-            </a>
-        </div>
+<!-- Header Title Banner -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Well-Baby &amp; EPI Workstation</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Infant birth circumstances, DOH EPI immunization schedule tracking, and pediatric growth logs.</p>
     </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="<?= url('/well-baby/register') ?>" class="btn btn-success d-flex align-items-center py-2 px-3 shadow-sm text-white">
+            <i class="bi bi-person-plus-fill me-2 fs-5" aria-hidden="true"></i>
+            <span>Register Infant</span>
+        </a>
+    </div>
+</div>
 
     <!-- Metrics Summary Cards -->
     <div class="row g-3 mb-4">
@@ -43,10 +40,10 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Registered Infants</div>
-                            <div class="h3 mb-0 fw-bold text-success mt-1"><?= $totalRegistered ?></div>
+                            <div class="h3 mb-0 fw-bold text-success mt-1" style="font-variant-numeric: tabular-nums;"><?= $totalRegistered ?></div>
                         </div>
                         <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-people fs-5"></i>
+                            <i class="bi bi-people fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -63,10 +60,10 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Under-1 Cohort</div>
-                            <div class="h3 mb-0 fw-bold text-primary mt-1"><?= $underOneCohort ?></div>
+                            <div class="h3 mb-0 fw-bold text-primary mt-1" style="font-variant-numeric: tabular-nums;"><?= $underOneCohort ?></div>
                         </div>
                         <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-calendar-check fs-5"></i>
+                            <i class="bi bi-calendar-check fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -83,10 +80,10 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Fully Immunized (FIC)</div>
-                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1"><?= $ficCount ?></div>
+                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1" style="font-variant-numeric: tabular-nums;"><?= $ficCount ?></div>
                         </div>
                         <div class="bg-info-subtle text-info-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-shield-check fs-5"></i>
+                            <i class="bi bi-shield-check fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -103,10 +100,10 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Pending Registration</div>
-                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1"><?= $totalUnregistered ?></div>
+                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1" style="font-variant-numeric: tabular-nums;"><?= $totalUnregistered ?></div>
                         </div>
                         <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-person-plus fs-5"></i>
+                            <i class="bi bi-person-plus fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -125,12 +122,12 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                 <div class="col-12 col-md-9">
                     <label for="search" class="form-label fw-semibold text-secondary small">Search Infant / Child or Mother</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search" aria-hidden="true"></i></span>
                         <input type="text" 
                                name="search" 
                                id="search" 
                                class="form-control bg-light border-start-0" 
-                               placeholder="Search by child name, patient no, envelope, or mother's name..." 
+                               placeholder="Search by child name, patient no, envelope, or mother's name…" 
                                value="<?= h($search) ?>">
                     </div>
                 </div>
@@ -138,10 +135,10 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                 <!-- Action Buttons -->
                 <div class="col-12 col-md-3 d-flex gap-2">
                     <button type="submit" class="btn btn-success text-white flex-grow-1">
-                        <i class="bi bi-funnel"></i> Filter
+                        <i class="bi bi-funnel" aria-hidden="true"></i> Filter
                     </button>
-                    <a href="<?= url('/well-baby') ?>" class="btn btn-outline-secondary" title="Clear Filters">
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                    <a href="<?= url('/well-baby') ?>" class="btn btn-outline-secondary" title="Clear Filters" aria-label="Clear Filters">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                     </a>
                 </div>
             </form>
@@ -152,10 +149,10 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="fw-bold mb-0 text-dark">Registered Well-Baby Registry</h5>
-                <small class="text-muted">Children with initialized birth records and pediatric health profiles</small>
+                <h2 class="h5 fw-bold mb-0 text-dark" style="text-wrap: balance;">Registered Well-Baby Registry</h2>
+                <small class="text-muted" style="text-wrap: pretty;">Children with initialized birth records and pediatric health profiles</small>
             </div>
-            <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace">
+            <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace" style="font-variant-numeric: tabular-nums;">
                 Total Registered: <strong class="text-dark"><?= count($registeredRoster) ?></strong>
             </span>
         </div>
@@ -165,26 +162,26 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                 <table class="table table-hover align-middle mb-0 small" id="wellbabyRosterTable">
                     <thead class="bg-light text-secondary small text-uppercase">
                         <tr>
-                            <th class="ps-4 py-3">Child / Patient</th>
-                            <th class="py-3">Age</th>
-                            <th class="py-3">Mother</th>
-                            <th class="py-3">Birth History & Delivery</th>
-                            <th class="py-3 text-center">EPI Vaccines</th>
-                            <th class="py-3 text-center">Growth Logs</th>
-                            <th class="pe-4 py-3 text-end">Action</th>
+                            <th scope="col" class="ps-4 py-3">Child / Patient</th>
+                            <th scope="col" class="py-3">Age</th>
+                            <th scope="col" class="py-3">Mother</th>
+                            <th scope="col" class="py-3">Birth History &amp; Delivery</th>
+                            <th scope="col" class="py-3 text-center">EPI Vaccines</th>
+                            <th scope="col" class="py-3 text-center">Growth Logs</th>
+                            <th scope="col" class="pe-4 py-3 text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($registeredRoster)): ?>
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-muted">
-                                    <i class="bi bi-emoji-neutral fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                    <i class="bi bi-emoji-neutral fs-1 d-block mb-2 text-secondary opacity-50" aria-hidden="true"></i>
                                     <?php if (!empty($search)): ?>
                                         No registered infants match "<strong><?= h($search) ?></strong>".
                                         <div class="mt-2"><a href="<?= url('/well-baby') ?>" class="btn btn-sm btn-outline-success">Clear Filter</a></div>
                                     <?php else: ?>
                                         No well-baby records registered yet.
-                                        <div class="small text-muted mt-1">Initialize birth records for unregistered children using the Register Infant button above.</div>
+                                        <div class="small text-muted mt-1" style="text-wrap: pretty;">Initialize birth records for unregistered children using the Register Infant button above.</div>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -202,15 +199,19 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                                 <?= h($child['last_name']) ?>, <?= h($child['first_name']) ?> <?= !empty($child['middle_name']) ? h(mb_substr($child['middle_name'], 0, 1)) . '.' : '' ?>
                                             </a>
                                             <div class="small text-muted d-flex align-items-center gap-1 mt-1">
-                                                <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem;"><?= h($child['patient_no']) ?></span>
+                                                <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                    <span class="visually-hidden">Patient ID: </span><?= h($child['patient_no']) ?>
+                                                </span>
                                                 <?php if (!empty($child['envelope_no'])): ?>
-                                                    <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.72rem;">Env #<?= h($child['envelope_no']) ?></span>
+                                                    <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                        <span class="visually-hidden">Envelope No: </span>Env #<?= h($child['envelope_no']) ?>
+                                                    </span>
                                                 <?php endif; ?>
                                                 <?= $sexBadge ?>
                                             </div>
                                         </div>
                                     </td>
-                                    <td data-order="<?= calculate_age_in_months($child['dob'] ?? '') ?>">
+                                    <td data-order="<?= calculate_age_in_months($child['dob'] ?? '') ?>" style="font-variant-numeric: tabular-nums;">
                                         <span class="fw-bold text-dark"><?= $ageLabel ?></span>
                                         <div class="text-muted" style="font-size: 0.75rem;"><?= !empty($child['dob']) ? date('M d, Y', strtotime($child['dob'])) : '--' ?></div>
                                     </td>
@@ -219,7 +220,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                             <a href="<?= url('/patients/' . $child['mother_id']) ?>" class="text-decoration-none fw-medium text-primary">
                                                 <?= h($child['mother_last_name']) ?>, <?= h($child['mother_first_name']) ?>
                                             </a>
-                                            <div class="text-muted font-monospace" style="font-size: 0.72rem;"><?= h($child['mother_patient_no'] ?? '') ?></div>
+                                            <div class="text-muted font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;"><?= h($child['mother_patient_no'] ?? '') ?></div>
                                         <?php elseif (!empty(trim($child['mother_name'] ?? ''))): ?>
                                             <span class="fw-medium text-dark d-block"><?= h(trim($child['mother_name'])) ?></span>
                                             <span class="text-muted font-monospace" style="font-size: 0.72rem;">Unregistered Mother</span>
@@ -228,7 +229,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div>
+                                        <div style="font-variant-numeric: tabular-nums;">
                                             <strong><?= !empty($child['birth_weight_kg']) ? h($child['birth_weight_kg']) . ' kg' : '--' ?></strong> / 
                                             <strong><?= !empty($child['birth_length_cm']) ? h($child['birth_length_cm']) . ' cm' : '--' ?></strong>
                                         </div>
@@ -237,20 +238,20 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                         </div>
                                     </td>
                                     <td class="text-center" data-order="<?= (int)($child['imm_count'] ?? 0) ?>">
-                                        <span class="badge rounded-pill bg-light text-success border border-success-subtle px-3 py-1 fw-bold">
+                                        <span class="badge rounded-pill bg-light text-success border border-success-subtle px-3 py-1 fw-bold" style="font-variant-numeric: tabular-nums;">
                                             <?= (int)($child['imm_count'] ?? 0) ?> / 13 doses
                                         </span>
                                     </td>
                                     <td class="text-center" data-order="<?= (int)($child['growth_log_count'] ?? 0) ?>">
-                                        <span class="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold">
+                                        <span class="badge rounded-pill bg-light text-dark border px-3 py-1 fw-bold" style="font-variant-numeric: tabular-nums;">
                                             <?= (int)($child['growth_log_count'] ?? 0) ?> visits
                                         </span>
                                         <?php if (!empty($child['last_growth_date'])): ?>
-                                            <div class="text-muted mt-1" style="font-size: 0.7rem;">Last: <?= date('M d, Y', strtotime($child['last_growth_date'])) ?></div>
+                                            <div class="text-muted mt-1" style="font-size: 0.7rem; font-variant-numeric: tabular-nums;">Last: <?= date('M d, Y', strtotime($child['last_growth_date'])) ?></div>
                                         <?php endif; ?>
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/well-baby/' . $child['patient_id']) ?>" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm text-white">
+                                        <a href="<?= url('/well-baby/' . $child['patient_id']) ?>" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm text-white d-inline-flex align-items-center" aria-label="Open clinical workstation for <?= h($child['last_name']) ?>, <?= h($child['first_name']) ?>">
                                             Open Workstation
                                         </a>
                                     </td>
@@ -268,21 +269,21 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="fw-bold mb-0 text-dark">Unregistered Children (Aged 0–5 Years)</h5>
-                    <small class="text-muted">Children registered in the patient directory who do not have a well-baby birth record initialized yet</small>
+                    <h2 class="h5 fw-bold mb-0 text-dark" style="text-wrap: balance;">Unregistered Children (Aged 0–5 Years)</h2>
+                    <small class="text-muted" style="text-wrap: pretty;">Children registered in the patient directory who do not have a well-baby birth record initialized yet</small>
                 </div>
-                <span class="badge bg-warning-subtle text-dark border px-3 py-1"><?= count($unregisteredChildren) ?> Pending Registration</span>
+                <span class="badge bg-warning-subtle text-dark border px-3 py-1" style="font-variant-numeric: tabular-nums;"><?= count($unregisteredChildren) ?> Pending Registration</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 small">
                         <thead class="bg-light text-secondary small text-uppercase">
                             <tr>
-                                <th class="ps-4 py-3">Child Name</th>
-                                <th class="py-3">Patient No.</th>
-                                <th class="py-3">Age</th>
-                                <th class="py-3">Sex</th>
-                                <th class="pe-4 py-3 text-end">Action</th>
+                                <th scope="col" class="ps-4 py-3">Child Name</th>
+                                <th scope="col" class="py-3">Patient No.</th>
+                                <th scope="col" class="py-3">Age</th>
+                                <th scope="col" class="py-3">Sex</th>
+                                <th scope="col" class="pe-4 py-3 text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -294,15 +295,17 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                         <?= h($unreg['last_name']) ?>, <?= h($unreg['first_name']) ?> <?= !empty($unreg['middle_name']) ? h(mb_substr($unreg['middle_name'], 0, 1)) . '.' : '' ?>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-secondary border font-monospace"><?= h($unreg['patient_no']) ?></span>
+                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">
+                                            <span class="visually-hidden">Patient ID: </span><?= h($unreg['patient_no']) ?>
+                                        </span>
                                     </td>
-                                    <td data-order="<?= calculate_age_in_months($unreg['dob'] ?? '') ?>">
+                                    <td data-order="<?= calculate_age_in_months($unreg['dob'] ?? '') ?>" style="font-variant-numeric: tabular-nums;">
                                         <span class="fw-semibold"><?= $uAgeLabel ?></span>
                                         <div class="small text-muted"><?= !empty($unreg['dob']) ? date('M d, Y', strtotime($unreg['dob'])) : '--' ?></div>
                                     </td>
                                     <td><?= h($unreg['sex'] ?? 'Unknown') ?></td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/well-baby/register?patient_id=' . $unreg['id']) ?>" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                        <a href="<?= url('/well-baby/register?patient_id=' . $unreg['id']) ?>" class="btn btn-sm btn-outline-success rounded-pill px-3 d-inline-flex align-items-center" aria-label="Initialize well-baby record for <?= h($unreg['last_name']) ?>, <?= h($unreg['first_name']) ?>">
                                             Initialize Record
                                         </a>
                                     </td>
@@ -314,7 +317,6 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
             </div>
         </div>
     <?php endif; ?>
-</div>
 
 <style>
 .hover-success:hover {
@@ -336,8 +338,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "info": true,
             "autoWidth": false,
             "responsive": true,
-            "pageLength": 10,
-            "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            "pageLength": <?= (int)user_pref('default_page_size', 10) ?>,
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             "order": [[0, "asc"]], // Order by child name ascending
             "columnDefs": [
                 { "orderable": false, "targets": 6 } // Disable sorting on Action column (index 6)

@@ -1,7 +1,7 @@
 <!-- ==============================================================
    TAB 4: CLINICAL CONSULTATION LEDGER
    ============================================================== -->
-<div class="tab-pane fade" id="tab-consultations" role="tabpanel">
+<div class="tab-pane fade" id="tab-consultations" role="tabpanel" aria-labelledby="tab-consultations-btn" tabindex="0">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h5 class="h6 fw-bold text-dark mb-0">Consultations</h5>
         <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-sm btn-primary">

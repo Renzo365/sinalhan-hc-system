@@ -370,7 +370,15 @@ class PatientController extends Controller {
             session_start();
         }
 
-        $activeTab = trim($_GET['tab'] ?? 'patients');
+        $uri = explode('?', $_SERVER['REQUEST_URI'] ?? '')[0];
+        $defaultTab = 'patients';
+        if (substr($uri, -14) === '/consultations') {
+            $defaultTab = 'consultations';
+        } elseif (substr($uri, -6) === '/users') {
+            $defaultTab = 'users';
+        }
+
+        $activeTab = trim($_GET['tab'] ?? $defaultTab);
         if (!in_array($activeTab, ['patients', 'consultations', 'users'], true)) {
             $activeTab = 'patients';
         }
@@ -392,9 +400,31 @@ class PatientController extends Controller {
         $consultationModel = new \App\Models\Consultation();
         $archivedConsultations = $consultationModel->allArchived($filtersConsultations);
         if (!empty($archivedConsultations)) {
-            $prescriptionModel = new \App\Models\Prescription();
+            $consultationIds = array_column($archivedConsultations, 'id');
+            $prescriptionsByConsultation = [];
+            if (!empty($consultationIds)) {
+                $placeholders = implode(',', array_fill(0, count($consultationIds), '?'));
+                try {
+                    $db = \App\Core\Database::getInstance()->getConnection();
+                    $pStmt = $db->prepare("
+                        SELECT p.*, CONCAT(u.first_name, ' ', u.last_name) AS prescriber_name
+                        FROM prescriptions p
+                        LEFT JOIN users u ON p.prescribed_by = u.id
+                        WHERE p.consultation_id IN ($placeholders) AND p.deleted_at IS NULL
+                        ORDER BY p.id ASC
+                    ");
+                    $pStmt->execute($consultationIds);
+                    $allPrescriptions = $pStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+                    foreach ($allPrescriptions as $rx) {
+                        $prescriptionsByConsultation[$rx['consultation_id']][] = $rx;
+                    }
+                } catch (\Exception $e) {
+                    $prescriptionsByConsultation = [];
+                }
+            }
+
             foreach ($archivedConsultations as &$cRecord) {
-                $cRecord['prescriptions'] = $prescriptionModel->findByConsultationId($cRecord['id']);
+                $cRecord['prescriptions'] = $prescriptionsByConsultation[$cRecord['id']] ?? [];
             }
             unset($cRecord);
         }
@@ -711,6 +741,13 @@ class PatientController extends Controller {
         fputcsv($output, ['Total Records Exported', count($patients)]);
         fputcsv($output, ['Exported By', $generatedBy, 'Export Timestamp', date('Y-m-d H:i:s')]);
         fputcsv($output, []); // Blank separator row
+
+        // Log sensitive patient directory export in audit logs
+        AuditLog::log(
+            'PATIENT_DATA_EXPORTED',
+            'Patients',
+            "Exported master patient directory to CSV ({$filterSummary}). Total records: " . count($patients)
+        );
 
         // CSV Column Headers (no barangay column, uses Full Address)
         fputcsv($output, [

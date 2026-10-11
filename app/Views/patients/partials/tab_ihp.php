@@ -1,7 +1,7 @@
                     <!-- ==============================================================
                        TAB 2: ANNEX A1 INDIVIDUAL HEALTH PROFILE (IHP) FORM
                        ============================================================== -->
-                    <div class="tab-pane fade" id="tab-ihp" role="tabpanel">
+                    <div class="tab-pane fade" id="tab-ihp" role="tabpanel" aria-labelledby="tab-ihp-btn" tabindex="0">
                         <?php 
                         $pmhSaved = $medicalHistory['past_medical_history'] ?? [];
                         $familySaved = $medicalHistory['family_history'] ?? [];

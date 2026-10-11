@@ -21,13 +21,13 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="h3 mb-0 fw-bold text-primary-dark">Edit User Account: <?= h($user['username']) ?></h2>
-        <p class="text-secondary small mb-0">Update staff demographics, organizational assignment, or access privileges.</p>
+        <h1 class="h3 mb-0 fw-bold text-primary-dark" style="text-wrap: balance;">Edit User Account: <?= h($user['username']) ?></h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Update staff demographics, organizational assignment, or access privileges.</p>
     </div>
     
     <div>
-        <a href="<?= url('/users') ?>" class="btn btn-outline-secondary d-flex align-items-center">
-            <i class="bi bi-arrow-left me-1"></i> Back to Users Directory
+        <a href="<?= url('/users') ?>" class="btn btn-outline-secondary d-flex align-items-center" style="min-height: 38px;">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to Users Directory
         </a>
     </div>
 </div>
@@ -35,7 +35,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
-            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger" aria-hidden="true"></i>
             <div>
                 <strong class="d-block">Please correct the following issues:</strong>
                 <ul class="mb-0 ps-3 small">
@@ -56,16 +56,17 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                 <!-- Account Overview Card -->
                 <div class="card card-premium mb-4 text-center">
                     <div class="card-header bg-white py-3 border-bottom text-start">
-                        <h6 class="card-title mb-0 fw-bold text-primary-dark d-flex align-items-center">
-                            <i class="bi bi-person-badge-fill me-2 text-primary"></i>Account Overview
-                        </h6>
+                        <h2 class="card-title mb-0 h6 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                            <i class="bi bi-person-badge-fill me-2 text-primary" aria-hidden="true"></i>Account Overview
+                        </h2>
                     </div>
                     <div class="card-body p-4">
                         <!-- Dynamic Monogram Avatar -->
                         <div class="d-flex justify-content-center mb-3">
                             <div id="previewAvatar" 
                                  class="d-flex align-items-center justify-content-center shadow-sm rounded-circle text-white fw-bold" 
-                                 style="width: 76px; height: 76px; font-size: 1.85rem; background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); transition: all 0.3s ease;">
+                                 aria-hidden="true"
+                                 style="width: 76px; height: 76px; font-size: 1.85rem; background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); transition: all 0.3s ease; user-select: none;">
                                 <?= h($initials) ?>
                             </div>
                         </div>
@@ -92,14 +93,14 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                         </div>
 
                         <div class="p-2 rounded bg-light border text-secondary small mb-3" id="previewJobTitle">
-                            <i class="bi bi-briefcase me-1"></i> <span id="previewJobText"><?= h($old['job_title'] ?? $user['job_title'] ?: 'Staff Member') ?></span>
+                            <i class="bi bi-briefcase me-1" aria-hidden="true"></i> <span id="previewJobText"><?= h($old['job_title'] ?? $user['job_title'] ?: 'Staff Member') ?></span>
                         </div>
 
                         <!-- System Metadata List -->
                         <div class="text-start bg-light rounded p-3 border small">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Account ID:</span>
-                                <span class="font-monospace fw-bold text-dark">#<?= h($user['id']) ?></span>
+                                <span class="font-monospace fw-bold text-dark" style="font-variant-numeric: tabular-nums;">#<?= h($user['id']) ?></span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Status:</span>
@@ -113,11 +114,11 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Registered:</span>
-                                <span class="text-dark fw-medium"><?= date('M d, Y', strtotime($user['created_at'])) ?></span>
+                                <span class="text-dark fw-medium" style="font-variant-numeric: tabular-nums;"><?= date('M d, Y', strtotime($user['created_at'])) ?></span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Last Login:</span>
-                                <span class="text-dark fw-medium">
+                                <span class="text-dark fw-medium" style="font-variant-numeric: tabular-nums;">
                                     <?= $user['last_login_at'] ? date('M d, Y h:i A', strtotime($user['last_login_at'])) : '<span class="text-muted">Never</span>' ?>
                                 </span>
                             </div>
@@ -128,9 +129,9 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                 <!-- Role Capability Matrix Card -->
                 <div class="card card-premium">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h6 class="card-title mb-0 fw-bold text-primary-dark d-flex align-items-center">
-                            <i class="bi bi-shield-check me-2 text-primary"></i>Role Capability Matrix
-                        </h6>
+                        <h2 class="card-title mb-0 h6 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                            <i class="bi bi-shield-check me-2 text-primary" aria-hidden="true"></i>Role Capability Matrix
+                        </h2>
                     </div>
                     <div class="card-body p-3 small">
                         <!-- Staff Privileges -->
@@ -184,17 +185,17 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                 <!-- Section 1: Account Credentials & Privileges -->
                 <div class="card card-premium mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                            <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Credentials & Access Privileges
-                        </h5>
+                        <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark" style="text-wrap: balance;">
+                            <i class="bi bi-shield-lock-fill me-2 text-primary" aria-hidden="true"></i>Credentials & Access Privileges
+                        </h2>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-semibold text-secondary small">Username <span class="text-muted fw-normal">(Cannot be changed)</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0">@</span>
-                                    <input type="text" class="form-control bg-light font-monospace text-secondary border-start-0" value="<?= h($user['username']) ?>" readonly disabled>
+                                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true">@</span>
+                                    <input type="text" class="form-control bg-light font-monospace text-secondary border-start-0" value="<?= h($user['username']) ?>" readonly disabled aria-label="Username">
                                 </div>
                                 <div class="form-text small text-muted">User handles remain constant for audit log integrity.</div>
                             </div>
@@ -234,40 +235,40 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                 <!-- Section 2: Personal Demographics -->
                 <div class="card card-premium mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                            <i class="bi bi-person-vcard-fill me-2 text-primary"></i>Personal Information
-                        </h5>
+                        <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark" style="text-wrap: balance;">
+                            <i class="bi bi-person-vcard-fill me-2 text-primary" aria-hidden="true"></i>Personal Information
+                        </h2>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-12 col-md-4">
                                 <label for="first_name" class="form-label fw-semibold text-secondary small">First Name <span class="text-danger">*</span></label>
-                                <input type="text" name="first_name" id="first_name" class="form-control" value="<?= h($old['first_name'] ?? $user['first_name']) ?>" required>
+                                <input type="text" name="first_name" id="first_name" class="form-control" value="<?= h($old['first_name'] ?? $user['first_name']) ?>" required autocomplete="given-name" autocapitalize="words">
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label for="middle_name" class="form-label fw-semibold text-secondary small">Middle Name <span class="text-muted fw-normal">(Optional)</span></label>
-                                <input type="text" name="middle_name" id="middle_name" class="form-control" value="<?= h($old['middle_name'] ?? $user['middle_name'] ?? '') ?>" placeholder="Optional">
+                                <input type="text" name="middle_name" id="middle_name" class="form-control" value="<?= h($old['middle_name'] ?? $user['middle_name'] ?? '') ?>" placeholder="Optional" autocomplete="additional-name" autocapitalize="words">
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label for="last_name" class="form-label fw-semibold text-secondary small">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" name="last_name" id="last_name" class="form-control" value="<?= h($old['last_name'] ?? $user['last_name']) ?>" required>
+                                <input type="text" name="last_name" id="last_name" class="form-control" value="<?= h($old['last_name'] ?? $user['last_name']) ?>" required autocomplete="family-name" autocapitalize="words">
                             </div>
 
                             <div class="col-12 col-md-6">
                                 <label for="email" class="form-label fw-semibold text-secondary small">Email Address <span class="text-muted fw-normal">(Optional)</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
-                                    <input type="email" name="email" id="email" class="form-control border-start-0" value="<?= h($old['email'] ?? $user['email'] ?? '') ?>" placeholder="e.g. email@example.com">
+                                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" name="email" id="email" class="form-control border-start-0" value="<?= h($old['email'] ?? $user['email'] ?? '') ?>" placeholder="e.g. email@example.com" inputmode="email" autocomplete="email" spellcheck="false">
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6">
                                 <label for="contact_no" class="form-label fw-semibold text-secondary small">Contact Number <span class="text-muted fw-normal">(Optional)</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone"></i></span>
-                                    <input type="text" name="contact_no" id="contact_no" class="form-control border-start-0" value="<?= h($old['contact_no'] ?? $user['contact_no'] ?? '') ?>" placeholder="e.g. 09171234567">
+                                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-telephone"></i></span>
+                                    <input type="tel" name="contact_no" id="contact_no" class="form-control border-start-0" value="<?= h($old['contact_no'] ?? $user['contact_no'] ?? '') ?>" placeholder="e.g. 09171234567" inputmode="tel" autocomplete="tel" style="font-variant-numeric: tabular-nums;">
                                 </div>
                                 <div class="form-text small text-muted">Philippine mobile format (e.g. 09171234567).</div>
                             </div>
@@ -278,15 +279,15 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                 <!-- Section 3: Professional Information -->
                 <div class="card card-premium mb-4">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                            <i class="bi bi-briefcase-fill me-2 text-primary"></i>Professional Information
-                        </h5>
+                        <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark" style="text-wrap: balance;">
+                            <i class="bi bi-briefcase-fill me-2 text-primary" aria-hidden="true"></i>Professional Information
+                        </h2>
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-12 col-md-8">
                                 <label for="job_title" class="form-label fw-semibold text-secondary small">Clinic Job Title</label>
-                                <input type="text" name="job_title" id="job_title" class="form-control" value="<?= h($old['job_title'] ?? $user['job_title'] ?? '') ?>" placeholder="e.g. Midwife, Nurse, BHW, Doctor">
+                                <input type="text" name="job_title" id="job_title" class="form-control" value="<?= h($old['job_title'] ?? $user['job_title'] ?? '') ?>" placeholder="e.g. Midwife, Nurse, BHW, Doctor" autocapitalize="words">
                                 <div class="form-text small text-muted">Designation or healthcare role within Barangay Sinalhan Health Center.</div>
                             </div>
                         </div>
@@ -295,9 +296,9 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
 
                 <!-- Footer Actions -->
                 <div class="d-flex justify-content-end gap-2 mb-4">
-                    <a href="<?= url('/users') ?>" class="btn btn-outline-secondary px-4">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill me-2"></i> Save Changes
+                    <a href="<?= url('/users') ?>" class="btn btn-outline-secondary px-4" style="min-height: 42px;">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 d-flex align-items-center" style="min-height: 42px;">
+                        <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i> Save Changes
                     </button>
                 </div>
             </form>
@@ -306,17 +307,17 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
             <!-- Section 4: Administrative Password Reset Card -->
             <div class="card card-premium mb-5 border-warning-subtle shadow-sm" id="password-reset-section">
                 <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center">
-                        <i class="bi bi-shield-lock-fill me-2 text-warning"></i>Administrative Password Reset
-                    </h5>
+                    <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                        <i class="bi bi-shield-lock-fill me-2 text-warning" aria-hidden="true"></i>Administrative Password Reset
+                    </h2>
                     <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
-                        <i class="bi bi-key me-1"></i> Admin Authorization Required
+                        <i class="bi bi-key me-1" aria-hidden="true"></i> Admin Authorization Required
                     </span>
                 </div>
                 <div class="card-body p-4">
                     <div class="alert alert-warning-subtle border border-warning-subtle p-3 mb-4 rounded d-flex align-items-start gap-2 small">
-                        <i class="bi bi-info-circle-fill text-warning-emphasis fs-5 flex-shrink-0"></i>
-                        <div class="text-secondary">
+                        <i class="bi bi-info-circle-fill text-warning-emphasis fs-5 flex-shrink-0" aria-hidden="true"></i>
+                        <div class="text-secondary" style="text-wrap: pretty;">
                             Resetting this account's password issues a temporary credential. The user will be required to choose a new private password upon their next login. For security compliance and audit logging, your own administrator password is required to authorize this reset.
                         </div>
                     </div>
@@ -324,7 +325,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                     <?php if (!empty($resetErrors)): ?>
                         <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 8px;">
                             <div class="d-flex align-items-center">
-                                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+                                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger" aria-hidden="true"></i>
                                 <div>
                                     <strong class="d-block small fw-bold">Password reset failed:</strong>
                                     <ul class="mb-0 ps-3 small">
@@ -348,7 +349,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                                     Your Administrator Password <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-key-fill"></i></span>
+                                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-key-fill"></i></span>
                                     <input type="password" 
                                            name="admin_password" 
                                            id="admin_password" 
@@ -356,8 +357,8 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                                            placeholder="Enter your current password to authorize reset" 
                                            required 
                                            autocomplete="current-password">
-                                    <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password">
-                                        <i class="bi bi-eye"></i>
+                                    <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                     </button>
                                 </div>
                                 <div class="form-text small text-muted">
@@ -371,7 +372,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                                     New Temporary Password <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
+                                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
                                     <input type="password" 
                                            name="new_password" 
                                            id="new_password" 
@@ -380,8 +381,8 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                                            required 
                                            minlength="8" 
                                            autocomplete="new-password">
-                                    <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password">
-                                        <i class="bi bi-eye"></i>
+                                    <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
@@ -392,7 +393,7 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                                     Confirm Temporary Password <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
+                                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
                                     <input type="password" 
                                            name="confirm_password" 
                                            id="confirm_password" 
@@ -401,8 +402,8 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                                            required 
                                            minlength="8" 
                                            autocomplete="new-password">
-                                    <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password">
-                                        <i class="bi bi-eye"></i>
+                                    <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
                                     </button>
                                 </div>
                                 <div class="form-text small text-muted" id="resetPasswordMatchText">
@@ -411,17 +412,17 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                             </div>
 
                             <!-- Real-Time Password Security Feedback -->
-                            <div class="col-12">
+                            <div class="col-12" role="region" aria-live="polite" aria-label="Temporary Password Security Strength Feedback">
                                 <div class="p-3 bg-light rounded border">
                                     <div class="row g-2 small text-muted" style="font-size: 0.75rem;">
                                         <div class="col-12 col-sm-4" id="resetReqLength">
-                                            <i class="bi bi-circle text-muted me-1"></i> At least 8 characters
+                                            <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> At least 8 characters
                                         </div>
                                         <div class="col-12 col-sm-4" id="resetReqComplexity">
-                                            <i class="bi bi-circle text-muted me-1"></i> Letters & numbers
+                                            <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> Letters & numbers
                                         </div>
                                         <div class="col-12 col-sm-4" id="resetReqMatch">
-                                            <i class="bi bi-circle text-muted me-1"></i> Passwords match
+                                            <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> Passwords match
                                         </div>
                                     </div>
                                 </div>
@@ -431,8 +432,9 @@ $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1)) ?: 'U
                         <div class="d-flex justify-content-end mt-4">
                             <button type="button" 
                                     id="btnAdminResetSubmit"
-                                    class="btn btn-warning px-4 fw-bold d-flex align-items-center">
-                                <i class="bi bi-shield-lock-fill me-2"></i>Reset User Password
+                                    class="btn btn-warning px-4 fw-bold d-flex align-items-center"
+                                    style="min-height: 42px;">
+                                <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>Reset User Password
                             </button>
                         </div>
                     </form>
@@ -595,6 +597,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) {
             el.addEventListener('input', checkResetPasswordMatch);
         }
+    });
+
+    // Password visibility toggle handler
+    document.querySelectorAll('.btn-toggle-password').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('input');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bi bi-eye-slash';
+                this.setAttribute('aria-label', 'Hide password');
+            } else {
+                input.type = 'password';
+                icon.className = 'bi bi-eye';
+                this.setAttribute('aria-label', 'Show password');
+            }
+        });
     });
 
     const btnAdminReset = document.getElementById('btnAdminResetSubmit');

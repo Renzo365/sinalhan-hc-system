@@ -377,6 +377,73 @@ class AppointmentController extends Controller {
     }
 
     /**
+     * Admin-only: Void/soft-delete an appointment booked in error.
+     *
+     * @param int $id
+     */
+    public function void($id) {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (!is_admin()) {
+            if ($this->isAjax()) {
+                $this->json(['error' => 'Unauthorized: Only administrators can void appointments.'], 403);
+            } else {
+                $_SESSION['error_message'] = 'Unauthorized: Only administrators can void appointments.';
+                $this->redirect("/appointments");
+            }
+            return;
+        }
+
+        $appointment = $this->appointmentModel->findById($id);
+        if (!$appointment) {
+            if ($this->isAjax()) {
+                $this->json(['error' => 'Appointment not found or already voided.'], 404);
+            } else {
+                http_response_code(404);
+                $this->view('errors/404');
+            }
+            return;
+        }
+
+        $reason = trim($_POST['void_reason'] ?? 'Created in error / clerical mistake');
+        if (empty($reason)) {
+            $reason = 'Created in error / clerical mistake';
+        }
+
+        $userId = (int)($_SESSION['user_id'] ?? 0);
+
+        if ($this->appointmentModel->void($id, $userId, $reason)) {
+            $patientName = trim($appointment['patient_first'] . ' ' . $appointment['patient_last']);
+            AuditLog::log(
+                'APPOINTMENT_VOIDED', 
+                'Appointments', 
+                "Voided appointment #{$id} ({$appointment['program_type']} - " . date('M d, Y', strtotime($appointment['appointment_date'])) . ") for patient {$patientName}. Reason: {$reason}"
+            );
+
+            if ($this->isAjax()) {
+                $this->json(['success' => true, 'message' => 'Appointment voided successfully.']);
+            } else {
+                $_SESSION['success_message'] = "Appointment #{$id} has been voided and removed from the active schedule.";
+                $referrer = $_SERVER['HTTP_REFERER'] ?? '';
+                if (strpos($referrer, 'patients') !== false) {
+                    $this->redirect("/patients/{$appointment['patient_id']}#tab-appointments");
+                } else {
+                    $this->redirect("/appointments");
+                }
+            }
+        } else {
+            if ($this->isAjax()) {
+                $this->json(['error' => 'Failed to void appointment.'], 500);
+            } else {
+                $_SESSION['error_message'] = 'Failed to void appointment.';
+                $this->redirect("/appointments");
+            }
+        }
+    }
+
+    /**
      * Check if request is AJAX.
      */
     private function isAjax() {

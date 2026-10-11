@@ -49,13 +49,13 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- Page Header (Title & Right Back Action) -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div class="min-w-0">
-            <h2 class="h3 mb-1 fw-bold text-primary-dark">
+            <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">
                 Well-Baby &amp; EPI Workstation
-            </h2>
-            <p class="text-secondary small mb-0">Infant birth circumstances, DOH EPI immunization schedule tracking, and pediatric growth logs.</p>
+            </h1>
+            <p class="text-secondary small mb-0" style="text-wrap: pretty;">Infant birth circumstances, DOH EPI immunization schedule tracking, and pediatric growth logs.</p>
         </div>
         <a href="<?= url('/well-baby') ?>" class="btn btn-outline-secondary text-nowrap flex-shrink-0">
-            <i class="bi bi-arrow-left me-1"></i> Back to Well-Baby Registry
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to Well-Baby Registry
         </a>
     </div>
 
@@ -72,68 +72,69 @@ require dirname(__DIR__) . '/layout/header.php';
                         <?php if (!empty($avatarInitials)): ?>
                             <?= h($avatarInitials) ?>
                         <?php else: ?>
-                            <i class="bi bi-emoji-smile fs-4"></i>
+                            <i class="bi bi-emoji-smile fs-4" aria-hidden="true"></i>
                         <?php endif; ?>
                     </div>
 
                     <div class="min-w-0">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <h3 class="h5 fw-bold text-primary-dark mb-0 lh-1">
-                                <?= h($fullNameFormatted) ?>
-                            </h3>
-                            <span class="badge bg-light text-dark border font-monospace fs-7">
-                                <?= h($patient['patient_no']) ?>
+                            <span class="badge bg-light text-dark border font-monospace fs-7" style="font-variant-numeric: tabular-nums;">
+                                <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no']) ?>
                             </span>
                             <?php if (!empty($patient['envelope_no'])): ?>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Envelope No.">
-                                    <i class="bi bi-folder2-open me-1"></i>Env #<?= h($patient['envelope_no']) ?>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" style="font-variant-numeric: tabular-nums;" title="Physical Logbook Envelope No.">
+                                    <span class="visually-hidden">Envelope No: </span>Env #<?= h($patient['envelope_no']) ?>
                                 </span>
                             <?php endif; ?>
                             <?php if (!empty($patient['family_no'])): ?>
-                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
-                                    <i class="bi bi-house-door-fill me-1"></i>Fam #<?= h($patient['family_no']) ?>
+                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" style="font-variant-numeric: tabular-nums;" title="View household in directory">
+                                    <span class="visually-hidden">Family No: </span>Fam #<?= h($patient['family_no']) ?>
                                 </a>
                             <?php endif; ?>
                             <?php if ($wellbabyRecord): ?>
-                                <span class="badge bg-success text-white font-monospace fs-7">Registered Infant</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle fs-7">Registered Infant</span>
                             <?php else: ?>
-                                <span class="badge bg-warning-subtle text-dark border font-monospace fs-7">Unregistered</span>
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fs-7">Unregistered</span>
                             <?php endif; ?>
                         </div>
 
+                        <h2 class="h5 fw-bold text-primary-dark mb-1 lh-1" style="text-wrap: balance;">
+                            <?= h($fullNameFormatted) ?>
+                        </h2>
+
                         <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
-                            <span>
+                            <span style="font-variant-numeric: tabular-nums;">
                                 <strong><?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : (!empty($patient['age']) ? h($patient['age']) . ' yrs' : 'Age not recorded') ?></strong>
-                                &bull; <?= !empty($patient['gender'] ?? $patient['sex'] ?? '') ? h($patient['gender'] ?? $patient['sex']) : 'Sex not recorded' ?>
+                                <span aria-hidden="true">&bull;</span> <?= !empty($patient['gender'] ?? $patient['sex'] ?? '') ? h($patient['gender'] ?? $patient['sex']) : 'Sex not recorded' ?>
                             </span>
-                            <span class="text-muted">&bull;</span>
-                            <span>DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
-                            <span class="text-muted">&bull;</span>
+                            <span class="text-muted" aria-hidden="true">&bull;</span>
+                            <span style="font-variant-numeric: tabular-nums;">DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
+                            <span class="text-muted" aria-hidden="true">&bull;</span>
                             <?php if (!empty($patient['blood_type']) && strtolower(trim($patient['blood_type'])) !== 'unknown'): ?>
                                 <span>Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong></span>
                             <?php else: ?>
                                 <span>Blood: <span class="text-muted">Unknown</span></span>
                             <?php endif; ?>
                             <?php if (!empty($patient['philhealth_no'])): ?>
-                                <span class="text-muted">&bull;</span>
-                                <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
+                                <span class="text-muted" aria-hidden="true">&bull;</span>
+                                <span>PHIC: <span class="font-monospace text-dark" style="font-variant-numeric: tabular-nums;"><?= h($patient['philhealth_no']) ?></span></span>
                             <?php endif; ?>
                             <?php if (!empty($patient['mother_name'])): ?>
-                                <span class="text-muted">&bull;</span>
+                                <span class="text-muted" aria-hidden="true">&bull;</span>
                                 <span>Mother: <?= h($patient['mother_name']) ?></span>
                             <?php endif; ?>
                         </div>
                         <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
-                            <i class="bi bi-geo-alt text-muted flex-shrink-0"></i>
+                            <i class="bi bi-geo-alt text-muted flex-shrink-0" aria-hidden="true"></i>
                             <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Action Buttons (Only Full Patient Profile, removing duplicate action buttons) -->
+                <!-- Right: Action Buttons -->
                 <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0">
                     <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-3 shadow-xs">
-                        <i class="bi bi-person-badge me-1"></i> Full Patient Profile
+                        <i class="bi bi-person-badge me-1" aria-hidden="true"></i> Full Patient Profile
                     </a>
                 </div>
             </div>
@@ -163,22 +164,22 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 pb-2 border-bottom">
                 <div>
                     <div class="d-flex align-items-center gap-2">
-                        <h5 class="h6 fw-bold text-success mb-0">
+                        <h2 class="h6 fw-bold text-success mb-0" style="text-wrap: balance;">
                             Child Information &amp; Birth History
-                        </h5>
+                        </h2>
                         <span class="badge bg-success text-white">Official CHO Record</span>
                         <?php if (!empty($wellbabyRecord['mother_cpab_tt'])): ?>
-                            <span class="badge bg-info text-white"><i class="bi bi-shield-check me-1"></i>CPAB: <?= h($wellbabyRecord['mother_cpab_tt']) ?></span>
+                            <span class="badge bg-info text-white"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>CPAB: <?= h($wellbabyRecord['mother_cpab_tt']) ?></span>
                         <?php endif; ?>
                     </div>
                     <span class="text-muted small">Registered on <?= date('M d, Y', strtotime($wellbabyRecord['created_at'])) ?> by <?= h($wellbabyRecord['creator_name'] ?? 'Midwife') ?></span>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="<?= url('/well-baby/' . $patient['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-pencil me-1"></i> Edit Birth Record
+                        <i class="bi bi-pencil me-1" aria-hidden="true"></i> Edit Birth Record
                     </a>
                     <button type="button" class="btn btn-sm btn-success text-white shadow-xs fw-semibold" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
-                        <i class="bi bi-plus-lg me-1"></i>Record Growth Visit
+                        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Record Growth Visit
                     </button>
                 </div>
             </div>
@@ -189,9 +190,9 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="col-6 col-sm-3">
                     <div class="p-2 bg-white rounded border">
                         <span class="text-muted d-block" style="font-size: 0.75rem;">Birth Weight / Length</span>
-                        <span class="fw-bold text-success fs-7"><?= h($wellbabyRecord['birth_weight_kg']) ?> kg / <?= h($wellbabyRecord['birth_length_cm']) ?> cm</span>
+                        <span class="fw-bold text-success fs-7" style="font-variant-numeric: tabular-nums;"><?= h($wellbabyRecord['birth_weight_kg']) ?> kg / <?= h($wellbabyRecord['birth_length_cm']) ?> cm</span>
                         <?php if (!empty($wellbabyRecord['birth_time'])): ?>
-                            <span class="text-muted d-block" style="font-size: 0.7rem;">Time: <?= date('h:i A', strtotime($wellbabyRecord['birth_time'])) ?></span>
+                            <span class="text-muted d-block" style="font-size: 0.7rem; font-variant-numeric: tabular-nums;">Time: <?= date('h:i A', strtotime($wellbabyRecord['birth_time'])) ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -205,7 +206,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php if (!empty($wellbabyRecord['place_of_delivery_other'])): ?>
                                 (<?= h($wellbabyRecord['place_of_delivery_other']) ?>)
                             <?php endif; ?>
-                            &bull; <?= h($wellbabyRecord['delivery_type']) ?>
+                            <span aria-hidden="true">&bull;</span> <?= h($wellbabyRecord['delivery_type']) ?>
                         </span>
                         <?php if (!empty($wellbabyRecord['attended_by'])): ?>
                             <span class="text-muted d-block" style="font-size: 0.7rem;">
@@ -226,9 +227,9 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?= !empty($wellbabyRecord['newborn_screening_done']) ? 'Done' : 'Pending' ?>
                         </span>
                         <?php if (!empty($wellbabyRecord['newborn_screening_date'])): ?>
-                            <span class="text-muted d-block" style="font-size: 0.7rem;">Screened: <?= date('M d, Y', strtotime($wellbabyRecord['newborn_screening_date'])) ?></span>
+                            <span class="text-muted d-block" style="font-size: 0.7rem; font-variant-numeric: tabular-nums;">Screened: <?= date('M d, Y', strtotime($wellbabyRecord['newborn_screening_date'])) ?></span>
                         <?php endif; ?>
-                        <span class="fw-semibold text-dark d-block mt-1" style="font-size: 0.75rem;">
+                        <span class="fw-semibold text-dark d-block mt-1" style="font-size: 0.75rem; font-variant-numeric: tabular-nums;">
                             <?= !empty($wellbabyRecord['newborn_screening_result']) ? h($wellbabyRecord['newborn_screening_result']) : 'No Cert #' ?>
                         </span>
                     </div>
@@ -240,7 +241,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <span class="text-muted d-block" style="font-size: 0.75rem;">Parental Information</span>
                         <?php if (!empty($wellbabyRecord['mother_patient_id'])): ?>
                             <a href="<?= url('/patients/' . $wellbabyRecord['mother_patient_id']) ?>" class="fw-bold text-primary text-decoration-none d-block">
-                                <i class="bi bi-person-fill"></i> <?= h($wellbabyRecord['mother_last_name']) ?>, <?= h($wellbabyRecord['mother_first_name']) ?>
+                                <i class="bi bi-person-fill me-1" aria-hidden="true"></i><?= h($wellbabyRecord['mother_last_name']) ?>, <?= h($wellbabyRecord['mother_first_name']) ?>
                             </a>
                         <?php else: ?>
                             <span class="fw-bold text-dark d-block"><?= !empty($patient['mother_name']) ? 'Mother: ' . h($patient['mother_name']) : 'Mother: Not Recorded' ?></span>
@@ -257,10 +258,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card border rounded-3 p-3 mb-4 shadow-xs">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h6 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-shield-shaded text-primary me-2"></i>DOH Mandatory Routine Infant Immunization Schedule (EPI)
-                    </h6>
-                    <span class="text-muted small">Official schedule for infants aged 0–12 months. Dates save directly to the central registry.</span>
+                    <h2 class="h6 fw-bold text-dark mb-0" style="text-wrap: balance;">
+                        <i class="bi bi-shield-shaded text-primary me-2" aria-hidden="true"></i>DOH Mandatory Routine Infant Immunization Schedule (EPI)
+                    </h2>
+                    <span class="text-muted small" style="text-wrap: pretty;">Official schedule for infants aged 0–12 months. Dates save directly to the central registry.</span>
                 </div>
             </div>
 
@@ -319,8 +320,8 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="col-12 col-md-6 col-lg-4">
                             <div class="card border bg-light-subtle h-100 p-2 rounded-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                                    <span class="fw-bold text-primary small">
-                                        <i class="bi bi-clock-history me-1"></i><?= $milestone ?>
+                                    <span class="fw-bold text-primary small" style="font-variant-numeric: tabular-nums;">
+                                        <i class="bi bi-clock-history me-1" aria-hidden="true"></i><?= $milestone ?>
                                     </span>
                                     <?php if ($isMilestoneEligible): ?>
                                         <span class="badge bg-primary-subtle text-primary font-monospace" style="font-size: 0.65rem;">Active Target</span>
@@ -355,16 +356,17 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 <?php endif; ?>
                                             </div>
                                             <div class="input-group input-group-sm mt-1">
-                                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
                                                 <input type="date" 
                                                        name="epi[<?= $v['key'] ?>]" 
                                                        id="<?= $inputId ?>" 
                                                        class="form-control bg-white" 
                                                        placeholder="Administered Date" 
                                                        aria-label="<?= h($v['name']) ?> Dose <?= (int)$v['dose'] ?> Administered Date"
-                                                       value="<?= h($administeredDate) ?>">
+                                                       value="<?= h($administeredDate) ?>"
+                                                       style="font-variant-numeric: tabular-nums;">
                                                 <?php if (!$isDone): ?>
-                                                    <button type="button" class="btn btn-outline-secondary btn-sm btn-set-today" title="Set to today's date">Today</button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm btn-set-today" title="Set to today's date" aria-label="Set administered date for <?= h($v['name']) ?> to today" style="min-width: 44px; min-height: 31px;">Today</button>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -378,10 +380,10 @@ require dirname(__DIR__) . '/layout/header.php';
                 <!-- Bottom Save Bar for EPI Schedule -->
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mt-3 pt-3 border-top">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i>Saving updates existing dose records or inserts new dates into the child's immunization record.
+                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>Saving updates existing dose records or inserts new dates into the child's immunization record.
                     </small>
                     <button type="submit" class="btn btn-sm btn-primary shadow-xs px-3 py-1.5 fw-semibold text-nowrap">
-                        <i class="bi bi-check2-circle me-1"></i> Save EPI Schedule
+                        <i class="bi bi-check2-circle me-1" aria-hidden="true"></i> Save EPI Schedule
                     </button>
                 </div>
             </form>
@@ -391,10 +393,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card border rounded-3 p-3 mb-4 shadow-xs">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h6 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-capsule text-warning me-2"></i>Routine Supplementation Tracker
-                    </h6>
-                    <span class="text-muted small">Official 6-month interval Vitamin A (100,000 / 200,000 IU) and Deworming schedule.</span>
+                    <h2 class="h6 fw-bold text-dark mb-0" style="text-wrap: balance;">
+                        <i class="bi bi-capsule text-warning me-2" aria-hidden="true"></i>Routine Supplementation Tracker
+                    </h2>
+                    <span class="text-muted small" style="text-wrap: pretty;">Official 6-month interval Vitamin A (100,000 / 200,000 IU) and Deworming schedule.</span>
                 </div>
             </div>
 
@@ -428,7 +430,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <div class="card border bg-light-subtle h-100 p-2 rounded-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
                                     <span class="fw-bold text-dark small">
-                                        <i class="bi bi-capsule me-1 text-warning"></i><?= $progName ?>
+                                        <i class="bi bi-capsule me-1 text-warning" aria-hidden="true"></i><?= $progName ?>
                                     </span>
                                 </div>
                                 <div class="row g-2">
@@ -444,7 +446,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 <div class="d-flex justify-content-between align-items-start mb-1">
                                                     <div>
                                                         <label for="<?= $inputId ?>" class="fw-bold text-dark mb-0 d-block cursor-pointer"><?= h($d['name']) ?></label>
-                                                        <span class="text-muted d-block" style="font-size: 0.7rem;"><?= h($d['target']) ?></span>
+                                                        <span class="text-muted d-block" style="font-size: 0.7rem; font-variant-numeric: tabular-nums;"><?= h($d['target']) ?></span>
                                                     </div>
                                                     <?php if ($isDone): ?>
                                                         <span class="badge bg-success-subtle text-success border border-success-subtle">Done</span>
@@ -455,14 +457,16 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     <?php endif; ?>
                                                 </div>
                                                 <div class="input-group input-group-sm mt-1">
-                                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
                                                     <input type="date" 
                                                            name="epi[<?= $d['key'] ?>]" 
                                                            id="<?= $inputId ?>" 
                                                            class="form-control bg-white" 
-                                                           value="<?= h($administeredDate) ?>">
+                                                           aria-label="<?= h($d['name']) ?> Administered Date"
+                                                           value="<?= h($administeredDate) ?>"
+                                                           style="font-variant-numeric: tabular-nums;">
                                                     <?php if (!$isDone): ?>
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-set-today" title="Set to today's date">Today</button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-set-today" title="Set to today's date" aria-label="Set administered date for <?= h($d['name']) ?> to today" style="min-width: 44px; min-height: 31px;">Today</button>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -477,10 +481,10 @@ require dirname(__DIR__) . '/layout/header.php';
                 <!-- Bottom Save Bar for Supplementation Tracker -->
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mt-3 pt-3 border-top">
                     <small class="text-muted">
-                        <i class="bi bi-info-circle me-1"></i>Tracks the 6 Vitamin A doses and 6 Deworming doses according to DOH standards.
+                        <i class="bi bi-info-circle me-1" aria-hidden="true"></i>Tracks the 6 Vitamin A doses and 6 Deworming doses according to DOH standards.
                     </small>
                     <button type="submit" class="btn btn-sm btn-warning text-dark fw-semibold shadow-xs px-3 py-1.5 text-nowrap">
-                        <i class="bi bi-check2-circle me-1"></i> Save Supplementation Tracker
+                        <i class="bi bi-check2-circle me-1" aria-hidden="true"></i> Save Supplementation Tracker
                     </button>
                 </div>
             </form>
@@ -490,13 +494,13 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card border rounded-3 p-3 shadow-xs">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h6 class="fw-bold text-dark mb-0">
-                        <i class="bi bi-activity text-primary me-2"></i>Child Anthropometric & Growth Monitoring Log
-                    </h6>
-                    <span class="text-muted small">Serial measurements of weight, height, head circumference, chest circumference, and feeding practices.</span>
+                    <h2 class="h6 fw-bold text-dark mb-0" style="text-wrap: balance;">
+                        <i class="bi bi-activity text-primary me-2" aria-hidden="true"></i>Child Anthropometric &amp; Growth Monitoring Log
+                    </h2>
+                    <span class="text-muted small" style="text-wrap: pretty;">Serial measurements of weight, height, head circumference, chest circumference, and feeding practices.</span>
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addGrowthLogModal">
-                    <i class="bi bi-plus-circle me-1"></i> Record Growth Visit
+                    <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Record Growth Visit
                 </button>
             </div>
 
@@ -504,12 +508,12 @@ require dirname(__DIR__) . '/layout/header.php';
                 <table class="table table-hover align-middle mb-0 text-center small" id="childGrowthTable">
                     <thead class="table-light">
                         <tr>
-                            <th class="text-start ps-3">Visit Date</th>
-                            <th>Age</th>
-                            <th>Anthropometrics (Weight &bull; Height)</th>
-                            <th>Feeding Method</th>
-                            <th>Immunization Given</th>
-                            <th class="pe-3 text-end">Action</th>
+                            <th scope="col" class="text-start ps-3">Visit Date</th>
+                            <th scope="col">Age</th>
+                            <th scope="col">Anthropometrics (Weight <span aria-hidden="true">&bull;</span> Height)</th>
+                            <th scope="col">Feeding Method</th>
+                            <th scope="col">Immunization Given</th>
+                            <th scope="col" class="pe-3 text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -522,12 +526,12 @@ require dirname(__DIR__) . '/layout/header.php';
                         <?php else: ?>
                             <?php foreach ($growthLogs as $gl): ?>
                                 <tr>
-                                    <td class="text-start ps-3 fw-medium text-dark"><?= date('M d, Y', strtotime($gl['log_date'])) ?></td>
-                                    <td class="font-monospace fw-bold text-primary"><?= h($gl['age_months']) ?> mos</td>
+                                    <td class="text-start ps-3 fw-medium text-dark" style="font-variant-numeric: tabular-nums;"><?= date('M d, Y', strtotime($gl['log_date'])) ?></td>
+                                    <td class="font-monospace fw-bold text-primary" style="font-variant-numeric: tabular-nums;"><?= h($gl['age_months']) ?> mos</td>
                                     <td>
-                                        <span class="fw-bold text-dark"><?= h($gl['weight_kg']) ?> kg</span>
-                                        <span class="text-muted mx-1">&bull;</span>
-                                        <span class="text-secondary"><?= h($gl['height_cm']) ?> cm</span>
+                                        <span class="fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><?= h($gl['weight_kg']) ?> kg</span>
+                                        <span class="text-muted mx-1" aria-hidden="true">&bull;</span>
+                                        <span class="text-secondary" style="font-variant-numeric: tabular-nums;"><?= h($gl['height_cm']) ?> cm</span>
                                     </td>
                                     <td><span class="badge bg-light text-dark border"><?= h($gl['feeding_method']) ?></span></td>
                                     <td>
@@ -549,30 +553,34 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 data-feeding="<?= h($gl['feeding_method']) ?>" 
                                                 data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>" 
                                                 data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>" 
-                                                title="View Growth Details">
-                                                <i class="bi bi-eye fs-6"></i>
+                                                title="View Growth Details"
+                                                aria-label="View growth details for visit on <?= date('M d, Y', strtotime($gl['log_date'])) ?>"
+                                                style="min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-eye fs-6" aria-hidden="true"></i>
                                             </button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-growth-log"
-                                                    data-id="<?= $gl['id'] ?>"
-                                                    data-date="<?= h($gl['log_date']) ?>"
-                                                    data-age="<?= h($gl['age_months']) ?>"
-                                                    data-weight="<?= h($gl['weight_kg']) ?>"
-                                                    data-height="<?= h($gl['height_cm']) ?>"
-                                                    data-head="<?= h($gl['head_circumference_cm'] ?? '') ?>"
-                                                    data-chest="<?= h($gl['chest_circumference_cm'] ?? '') ?>"
-                                                    data-temp="<?= h($gl['temperature'] ?? '') ?>"
-                                                    data-feeding="<?= h($gl['feeding_method']) ?>"
-                                                    data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>"
-                                                    data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>"
-                                                    title="Edit Growth Visit">
-                                                    <i class="bi bi-pencil-square fs-6"></i>
-                                                </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary border-0 p-1 btn-edit-growth-log"
+                                                data-id="<?= $gl['id'] ?>"
+                                                data-date="<?= h($gl['log_date']) ?>"
+                                                data-age="<?= h($gl['age_months']) ?>"
+                                                data-weight="<?= h($gl['weight_kg']) ?>"
+                                                data-height="<?= h($gl['height_cm']) ?>"
+                                                data-head="<?= h($gl['head_circumference_cm'] ?? '') ?>"
+                                                data-chest="<?= h($gl['chest_circumference_cm'] ?? '') ?>"
+                                                data-temp="<?= h($gl['temperature'] ?? '') ?>"
+                                                data-feeding="<?= h($gl['feeding_method']) ?>"
+                                                data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>"
+                                                data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>"
+                                                title="Edit Growth Visit"
+                                                aria-label="Edit growth visit from <?= date('M d, Y', strtotime($gl['log_date'])) ?>"
+                                                style="min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                                <i class="bi bi-pencil-square fs-6" aria-hidden="true"></i>
+                                            </button>
                                             <?php if ($canDeleteGrowth): ?>
                                                 <form action="<?= url('/wellbaby/growth-log/' . $gl['id'] . '/delete') ?>" method="POST" class="d-inline">
                                                     <?= csrf_field() ?>
                                                     <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry" data-confirm="Are you sure you want to delete this growth visit record?">
-                                                        <i class="bi bi-trash fs-6"></i>
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete Entry" aria-label="Delete growth visit from <?= date('M d, Y', strtotime($gl['log_date'])) ?>" data-confirm="Are you sure you want to delete this growth visit record?" style="min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                                        <i class="bi bi-trash fs-6" aria-hidden="true"></i>
                                                     </button>
                                                 </form>
                                             <?php endif; ?>
@@ -589,12 +597,12 @@ require dirname(__DIR__) . '/layout/header.php';
     <?php else: ?>
         <!-- Empty State for Non-Initialized Well Baby Record -->
         <div class="card border rounded-3 p-5 text-center mb-4 bg-light-subtle shadow-xs">
-            <i class="bi bi-emoji-smile fs-1 d-block mb-2 text-success"></i>
-            <h5 class="h6 fw-bold text-dark mb-1">No Well Baby Infant Health Record</h5>
-            <p class="text-muted small mb-3">Initializing the Well Baby Record (CHO Santa Rosa / Brgy. Sinalhan) registers birth circumstances, Newborn Screening (NBS) certification, mother link, and mandatory EPI childhood vaccines.</p>
+            <i class="bi bi-emoji-smile fs-1 d-block mb-2 text-success" aria-hidden="true"></i>
+            <h2 class="h6 fw-bold text-dark mb-1" style="text-wrap: balance;">No Well Baby Infant Health Record</h2>
+            <p class="text-muted small mb-3" style="text-wrap: pretty;">Initializing the Well Baby Record (CHO Santa Rosa / Brgy. Sinalhan) registers birth circumstances, Newborn Screening (NBS) certification, mother link, and mandatory EPI childhood vaccines.</p>
             <div>
                 <a href="<?= url('/well-baby/register?patient_id=' . $patient['id']) ?>" class="btn btn-success text-white px-4 shadow-sm fw-semibold">
-                    <i class="bi bi-plus-circle me-1"></i> Initialize Well Baby Record
+                    <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Initialize Well Baby Record
                 </a>
             </div>
         </div>
@@ -612,9 +620,9 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
                 <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                    <h5 class="modal-title fw-bold" id="addGrowthLogModalLabel">
-                        <i class="bi bi-activity me-2"></i>Record Pediatric Anthropometrics & Growth Visit
-                    </h5>
+                    <h2 class="modal-title h5 fw-bold" id="addGrowthLogModalLabel" style="text-wrap: balance;">
+                        <i class="bi bi-activity me-2" aria-hidden="true"></i>Record Pediatric Anthropometrics &amp; Growth Visit
+                    </h2>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
@@ -626,44 +634,44 @@ require dirname(__DIR__) . '/layout/header.php';
                             <!-- Checkup Date -->
                             <div class="col-12 col-sm-6">
                                 <label for="add_log_date" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
-                                <input type="date" name="log_date" id="add_log_date" class="form-control bg-white" value="<?= date('Y-m-d') ?>" required>
+                                <input type="date" name="log_date" id="add_log_date" class="form-control bg-white" value="<?= date('Y-m-d') ?>" style="font-variant-numeric: tabular-nums;" required>
                             </div>
 
                             <!-- Age in Months -->
                             <div class="col-12 col-sm-6">
                                 <label for="add_age_months" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" name="age_months" id="add_age_months" class="form-control font-monospace" placeholder="e.g. 1.5" required>
+                                <input type="number" step="0.1" inputmode="decimal" name="age_months" id="add_age_months" class="form-control font-monospace" placeholder="e.g. 1.5" style="font-variant-numeric: tabular-nums;" required>
                                 <div class="form-text small text-muted" id="add_age_months_help">Auto-calculated from child's DOB</div>
                             </div>
 
                             <!-- Weight (kg) -->
                             <div class="col-12 col-sm-6 col-md-3">
                                 <label for="add_weight_kg" class="form-label fw-semibold text-secondary">Weight (kg) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="weight_kg" id="add_weight_kg" class="form-control" placeholder="e.g. 4.5" required>
+                                <input type="number" step="0.01" inputmode="decimal" name="weight_kg" id="add_weight_kg" class="form-control" placeholder="e.g. 4.5" style="font-variant-numeric: tabular-nums;" required>
                             </div>
 
                             <!-- Height (cm) -->
                             <div class="col-12 col-sm-6 col-md-3">
                                 <label for="add_height_cm" class="form-label fw-semibold text-secondary">Height / Length (cm) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.1" name="height_cm" id="add_height_cm" class="form-control" placeholder="e.g. 54.0" required>
+                                <input type="number" step="0.1" inputmode="decimal" name="height_cm" id="add_height_cm" class="form-control" placeholder="e.g. 54.0" style="font-variant-numeric: tabular-nums;" required>
                             </div>
 
                             <!-- Head Circumference (cm) -->
                             <div class="col-12 col-sm-6 col-md-3">
                                 <label for="add_head_circ" class="form-label fw-semibold text-secondary">Head Circumference (cm)</label>
-                                <input type="number" step="0.1" name="head_circumference_cm" id="add_head_circ" class="form-control" placeholder="e.g. 37.5">
+                                <input type="number" step="0.1" inputmode="decimal" name="head_circumference_cm" id="add_head_circ" class="form-control" placeholder="e.g. 37.5" style="font-variant-numeric: tabular-nums;">
                             </div>
 
                             <!-- Chest Circumference (cm) -->
                             <div class="col-12 col-sm-6 col-md-3">
                                 <label for="add_chest_circ" class="form-label fw-semibold text-secondary">Chest Circumference (cm)</label>
-                                <input type="number" step="0.1" name="chest_circumference_cm" id="add_chest_circ" class="form-control" placeholder="e.g. 37.0">
+                                <input type="number" step="0.1" inputmode="decimal" name="chest_circumference_cm" id="add_chest_circ" class="form-control" placeholder="e.g. 37.0" style="font-variant-numeric: tabular-nums;">
                             </div>
 
                             <!-- Body Temp -->
                             <div class="col-12 col-sm-6">
-                                <label for="add_temperature" class="form-label fw-semibold text-secondary">Body Temperature (°C)</label>
-                                <input type="number" step="0.1" name="temperature" id="add_temperature" class="form-control" placeholder="36.5">
+                                <label for="add_temperature" class="form-label fw-semibold text-secondary">Body Temperature (&deg;C)</label>
+                                <input type="number" step="0.1" inputmode="decimal" name="temperature" id="add_temperature" class="form-control" placeholder="36.5" style="font-variant-numeric: tabular-nums;">
                             </div>
 
                             <!-- Feeding Practice -->
@@ -686,8 +694,8 @@ require dirname(__DIR__) . '/layout/header.php';
 
                             <!-- TCB / Developmental Notes -->
                             <div class="col-12">
-                                <label for="add_tcb_notes" class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
-                                <textarea name="tcb_notes" id="add_tcb_notes" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months..."></textarea>
+                                <label for="add_tcb_notes" class="form-label fw-semibold text-secondary">Developmental Milestones &amp; TCB Remarks</label>
+                                <textarea name="tcb_notes" id="add_tcb_notes" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months…" spellcheck="true"></textarea>
                             </div>
                         </div>
                     </div>
@@ -707,9 +715,9 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold" id="editGrowthLogModalLabel">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Pediatric Anthropometrics & Growth Visit
-                </h5>
+                <h2 class="modal-title h5 fw-bold" id="editGrowthLogModalLabel" style="text-wrap: balance;">
+                    <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit Pediatric Anthropometrics &amp; Growth Visit
+                </h2>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editGrowthLogForm" method="POST" action="#" onsubmit="if(!this.getAttribute('action') || this.getAttribute('action') === '#' || this.getAttribute('action') === '') return false;">
@@ -721,44 +729,44 @@ require dirname(__DIR__) . '/layout/header.php';
                         <!-- Checkup Date -->
                         <div class="col-12 col-sm-6">
                             <label for="editGrowthDate" class="form-label fw-semibold text-secondary">Checkup Date <span class="text-danger">*</span></label>
-                            <input type="date" name="log_date" id="editGrowthDate" class="form-control bg-white" required>
+                            <input type="date" name="log_date" id="editGrowthDate" class="form-control bg-white" style="font-variant-numeric: tabular-nums;" required>
                         </div>
 
                         <!-- Age in Months -->
                         <div class="col-12 col-sm-6">
                             <label for="editGrowthAge" class="form-label fw-semibold text-secondary">Exact Age in Months <span class="text-danger">*</span></label>
-                            <input type="number" step="0.1" name="age_months" id="editGrowthAge" class="form-control font-monospace" placeholder="e.g. 1.5" required>
+                            <input type="number" step="0.1" inputmode="decimal" name="age_months" id="editGrowthAge" class="form-control font-monospace" placeholder="e.g. 1.5" style="font-variant-numeric: tabular-nums;" required>
                             <div class="form-text small text-muted" id="edit_age_months_help">Auto-calculated from child's DOB</div>
                         </div>
 
                         <!-- Weight (kg) -->
                         <div class="col-12 col-sm-6 col-md-3">
                             <label for="editGrowthWeight" class="form-label fw-semibold text-secondary">Weight (kg) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" name="weight_kg" id="editGrowthWeight" class="form-control" placeholder="e.g. 4.5" required>
+                            <input type="number" step="0.01" inputmode="decimal" name="weight_kg" id="editGrowthWeight" class="form-control" placeholder="e.g. 4.5" style="font-variant-numeric: tabular-nums;" required>
                         </div>
 
                         <!-- Height / Length (cm) -->
                         <div class="col-12 col-sm-6 col-md-3">
                             <label for="editGrowthHeight" class="form-label fw-semibold text-secondary">Height / Length (cm) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.1" name="height_cm" id="editGrowthHeight" class="form-control" placeholder="e.g. 54.0" required>
+                            <input type="number" step="0.1" inputmode="decimal" name="height_cm" id="editGrowthHeight" class="form-control" placeholder="e.g. 54.0" style="font-variant-numeric: tabular-nums;" required>
                         </div>
 
                         <!-- Head Circumference (cm) -->
                         <div class="col-12 col-sm-6 col-md-3">
                             <label for="editGrowthHead" class="form-label fw-semibold text-secondary">Head Circumference (cm)</label>
-                            <input type="number" step="0.1" name="head_circumference_cm" id="editGrowthHead" class="form-control" placeholder="e.g. 37.5">
+                            <input type="number" step="0.1" inputmode="decimal" name="head_circumference_cm" id="editGrowthHead" class="form-control" placeholder="e.g. 37.5" style="font-variant-numeric: tabular-nums;">
                         </div>
 
                         <!-- Chest Circumference (cm) -->
                         <div class="col-12 col-sm-6 col-md-3">
                             <label for="editGrowthChest" class="form-label fw-semibold text-secondary">Chest Circumference (cm)</label>
-                            <input type="number" step="0.1" name="chest_circumference_cm" id="editGrowthChest" class="form-control" placeholder="e.g. 37.0">
+                            <input type="number" step="0.1" inputmode="decimal" name="chest_circumference_cm" id="editGrowthChest" class="form-control" placeholder="e.g. 37.0" style="font-variant-numeric: tabular-nums;">
                         </div>
 
                         <!-- Body Temp -->
                         <div class="col-12 col-sm-6">
-                            <label for="editGrowthTemp" class="form-label fw-semibold text-secondary">Body Temperature (°C)</label>
-                            <input type="number" step="0.1" name="temperature" id="editGrowthTemp" class="form-control" placeholder="36.5">
+                            <label for="editGrowthTemp" class="form-label fw-semibold text-secondary">Body Temperature (&deg;C)</label>
+                            <input type="number" step="0.1" inputmode="decimal" name="temperature" id="editGrowthTemp" class="form-control" placeholder="36.5" style="font-variant-numeric: tabular-nums;">
                         </div>
 
                         <!-- Feeding Practice -->
@@ -781,8 +789,8 @@ require dirname(__DIR__) . '/layout/header.php';
 
                         <!-- TCB / Developmental Notes -->
                         <div class="col-12">
-                            <label for="editGrowthTcb" class="form-label fw-semibold text-secondary">Developmental Milestones & TCB Remarks</label>
-                            <textarea name="tcb_notes" id="editGrowthTcb" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months..."></textarea>
+                            <label for="editGrowthTcb" class="form-label fw-semibold text-secondary">Developmental Milestones &amp; TCB Remarks</label>
+                            <textarea name="tcb_notes" id="editGrowthTcb" rows="2" class="form-control" placeholder="Holding head up, tracking sounds, advised next visit at 2.5 months…" spellcheck="true"></textarea>
                         </div>
                     </div>
                 </div>
@@ -800,9 +808,9 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
-                <h5 class="modal-title fw-bold" id="viewGrowthLogModalLabel">
-                    <i class="bi bi-activity me-2"></i>Child Growth Visit Details
-                </h5>
+                <h2 class="modal-title h5 fw-bold" id="viewGrowthLogModalLabel" style="text-wrap: balance;">
+                    <i class="bi bi-activity me-2" aria-hidden="true"></i>Child Growth Visit Details
+                </h2>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4 bg-white" id="growthLogModalContent">
@@ -810,11 +818,11 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
                     <div>
                         <span class="text-muted small d-block">Visit Date</span>
-                        <strong class="text-dark" id="modalGrowthDate">--</strong>
+                        <strong class="text-dark" id="modalGrowthDate" style="font-variant-numeric: tabular-nums;">--</strong>
                     </div>
                     <div class="text-end">
                         <span class="text-muted small d-block">Age</span>
-                        <strong class="text-success" id="modalGrowthAge">--</strong>
+                        <strong class="text-success" id="modalGrowthAge" style="font-variant-numeric: tabular-nums;">--</strong>
                     </div>
                 </div>
 
@@ -823,25 +831,25 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-6">
                         <div class="p-2 bg-light rounded border">
                             <span class="text-muted small d-block">Weight &amp; Height</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthWeight">--</span> / <span id="modalGrowthHeight">--</span></span>
+                            <span class="fs-6 fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><span id="modalGrowthWeight">--</span> / <span id="modalGrowthHeight">--</span></span>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-2 bg-light rounded border">
                             <span class="text-muted small d-block">Head Circumference</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthHead">--</span> <small class="text-muted fw-normal">cm</small></span>
+                            <span class="fs-6 fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><span id="modalGrowthHead">--</span> <small class="text-muted fw-normal">cm</small></span>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-2 bg-light rounded border">
                             <span class="text-muted small d-block">Chest Circumference</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthChest">--</span> <small class="text-muted fw-normal">cm</small></span>
+                            <span class="fs-6 fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><span id="modalGrowthChest">--</span> <small class="text-muted fw-normal">cm</small></span>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="p-2 bg-light rounded border">
                             <span class="text-muted small d-block">Temperature</span>
-                            <span class="fs-6 fw-bold text-dark"><span id="modalGrowthTemp">--</span> <small class="text-muted fw-normal">°C</small></span>
+                            <span class="fs-6 fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><span id="modalGrowthTemp">--</span> <small class="text-muted fw-normal">&deg;C</small></span>
                         </div>
                     </div>
                     <div class="col-6">
@@ -861,7 +869,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 <!-- TCB / Developmental Milestones & Remarks -->
                 <div class="card border rounded bg-white">
                     <div class="card-header bg-light py-1.5 px-3 small fw-bold text-secondary">
-                        <i class="bi bi-journal-text me-1 text-success"></i> TCB / Developmental Milestones &amp; Remarks
+                        <i class="bi bi-journal-text me-1 text-success" aria-hidden="true"></i> TCB / Developmental Milestones &amp; Remarks
                     </div>
                     <div class="card-body p-3 small text-dark" id="modalGrowthTcb" style="white-space: pre-line; min-height: 50px;">
                         No developmental milestones or remarks recorded.

@@ -5,26 +5,26 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Daily Operations Queue</h2>
-        <p class="text-secondary small mb-0">Manage patient intake, calls, and service status for today: <strong><?= date('F d, Y') ?></strong></p>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Daily Operations Queue</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Manage patient intake, calls, and service status for today: <strong style="font-variant-numeric: tabular-nums;"><?= date('F d, Y') ?></strong></p>
     </div>
     <div class="d-flex flex-wrap align-items-center gap-2">
         <!-- Live Polling Sync Indicator -->
         <div class="d-inline-flex align-items-center bg-white border rounded-3 px-2.5 py-1.5 shadow-xs" id="liveSyncWidget">
             <span class="badge bg-success-subtle text-success border border-success-subtle d-inline-flex align-items-center gap-1.5 py-1" id="liveSyncStatus">
-                <span class="spinner-grow spinner-grow-sm text-success" role="status" style="width: 8px; height: 8px;" id="syncPulse"></span>
+                <span class="spinner-grow spinner-grow-sm text-success" role="status" aria-hidden="true" style="width: 8px; height: 8px;" id="syncPulse"></span>
                 <span id="syncText">Live Sync (15s)</span>
             </span>
-            <button type="button" class="btn btn-sm btn-link text-secondary p-0 ms-2" id="btnToggleSync" title="Pause Automatic Sync" style="text-decoration: none;">
-                <i class="bi bi-pause-fill fs-6" id="syncIcon"></i>
+            <button type="button" class="btn btn-sm btn-link text-secondary p-0 ms-2" id="btnToggleSync" title="Pause Automatic Sync" aria-label="Pause automatic sync" style="text-decoration: none; min-height: 32px; min-width: 24px; display: inline-flex; align-items: center; justify-content: center;">
+                <i class="bi bi-pause-fill fs-6" id="syncIcon" aria-hidden="true"></i>
             </button>
         </div>
 
-        <a href="<?= url('/queue/display') ?>" target="_blank" class="btn btn-outline-primary d-flex align-items-center px-3">
+        <a href="<?= url('/queue/display') ?>" target="_blank" class="btn btn-outline-primary d-inline-flex align-items-center px-3 gap-1" style="min-height: 38px;" aria-label="Open public queue display in new tab">
             <span>Open Public Display &nearr;</span>
         </a>
-        <a href="<?= url('/queue') ?>" class="btn btn-outline-secondary d-flex align-items-center px-2" title="Manual Refresh">
-            <i class="bi bi-arrow-clockwise fs-5"></i>
+        <a href="<?= url('/queue') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center px-2" title="Manual Refresh" aria-label="Refresh daily queue" style="min-width: 38px; min-height: 38px;">
+            <i class="bi bi-arrow-clockwise fs-5" aria-hidden="true"></i>
         </a>
     </div>
 </div>
@@ -38,11 +38,11 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Now Serving</div>
-                        <div class="h3 mb-0 fw-bold text-primary-dark mt-1 font-monospace" id="kpiServingNo">
+                        <div class="h3 mb-0 fw-bold text-primary-dark mt-1 font-monospace" id="kpiServingNo" style="font-variant-numeric: tabular-nums;">
                             <?= !empty($queueStats['serving_no']) ? sprintf('%03d', $queueStats['serving_no']) : '--' ?>
                         </div>
                     </div>
-                    <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-broadcast fs-5"></i>
                     </div>
                 </div>
@@ -64,11 +64,11 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Waiting in Lobby</div>
-                        <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1" id="kpiWaitingCount">
+                        <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1" id="kpiWaitingCount" style="font-variant-numeric: tabular-nums;">
                             <?= (int)($queueStats['waiting'] ?? 0) ?>
                         </div>
                     </div>
-                    <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-people fs-5"></i>
                     </div>
                 </div>
@@ -86,11 +86,11 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Called / In Transit</div>
-                        <div class="h3 mb-0 fw-bold text-info-emphasis mt-1" id="kpiCalledCount">
+                        <div class="h3 mb-0 fw-bold text-info-emphasis mt-1" id="kpiCalledCount" style="font-variant-numeric: tabular-nums;">
                             <?= (int)($queueStats['called'] ?? 0) ?>
                         </div>
                     </div>
-                    <div class="bg-info-subtle text-info-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-info-subtle text-info-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-megaphone fs-5"></i>
                     </div>
                 </div>
@@ -108,11 +108,11 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Completed Today</div>
-                        <div class="h3 mb-0 fw-bold text-success mt-1" id="kpiCompletedCount">
+                        <div class="h3 mb-0 fw-bold text-success mt-1" id="kpiCompletedCount" style="font-variant-numeric: tabular-nums;">
                             <?= (int)($queueStats['completed'] ?? 0) ?>
                         </div>
                     </div>
-                    <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                    <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;" aria-hidden="true">
                         <i class="bi bi-check-circle fs-5"></i>
                     </div>
                 </div>
@@ -130,7 +130,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- Error Alert Banner -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px;">
-                <h5 class="fw-bold mb-2 small"><i class="bi bi-exclamation-triangle-fill me-2"></i>Registration Failed:</h5>
+                <h5 class="fw-bold mb-2 small"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Registration Failed:</h5>
                 <ul class="mb-0 small ps-3">
                     <?php foreach ($errors as $error): ?>
                         <li><?= h($error) ?></li>
@@ -142,10 +142,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- Queue Registration Form Card -->
         <div class="card card-premium shadow-sm">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
                     Intake &amp; Enqueue Patient
-                </h3>
-                <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient">
+                </h2>
+                <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient" style="min-height: 32px;">
                     Change Patient
                 </button>
             </div>
@@ -157,23 +157,29 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="card-body p-4 bg-white">
                     <!-- Client-side Error Alert Banner -->
                     <div class="alert alert-danger shadow-xs py-2 px-3 small mb-3 d-none" id="patientErrorAlert" role="alert">
-                        <i class="bi bi-exclamation-circle-fill me-1"></i> <strong>Patient Required:</strong> Please search and select an active patient before adding to the queue.
+                        <i class="bi bi-exclamation-circle-fill me-1" aria-hidden="true"></i> <strong>Patient Required:</strong> Please search and select an active patient before adding to the queue.
                     </div>
 
                     <!-- 1. Patient Live Search Section -->
                     <div id="patientSearchSection" class="<?= !empty($preselectedPatient) ? 'd-none' : '' ?>">
                         <label for="patientSearchInput" class="form-label fw-semibold text-secondary small">
-                            Search Patient <span class="text-danger">*</span>
+                            Search Patient <span class="text-danger" aria-hidden="true">*</span>
                         </label>
                         <div class="input-group mb-2 shadow-xs">
-                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                            <span class="input-group-text bg-light border-end-0 text-muted" aria-hidden="true"><i class="bi bi-search"></i></span>
                             <input type="text" 
                                    id="patientSearchInput" 
                                    class="form-control bg-light border-start-0 fs-6" 
-                                   placeholder="Type patient name, ID (PAT-), or env #..." 
-                                   autocomplete="off">
-                            <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch" aria-label="Clear patient search">
-                                <i class="bi bi-x-lg"></i>
+                                   placeholder="Type patient name, ID (PAT-), or env #…" 
+                                   autocomplete="off"
+                                   spellcheck="false"
+                                   inputmode="search"
+                                   role="combobox"
+                                   aria-autocomplete="list"
+                                   aria-expanded="false"
+                                   aria-controls="searchResultsContainer">
+                            <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch" aria-label="Clear patient search" style="min-width: 38px; min-height: 38px;">
+                                <i class="bi bi-x-lg" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div class="form-text small text-muted mb-3">
@@ -181,12 +187,12 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
 
                         <!-- Live Search Results Dropdown List -->
-                        <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" style="max-height: 250px; overflow-y: auto;">
+                        <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" role="region" aria-live="polite" style="max-height: 250px; overflow-y: auto;">
                             <!-- Injected dynamically via JS -->
                         </div>
-                        <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none">
-                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                            <span class="small">Searching active patients...</span>
+                        <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none" aria-live="polite">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status" aria-hidden="true"></div>
+                            <span class="small">Searching active patients…</span>
                         </div>
                     </div>
 
@@ -194,7 +200,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div id="patientIdentityCard" class="<?= empty($preselectedPatient) ? 'd-none' : '' ?> mb-3">
                         <div class="p-3 rounded-3" style="background-color: #f0fdfa; border: 1px solid #ccfbf1;">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 48px; height: 48px; background-color: #0D7377; color: #fff;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 48px; height: 48px; background-color: #0D7377; color: #fff;" aria-hidden="true">
                                     <span id="cardInitials">
                                         <?php 
                                             $init = '';
@@ -206,18 +212,18 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
                                     <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                                        <h6 class="fw-bold text-dark mb-0 text-truncate" id="cardFullName">
+                                        <h3 class="h6 fw-bold text-dark mb-0 text-truncate" id="cardFullName">
                                             <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name']) : '--' ?>
-                                        </h6>
+                                        </h3>
                                         <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'female') ? 'bg-danger' : 'bg-primary' ?>" id="cardSex">
                                             <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?>
                                         </span>
-                                        <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo">
+                                        <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
                                             <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
                                         </span>
                                     </div>
                                     <div class="text-muted small mt-1">
-                                        <span id="cardAge"><?= (!empty($preselectedPatient['age']) || (isset($preselectedPatient['age']) && $preselectedPatient['age'] === 0)) ? h($preselectedPatient['age']) . ' yrs' : '--' ?></span> &bull; 
+                                        <span id="cardAge" style="font-variant-numeric: tabular-nums;"><?= (!empty($preselectedPatient['age']) || (isset($preselectedPatient['age']) && $preselectedPatient['age'] === 0)) ? h($preselectedPatient['age']) . ' yrs' : '--' ?></span> <span aria-hidden="true">&bull;</span> 
                                         <span id="cardAddress" class="text-truncate d-inline-block" style="max-width: 170px; vertical-align: bottom;"><?= h($preselectedPatient['address'] ?? 'Barangay Sinalhan') ?></span>
                                     </div>
                                 </div>
@@ -228,7 +234,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <!-- 3. Service / Consultation Category Selection -->
                     <div class="mb-3">
                         <label for="service_type" class="form-label fw-semibold text-secondary small">
-                            Service / Consultation Category <span class="text-danger">*</span>
+                            Service / Consultation Category <span class="text-danger" aria-hidden="true">*</span>
                         </label>
                         <select name="service_type" id="service_type" class="form-select bg-light" required>
                             <option value="General OPD" <?= (!isset($input['service_type']) || $input['service_type'] === 'General OPD') ? 'selected' : '' ?>>General OPD / Adult Consultation</option>
@@ -243,8 +249,8 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
 
                 <div class="card-footer bg-light py-3 border-top d-grid">
-                    <button type="submit" class="btn btn-primary fw-semibold py-2">
-                        + Issue Ticket &amp; Add to Queue
+                    <button type="submit" class="btn btn-primary fw-semibold py-2 d-inline-flex align-items-center justify-content-center gap-1" style="min-height: 42px;">
+                        <i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i> Issue Ticket &amp; Add to Queue
                     </button>
                 </div>
             </form>
@@ -253,9 +259,9 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- Today's Scheduled Appointments Check-In Card -->
         <div class="card card-premium shadow-sm mt-4" id="scheduledAppointmentsCard">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
                     Today's Bookings
-                </h3>
+                </h2>
                 <?php
                     $enqueuedPatientIds = !empty($queueList) ? array_column($queueList, 'patient_id') : [];
                     $enqueuedMap = [];
@@ -266,14 +272,14 @@ require dirname(__DIR__) . '/layout/header.php';
                         return !in_array($a['patient_id'], $enqueuedPatientIds);
                     });
                 ?>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle small fw-semibold" id="pendingAppointmentsBadge">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle small fw-semibold" id="pendingAppointmentsBadge" style="font-variant-numeric: tabular-nums;">
                     <?= count($pendingAppointments) ?> pending
                 </span>
             </div>
             <div class="card-body p-0">
                 <?php if (empty($todayAppointments)): ?>
                     <div class="p-4 text-center text-muted small">
-                        <i class="bi bi-calendar2-check d-block fs-3 mb-2 text-muted"></i>
+                        <i class="bi bi-calendar2-check d-block fs-3 mb-2 text-muted" aria-hidden="true"></i>
                         No appointments scheduled for today.
                     </div>
                 <?php else: ?>
@@ -297,15 +303,15 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <?= h($appt['patient_last']) ?>, <?= h($appt['patient_first']) ?>
                                     </div>
                                     <div class="text-muted d-flex align-items-center gap-1.5 flex-wrap mt-0.5" style="font-size: 0.73rem;">
-                                        <span class="badge bg-light text-secondary border font-monospace"><?= h($appt['patient_no']) ?></span>
-                                        <span><?= date('h:i A', strtotime($appt['appointment_time'])) ?></span>
-                                        <span>&bull;</span>
+                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;"><?= h($appt['patient_no']) ?></span>
+                                        <span style="font-variant-numeric: tabular-nums;"><?= date('h:i A', strtotime($appt['appointment_time'])) ?></span>
+                                        <span aria-hidden="true">&bull;</span>
                                         <span class="badge bg-light text-primary border"><?= h($serviceVal) ?></span>
                                     </div>
                                 </div>
                                 <div class="flex-shrink-0 text-end">
                                     <?php if ($isAlreadyQueued): ?>
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle" title="Already added to today's queue">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle" title="Already added to today's queue" style="font-variant-numeric: tabular-nums;">
                                             Queue #<?= $qNo ?>
                                         </span>
                                     <?php else: ?>
@@ -314,8 +320,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                             <input type="hidden" name="patient_id" value="<?= (int)$appt['patient_id'] ?>">
                                             <input type="hidden" name="service_type" value="<?= h($serviceVal) ?>">
                                             <input type="hidden" name="appointment_id" value="<?= (int)$appt['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2.5 btn-queue-action" data-action="checkin" data-patient="<?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>" data-service="<?= h($serviceVal) ?>" title="Check-in to Queue">
-                                                Check In
+                                            <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2.5 btn-queue-action d-inline-flex align-items-center gap-1" data-action="checkin" data-patient="<?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>" data-service="<?= h($serviceVal) ?>" title="Check-in to Queue" style="min-height: 31px;">
+                                                <i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i> Check In
                                             </button>
                                         </form>
                                     <?php endif; ?>
@@ -332,31 +338,31 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="col-12 col-lg-8">
         <div class="card card-premium shadow-sm">
             <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
                     Today's Active Queue List
-                </h3>
+                </h2>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-light text-secondary border font-monospace" title="Standard clinic intake order">
                         FCFS Order
                     </span>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small fw-semibold"><?= count($queueList) ?> total entries</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle small fw-semibold" style="font-variant-numeric: tabular-nums;"><?= count($queueList) ?> total entries</span>
                 </div>
             </div>
 
             <!-- Quick Status Filter Chips Toolbar -->
             <div class="px-3 py-2 bg-light border-bottom d-flex flex-wrap align-items-center gap-2" id="queueStatusFilters">
                 <span class="small fw-semibold text-muted me-1">Filter:</span>
-                <button type="button" class="btn btn-sm btn-primary active quick-queue-filter" data-filter="all">
-                    All (<span id="filterCountAll"><?= count($queueList) ?></span>)
+                <button type="button" class="btn btn-sm btn-primary active quick-queue-filter" data-filter="all" style="min-height: 31px;">
+                    All (<span id="filterCountAll" style="font-variant-numeric: tabular-nums;"><?= count($queueList) ?></span>)
                 </button>
-                <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Waiting">
-                    Waiting (<span id="filterCountWaiting"><?= (int)($queueStats['waiting'] ?? 0) ?></span>)
+                <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Waiting" style="min-height: 31px;">
+                    Waiting (<span id="filterCountWaiting" style="font-variant-numeric: tabular-nums;"><?= (int)($queueStats['waiting'] ?? 0) ?></span>)
                 </button>
-                <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Called|Serving">
-                    Called / Serving (<span id="filterCountCalledServing"><?= (int)(($queueStats['called'] ?? 0) + ($queueStats['serving'] ?? 0)) ?></span>)
+                <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Called|Serving" style="min-height: 31px;">
+                    Called / Serving (<span id="filterCountCalledServing" style="font-variant-numeric: tabular-nums;"><?= (int)(($queueStats['called'] ?? 0) + ($queueStats['serving'] ?? 0)) ?></span>)
                 </button>
-                <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Completed">
-                    Completed (<span id="filterCountCompleted"><?= (int)($queueStats['completed'] ?? 0) ?></span>)
+                <button type="button" class="btn btn-sm btn-light border quick-queue-filter" data-filter="Completed" style="min-height: 31px;">
+                    Completed (<span id="filterCountCompleted" style="font-variant-numeric: tabular-nums;"><?= (int)($queueStats['completed'] ?? 0) ?></span>)
                 </button>
             </div>
             
@@ -365,20 +371,20 @@ require dirname(__DIR__) . '/layout/header.php';
                     <table class="table table-hover align-middle mb-0 text-center small" id="queueTable">
                         <thead class="table-light">
                             <tr>
-                                <th>Queue No.</th>
-                                <th class="text-start">Patient Name</th>
-                                <th class="text-start">Service</th>
-                                <th>Time In</th>
-                                <th>Time Called</th>
-                                <th>Status</th>
-                                <th class="pe-4 text-end">Action</th>
+                                <th scope="col">Queue No.</th>
+                                <th scope="col" class="text-start">Patient Name</th>
+                                <th scope="col" class="text-start">Service</th>
+                                <th scope="col">Time In</th>
+                                <th scope="col">Time Called</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="pe-4 text-end">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($queueList)): ?>
                                 <tr>
                                     <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="bi bi-people d-block fs-3 mb-2 text-muted"></i>
+                                        <i class="bi bi-people d-block fs-3 mb-2 text-muted" aria-hidden="true"></i>
                                         No patients are currently queued for today.
                                     </td>
                                 </tr>
@@ -408,46 +414,46 @@ require dirname(__DIR__) . '/layout/header.php';
                                     }
                                 ?>
                                     <tr>
-                                        <td class="fw-bold fs-6 text-primary-dark" data-order="<?= (int)$q['queue_no'] ?>">
+                                        <td class="fw-bold fs-6 text-primary-dark" data-order="<?= (int)$q['queue_no'] ?>" style="font-variant-numeric: tabular-nums;">
                                             <?= sprintf('%03d', $q['queue_no']) ?>
                                         </td>
                                         <td class="text-start fw-bold">
                                             <a href="<?= url('/patients/' . $q['patient_id']) ?>" class="link-primary-dark">
                                                 <?= h($q['patient_last']) ?>, <?= h($q['patient_first']) ?>
-                                                <span class="text-muted fw-normal font-monospace fs-7">(<?= h($q['patient_no']) ?>)</span>
+                                                <span class="text-muted fw-normal font-monospace fs-7" style="font-variant-numeric: tabular-nums;">(<?= h($q['patient_no']) ?>)</span>
                                             </a>
                                         </td>
                                         <td class="text-start">
                                             <span class="badge <?= $serviceBadgeClass ?> d-inline-block"><?= h($service) ?></span>
                                         </td>
                                         <td class="text-secondary" data-order="<?= $timeInStamp ?: 0 ?>">
-                                            <div><?= $timeInStamp ? date('h:i A', $timeInStamp) : '--' ?></div>
+                                            <div style="font-variant-numeric: tabular-nums;"><?= $timeInStamp ? date('h:i A', $timeInStamp) : '--' ?></div>
                                             <?php if ($elapsedWaitMins !== null): ?>
                                                 <?php if ($elapsedWaitMins > 30): ?>
-                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle mt-1" style="font-size: 0.72rem;" title="Waiting over 30 minutes">
-                                                        <i class="bi bi-exclamation-circle me-1"></i><?= $elapsedWaitMins ?>m wait
+                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle mt-1" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;" title="Waiting over 30 minutes">
+                                                        <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i><?= $elapsedWaitMins ?>m wait
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="badge bg-light text-muted border mt-1" style="font-size: 0.72rem;">
+                                                    <span class="badge bg-light text-muted border mt-1" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                         <?= $elapsedWaitMins ?>m wait
                                                     </span>
                                                 <?php endif; ?>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="text-secondary" data-order="<?= !empty($q['time_called']) ? strtotime($q['time_called']) : 0 ?>">
+                                        <td class="text-secondary" data-order="<?= !empty($q['time_called']) ? strtotime($q['time_called']) : 0 ?>" style="font-variant-numeric: tabular-nums;">
                                             <?= !empty($q['time_called']) ? date('h:i A', strtotime($q['time_called'])) : '<span class="text-muted">-</span>' ?>
                                         </td>
                                         <td data-search="<?= h($q['status']) ?>" data-filter="<?= h($q['status']) ?>">
                                             <span class="badge <?= $statusBadge ?>"><?= h($q['status']) ?></span>
                                         </td>
                                         <td class="pe-4 text-end" style="white-space: nowrap;">
-                                            <div class="d-inline-flex gap-1">
+                                            <div class="d-inline-flex gap-1 align-items-center">
                                                 <?php if ($q['status'] === 'Waiting'): ?>
                                                     <!-- Transition to Called -->
                                                     <form action="<?= url('/queue/' . $q['id'] . '/status') ?>" method="POST" class="d-inline">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Called">
-                                                        <button type="submit" class="btn btn-sm btn-primary px-2 py-1 btn-queue-action" data-action="call" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" data-service="<?= h($service) ?>" title="Call Patient">
+                                                        <button type="submit" class="btn btn-sm btn-primary px-2 py-1 btn-queue-action" data-action="call" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" data-service="<?= h($service) ?>" title="Call Patient" style="min-height: 32px;">
                                                             Call
                                                         </button>
                                                     </form>
@@ -456,7 +462,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     <form action="<?= url('/queue/' . $q['id'] . '/status') ?>" method="POST" class="d-inline">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Serving">
-                                                        <button type="submit" class="btn btn-sm btn-info px-2 py-1 text-white btn-queue-action" data-action="serve" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Start Serving">
+                                                        <button type="submit" class="btn btn-sm btn-info px-2 py-1 text-white btn-queue-action" data-action="serve" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Start Serving" style="min-height: 32px;">
                                                             Serve
                                                         </button>
                                                     </form>
@@ -464,7 +470,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     <form action="<?= url('/queue/' . $q['id'] . '/status') ?>" method="POST" class="d-inline">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Called">
-                                                        <button type="submit" class="btn btn-sm btn-outline-primary px-2 py-1 btn-queue-action" data-action="recall" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" title="Re-Call Patient (Audio chime)" data-confirm="Re-call Queue No: <?= sprintf('%03d', $q['queue_no']) ?>? This will re-trigger the chime on the public display.">
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary px-2 py-1 btn-queue-action" data-action="recall" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" title="Re-Call Patient (Audio chime)" data-confirm="Re-call Queue No: <?= sprintf('%03d', $q['queue_no']) ?>? This will re-trigger the chime on the public display." style="min-height: 32px;">
                                                             Re-Call
                                                         </button>
                                                     </form>
@@ -473,7 +479,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     <form action="<?= url('/queue/' . $q['id'] . '/status') ?>" method="POST" class="d-inline">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Completed">
-                                                        <button type="submit" class="btn btn-sm btn-success px-2 py-1 btn-queue-action" data-action="complete" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Complete Service">
+                                                        <button type="submit" class="btn btn-sm btn-success px-2 py-1 btn-queue-action" data-action="complete" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Complete Service" style="min-height: 32px;">
                                                             Complete
                                                         </button>
                                                     </form>
@@ -484,8 +490,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                                     <form action="<?= url('/queue/' . $q['id'] . '/status') ?>" method="POST" class="d-inline">
                                                         <?= csrf_field() ?>
                                                         <input type="hidden" name="status" value="Cancelled">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 px-2 btn-queue-cancel" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Cancel Queue Number">
-                                                            <i class="bi bi-x-lg"></i>
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 px-2 btn-queue-cancel" data-queue-no="<?= sprintf('%03d', $q['queue_no']) ?>" data-patient="<?= h($q['patient_first'] . ' ' . $q['patient_last']) ?>" title="Cancel Queue Number" aria-label="Cancel queue number <?= sprintf('%03d', $q['queue_no']) ?>" style="min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                                            <i class="bi bi-x-lg" aria-hidden="true"></i>
                                                         </button>
                                                     </form>
                                                 <?php endif; ?>
@@ -587,6 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (query.length < 1) {
                 resultsContainer.classList.add('d-none');
                 resultsContainer.innerHTML = '';
+                searchInput.setAttribute('aria-expanded', 'false');
                 return;
             }
 
@@ -611,6 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearSearchBtn.classList.add('d-none');
                 resultsContainer.classList.add('d-none');
                 resultsContainer.innerHTML = '';
+                searchInput.setAttribute('aria-expanded', 'false');
                 searchInput.focus();
             });
         }
@@ -621,11 +629,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (patients.length === 0) {
             resultsContainer.innerHTML = `
                 <div class="list-group-item text-center py-4 text-muted">
-                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary"></i>
+                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary" aria-hidden="true"></i>
                     No registered patients found matching your search.
                 </div>
             `;
             resultsContainer.classList.remove('d-none');
+            if (searchInput) searchInput.setAttribute('aria-expanded', 'true');
             return;
         }
 
@@ -633,6 +642,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const item = document.createElement('div');
             item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
             item.style.cursor = 'pointer';
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+            item.setAttribute('aria-label', `Select patient ${p.name || ''}, ${p.patient_no || ''}`);
 
             const sexBadgeClass = (p.sex && p.sex.toLowerCase() === 'female') ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-primary-subtle text-primary border-primary-subtle';
 
@@ -641,16 +653,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div>
                         <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
                         <div class="small text-muted d-flex align-items-center gap-2 mt-1 flex-wrap">
-                            <span class="badge bg-light text-secondary border font-monospace">${escapeHtml(p.patient_no)}</span>
-                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
+                            <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
+                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
                             <span class="badge ${sexBadgeClass} border">${escapeHtml(p.sex || 'N/A')}</span>
-                            <span>${p.age !== undefined && p.age !== null ? p.age + ' yrs' : '--'}</span>
-                            <span>&bull;</span>
+                            <span style="font-variant-numeric: tabular-nums;">${p.age !== undefined && p.age !== null ? p.age + ' yrs' : '--'}</span>
+                            <span aria-hidden="true">&bull;</span>
                             <span class="text-truncate" style="max-width: 200px;">${escapeHtml(p.address)}</span>
                         </div>
                     </div>
                     <div class="text-end">
-                        <span class="btn btn-sm btn-outline-primary py-1 px-3">
+                        <span class="btn btn-sm btn-outline-primary py-1 px-3" style="min-height: 32px; display: inline-flex; align-items: center;">
                             Select
                         </span>
                     </div>
@@ -658,16 +670,26 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             item.addEventListener('click', () => selectPatient(p));
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectPatient(p);
+                }
+            });
             resultsContainer.appendChild(item);
         });
 
         resultsContainer.classList.remove('d-none');
+        if (searchInput) searchInput.setAttribute('aria-expanded', 'true');
     }
 
     function selectPatient(patient) {
         resultsContainer.classList.add('d-none');
         resultsContainer.innerHTML = '';
-        if (searchInput) searchInput.value = '';
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.setAttribute('aria-expanded', 'false');
+        }
         if (patientErrorAlert) patientErrorAlert.classList.add('d-none');
 
         selectedPatientIdInput.value = patient.id;
@@ -843,11 +865,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        if ((action === 'call' || action === 'recall') && typeof window.playHospitalChime === 'function') {
+                            window.playHospitalChime();
+                        }
                         form.submit();
                     }
                 });
             } else {
                 if (confirm(text)) {
+                    if ((action === 'call' || action === 'recall') && typeof window.playHospitalChime === 'function') {
+                        window.playHospitalChime();
+                    }
                     form.submit();
                 }
             }

@@ -172,6 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Sync address bar URL and scroll tab into view when clicked
         workstationNav.addEventListener('shown.bs.tab', function(e) {
+            // Synchronize aria-selected states across all tabs
+            workstationNav.querySelectorAll('[role="tab"]').forEach(tab => {
+                tab.setAttribute('aria-selected', tab === e.target ? 'true' : 'false');
+            });
+
             setTimeout(() => {
                 e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }, 60);
@@ -184,6 +189,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             updateTabScrollButtons();
+        });
+
+        // W3C Tabs Arrow Key Navigation (Left / Right / Home / End)
+        workstationNav.addEventListener('keydown', function(e) {
+            const tabs = Array.from(workstationNav.querySelectorAll('[role="tab"]'));
+            const currentTab = document.activeElement;
+            const currentIndex = tabs.indexOf(currentTab);
+            if (currentIndex === -1) return;
+
+            let nextIndex = null;
+            if (e.key === 'ArrowRight') {
+                nextIndex = (currentIndex + 1) % tabs.length;
+            } else if (e.key === 'ArrowLeft') {
+                nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+            } else if (e.key === 'Home') {
+                nextIndex = 0;
+            } else if (e.key === 'End') {
+                nextIndex = tabs.length - 1;
+            }
+
+            if (nextIndex !== null) {
+                e.preventDefault();
+                tabs[nextIndex].focus();
+                if (window.bootstrap && window.bootstrap.Tab) {
+                    const bsTab = window.bootstrap.Tab.getOrCreateInstance(tabs[nextIndex]);
+                    bsTab.show();
+                } else {
+                    tabs[nextIndex].click();
+                }
+            }
         });
 
         setTimeout(updateTabScrollButtons, 120);
@@ -457,48 +492,49 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 6. Modernized Workstation Action Handlers
 
-    // A. Archive Consultation
-    document.querySelectorAll('.btn-archive-consultation').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const id = this.getAttribute('data-id');
-            const patientId = this.getAttribute('data-patient-id');
-            
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Archive Consultation?',
-                    text: 'Archiving hides this consultation note from the active history. Please provide a reason:',
-                    input: 'textarea',
-                    inputPlaceholder: 'e.g. Inadvertent duplication, erroneous entry...',
-                    inputValidator: (value) => {
-                        if (!value || !value.trim()) {
-                            return 'Archive reason is required!';
-                        }
-                    },
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, Archive Consultation',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const form = document.getElementById('archiveConsultationForm');
-                        form.action = `<?= url('/consultations/') ?>${id}/archive`;
-                        document.getElementById('archiveConsultationReasonInput').value = result.value.trim();
-                        form.submit();
+    // A. Archive Consultation (Delegated for DataTables pagination compatibility)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-archive-consultation');
+        if (!btn) return;
+
+        e.preventDefault();
+        const id = btn.getAttribute('data-id');
+        const patientId = btn.getAttribute('data-patient-id');
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Archive Consultation?',
+                text: 'Archiving hides this consultation note from the active history. Please provide a reason:',
+                input: 'textarea',
+                inputPlaceholder: 'e.g. Inadvertent duplication, erroneous entry...',
+                inputValidator: (value) => {
+                    if (!value || !value.trim()) {
+                        return 'Archive reason is required!';
                     }
-                });
-            } else {
-                const reason = prompt('Please enter the reason for archiving this consultation:');
-                if (reason && reason.trim()) {
+                },
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Archive Consultation',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
                     const form = document.getElementById('archiveConsultationForm');
                     form.action = `<?= url('/consultations/') ?>${id}/archive`;
-                    document.getElementById('archiveConsultationReasonInput').value = reason.trim();
+                    document.getElementById('archiveConsultationReasonInput').value = result.value.trim();
                     form.submit();
                 }
+            });
+        } else {
+            const reason = prompt('Please enter the reason for archiving this consultation:');
+            if (reason && reason.trim()) {
+                const form = document.getElementById('archiveConsultationForm');
+                form.action = `<?= url('/consultations/') ?>${id}/archive`;
+                document.getElementById('archiveConsultationReasonInput').value = reason.trim();
+                form.submit();
             }
-        });
+        }
     });
 
     // B. View Vital Signs Details Modal
@@ -702,6 +738,61 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (confirm(`Cancel appointment scheduled for ${date}?`)) {
                 const form = document.getElementById('cancelAppointmentForm');
                 form.action = `<?= url('/appointments/') ?>${id}/status`;
+                form.submit();
+            }
+        });
+    });
+
+
+    // Admin Void Appointment
+    document.querySelectorAll('.btn-void-appointment').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const patient = this.getAttribute('data-patient') || 'this patient';
+            const date = this.getAttribute('data-date') || '';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Void Appointment Record?',
+                    html: `
+                        <div class="text-start small">
+                            <p class="text-secondary mb-2">
+                                You are about to void the appointment scheduled for <strong>${date}</strong>.
+                            </p>
+                            <div class="alert alert-warning py-2 px-3 small border-0 mb-3" style="background-color: #fffbeb; color: #b45309;">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                <strong>Administrative Void:</strong> This will remove the appointment from active schedules without penalizing the patient's record.
+                            </div>
+                            <label class="form-label fw-semibold text-secondary mb-1">Reason for Voiding:</label>
+                            <select id="swalPatientTabVoidReason" class="form-select form-select-sm mb-2">
+                                <option value="Created in error / wrong patient selected" selected>Created in error / wrong patient selected</option>
+                                <option value="Duplicate booking entry">Duplicate booking entry</option>
+                                <option value="Test / system training entry">Test / system training entry</option>
+                                <option value="Other administrative mistake">Other administrative mistake</option>
+                            </select>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Void Appointment',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const reasonSelect = document.getElementById('swalPatientTabVoidReason');
+                        const reason = reasonSelect ? reasonSelect.value : 'Created in error';
+                        const form = document.getElementById('voidAppointmentPatientForm');
+                        form.action = `<?= url('/appointments/') ?>${id}/void`;
+                        document.getElementById('patientTabVoidReasonInput').value = reason;
+                        form.submit();
+                    }
+                });
+            } else if (confirm(`Void appointment scheduled for ${date}?`)) {
+                const form = document.getElementById('voidAppointmentPatientForm');
+                form.action = `<?= url('/appointments/') ?>${id}/void`;
+                document.getElementById('patientTabVoidReasonInput').value = 'Voided by administrator';
                 form.submit();
             }
         });

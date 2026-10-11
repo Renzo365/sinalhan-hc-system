@@ -12,7 +12,7 @@ $reportLabels = [
     'vitals' => 'Recorded Vital Signs Log',
     'maternal_health' => 'Maternal & Prenatal Health Registry',
     'epi_coverage' => 'Childhood Routine Immunization (EPI) Coverage',
-    'chronic_morbidity' => 'Morbidity & Chronic Disease Registry (IHP)'
+    'chronic_morbidity' => 'Chronic Non-Communicable Disease (NCD) Registry'
 ];
 
 $reportName = $reportLabels[$type] ?? '';
@@ -179,93 +179,103 @@ if (!$allTime) {
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Left Column: Filter Panel (Hidden in print) -->
-    <div class="col-12 col-lg-3 no-print">
-        <div class="card card-premium card-filter-card">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-funnel text-primary me-2"></i>Report Criteria
-                </h3>
+<!-- Top Filter Card (Hidden in print) -->
+<div class="card card-premium shadow-sm border-0 mb-4 no-print">
+    <div class="card-header bg-white py-3 px-3 px-md-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <div class="rounded p-2 bg-teal-soft text-teal">
+                <i class="bi bi-funnel-fill"></i>
             </div>
-            
-            <form action="<?= url('/reports') ?>" method="GET" id="reportForm">
-                <div class="card-body p-4 bg-white">
-                    <!-- Report Type -->
-                    <div class="mb-3">
-                        <label for="type" class="form-label text-secondary small fw-semibold">Report Category <span class="text-danger">*</span></label>
-                        <select name="type" id="type" class="form-select bg-light" required>
-                            <option value="">-- Select Report --</option>
-                            <option value="daily_visits" <?= $type === 'daily_visits' ? 'selected' : '' ?>>Daily Patient Visits</option>
-                            <option value="consultations" <?= $type === 'consultations' ? 'selected' : '' ?>>Consultations Summary</option>
-                            <option value="registrations" <?= $type === 'registrations' ? 'selected' : '' ?>>Patient Registrations</option>
-                            <option value="appointments" <?= $type === 'appointments' ? 'selected' : '' ?>>Scheduled Care & Appointments Registry</option>
-                            <option value="maternal_health" <?= $type === 'maternal_health' ? 'selected' : '' ?>>Maternal & Prenatal Health Registry</option>
-                            <option value="epi_coverage" <?= $type === 'epi_coverage' ? 'selected' : '' ?>>Childhood Routine Immunization (EPI)</option>
-                            <option value="chronic_morbidity" <?= $type === 'chronic_morbidity' ? 'selected' : '' ?>>Morbidity & Chronic Disease Registry</option>
-                            <option value="queue_summary" <?= $type === 'queue_summary' ? 'selected' : '' ?>>Daily Queue Operations</option>
-                            <option value="vitals" <?= $type === 'vitals' ? 'selected' : '' ?>>Recorded Vital Signs Log</option>
-                        </select>
-                    </div>
-
-                    <!-- Quick Date Presets -->
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-semibold d-flex justify-content-between">
-                            <span>Quick Presets</span>
-                        </label>
-                        <div class="d-flex flex-wrap gap-1" id="quickDatePresets">
-                            <button type="button" class="btn btn-preset <?= $activePreset === 'today' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="today" onclick="setDatePreset('today')">Today</button>
-                            <button type="button" class="btn btn-preset <?= $activePreset === 'this_week' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_week" onclick="setDatePreset('this_week')">This Week</button>
-                            <button type="button" class="btn btn-preset <?= $activePreset === 'this_month' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_month" onclick="setDatePreset('this_month')">This Month</button>
-                            <button type="button" class="btn btn-preset <?= $activePreset === 'last_month' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="last_month" onclick="setDatePreset('last_month')">Last Month</button>
-                            <button type="button" class="btn btn-preset <?= $activePreset === 'this_year' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_year" onclick="setDatePreset('this_year')">This Year</button>
-                        </div>
-                    </div>
-
-                    <!-- Date From -->
-                    <div class="mb-3">
-                        <label for="date_from" class="form-label text-secondary small fw-semibold">Date From <span class="text-danger">*</span></label>
-                        <input type="date" name="date_from" id="date_from" class="form-control bg-light text-secondary" value="<?= h($dateFrom) ?>" <?= $allTime ? 'disabled' : 'required' ?>>
-                    </div>
-
-                    <!-- Date To -->
-                    <div class="mb-3">
-                        <label for="date_to" class="form-label text-secondary small fw-semibold">Date To <span class="text-danger">*</span></label>
-                        <input type="date" name="date_to" id="date_to" class="form-control bg-light text-secondary" value="<?= h($dateTo) ?>" <?= $allTime ? 'disabled' : 'required' ?>>
-                    </div>
-
-                    <!-- All-Time Master Registry Checkbox -->
-                    <div class="form-check form-switch pt-1">
-                        <input class="form-check-input" type="checkbox" name="all_time" value="1" id="all_time" <?= $allTime ? 'checked' : '' ?> onchange="toggleAllTime(this.checked)">
-                        <label class="form-check-label small text-muted fw-semibold" for="all_time">
-                            Cumulative Master Registry <span class="d-block text-secondary" style="font-size: 0.7rem; font-weight: normal;">Include all historical records</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="card-footer bg-light py-3 border-0 d-grid" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-play-fill me-1"></i> Generate Report
-                    </button>
-                </div>
-            </form>
+            <div>
+                <h3 class="card-title h6 mb-0 fw-bold text-dark">Report Criteria & Filters</h3>
+                <span class="text-secondary small" style="font-size: 0.78rem;">Configure report category, reporting timeframe, or generate cumulative registries</span>
+            </div>
+        </div>
+        <!-- Quick Date Presets -->
+        <div class="d-flex flex-wrap align-items-center gap-1" id="quickDatePresets">
+            <span class="text-secondary small me-1 fw-semibold d-none d-lg-inline">Presets:</span>
+            <button type="button" class="btn btn-preset <?= $activePreset === 'today' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="today" onclick="setDatePreset('today')">Today</button>
+            <button type="button" class="btn btn-preset <?= $activePreset === 'this_week' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_week" onclick="setDatePreset('this_week')">This Week</button>
+            <button type="button" class="btn btn-preset <?= $activePreset === 'this_month' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_month" onclick="setDatePreset('this_month')">This Month</button>
+            <button type="button" class="btn btn-preset <?= $activePreset === 'last_month' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="last_month" onclick="setDatePreset('last_month')">Last Month</button>
+            <button type="button" class="btn btn-preset <?= $activePreset === 'this_year' ? 'btn-primary text-white' : 'btn-outline-secondary' ?>" data-preset="this_year" onclick="setDatePreset('this_year')">This Year</button>
         </div>
     </div>
 
-    <!-- Right Column: Results Panel -->
-    <div class="col-12 col-lg-9">
-        <?php if (empty($type)): ?>
-            <!-- Empty Welcome state -->
-            <div class="card card-premium text-center py-5 no-print">
-                <div class="card-body">
-                    <i class="bi bi-file-earmark-bar-graph d-block fs-1 text-muted mb-3 opacity-75"></i>
-                    <h4 class="fw-bold text-dark">Run a Health Center Report</h4>
-                    <p class="text-muted small mx-auto" style="max-width: 440px;">
-                        Select a report category and date range on the left sidebar to generate verified clinical registers, operational summaries, or DOH program indicators.
-                    </p>
+    <form action="<?= url('/reports') ?>" method="GET" id="reportForm">
+        <div class="card-body p-3 p-md-4 bg-white">
+            <div class="row g-3 align-items-end">
+                <!-- Report Category with Clean Optgroups -->
+                <div class="col-12 col-md-5 col-lg-4">
+                    <label for="type" class="form-label text-secondary small fw-semibold">Report Category <span class="text-danger">*</span></label>
+                    <select name="type" id="type" class="form-select bg-light" required>
+                        <option value="">-- Select Report Category --</option>
+                        <optgroup label="Clinical Care & Epidemiology">
+                            <option value="consultations" <?= $type === 'consultations' ? 'selected' : '' ?>>Clinical Consultations Summary (Acute Morbidity)</option>
+                            <option value="vitals" <?= $type === 'vitals' ? 'selected' : '' ?>>Recorded Vital Signs Log (Triage)</option>
+                        </optgroup>
+                        <optgroup label="DOH Public Health Programs & Registries">
+                            <option value="maternal_health" <?= $type === 'maternal_health' ? 'selected' : '' ?>>Maternal & Prenatal Health Registry (Safe Motherhood)</option>
+                            <option value="epi_coverage" <?= $type === 'epi_coverage' ? 'selected' : '' ?>>Childhood Routine Immunization (EPI)</option>
+                            <option value="chronic_morbidity" <?= $type === 'chronic_morbidity' ? 'selected' : '' ?>>Chronic Non-Communicable Disease (NCD) Registry</option>
+                        </optgroup>
+                        <optgroup label="Center Operations & Patient Flow">
+                            <option value="daily_visits" <?= $type === 'daily_visits' ? 'selected' : '' ?>>Daily Patient Visits Log (Front Desk)</option>
+                            <option value="queue_summary" <?= $type === 'queue_summary' ? 'selected' : '' ?>>Daily Queue Operations Summary</option>
+                            <option value="appointments" <?= $type === 'appointments' ? 'selected' : '' ?>>Scheduled Care & Appointments Registry</option>
+                            <option value="registrations" <?= $type === 'registrations' ? 'selected' : '' ?>>Patient Registrations Summary</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Date From -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="date_from" class="form-label text-secondary small fw-semibold">Date From <span class="text-danger">*</span></label>
+                    <input type="date" name="date_from" id="date_from" class="form-control bg-light text-secondary" value="<?= h($dateFrom) ?>" <?= $allTime ? 'disabled' : 'required' ?>>
+                </div>
+
+                <!-- Date To -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="date_to" class="form-label text-secondary small fw-semibold">Date To <span class="text-danger">*</span></label>
+                    <input type="date" name="date_to" id="date_to" class="form-control bg-light text-secondary" value="<?= h($dateTo) ?>" <?= $allTime ? 'disabled' : 'required' ?>>
+                </div>
+
+                <!-- Cumulative Master Registry Switch -->
+                <div class="col-12 col-md-6 col-lg-2">
+                    <div class="form-check form-switch pt-1 pt-md-3">
+                        <input class="form-check-input" type="checkbox" name="all_time" value="1" id="all_time" <?= $allTime ? 'checked' : '' ?> onchange="toggleAllTime(this.checked)">
+                        <label class="form-check-label small text-muted fw-semibold" for="all_time">
+                            Cumulative Master
+                            <span class="d-block text-secondary" style="font-size: 0.72rem; font-weight: normal;">All historical records</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Generate Report Button -->
+                <div class="col-12 col-md-6 col-lg-2">
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-play-fill me-1"></i> Generate Report
+                    </button>
                 </div>
             </div>
-        <?php else: ?>
+        </div>
+    </form>
+</div>
+
+<!-- Main Results Area (Full Width) -->
+<div class="w-100">
+    <?php if (empty($type)): ?>
+        <!-- Empty Welcome state -->
+        <div class="card card-premium text-center py-5 no-print">
+            <div class="card-body">
+                <i class="bi bi-file-earmark-bar-graph d-block fs-1 text-muted mb-3 opacity-75"></i>
+                <h4 class="fw-bold text-dark">Run a Health Center Report</h4>
+                <p class="text-muted small mx-auto" style="max-width: 480px;">
+                    Select a report category and date range above to generate verified clinical registers, operational summaries, or DOH program indicators.
+                </p>
+            </div>
+        </div>
+    <?php else: ?>
             <!-- Actions bar (Hidden in print) -->
             <div class="d-flex justify-content-between align-items-center mb-3 no-print">
                 <div class="small text-muted">
@@ -523,7 +533,16 @@ if (!$allTime) {
                                                         <?= h($row['patient_last']) ?>, <?= h($row['patient_first']) ?>
                                                     </a>
                                                 </td>
-                                                <td class="text-start fw-semibold" title="<?= h($row['assessment']) ?>"><?= h($row['assessment']) ?></td>
+                                                <?php 
+                                                    $normCat = \App\Controllers\ReportController::normalizeDiagnosisCategory($row['assessment'] ?? '');
+                                                    $isDiff = strcasecmp($normCat, trim($row['assessment'])) !== 0 && !empty($row['assessment']);
+                                                ?>
+                                                <td class="text-start">
+                                                    <div class="fw-semibold text-primary-dark"><?= h($normCat) ?></div>
+                                                    <?php if ($isDiff): ?>
+                                                        <small class="text-muted d-block" style="font-size: 0.74rem;">Note: <?= h($row['assessment']) ?></small>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td class="text-start text-secondary text-truncate" style="max-width: 220px;" title="<?= h($row['subjective']) ?>"><?= h($row['subjective']) ?></td>
                                                 <td class="text-start" style="min-width: 175px;">
                                                     <span class="fw-semibold"><?= h($cName) ?></span><?= $roleBadge ?>
@@ -962,7 +981,6 @@ if (!$allTime) {
                 </div>
             </div>
         <?php endif; ?>
-    </div>
 </div>
 
 <script>

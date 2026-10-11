@@ -1,20 +1,20 @@
 <header class="app-topbar">
     <div class="d-flex align-items-center">
         <!-- Sidebar Toggle for Mobile -->
-        <button class="btn btn-outline-primary d-lg-none me-3" type="button" id="sidebarToggle" aria-label="Toggle sidebar">
-            <i class="bi bi-list"></i>
+        <button class="btn btn-outline-primary d-lg-none me-3" type="button" id="sidebarToggle" aria-label="Toggle sidebar" style="min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+            <i class="bi bi-list" aria-hidden="true"></i>
         </button>
         <!-- System Brand (Occupies top-left above sidebar) -->
-        <a href="<?= url('/dashboard') ?>" class="topbar-brand d-flex align-items-center text-decoration-none">
-            <img src="<?= asset('images/sinalhan-logo.png') ?>" alt="SinalHealth" class="topbar-logo">
+        <a href="<?= url('/dashboard') ?>" class="topbar-brand d-flex align-items-center text-decoration-none" aria-label="SinalHealth Home">
+            <img src="<?= asset('images/sinalhan-logo.png') ?>" alt="SinalHealth" class="topbar-logo" width="180" height="42">
         </a>
     </div>
     
     <div class="d-flex align-items-center gap-3">
         <!-- Live PST Date & Clock -->
         <div class="d-none d-md-flex flex-column text-end justify-content-center me-1" style="line-height: 1.25;">
-            <div id="topbarLiveDate" class="fw-bold text-dark" style="font-size: 0.875rem; letter-spacing: -0.01em;"><?= date('l, M j, Y') ?></div>
-            <div id="topbarClock" class="text-muted" style="font-size: 0.775rem;"><?= date('h:i:s A') ?></div>
+            <div id="topbarLiveDate" class="fw-bold text-dark" style="font-size: 0.875rem; letter-spacing: -0.01em; font-variant-numeric: tabular-nums;"><?= date('l, M j, Y') ?></div>
+            <div id="topbarClock" class="text-muted" style="font-size: 0.775rem; font-variant-numeric: tabular-nums;"><?= date('h:i:s A') ?></div>
         </div>
         <?php 
         $userFullName = $_SESSION['user_fullname'] ?? 'User';
@@ -38,9 +38,11 @@
                     id="userProfileDropdown" 
                     data-bs-toggle="dropdown" 
                     aria-expanded="false"
-                    style="box-shadow: none;">
+                    aria-label="User profile menu: <?= h($userFullName) ?> (<?= h($topbarRoleDisplay) ?>)"
+                    style="box-shadow: none; min-height: 44px;">
                 <!-- Circular Avatar -->
                 <div class="user-avatar-circle me-2 flex-shrink-0" 
+                     aria-hidden="true"
                      style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #fff; background-color: #0d9488; font-size: 0.95rem; user-select: none;">
                     <?= h($avatarInitial) ?>
                 </div>
@@ -50,7 +52,7 @@
                     <div class="text-muted" style="font-size: 0.75rem;"><?= h($topbarRoleDisplay) ?></div>
                 </div>
                 <!-- Subtle Chevron icon -->
-                <i class="bi bi-chevron-down text-muted small ms-1"></i>
+                <i class="bi bi-chevron-down text-muted small ms-1" aria-hidden="true"></i>
             </button>
 
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-2 mt-2" aria-labelledby="userProfileDropdown" style="min-width: 210px; border-radius: 8px;">
@@ -60,14 +62,14 @@
                     <div class="text-muted" style="font-size: 0.75rem;"><?= h($topbarRoleDisplay) ?></div>
                 </li>
                 <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center text-secondary" href="<?= url('/profile') ?>">
-                        <i class="bi bi-person me-2 fs-6 text-muted"></i>
+                    <a class="dropdown-item py-2 d-flex align-items-center text-secondary" href="<?= url('/profile') ?>" style="min-height: 38px;">
+                        <i class="bi bi-person me-2 fs-6 text-muted" aria-hidden="true"></i>
                         <span>My Profile</span>
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item py-2 d-flex align-items-center text-secondary" href="<?= url('/profile#password-settings') ?>">
-                        <i class="bi bi-shield-lock me-2 fs-6 text-muted"></i>
+                    <a class="dropdown-item py-2 d-flex align-items-center text-secondary" href="<?= url('/profile#password-settings') ?>" style="min-height: 38px;">
+                        <i class="bi bi-shield-lock me-2 fs-6 text-muted" aria-hidden="true"></i>
                         <span>Password Settings</span>
                     </a>
                 </li>
@@ -75,8 +77,8 @@
                 <li>
                     <form action="<?= url('/logout') ?>" method="POST" class="m-0 p-0" id="topbarLogoutForm">
                         <?= csrf_field() ?>
-                        <button type="submit" class="dropdown-item py-2 text-danger d-flex align-items-center w-100 border-0 bg-transparent" data-confirm="Are you sure you want to log out of the system?">
-                            <i class="bi bi-box-arrow-right me-2 fs-6"></i>
+                        <button type="submit" class="dropdown-item py-2 text-danger d-flex align-items-center w-100 border-0 bg-transparent" data-confirm="Are you sure you want to log out of the system?" style="min-height: 38px;">
+                            <i class="bi bi-box-arrow-right me-2 fs-6" aria-hidden="true"></i>
                             <span>Logout</span>
                         </button>
                     </form>

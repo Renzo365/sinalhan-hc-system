@@ -13,13 +13,13 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="h3 mb-0 fw-bold text-primary-dark">Add New User Account</h2>
-        <p class="text-secondary small mb-0">Register staff or administrative credentials and assign clinical designations.</p>
+        <h1 class="h3 mb-0 fw-bold text-primary-dark" style="text-wrap: balance;">Add New User Account</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Register staff or administrative credentials and assign clinical designations.</p>
     </div>
     
     <div>
-        <a href="<?= url('/users') ?>" class="btn btn-outline-secondary d-flex align-items-center">
-            <i class="bi bi-arrow-left me-1"></i> Back to Users Directory
+        <a href="<?= url('/users') ?>" class="btn btn-outline-secondary d-flex align-items-center" style="min-height: 38px;">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to Users Directory
         </a>
     </div>
 </div>
@@ -27,7 +27,7 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
 <?php if (!empty($errors)): ?>
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
-            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger" aria-hidden="true"></i>
             <div>
                 <strong class="d-block">Please correct the following issues:</strong>
                 <ul class="mb-0 ps-3 small">
@@ -51,22 +51,23 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                 <!-- Live Account Preview Card -->
                 <div class="card card-premium mb-4 text-center">
                     <div class="card-header bg-white py-3 border-bottom text-start">
-                        <h6 class="card-title mb-0 fw-bold text-primary-dark d-flex align-items-center">
-                            <i class="bi bi-person-badge-fill me-2 text-primary"></i>Account Preview
-                        </h6>
+                        <h2 class="card-title h6 mb-0 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                            <i class="bi bi-person-badge-fill me-2 text-primary" aria-hidden="true"></i>Account Preview
+                        </h2>
                     </div>
                     <div class="card-body p-4">
                         <!-- Dynamic Monogram Avatar -->
                         <div class="d-flex justify-content-center mb-3">
                             <div id="previewAvatar" 
+                                 aria-hidden="true"
                                  class="d-flex align-items-center justify-content-center shadow-sm rounded-circle text-white fw-bold" 
-                                 style="width: 76px; height: 76px; font-size: 1.85rem; background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); transition: all 0.3s ease;">
+                                 style="width: 76px; height: 76px; font-size: 1.85rem; background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); transition: all 0.3s ease; user-select: none;">
                                 ?
                             </div>
                         </div>
 
                         <!-- Name & Username -->
-                        <h5 class="fw-bold text-dark mb-1" id="previewFullName">New Health Worker</h5>
+                        <h3 class="fw-bold text-dark fs-5 mb-1" id="previewFullName" style="text-wrap: balance;">New Health Worker</h3>
                         <div class="font-monospace text-muted small mb-3" id="previewUsername">@username</div>
 
                         <!-- Role & Job Title Chips -->
@@ -77,7 +78,7 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                         </div>
 
                         <div class="p-2 rounded bg-light border text-secondary small" id="previewJobTitle">
-                            <i class="bi bi-briefcase me-1"></i> <span id="previewJobText">Staff Member</span>
+                            <i class="bi bi-briefcase me-1" aria-hidden="true"></i> <span id="previewJobText">Staff Member</span>
                         </div>
                     </div>
                 </div>
@@ -85,21 +86,21 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                 <!-- Role Capability Matrix Card -->
                 <div class="card card-premium">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h6 class="card-title mb-0 fw-bold text-primary-dark d-flex align-items-center">
-                            <i class="bi bi-shield-check me-2 text-primary"></i>Role Capability Matrix
-                        </h6>
+                        <h2 class="card-title h6 mb-0 fw-bold text-primary-dark d-flex align-items-center" style="text-wrap: balance;">
+                            <i class="bi bi-shield-check me-2 text-primary" aria-hidden="true"></i>Role Capability Matrix
+                        </h2>
                     </div>
                     <div class="card-body p-3 small">
                         <!-- Staff Privileges -->
                         <div class="p-2 rounded mb-2 role-card-matrix" id="matrixStaff" style="border: 1px solid #e2e8f0; background: #f8fafc;">
                             <div class="fw-bold text-dark d-flex align-items-center justify-content-between mb-1">
-                                <span><i class="bi bi-person-check-fill text-secondary me-1"></i> Staff Personnel</span>
+                                <span><i class="bi bi-person-check-fill text-secondary me-1" aria-hidden="true"></i> Staff Personnel</span>
                                 <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.65rem;">Clinical</span>
                             </div>
                             <ul class="mb-0 ps-3 text-muted" style="font-size: 0.76rem;">
-                                <li>Patient registration & records</li>
-                                <li>Maternal Care & Well-Baby/EPI logs</li>
-                                <li>Daily Queue triage & consultations</li>
+                                <li>Patient registration &amp; records</li>
+                                <li>Maternal Care &amp; Well-Baby/EPI logs</li>
+                                <li>Daily Queue triage &amp; consultations</li>
                                 <li>Standard clinical reports</li>
                             </ul>
                         </div>
@@ -107,13 +108,13 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                         <!-- Admin Privileges -->
                         <div class="p-2 rounded mb-2 role-card-matrix" id="matrixAdmin" style="border: 1px solid #99f6e4; background: #f0fdfa;">
                             <div class="fw-bold text-teal d-flex align-items-center justify-content-between mb-1" style="color: #0d9488;">
-                                <span><i class="bi bi-shield-lock-fill me-1" style="color: #0d9488;"></i> Administrator</span>
+                                <span><i class="bi bi-shield-lock-fill me-1" style="color: #0d9488;" aria-hidden="true"></i> Administrator</span>
                                 <span class="badge fw-semibold" style="font-size: 0.65rem; background-color: #e6fffa; color: #0d9488; border: 1px solid #99f6e4;">Elevated</span>
                             </div>
                             <ul class="mb-0 ps-3 text-secondary" style="font-size: 0.76rem;">
                                 <li>All Staff operational capabilities</li>
-                                <li>Create & manage Staff user accounts</li>
-                                <li>Password resets & temporary unlock</li>
+                                <li>Create &amp; manage Staff user accounts</li>
+                                <li>Password resets &amp; temporary unlock</li>
                                 <li>Access to Archived records hub</li>
                             </ul>
                         </div>
@@ -121,7 +122,7 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                         <!-- Super Admin Note -->
                         <div class="p-2 rounded role-card-matrix" id="matrixSuperAdmin" style="border: 1px solid #ccfbf1; background: #f0fdfa; opacity: 0.7;">
                             <div class="fw-bold d-flex align-items-center justify-content-between mb-1" style="color: #0f766e;">
-                                <span><i class="bi bi-shield-shaded me-1" style="color: #0f766e;"></i> Super Admin</span>
+                                <span><i class="bi bi-shield-shaded me-1" style="color: #0f766e;" aria-hidden="true"></i> Super Admin</span>
                                 <span class="badge" style="font-size: 0.65rem; background-color: #0f766e; color: #fff;">Full System</span>
                             </div>
                             <div class="text-muted" style="font-size: 0.74rem;">
@@ -138,9 +139,9 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
             <!-- Section 1: Account Credentials & Privileges -->
             <div class="card card-premium mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                        <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Credentials & Access Privileges
-                    </h5>
+                    <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark" style="text-wrap: balance;">
+                        <i class="bi bi-shield-lock-fill me-2 text-primary" aria-hidden="true"></i>Credentials &amp; Access Privileges
+                    </h2>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
@@ -156,6 +157,10 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                        value="<?= h($old['username'] ?? '') ?>" 
                                        required 
                                        autocomplete="username"
+                                       inputmode="text"
+                                       autocapitalize="none"
+                                       autocorrect="off"
+                                       spellcheck="false"
                                        pattern="^[a-zA-Z0-9_]{3,20}$" 
                                        title="Username must be alphanumeric, between 3 to 20 characters.">
                             </div>
@@ -192,8 +197,8 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                        autocomplete="new-password"
                                        data-lpignore="true"
                                        minlength="8">
-                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <div class="form-text small text-muted">Minimum 8 characters.</div>
@@ -212,8 +217,8 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                        autocomplete="new-password"
                                        data-lpignore="true"
                                        minlength="8">
-                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-light border border-start-0 text-muted btn-toggle-password" type="button" tabindex="-1" title="Show password" aria-label="Show password" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <div class="form-text small text-muted" id="confirmPasswordMatchText">Must match initial password.</div>
@@ -221,23 +226,23 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
 
                         <!-- Live Password Strength Meter -->
                         <div class="col-12" id="passwordStrengthSection">
-                            <div class="p-3 bg-light rounded border">
+                            <div class="p-3 bg-light rounded border" role="region" aria-live="polite" aria-label="Password Security Strength Feedback">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="small fw-semibold text-secondary">Password Security Strength:</span>
                                     <span class="badge bg-secondary" id="strengthBadge">Too Short</span>
                                 </div>
                                 <div class="progress mb-2" style="height: 6px;">
-                                    <div id="strengthProgressBar" class="progress-bar bg-danger" role="progressbar" style="width: 0%; transition: width 0.3s ease;"></div>
+                                    <div id="strengthProgressBar" class="progress-bar bg-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%; transition: width 0.3s ease;"></div>
                                 </div>
                                 <div class="row g-2 small text-muted" style="font-size: 0.75rem;">
                                     <div class="col-12 col-sm-4" id="reqLength">
-                                        <i class="bi bi-circle text-muted me-1"></i> At least 8 characters
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> At least 8 characters
                                     </div>
                                     <div class="col-12 col-sm-4" id="reqComplexity">
-                                        <i class="bi bi-circle text-muted me-1"></i> Letters & numbers/symbols
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> Letters &amp; numbers/symbols
                                     </div>
                                     <div class="col-12 col-sm-4" id="reqMatch">
-                                        <i class="bi bi-circle text-muted me-1"></i> Passwords match
+                                        <i class="bi bi-circle text-muted me-1" aria-hidden="true"></i> Passwords match
                                     </div>
                                 </div>
                             </div>
@@ -249,9 +254,9 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
             <!-- Section 2: Personal Information -->
             <div class="card card-premium mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                        <i class="bi bi-person-vcard-fill me-2 text-primary"></i>Personal Information
-                    </h5>
+                    <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark" style="text-wrap: balance;">
+                        <i class="bi bi-person-vcard-fill me-2 text-primary" aria-hidden="true"></i>Personal Information
+                    </h2>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
@@ -263,7 +268,9 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                    class="form-control" 
                                    placeholder="e.g. Maria" 
                                    value="<?= h($old['first_name'] ?? '') ?>" 
-                                   required>
+                                   required
+                                   autocomplete="given-name"
+                                   autocapitalize="words">
                         </div>
                         
                         <div class="col-12 col-md-4">
@@ -273,7 +280,9 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                    id="middle_name" 
                                    class="form-control" 
                                    placeholder="e.g. Santos" 
-                                   value="<?= h($old['middle_name'] ?? '') ?>">
+                                   value="<?= h($old['middle_name'] ?? '') ?>"
+                                   autocomplete="additional-name"
+                                   autocapitalize="words">
                         </div>
                         
                         <div class="col-12 col-md-4">
@@ -284,32 +293,40 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                    class="form-control" 
                                    placeholder="e.g. Cruz" 
                                    value="<?= h($old['last_name'] ?? '') ?>" 
-                                   required>
+                                   required
+                                   autocomplete="family-name"
+                                   autocapitalize="words">
                         </div>
                         
                         <div class="col-12 col-md-6">
                             <label for="email" class="form-label fw-semibold text-secondary small">Email Address <span class="text-muted fw-normal">(Optional)</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope" aria-hidden="true"></i></span>
                                 <input type="email" 
                                        name="email" 
                                        id="email" 
                                        class="form-control border-start-0" 
                                        placeholder="e.g. maria.cruz@example.com" 
-                                       value="<?= h($old['email'] ?? '') ?>">
+                                       value="<?= h($old['email'] ?? '') ?>"
+                                       inputmode="email"
+                                       autocomplete="email"
+                                       spellcheck="false">
                             </div>
                         </div>
                         
                         <div class="col-12 col-md-6">
                             <label for="contact_no" class="form-label fw-semibold text-secondary small">Contact Number <span class="text-muted fw-normal">(Optional)</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone"></i></span>
-                                <input type="text" 
+                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone" aria-hidden="true"></i></span>
+                                <input type="tel" 
                                        name="contact_no" 
                                        id="contact_no" 
-                                       class="form-control border-start-0" 
+                                       class="form-control border-start-0 font-monospace" 
                                        placeholder="e.g. 09171234567" 
-                                       value="<?= h($old['contact_no'] ?? '') ?>">
+                                       value="<?= h($old['contact_no'] ?? '') ?>"
+                                       inputmode="tel"
+                                       autocomplete="tel"
+                                       style="font-variant-numeric: tabular-nums;">
                             </div>
                             <div class="form-text small text-muted">Philippine mobile format (e.g. 09171234567).</div>
                         </div>
@@ -320,9 +337,9 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
             <!-- Section 3: Professional Information -->
             <div class="card card-premium mb-4">
                 <div class="card-header bg-white py-3 border-bottom">
-                    <h5 class="card-title mb-0 fs-6 fw-bold text-primary-dark">
-                        <i class="bi bi-briefcase-fill me-2 text-primary"></i>Professional Information
-                    </h5>
+                    <h2 class="card-title mb-0 fs-6 fw-bold text-primary-dark" style="text-wrap: balance;">
+                        <i class="bi bi-briefcase-fill me-2 text-primary" aria-hidden="true"></i>Professional Information
+                    </h2>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
@@ -333,7 +350,8 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
                                    id="job_title" 
                                    class="form-control" 
                                    placeholder="e.g. Midwife, Nurse, BHW, Doctor" 
-                                   value="<?= h($old['job_title'] ?? '') ?>">
+                                   value="<?= h($old['job_title'] ?? '') ?>"
+                                   autocapitalize="words">
                             <div class="form-text small text-muted">Designation or healthcare role within Barangay Sinalhan Health Center.</div>
                         </div>
                     </div>
@@ -342,11 +360,14 @@ unset($_SESSION['old_input'], $_SESSION['form_errors']);
 
             <!-- Actions Footer -->
             <div class="d-flex justify-content-end gap-2 mb-5">
-                <a href="<?= url('/users') ?>" class="btn btn-outline-secondary px-4">Cancel</a>
-                <button type="submit" class="btn btn-primary px-4 d-flex align-items-center">
-                    <i class="bi bi-check-circle-fill me-2"></i> Save User Account
+                <a href="<?= url('/users') ?>" class="btn btn-outline-secondary px-4 d-inline-flex align-items-center" style="min-height: 42px;">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4 d-flex align-items-center" style="min-height: 42px;">
+                    <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i> Save User Account
                 </button>
             </div>
+        </div>
+    </div>
+</form>
         </div>
     </div>
 </form>

@@ -17,7 +17,7 @@ class Appointment extends Model {
                        p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last, p.middle_name AS patient_middle
                 FROM appointments a
                 JOIN patients p ON a.patient_id = p.id
-                WHERE p.deleted_at IS NULL";
+                WHERE p.deleted_at IS NULL AND a.deleted_at IS NULL";
         
         $params = [];
         
@@ -71,7 +71,7 @@ class Appointment extends Model {
      */
     public function findByPatientId($patientId) {
         $sql = "SELECT * FROM appointments 
-                WHERE patient_id = :patient_id 
+                WHERE patient_id = :patient_id AND deleted_at IS NULL
                 ORDER BY appointment_date DESC, appointment_time DESC";
         
         $stmt = $this->db->prepare($sql);
@@ -90,7 +90,7 @@ class Appointment extends Model {
                        p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last, p.middle_name AS patient_middle
                 FROM appointments a
                 JOIN patients p ON a.patient_id = p.id
-                WHERE a.id = :id AND p.deleted_at IS NULL
+                WHERE a.id = :id AND p.deleted_at IS NULL AND a.deleted_at IS NULL
                 LIMIT 1";
         
         $stmt = $this->db->prepare($sql);
@@ -203,7 +203,8 @@ class Appointment extends Model {
         $sql = "SELECT COUNT(*) FROM appointments 
                 WHERE appointment_date = :date 
                   AND appointment_time = :time
-                  AND status = 'Scheduled'";
+                  AND status = 'Scheduled'
+                  AND deleted_at IS NULL";
         
         $params = ['date' => $date, 'time' => $formattedTime];
         
@@ -228,7 +229,8 @@ class Appointment extends Model {
         $sql = "SELECT appointment_time, COUNT(*) as booked_count 
                 FROM appointments 
                 WHERE appointment_date = :date 
-                  AND status = 'Scheduled'";
+                  AND status = 'Scheduled'
+                  AND deleted_at IS NULL";
         
         $params = ['date' => $date];
         if ($excludeId) {
@@ -255,6 +257,7 @@ class Appointment extends Model {
                 JOIN patients p ON a.patient_id = p.id
                 WHERE a.appointment_date = CURRENT_DATE() 
                   AND p.deleted_at IS NULL
+                  AND a.deleted_at IS NULL
                 ORDER BY a.appointment_time ASC";
         
         $stmt = $this->db->query($sql);
@@ -275,13 +278,14 @@ class Appointment extends Model {
                 FROM appointments a
                 JOIN patients p ON a.patient_id = p.id
                 WHERE a.appointment_date = CURRENT_DATE()
-                  AND p.deleted_at IS NULL";
+                  AND p.deleted_at IS NULL
+                  AND a.deleted_at IS NULL";
         
         $stmt = $this->db->query($sql);
         $row = $stmt->fetch();
 
-        // Count overdue scheduled appointments (date < CURRENT_DATE() and status = 'Scheduled')
-        $overdueStmt = $this->db->query("SELECT COUNT(*) FROM appointments a JOIN patients p ON a.patient_id = p.id WHERE a.appointment_date < CURRENT_DATE() AND a.status = 'Scheduled' AND p.deleted_at IS NULL");
+        // Count overdue scheduled appointments (date < CURRENT_DATE() and status = 'Scheduled' and not deleted)
+        $overdueStmt = $this->db->query("SELECT COUNT(*) FROM appointments a JOIN patients p ON a.patient_id = p.id WHERE a.appointment_date < CURRENT_DATE() AND a.status = 'Scheduled' AND p.deleted_at IS NULL AND a.deleted_at IS NULL");
         $overdueCount = (int)($overdueStmt ? $overdueStmt->fetchColumn() : 0);
 
         return [
@@ -291,6 +295,29 @@ class Appointment extends Model {
             'missed_cancelled_today' => (int)($row['missed_cancelled_today'] ?? 0),
             'overdue_count' => $overdueCount
         ];
+    }
+
+    /**
+     * Soft-delete (void) an appointment created in error.
+     *
+     * @param int $id
+     * @param int $userId Performing administrator
+     * @param string|null $reason Mandatory or optional reason for voiding
+     * @return bool
+     */
+    public function void($id, $userId, $reason = null) {
+        $sql = "UPDATE appointments SET 
+                    deleted_at = CURRENT_TIMESTAMP,
+                    deleted_by = :deleted_by,
+                    archive_reason = :archive_reason
+                WHERE id = :id AND deleted_at IS NULL";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => (int)$id,
+            'deleted_by' => (int)$userId,
+            'archive_reason' => !empty($reason) ? trim($reason) : 'Voided by administrator (Created in error)'
+        ]);
     }
 }
 

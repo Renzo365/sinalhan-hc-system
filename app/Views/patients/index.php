@@ -5,16 +5,16 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Patient Directory</h2>
-        <p class="text-secondary small mb-0">Search, filter, and view patient profiles, household clusters, and program records.</p>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Patient Directory</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Search, filter, and view patient profiles, household clusters, and program records.</p>
     </div>
     <div class="d-flex align-items-center gap-2">
-        <a href="<?= url('/patients/export?' . http_build_query($filters)) ?>" class="btn btn-outline-success d-flex align-items-center py-2 px-3 shadow-sm" title="Export Filtered Patient Masterlist to CSV">
-            <i class="bi bi-file-earmark-excel me-2 fs-5"></i>
+        <a href="<?= url('/patients/export?' . http_build_query($filters)) ?>" class="btn btn-outline-success d-flex align-items-center py-2 px-3 shadow-sm" style="min-height: 40px;" title="Export Filtered Patient Masterlist to CSV">
+            <i class="bi bi-file-earmark-excel me-2 fs-5" aria-hidden="true"></i>
             <span>Export CSV</span>
         </a>
-        <a href="<?= url('/patients/create') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-sm">
-            <i class="bi bi-person-plus-fill me-2 fs-5"></i>
+        <a href="<?= url('/patients/create') ?>" class="btn btn-primary d-flex align-items-center py-2 px-3 shadow-sm" style="min-height: 40px;">
+            <i class="bi bi-person-plus-fill me-2 fs-5" aria-hidden="true"></i>
             <span>Register New Patient</span>
         </a>
     </div>
@@ -42,16 +42,16 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Total Registered</div>
-                            <div class="h3 mb-0 fw-bold text-primary-dark mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-primary-dark mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($totalPatients) ?>
                             </div>
                         </div>
                         <div class="bg-primary-subtle text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-people-fill fs-5"></i>
+                            <i class="bi bi-people-fill fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <strong class="text-dark"><?= number_format($households) ?></strong> household folders
+                        <strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= number_format($households) ?></strong> household folders
                     </div>
                 </div>
             </div>
@@ -66,16 +66,16 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Senior Citizens (60+)</div>
-                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-warning-emphasis mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($seniorPatients) ?>
                             </div>
                         </div>
                         <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-person-heart fs-5"></i>
+                            <i class="bi bi-person-heart fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <strong class="text-dark"><?= $seniorPct ?>%</strong> of patient population
+                        <strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= $seniorPct ?>%</strong> of patient population
                     </div>
                 </div>
             </div>
@@ -90,12 +90,12 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">Pediatric & Under-5</div>
-                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-info-emphasis mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($under5Patients) ?>
                             </div>
                         </div>
                         <div class="bg-info-subtle text-info-emphasis rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-balloon-heart fs-5"></i>
+                            <i class="bi bi-balloon-heart fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
@@ -114,16 +114,16 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="text-muted small fw-semibold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">PhilHealth Konsulta</div>
-                            <div class="h3 mb-0 fw-bold text-success mt-1 font-monospace">
+                            <div class="h3 mb-0 fw-bold text-success mt-1 font-monospace" style="font-variant-numeric: tabular-nums;">
                                 <?= number_format($phicCovered) ?>
                             </div>
                         </div>
                         <div class="bg-success-subtle text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-shield-check fs-5"></i>
+                            <i class="bi bi-shield-check fs-5" aria-hidden="true"></i>
                         </div>
                     </div>
                     <div class="small text-muted mt-2" style="font-size: 0.75rem;">
-                        <strong class="text-dark"><?= $phicPct ?>%</strong> coverage rate
+                        <strong class="text-dark" style="font-variant-numeric: tabular-nums;"><?= $phicPct ?>%</strong> coverage rate
                     </div>
                 </div>
             </div>
@@ -139,17 +139,17 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
             <span class="text-secondary small fw-semibold text-uppercase me-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">
                 Demographic Presets:
             </span>
-            <a href="<?= url('/patients') ?>" class="btn btn-sm <?= $isAllActive ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1">
-                All Patients (<?= number_format($totalPatients) ?>)
+            <a href="<?= url('/patients') ?>" class="btn btn-sm <?= $isAllActive ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1" style="min-height: 38px; display: inline-flex; align-items: center;">
+                All Patients (<span style="font-variant-numeric: tabular-nums;"><?= number_format($totalPatients) ?></span>)
             </a>
-            <a href="<?= url('/patients?age_group=senior') ?>" class="btn btn-sm <?= ($filters['age_group'] ?? '') === 'senior' ? 'btn-warning text-dark shadow-sm fw-semibold' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1">
-                Seniors 60+ (<?= number_format($seniorPatients) ?>)
+            <a href="<?= url('/patients?age_group=senior') ?>" class="btn btn-sm <?= ($filters['age_group'] ?? '') === 'senior' ? 'btn-warning text-dark shadow-sm fw-semibold' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1" style="min-height: 38px; display: inline-flex; align-items: center;">
+                Seniors 60+ (<span style="font-variant-numeric: tabular-nums;"><?= number_format($seniorPatients) ?></span>)
             </a>
-            <a href="<?= url('/patients?age_group=under5') ?>" class="btn btn-sm <?= ($filters['age_group'] ?? '') === 'under5' ? 'btn-info text-dark shadow-sm fw-semibold' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1">
-                Under-5 (<?= number_format($under5Patients) ?>)
+            <a href="<?= url('/patients?age_group=under5') ?>" class="btn btn-sm <?= ($filters['age_group'] ?? '') === 'under5' ? 'btn-info text-dark shadow-sm fw-semibold' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1" style="min-height: 38px; display: inline-flex; align-items: center;">
+                Under-5 (<span style="font-variant-numeric: tabular-nums;"><?= number_format($under5Patients) ?></span>)
             </a>
-            <a href="<?= url('/patients?phic_status=covered') ?>" class="btn btn-sm <?= ($filters['phic_status'] ?? '') === 'covered' ? 'btn-success text-white shadow-sm fw-semibold' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1">
-                PhilHealth Covered (<?= number_format($phicCovered) ?>)
+            <a href="<?= url('/patients?phic_status=covered') ?>" class="btn btn-sm <?= ($filters['phic_status'] ?? '') === 'covered' ? 'btn-success text-white shadow-sm fw-semibold' : 'btn-outline-secondary' ?> rounded-pill px-3 py-1" style="min-height: 38px; display: inline-flex; align-items: center;">
+                PhilHealth Covered (<span style="font-variant-numeric: tabular-nums;"><?= number_format($phicCovered) ?></span>)
             </a>
         </div>
 
@@ -158,13 +158,16 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
             <div class="col-12 col-md-4">
                 <label for="search" class="form-label fw-semibold text-secondary small">Search Patient</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" 
+                    <span class="input-group-text bg-light text-muted border-end-0" aria-hidden="true"><i class="bi bi-search"></i></span>
+                    <input type="search" 
                            name="search" 
                            id="search" 
                            class="form-control bg-light border-start-0" 
-                           placeholder="Search name, ID, envelope, family, address..." 
-                           value="<?= h($filters['search'] ?? '') ?>">
+                           placeholder="Search name, ID, envelope, family, address…" 
+                           value="<?= h($filters['search'] ?? '') ?>"
+                           inputmode="search"
+                           autocomplete="off"
+                           spellcheck="false">
                 </div>
             </div>
 
@@ -207,11 +210,11 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
 
             <!-- Action Buttons -->
             <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-funnel"></i> Filter
+                <button type="submit" class="btn btn-primary flex-grow-1 d-flex align-items-center justify-content-center" style="min-height: 38px;">
+                    <i class="bi bi-funnel me-1" aria-hidden="true"></i> Filter
                 </button>
-                <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary" title="Clear Filters">
-                    <i class="bi bi-arrow-counterclockwise"></i>
+                <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary d-flex align-items-center justify-content-center" style="min-width: 38px; min-height: 38px;" title="Clear Filters" aria-label="Clear all applied filters">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                 </a>
             </div>
         </form>
@@ -221,10 +224,10 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
 <!-- Patient List Table -->
 <div class="card card-premium shadow-sm border-0">
     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-        <h3 class="card-title h6 mb-0 fw-bold text-dark">
+        <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
             Patient Records
-        </h3>
-        <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace">
+        </h2>
+        <span class="badge bg-light text-secondary border px-2.5 py-1.5 font-monospace" style="font-variant-numeric: tabular-nums;">
             Total Patients: <strong class="text-dark"><?= count($patients) ?></strong>
         </span>
     </div>
@@ -233,14 +236,14 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
             <table class="table table-hover align-middle mb-0" id="patientsTable">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4">Patient No.</th>
-                        <th>Full Name &amp; Contact</th>
-                        <th>Envelope No.</th>
-                        <th>Family No.</th>
-                        <th>Age &amp; DOB</th>
-                        <th>Sex</th>
-                        <th>PhilHealth</th>
-                        <th class="pe-4 text-end">Action</th>
+                        <th scope="col" class="ps-4">Patient No.</th>
+                        <th scope="col">Full Name &amp; Contact</th>
+                        <th scope="col">Envelope No.</th>
+                        <th scope="col">Family No.</th>
+                        <th scope="col">Age &amp; DOB</th>
+                        <th scope="col">Sex</th>
+                        <th scope="col">PhilHealth</th>
+                        <th scope="col" class="pe-4 text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -248,11 +251,11 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                         <tr>
                             <td colspan="8" class="text-center py-5">
                                 <div class="text-muted">
-                                    <i class="bi bi-person-x fs-1 d-block mb-3 text-secondary opacity-50"></i>
-                                    <h5 class="fw-bold mb-1 text-dark">No patient records found</h5>
-                                    <p class="small mb-3 text-secondary">Try adjusting your search criteria or register a new patient.</p>
-                                    <a href="<?= url('/patients/create') ?>" class="btn btn-sm btn-primary px-3">
-                                        <i class="bi bi-plus-circle me-1"></i> Register New Patient
+                                    <i class="bi bi-person-x fs-1 d-block mb-3 text-secondary opacity-50" aria-hidden="true"></i>
+                                    <h5 class="fw-bold mb-1 text-dark" style="text-wrap: balance;">No patient records found</h5>
+                                    <p class="small mb-3 text-secondary" style="text-wrap: pretty;">Try adjusting your search criteria or register a new patient.</p>
+                                    <a href="<?= url('/patients/create') ?>" class="btn btn-sm btn-primary px-3 d-inline-flex align-items-center" style="min-height: 38px;">
+                                        <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Register New Patient
                                     </a>
                                 </div>
                             </td>
@@ -263,6 +266,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 <td class="ps-4">
                                     <a href="<?= url('/patients/' . $p['id']) ?>" 
                                        class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace text-decoration-none px-2 py-1 text-hover-primary" 
+                                       style="font-variant-numeric: tabular-nums;"
                                        title="Open <?= h($p['patient_no']) ?> workstation">
                                         <?= h($p['patient_no']) ?>
                                     </a>
@@ -279,10 +283,10 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                                 </span>
                                             <?php endif; ?>
                                             <?php if (!empty($p['address']) && !empty($p['contact_no'])): ?>
-                                                <span class="text-secondary opacity-50">&bull;</span>
+                                                <span class="text-secondary opacity-50" aria-hidden="true">&bull;</span>
                                             <?php endif; ?>
                                             <?php if (!empty($p['contact_no'])): ?>
-                                                <span>
+                                                <span style="font-variant-numeric: tabular-nums;">
                                                     <?= h($p['contact_no']) ?>
                                                 </span>
                                             <?php endif; ?>
@@ -294,7 +298,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 </td>
                                 <td>
                                     <?php if (!empty($p['envelope_no'])): ?>
-                                        <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.75rem;" title="Physical Folder Envelope No.">
+                                        <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.75rem; font-variant-numeric: tabular-nums;" title="Physical Folder Envelope No.">
                                             #<?= h(ltrim($p['envelope_no'], '#')) ?>
                                         </span>
                                     <?php else: ?>
@@ -305,6 +309,7 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                     <?php if (!empty($p['family_no'])): ?>
                                         <a href="<?= url('/patients?search=' . urlencode($p['family_no'])) ?>" 
                                            class="badge bg-light text-dark border text-decoration-none text-hover-primary font-monospace" 
+                                           style="font-variant-numeric: tabular-nums;"
                                            title="Filter all household members in folder <?= h($p['family_no']) ?>">
                                            <?= h($p['family_no']) ?>
                                         </a>
@@ -314,9 +319,9 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 </td>
                                 <td data-order="<?= (int)$p['age'] ?>">
                                     <div class="d-flex flex-column">
-                                        <span class="fw-semibold text-dark font-monospace small"><?= h($p['age']) ?> <span class="text-muted fw-normal">yrs</span></span>
+                                        <span class="fw-semibold text-dark font-monospace small" style="font-variant-numeric: tabular-nums;"><?= h($p['age']) ?> <span class="text-muted fw-normal">yrs</span></span>
                                         <?php if (!empty($p['dob'])): ?>
-                                            <span class="text-muted small" style="font-size: 0.72rem;">
+                                            <span class="text-muted small" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                 <?= date('M d, Y', strtotime($p['dob'])) ?>
                                             </span>
                                         <?php endif; ?>
@@ -352,12 +357,12 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                 </td>
                                 <td class="pe-4 text-end">
                                     <div class="d-inline-flex align-items-center gap-1">
-                                        <a href="<?= url('/patients/' . $p['id']) ?>" class="btn btn-sm btn-outline-primary" title="Open Patient Workstation">
+                                        <a href="<?= url('/patients/' . $p['id']) ?>" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center" style="min-height: 36px; min-width: 44px;" title="Open Patient Workstation">
                                             View
                                         </a>
                                         <div class="dropdown d-inline-block">
-                                            <button class="btn btn-sm btn-outline-secondary px-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Intake shortcuts & options">
-                                                <i class="bi bi-three-dots-vertical"></i>
+                                            <button class="btn btn-sm btn-outline-secondary px-2 dropdown-toggle d-inline-flex align-items-center justify-content-center" style="min-height: 36px; min-width: 36px;" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Intake shortcuts & options" aria-label="Intake shortcuts & options for <?= h($p['first_name'] . ' ' . $p['last_name']) ?>">
+                                                <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-2" style="min-width: 190px;">
                                                 <li>
@@ -365,20 +370,20 @@ $isAllActive = empty($filters['age_group']) && empty($filters['phic_status']) &&
                                                 </li>
                                                 <li>
                                                     <a class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2" href="<?= url('/queue?patient_id=' . $p['id']) ?>">
-                                                        <i class="bi bi-ticket-perforated text-success fs-6"></i>
+                                                        <i class="bi bi-ticket-perforated text-success fs-6" aria-hidden="true"></i>
                                                         <span>Check In to Queue</span>
                                                     </a>
                                                 </li>
                                                 <li>
                                                     <a class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2" href="<?= url('/appointments/create?patient_id=' . $p['id']) ?>">
-                                                        <i class="bi bi-calendar-plus text-info fs-6"></i>
+                                                        <i class="bi bi-calendar-plus text-info fs-6" aria-hidden="true"></i>
                                                         <span>Book Appointment</span>
                                                     </a>
                                                 </li>
                                                 <li><hr class="dropdown-divider my-1"></li>
                                                 <li>
                                                     <a class="dropdown-item small text-dark d-flex align-items-center gap-2 py-2" href="<?= url('/patients/' . $p['id']) ?>">
-                                                        <i class="bi bi-folder2-open text-primary fs-6"></i>
+                                                        <i class="bi bi-folder2-open text-primary fs-6" aria-hidden="true"></i>
                                                         <span>Full Health Record</span>
                                                     </a>
                                                 </li>
@@ -408,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "info": true,
             "autoWidth": false,
             "responsive": true,
-            "pageLength": 10,
+            "pageLength": <?= (int)user_pref('default_page_size', 10) ?>,
             "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             "order": [[1, "asc"]], // Sort by Full Name ascending by default
             "columnDefs": [

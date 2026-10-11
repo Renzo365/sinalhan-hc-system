@@ -57,6 +57,7 @@
             line-height: 1;
             color: #ffffff;
             font-family: monospace, sans-serif;
+            font-variant-numeric: tabular-nums;
             text-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
             margin-top: 15px;
         }
@@ -97,6 +98,7 @@
             font-size: 1.8rem;
             font-weight: 700;
             font-family: monospace, sans-serif;
+            font-variant-numeric: tabular-nums;
             color: #ffffff;
             transition: all 0.3s ease;
         }
@@ -114,6 +116,14 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            .queue-number-badge.first-called {
+                animation: none !important;
+                transform: none !important;
+                box-shadow: 0 0 0 3px #ffc107 !important;
+            }
+        }
+
         .display-footer {
             padding: 15px 30px;
             background-color: rgba(0, 0, 0, 0.2);
@@ -129,36 +139,36 @@
     <!-- Start Monitor / Unlock Audio Overlay -->
     <div id="startOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #0d7377 0%, #0A3D40 100%); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
         <div class="mb-4">
-            <i class="bi bi-display text-info" style="font-size: 5rem;"></i>
+            <i class="bi bi-display text-info" style="font-size: 5rem;" aria-hidden="true"></i>
         </div>
-        <h2 class="text-white fw-bold mb-2">Barangay Sinalhan Health Center</h2>
-        <p class="text-white-50 fs-5 mb-4" style="max-width: 500px;">
+        <h2 class="text-white fw-bold mb-2" style="text-wrap: balance;">Barangay Sinalhan Health Center</h2>
+        <p class="text-white-50 fs-5 mb-4" style="max-width: 500px; text-wrap: pretty;">
             Lobby Waiting Room Monitor is ready. Click below to start live queue updates and enable audio chimes.
         </p>
-        <button id="btnStartMonitor" class="btn btn-info btn-lg px-5 py-3 fw-bold fs-4 rounded-pill shadow-lg text-dark">
-            <i class="bi bi-play-circle-fill me-2"></i> Start Monitor & Enable Audio
+        <button id="btnStartMonitor" class="btn btn-info btn-lg px-5 py-3 fw-bold fs-4 rounded-pill shadow-lg text-dark" style="min-height: 48px;">
+            <i class="bi bi-play-circle-fill me-2" aria-hidden="true"></i> Start Monitor &amp; Enable Audio
         </button>
         <div class="mt-4 text-white-50 small">
-            <i class="bi bi-shield-check me-1"></i> Required by browser autoplay security policies
+            <i class="bi bi-shield-check me-1" aria-hidden="true"></i> Required by browser autoplay security policies
         </div>
     </div>
 
     <!-- Header Section -->
     <header class="display-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-3">
-            <i class="bi bi-heart-pulse-fill text-info fs-2"></i>
+            <i class="bi bi-heart-pulse-fill text-info fs-2" aria-hidden="true"></i>
             <div>
-                <h1 class="h4 fw-bold mb-0 text-white">Barangay Sinalhan Health Center</h1>
+                <h1 class="h4 fw-bold mb-0 text-white" style="text-wrap: balance;">Barangay Sinalhan Health Center</h1>
                 <span class="text-info small fw-semibold tracking-wider text-uppercase" style="font-size: 0.75rem;">Public Waiting Room Monitor</span>
             </div>
         </div>
         <div class="d-flex align-items-center gap-4">
             <div id="audioStatusBadge" class="badge bg-success bg-opacity-25 text-white border border-success px-3 py-2" style="display: none;">
-                <i class="bi bi-volume-up-fill text-info me-1"></i> Audio Active
+                <i class="bi bi-volume-up-fill text-info me-1" aria-hidden="true"></i> Audio Active
             </div>
             <div class="text-end">
-                <h5 class="h6 mb-0 text-white" id="liveTime">Loading time...</h5>
-                <span class="text-muted small" id="liveDate"><?= date('F d, Y') ?></span>
+                <h2 class="h6 mb-0 text-white" id="liveTime" style="font-variant-numeric: tabular-nums;">Loading time…</h2>
+                <span class="text-muted small" id="liveDate" style="font-variant-numeric: tabular-nums;"><?= date('F d, Y') ?></span>
             </div>
         </div>
     </header>
@@ -166,47 +176,47 @@
     <!-- Main Content Grid -->
     <main class="display-content container-fluid">
         <!-- 1. Now Serving Jumbotron -->
-        <div class="now-serving-card">
-            <div class="now-serving-label"><i class="bi bi-megaphone-fill me-2"></i>Now Serving</div>
+        <section class="now-serving-card" role="region" aria-live="polite" aria-atomic="true" aria-label="Now Serving Announcement">
+            <div class="now-serving-label"><i class="bi bi-megaphone-fill me-2" aria-hidden="true"></i>Now Serving</div>
             <div class="now-serving-number" id="nowServingNumber">000</div>
             <div class="mt-2" id="nowServingServiceContainer" style="display: none;">
                 <span class="badge bg-info text-dark px-3 py-2 fs-5" id="nowServingService">General OPD</span>
             </div>
-        </div>
+        </section>
 
         <!-- 2. Waiting and Recently Called -->
         <div class="row g-4 flex-grow-1" style="min-height: 250px;">
             <!-- Waiting List -->
             <div class="col-12 col-md-6">
-                <div class="queue-column-card">
-                    <h3 class="queue-column-title">
-                        <i class="bi bi-hourglass-split"></i>
+                <section class="queue-column-card" aria-labelledby="headingWaitingQueue">
+                    <h2 class="queue-column-title" id="headingWaitingQueue">
+                        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
                         <span>Waiting Queue</span>
-                    </h3>
-                    <div class="queue-number-list" id="waitingListContainer">
+                    </h2>
+                    <div class="queue-number-list" id="waitingListContainer" role="list">
                         <span class="text-muted small">No patients in waiting line.</span>
                     </div>
-                </div>
+                </section>
             </div>
 
             <!-- Recently Called List -->
             <div class="col-12 col-md-6">
-                <div class="queue-column-card">
-                    <h3 class="queue-column-title">
-                        <i class="bi bi-clock-history"></i>
+                <section class="queue-column-card" aria-labelledby="headingRecentlyCalled">
+                    <h2 class="queue-column-title" id="headingRecentlyCalled">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
                         <span>Recently Called</span>
-                    </h3>
-                    <div class="queue-number-list" id="calledListContainer">
+                    </h2>
+                    <div class="queue-number-list" id="calledListContainer" role="list">
                         <span class="text-muted small">No recently called numbers.</span>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     </main>
 
     <!-- Footer -->
     <footer class="display-footer">
-        <span>Please wait for your number to be called. Thank you for your cooperation &bull; Sinalhan PMS</span>
+        <span>Please wait for your number to be called. Thank you for your cooperation <span aria-hidden="true">&bull;</span> Sinalhan PMS</span>
     </footer>
 
     <!-- Local Vendor Scripts -->
@@ -327,7 +337,7 @@
                         waitingEl.innerHTML = '<span class="text-muted small">No patients in waiting line.</span>';
                     } else {
                         waitingEl.innerHTML = data.waiting.map(no => 
-                            `<span class="queue-number-badge">${no}</span>`
+                            `<span class="queue-number-badge" role="listitem">${no}</span>`
                         ).join('');
                     }
 
@@ -337,7 +347,7 @@
                     } else {
                         calledEl.innerHTML = data.called.map((no, idx) => {
                             const extraClass = (idx === 0 && data.serving === no) ? 'first-called' : '';
-                            return `<span class="queue-number-badge ${extraClass}">${no}</span>`;
+                            return `<span class="queue-number-badge ${extraClass}" role="listitem">${no}</span>`;
                         }).join('');
                     }
                 })

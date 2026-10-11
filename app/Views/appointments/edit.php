@@ -7,13 +7,13 @@ $breadcrumbs = [
 require dirname(__DIR__) . '/layout/header.php';
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Reschedule / Edit Appointment</h2>
-        <p class="text-secondary small mb-0">Modify appointment timing, change booking status, or append clinical notes.</p>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Reschedule / Edit Appointment</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Modify appointment timing, change booking status, or append clinical notes.</p>
     </div>
-    <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary">
-        &larr; Back to Appointments List
+    <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" style="min-height: 38px;">
+        <span aria-hidden="true">&larr;</span> Back to Appointments List
     </a>
 </div>
 
@@ -22,7 +22,7 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- Error Alert Banner -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px;">
-                <h5 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the following:</h5>
+                <h5 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Please correct the following:</h5>
                 <ul class="mb-0 small ps-3">
                     <?php foreach ($errors as $error): ?>
                         <li><?= h($error) ?></li>
@@ -34,9 +34,9 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- Form Card -->
         <div class="card card-premium">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                <h3 class="card-title h5 mb-0 fw-bold text-primary-dark">
+                <h2 class="card-title h5 mb-0 fw-bold text-primary-dark" style="text-wrap: balance;">
                     Appointment Update Details
-                </h3>
+                </h2>
             </div>
             
             <form action="<?= url('/appointments/' . $appointment['id']) ?>" method="POST" id="appointmentForm">
@@ -45,10 +45,10 @@ require dirname(__DIR__) . '/layout/header.php';
                 <div class="card-body p-4 bg-white">
                     <!-- 1. Linked Patient Card -->
                     <div class="mb-4">
-                        <h4 class="h6 fw-bold text-dark mb-3 border-bottom pb-2">Patient Details</h4>
+                        <h3 class="h6 fw-bold text-dark mb-3 border-bottom pb-2">Patient Details</h3>
                         
                         <div class="card bg-light border-0 p-3 rounded-3 d-flex flex-row align-items-center gap-3">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs" style="width: 48px; height: 48px; background-color: #0D7377; color: #fff;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs" style="width: 48px; height: 48px; background-color: #0D7377; color: #fff;" aria-hidden="true">
                                 <?php 
                                     $ptInit = '';
                                     if (!empty($appointment['patient_first'])) $ptInit .= mb_substr($appointment['patient_first'], 0, 1);
@@ -58,11 +58,11 @@ require dirname(__DIR__) . '/layout/header.php';
                             </div>
                             <div>
                                 <span class="text-muted small fw-bold text-uppercase tracking-wider">Patient Record Linked</span>
-                                <h5 class="h6 fw-bold text-primary-dark mb-1">
+                                <h4 class="h6 fw-bold text-primary-dark mb-1">
                                     <?= h($appointment['patient_last']) ?>, <?= h($appointment['patient_first']) ?> <?= h($appointment['patient_middle'] ?? '') ?>
-                                </h5>
+                                </h4>
                                 <div class="d-flex align-items-center gap-3 text-secondary small">
-                                    <span><strong>No:</strong> <?= h($appointment['patient_no']) ?></span>
+                                    <span style="font-variant-numeric: tabular-nums;"><strong>No:</strong> <?= h($appointment['patient_no']) ?></span>
                                 </div>
                             </div>
                         </div>
@@ -71,7 +71,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <!-- 2. Schedule Details & Service Category -->
                     <div>
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 border-bottom pb-2 gap-2">
-                            <h4 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger">*</span></h4>
+                            <h3 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger" aria-hidden="true">*</span></h3>
                             <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
                                 Select a Time Slot
                             </span>
@@ -80,7 +80,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         <div class="row g-3 mb-3">
                             <!-- Date Picker with Quick Sets -->
                             <div class="col-12 col-md-6">
-                                <label for="appointment_date" class="form-label fw-semibold text-secondary small">Appointment Date <span class="text-danger">*</span></label>
+                                <label for="appointment_date" class="form-label fw-semibold text-secondary small">Appointment Date <span class="text-danger" aria-hidden="true">*</span></label>
                                 <input type="date" 
                                        name="appointment_date" 
                                        id="appointment_date" 
@@ -89,15 +89,15 @@ require dirname(__DIR__) . '/layout/header.php';
                                        required>
                                 <div class="d-flex align-items-center gap-1">
                                     <span class="text-muted small me-1">Quick set:</span>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="0">Today</button>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="1">Tomorrow</button>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="7">+1 Week</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="0" style="min-height: 31px; min-width: 44px;">Today</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="1" style="min-height: 31px; min-width: 44px;">Tomorrow</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="7" style="min-height: 31px; min-width: 44px;">+1 Week</button>
                                 </div>
                             </div>
 
                             <!-- Status Dropdown -->
                             <div class="col-12 col-md-6">
-                                <label for="status" class="form-label fw-semibold text-secondary small">Appointment Status <span class="text-danger">*</span></label>
+                                <label for="status" class="form-label fw-semibold text-secondary small">Appointment Status <span class="text-danger" aria-hidden="true">*</span></label>
                                 <select name="status" id="status" class="form-select bg-light">
                                     <option value="Scheduled" <?= $appointment['status'] === 'Scheduled' ? 'selected' : '' ?>>Scheduled</option>
                                     <option value="Completed" <?= $appointment['status'] === 'Completed' ? 'selected' : '' ?>>Completed</option>
@@ -108,7 +108,7 @@ require dirname(__DIR__) . '/layout/header.php';
 
                             <!-- Service Category / Program Type -->
                             <div class="col-12 col-md-6">
-                                <label for="program_type" class="form-label fw-semibold text-secondary small">Service Category <span class="text-danger">*</span></label>
+                                <label for="program_type" class="form-label fw-semibold text-secondary small">Service Category <span class="text-danger" aria-hidden="true">*</span></label>
                                 <select name="program_type" id="program_type" class="form-select bg-light" required>
                                     <?php $curProgram = $appointment['program_type'] ?? 'General OPD'; ?>
                                     <option value="General OPD" <?= ($curProgram === 'General OPD') ? 'selected' : '' ?>>General OPD / Consultation</option>
@@ -123,14 +123,15 @@ require dirname(__DIR__) . '/layout/header.php';
 
                             <!-- Purpose Input with Datalist Suggestions -->
                             <div class="col-12 col-md-6">
-                                <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger">*</span></label>
+                                <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger" aria-hidden="true">*</span></label>
                                 <input type="text" 
                                        name="purpose" 
                                        id="purpose" 
                                        class="form-control bg-light" 
-                                       placeholder="e.g. Follow-up consultation, Routine EPI Vaccine, Blood pressure check..." 
+                                       placeholder="e.g. Follow-up consultation, Routine EPI Vaccine, Blood pressure check…" 
                                        value="<?= h($appointment['purpose'] ?? '') ?>" 
                                        list="purposeSuggestions" 
+                                       spellcheck="true"
                                        required>
                                 <datalist id="purposeSuggestions">
                                     <option value="Routine Prenatal Checkup">
@@ -216,11 +217,11 @@ require dirname(__DIR__) . '/layout/header.php';
                                              data-slot="<?= $s['slot'] ?>" 
                                              data-session="Morning OPD (08:30 AM - 12:00 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
+                                                <span class="fw-bold text-dark fs-6" style="font-variant-numeric: tabular-nums;"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
                                             </div>
                                             <div class="small text-secondary slot-subtext mt-1" style="font-size: 0.75rem;">
-                                                Slot #<?= $s['slot'] ?> &bull; <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
+                                                <span style="font-variant-numeric: tabular-nums;">Slot #<?= $s['slot'] ?></span> <span aria-hidden="true">&bull;</span> <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -258,11 +259,11 @@ require dirname(__DIR__) . '/layout/header.php';
                                              data-slot="<?= $s['slot'] ?>" 
                                              data-session="Afternoon OPD (01:00 PM - 04:30 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
+                                                <span class="fw-bold text-dark fs-6" style="font-variant-numeric: tabular-nums;"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
                                             </div>
                                             <div class="small text-secondary slot-subtext mt-1" style="font-size: 0.75rem;">
-                                                Slot #<?= $s['slot'] ?> &bull; <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
+                                                <span style="font-variant-numeric: tabular-nums;">Slot #<?= $s['slot'] ?></span> <span aria-hidden="true">&bull;</span> <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -274,14 +275,16 @@ require dirname(__DIR__) . '/layout/header.php';
                         <!-- Notes / Symptoms -->
                         <div class="mb-3">
                             <label for="notes" class="form-label fw-semibold text-secondary small">Notes / Symptoms described</label>
-                            <textarea name="notes" id="notes" rows="3" class="form-control bg-light" placeholder="Describe symptoms or reasons..."><?= h($appointment['notes'] ?? '') ?></textarea>
+                            <textarea name="notes" id="notes" rows="3" class="form-control bg-light" placeholder="Describe symptoms or reasons (e.g. Patient requests follow-up for maternal care / high blood pressure check-up)…" spellcheck="true"><?= h($appointment['notes'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-footer bg-light py-3 border-0 d-flex justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
-                    <a href="<?= url('/patients/' . $appointment['patient_id'] . '#appointments-tab') ?>" class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                    <a href="<?= url('/patients/' . $appointment['patient_id'] . '#appointments-tab') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center" style="min-height: 38px;">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 d-inline-flex align-items-center gap-1" style="min-height: 38px;">
+                        <i class="bi bi-check2-circle me-1" aria-hidden="true"></i> Save Changes
+                    </button>
                 </div>
             </form>
         </div>
@@ -295,7 +298,7 @@ require dirname(__DIR__) . '/layout/header.php';
     padding: 10px 12px;
     background: #ffffff;
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     user-select: none;
     height: 100%;
 }
@@ -342,6 +345,15 @@ require dirname(__DIR__) . '/layout/header.php';
     background-color: #0d9488;
     color: #fff;
     border-color: #0d9488;
+}
+@media (prefers-reduced-motion: reduce) {
+    .time-slot-card {
+        transition: none !important;
+        transform: none !important;
+    }
+    .time-slot-card:hover {
+        transform: none !important;
+    }
 }
 </style>
 

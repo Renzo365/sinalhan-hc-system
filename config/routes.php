@@ -28,6 +28,7 @@ return function (\App\Core\Router $router) {
     $router->get('/profile', 'ProfileController@index', [AuthMiddleware::class]);
     $router->post('/profile/update', 'ProfileController@update', [AuthMiddleware::class]);
     $router->post('/profile/password', 'ProfileController@updatePassword', [AuthMiddleware::class]);
+    $router->post('/profile/preferences', 'ProfileController@updatePreferences', [AuthMiddleware::class]);
 
     // Patient Management Routes
     $router->get('/patients', 'PatientController@index', [AuthMiddleware::class]);
@@ -124,6 +125,7 @@ return function (\App\Core\Router $router) {
     $router->get('/appointments/{id}/edit', 'AppointmentController@edit', [AuthMiddleware::class]);
     $router->post('/appointments/{id}', 'AppointmentController@update', [AuthMiddleware::class]);
     $router->post('/appointments/{id}/status', 'AppointmentController@updateStatus', [AuthMiddleware::class]);
+    $router->post('/appointments/{id}/void', 'AppointmentController@void', [AdminMiddleware::class]);
 
     // Queue Routes
     $router->get('/queue', 'QueueController@index', [AuthMiddleware::class]);
@@ -139,18 +141,24 @@ return function (\App\Core\Router $router) {
 
     // Audit Logs Routes (Super Admin Only)
     $router->get('/audit-logs', 'AuditLogController@index', [SuperAdminMiddleware::class]);
+    $router->get('/audit-logs/export', 'AuditLogController@export', [SuperAdminMiddleware::class]);
 
     // Backup Routes (Super Admin Only)
     $router->get('/backup', 'BackupController@index', [SuperAdminMiddleware::class]);
     $router->post('/backup', 'BackupController@store', [SuperAdminMiddleware::class]);
     $router->get('/backup/download', 'BackupController@download', [SuperAdminMiddleware::class]);
+    $router->post('/backup/restore', 'BackupController@restore', [SuperAdminMiddleware::class]);
+    $router->post('/backup/upload', 'BackupController@upload', [SuperAdminMiddleware::class]);
     $router->post('/backup/delete', 'BackupController@delete', [SuperAdminMiddleware::class]);
 
     // Archived Records Hub Routes (Admin Only)
     $router->get('/archive', 'PatientController@archivedIndex', [AdminMiddleware::class]);
     $router->post('/patients/{id}/archive', 'PatientController@archive', [AdminMiddleware::class]);
     $router->get('/archive/patients', 'PatientController@archivedIndex', [AdminMiddleware::class]);
+    $router->get('/archive/consultations', 'PatientController@archivedIndex', [AdminMiddleware::class]);
+    $router->get('/archive/users', 'PatientController@archivedIndex', [AdminMiddleware::class]);
     $router->post('/archive/patients/{id}/restore', 'PatientController@restore', [AdminMiddleware::class]);
+    $router->post('/archive/users/{id}/restore', 'UserController@restore', [AdminMiddleware::class]);
 
     // User Management Routes (Admin Only)
     $router->get('/users', 'UserController@index', [AdminMiddleware::class]);
@@ -163,6 +171,10 @@ return function (\App\Core\Router $router) {
     $router->post('/users/{id}/restore', 'UserController@restore', [AdminMiddleware::class]);
     $router->post('/users/{id}/toggle-status', 'UserController@archive', [AdminMiddleware::class]);
     $router->post('/users/{id}/reset-lockout', 'UserController@resetLockout', [AdminMiddleware::class]);
+
+    // System Settings Hub (Admin & Super Admin)
+    $router->get('/settings', 'SettingController@index', [AdminMiddleware::class]);
+    $router->post('/settings', 'SettingController@update', [AdminMiddleware::class]);
 };
 
 

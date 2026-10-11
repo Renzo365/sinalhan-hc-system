@@ -6,12 +6,12 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">User Accounts</h2>
-        <p class="text-secondary small mb-0">Create and manage administrative and operational staff credentials and permissions.</p>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">User Accounts</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Create and manage administrative and operational staff credentials and permissions.</p>
     </div>
     
-    <a href="<?= url('/users/create') ?>" class="btn btn-primary d-flex align-items-center px-3 py-2">
-        <i class="bi bi-person-plus-fill me-2 fs-5"></i>
+    <a href="<?= url('/users/create') ?>" class="btn btn-primary d-flex align-items-center px-3 py-2" style="min-height: 40px;">
+        <i class="bi bi-person-plus-fill me-2 fs-5" aria-hidden="true"></i>
         <span>Add New User</span>
     </a>
 </div>
@@ -23,8 +23,8 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="col-12 col-md-6">
                 <label for="search" class="form-label text-secondary small fw-semibold">Search Directory</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" id="search" class="form-control border-start-0 bg-light" placeholder="Search by username, name, email, or job title..." value="<?= h($filters['search']) ?>">
+                    <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search" aria-hidden="true"></i></span>
+                    <input type="text" name="search" id="search" class="form-control border-start-0 bg-light" placeholder="Search by username, name, email, or job title…" value="<?= h($filters['search']) ?>" inputmode="search" spellcheck="false">
                 </div>
             </div>
             
@@ -39,11 +39,11 @@ require dirname(__DIR__) . '/layout/header.php';
             </div>
             
             <div class="col-12 col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">
-                    <i class="bi bi-funnel"></i> Filter
+                <button type="submit" class="btn btn-primary flex-grow-1 d-inline-flex align-items-center justify-content-center" style="min-height: 38px;">
+                    <i class="bi bi-funnel me-1" aria-hidden="true"></i> Filter
                 </button>
-                <a href="<?= url('/users') ?>" class="btn btn-outline-secondary" title="Clear Filters">
-                    <i class="bi bi-arrow-counterclockwise"></i>
+                <a href="<?= url('/users') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" style="min-width: 38px; min-height: 38px;" title="Clear Filters" aria-label="Clear Filters">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                 </a>
             </div>
         </form>
@@ -57,12 +57,12 @@ require dirname(__DIR__) . '/layout/header.php';
             <table class="table table-hover align-middle mb-0 text-center small" id="usersTable">
                 <thead class="table-light">
                     <tr>
-                        <th class="text-start ps-4">Username</th>
-                        <th class="text-start">Full Name</th>
-                        <th>Role</th>
-                        <th>Job Title</th>
-                        <th>Last Login</th>
-                        <th class="pe-4 text-end">Actions</th>
+                        <th scope="col" class="text-start ps-4">Username</th>
+                        <th scope="col" class="text-start">Full Name</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Job Title</th>
+                        <th scope="col">Last Login</th>
+                        <th scope="col" class="pe-4 text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,14 +119,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="fw-bold text-dark"><?= h($u['last_name']) ?>, <?= h($u['first_name']) ?></span>
                                         <?php if ($isLocked): ?>
-                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem;" title="Temporarily locked out due to failed attempts">
-                                                <i class="bi bi-clock-history me-1"></i> Locked (<?= h($lockoutInfo['remaining_formatted']) ?>)
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;" title="Temporarily locked out due to failed attempts">
+                                                <i class="bi bi-clock-history me-1" aria-hidden="true"></i> Locked (<?= h($lockoutInfo['remaining_formatted']) ?>)
                                             </span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="small mt-1" style="font-size: 0.75rem;">
                                         <?php if (!empty($u['email'])): ?>
-                                            <span class="text-muted"><i class="bi bi-envelope me-1"></i><?= h($u['email']) ?></span>
+                                            <span class="text-muted"><i class="bi bi-envelope me-1" aria-hidden="true"></i><?= h($u['email']) ?></span>
                                         <?php else: ?>
                                             <span class="text-muted fst-italic">No email recorded</span>
                                         <?php endif; ?>
@@ -136,7 +136,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 <td>
                                     <span class="fw-medium text-dark"><?= h($u['job_title'] ?: 'Staff Member') ?></span>
                                 </td>
-                                 <td data-order="<?= $u['last_login_at'] ? h($u['last_login_at']) : '1970-01-01 00:00:00' ?>">
+                                 <td data-order="<?= $u['last_login_at'] ? h($u['last_login_at']) : '1970-01-01 00:00:00' ?>" style="font-variant-numeric: tabular-nums;">
                                      <?= $u['last_login_at'] ? date('Y-m-d h:i A', strtotime($u['last_login_at'])) : '<span class="text-muted small">Never</span>' ?>
                                  </td>
                                  <td class="pe-4 text-end">
@@ -150,7 +150,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                          aria-label="Edit Profile (Disabled)"
                                                          tabindex="-1"
                                                          disabled>
-                                                     <i class="bi bi-pencil-square fs-6"></i>
+                                                     <i class="bi bi-pencil-square fs-6" aria-hidden="true"></i>
                                                  </button>
                                              </span>
 
@@ -161,7 +161,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                          aria-label="Archive Account (Disabled)"
                                                          tabindex="-1"
                                                          disabled>
-                                                     <i class="bi bi-archive-fill fs-6"></i>
+                                                     <i class="bi bi-archive-fill fs-6" aria-hidden="true"></i>
                                                  </button>
                                              </span>
                                          <?php else: ?>
@@ -177,7 +177,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                              data-bs-toggle="tooltip"
                                                              data-bs-placement="top"
                                                              data-confirm="Are you sure you want to clear the 15-minute login lockout for user '<?= h($u['username']) ?>'? They will be able to log in immediately.">
-                                                         <i class="bi bi-unlock-fill fs-6"></i>
+                                                         <i class="bi bi-unlock-fill fs-6" aria-hidden="true"></i>
                                                      </button>
                                                  </form>
                                              <?php endif; ?>
@@ -190,7 +190,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 aria-label="Edit Profile Details for <?= h($u['username']) ?>"
                                                 data-bs-toggle="tooltip"
                                                 data-bs-placement="top">
-                                                 <i class="bi bi-pencil-square fs-6"></i>
+                                                 <i class="bi bi-pencil-square fs-6" aria-hidden="true"></i>
                                              </a>
 
                                              <!-- Archive Action Button -->
@@ -205,7 +205,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                              data-bs-toggle="tooltip"
                                                              data-bs-placement="top"
                                                              data-confirm="Are you sure you want to archive user account '<?= h($u['username']) ?>'? This account will be deactivated and moved to the Archived Records Hub.">
-                                                         <i class="bi bi-archive-fill fs-6"></i>
+                                                         <i class="bi bi-archive-fill fs-6" aria-hidden="true"></i>
                                                      </button>
                                                  </form>
                                              <?php endif; ?>

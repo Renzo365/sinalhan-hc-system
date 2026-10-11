@@ -97,6 +97,74 @@ if (!function_exists('config')) {
     }
 }
 
+if (!function_exists('setting')) {
+    /**
+     * Retrieve a system setting value from system_settings table with memory caching.
+     * Falls back to config() if unset or table unavailable.
+     *
+     * @param string|null $key
+     * @param mixed $default
+     * @param bool $refresh
+     * @return mixed
+     */
+    function setting(?string $key = null, $default = null, bool $refresh = false) {
+        static $settings = null;
+        if ($settings === null || $refresh) {
+            try {
+                $db = \App\Core\Database::getInstance()->getConnection();
+                $stmt = $db->query("SELECT setting_key, setting_value FROM system_settings");
+                $settings = $stmt ? $stmt->fetchAll(\PDO::FETCH_KEY_PAIR) : [];
+            } catch (\Throwable $e) {
+                $settings = [];
+            }
+        }
+
+        if ($key === null) {
+            return $settings;
+        }
+
+        if (array_key_exists($key, $settings) && $settings[$key] !== null && $settings[$key] !== '') {
+            return $settings[$key];
+        }
+
+        return config($key, $default);
+    }
+}
+
+if (!function_exists('user_pref')) {
+    /**
+     * Retrieve personal accessibility/workflow preference for current logged in user.
+     *
+     * @param string|null $key
+     * @param mixed $default
+     * @return mixed
+     */
+    function user_pref(?string $key = null, $default = null) {
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            session_start();
+        }
+
+        if (!isset($_SESSION['user_preferences']) && isset($_SESSION['user_id'])) {
+            try {
+                $db = \App\Core\Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT preferences FROM users WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $_SESSION['user_id']]);
+                $raw = $stmt->fetchColumn();
+                $_SESSION['user_preferences'] = !empty($raw) ? json_decode($raw, true) : [];
+            } catch (\Throwable $e) {
+                $_SESSION['user_preferences'] = [];
+            }
+        }
+
+        $prefs = $_SESSION['user_preferences'] ?? [];
+        if ($key === null) {
+            return $prefs;
+        }
+
+        return $prefs[$key] ?? $default;
+    }
+}
+
 if (!function_exists('classify_bmi')) {
     /**
      * Classify Body Mass Index (BMI) using Philippine DOH & WHO Asia-Pacific Guidelines.

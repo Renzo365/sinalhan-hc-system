@@ -34,14 +34,14 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
     <!-- Page Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h2 class="h3 mb-1 fw-bold text-primary-dark">
-                <i class="bi bi-heart-pulse-fill text-pink me-2"></i>Register Prenatal Care Episode
-            </h2>
-            <p class="text-secondary small mb-0">Enroll an eligible female patient into the CHO I Prenatal Health Care Program.</p>
+            <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">
+                <i class="bi bi-heart-pulse-fill text-pink me-2" aria-hidden="true"></i>Register Prenatal Care Episode
+            </h1>
+            <p class="text-secondary small mb-0" style="text-wrap: pretty;">Enroll an eligible female patient into the CHO I Prenatal Health Care Program.</p>
         </div>
         <div>
             <a href="<?= !empty($initialPatientId) ? url('/prenatal/' . $initialPatientId) : url('/prenatal') ?>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to <?= !empty($initialPatientId) ? 'Workstation' : 'Prenatal Roster' ?>
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to <?= !empty($initialPatientId) ? 'Workstation' : 'Prenatal Roster' ?>
             </a>
         </div>
     </div>
@@ -49,7 +49,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
     <!-- Flash Alert Messages -->
     <?php if (isset($_SESSION['error_message'])): ?>
         <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-xs mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i><?= $_SESSION['error_message'] ?>
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i><?= $_SESSION['error_message'] ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <?php unset($_SESSION['error_message']); ?>
@@ -62,16 +62,16 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
             <div id="activeEpisodeWarning" class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 <?= $hasActiveEpisode ? '' : 'd-none' ?>">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div class="d-flex align-items-center">
-                        <i class="bi bi-exclamation-circle-fill text-warning fs-3 me-3"></i>
+                        <i class="bi bi-exclamation-circle-fill text-warning fs-3 me-3" aria-hidden="true"></i>
                         <div>
                             <h6 class="fw-bold mb-1 text-dark">Active Pregnancy Episode Already Exists</h6>
-                            <p class="mb-0 small text-secondary" id="activeEpisodeWarningText">
+                            <p class="mb-0 small text-secondary" id="activeEpisodeWarningText" style="text-wrap: pretty;">
                                 This patient already has an active pregnancy episode in progress. You must conclude the current episode before registering a new one.
                             </p>
                         </div>
                     </div>
                     <a href="<?= !empty($initialPatientId) ? url('/prenatal/' . $initialPatientId) : '#' ?>" id="btnViewExistingWorkstation" class="btn btn-warning btn-sm fw-semibold">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Open Workstation
+                        <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i> Open Workstation
                     </a>
                 </div>
             </div>
@@ -79,10 +79,10 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
             <!-- WRA Clinical Safety Advisory Banner -->
             <div id="wraAdvisoryAlert" class="alert alert-warning border border-warning-subtle rounded-4 mb-4 <?= $isPreselectedNonWra ? '' : 'd-none' ?>">
                 <div class="d-flex align-items-start gap-3">
-                    <i class="bi bi-exclamation-triangle-fill text-warning fs-4 flex-shrink-0 mt-1"></i>
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-4 flex-shrink-0 mt-1" aria-hidden="true"></i>
                     <div>
                         <h6 class="fw-bold mb-1 text-dark">Clinical Advisory: Patient Age Outside Standard WRA Range</h6>
-                        <p class="mb-0 small text-secondary" id="wraAdvisoryText">
+                        <p class="mb-0 small text-secondary" id="wraAdvisoryText" style="text-wrap: pretty;">
                             This patient is <strong id="wraAdvisoryAge"><?= $initialPatientAge ?? '--' ?></strong> years old, which is outside the standard Women of Reproductive Age range (10–49 years). Please verify clinical records and patient identity prior to proceeding.
                         </p>
                     </div>
@@ -98,16 +98,16 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                 <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
-                            <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">1</span>
-                            <h5 class="card-title h6 fw-bold mb-0 text-dark">Patient Selection</h5>
+                            <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">1</span>
+                            <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Patient Selection</h2>
                         </div>
                         <?php if ($isLockedPatient): ?>
                             <span class="badge bg-light text-secondary border px-3 py-2">
-                                <i class="bi bi-lock-fill me-1 text-muted"></i> Patient Locked
+                                <i class="bi bi-lock-fill me-1 text-muted" aria-hidden="true"></i> Patient Locked
                             </span>
                         <?php else: ?>
                             <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient">
-                                <i class="bi bi-arrow-repeat me-1"></i> Change Patient
+                                <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Change Patient
                             </button>
                         <?php endif; ?>
                     </div>
@@ -118,27 +118,28 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 Search Female Patient <span class="text-danger">*</span>
                             </label>
                             <div class="input-group input-group-lg mb-2 shadow-xs">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search" aria-hidden="true"></i></span>
                                 <input type="text" 
                                        id="patientSearchInput" 
                                        class="form-control bg-light border-start-0 fs-6" 
-                                       placeholder="Type patient name, patient ID (e.g. PAT-), or envelope #..." 
-                                       autocomplete="off">
-                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch">
-                                    <i class="bi bi-x-lg"></i>
+                                       placeholder="Type patient name, patient ID (e.g. PAT-), or envelope #…" 
+                                       autocomplete="off"
+                                       spellcheck="false">
+                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch" aria-label="Clear patient search">
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <div class="form-text small text-muted mb-3">
+                            <div class="form-text small text-muted mb-3" style="text-wrap: pretty;">
                                 Only female patients registered in the Barangay Sinalhan database are eligible for Prenatal Care enrollment.
                             </div>
 
                             <!-- Live Search Results Dropdown List -->
-                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" style="max-height: 280px; overflow-y: auto;">
+                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" role="region" aria-live="polite" style="max-height: 280px; overflow-y: auto;">
                                 <!-- Injected dynamically via JS -->
                             </div>
-                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none">
-                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                                <span class="small">Searching active patients...</span>
+                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none" role="status" aria-live="polite">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status" aria-hidden="true"></div>
+                                <span class="small">Searching active patients…</span>
                             </div>
                         </div>
 
@@ -147,7 +148,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                             <div class="p-3 p-md-4 rounded-4" style="background-color: #fff0f5; border: 1px solid #fbcfe8;">
                                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3" style="border-bottom: 1px solid #fbcfe8;">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #d63384; color: #fff;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #d63384; color: #fff;" aria-hidden="true">
                                             <span id="cardInitials">
                                                 <?php 
                                                     $init = '';
@@ -159,25 +160,25 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                         </div>
                                         <div>
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <h5 class="h6 fw-bold text-dark mb-0" id="cardFullName">
+                                                <h3 class="h6 fw-bold text-dark mb-0" id="cardFullName">
                                                     <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '')) : '--' ?>
-                                                </h5>
+                                                </h3>
                                                 <span class="badge text-white" style="background-color: #d63384;" id="cardSex">Female</span>
-                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo">
-                                                    <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
+                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
+                                                    <span class="visually-hidden">Patient ID: </span><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
                                                 </span>
-                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge">
-                                                    Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
+                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge" style="font-variant-numeric: tabular-nums;">
+                                                    <span class="visually-hidden">Envelope No: </span>Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
                                                 </span>
                                             </div>
                                             <small class="text-muted" id="cardCivilStatus">
-                                                <?= !empty($preselectedPatient['civil_status']) ? h($preselectedPatient['civil_status']) : 'Single' ?> &bull; Contact: <span id="cardContact"><?= h($preselectedPatient['contact_no'] ?? 'N/A') ?></span>
+                                                <?= !empty($preselectedPatient['civil_status']) ? h($preselectedPatient['civil_status']) : 'Single' ?> <span class="text-muted" aria-hidden="true">&bull;</span> Contact: <span id="cardContact"><?= h($preselectedPatient['contact_no'] ?? 'N/A') ?></span>
                                             </small>
                                         </div>
                                     </div>
                                     <div class="text-md-end">
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small">
-                                            <i class="bi bi-check-circle-fill me-1"></i> Patient Selected
+                                            <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i> Patient Selected
                                         </span>
                                     </div>
                                 </div>
@@ -187,7 +188,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-12 col-sm-6 col-md-3">
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Date of Birth</span>
-                                            <span class="fw-bold text-dark" id="cardDob">
+                                            <span class="fw-bold text-dark" id="cardDob" style="font-variant-numeric: tabular-nums;">
                                                 <?= !empty($preselectedPatient['dob']) ? date('M d, Y', strtotime($preselectedPatient['dob'])) : '--' ?>
                                             </span>
                                         </div>
@@ -195,7 +196,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-12 col-sm-6 col-md-3">
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
-                                            <span class="fw-bold text-dark" id="cardAge">
+                                            <span class="fw-bold text-dark" id="cardAge" style="font-variant-numeric: tabular-nums;">
                                                 <?= !empty($preselectedPatient['age']) ? h($preselectedPatient['age']) . ' years old' : '--' ?>
                                             </span>
                                         </div>
@@ -223,14 +224,14 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                 <!-- Step 2: Clinical Episode Information -->
                 <div id="clinicalEpisodeSection" class="card border-0 shadow-sm rounded-4 mb-4 <?= empty($preselectedPatient) ? 'opacity-50 pointer-events-none' : '' ?>">
                     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center">
-                        <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">2</span>
-                        <h5 class="card-title h6 fw-bold mb-0 text-dark">Pregnancy Episode Details (CHO I Record)</h5>
+                        <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" aria-hidden="true">2</span>
+                        <h2 class="card-title h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Pregnancy Episode Details (CHO I Record)</h2>
                     </div>
 
                     <div class="card-body p-4 bg-white">
                         <!-- Guidance Alert -->
                         <div class="alert alert-info border-0 rounded-3 small mb-4">
-                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i>
                             Enter the patient's <strong>Last Menstrual Period (LMP)</strong>. The system will automatically compute the <strong>EDC (Due Date)</strong> via Naegele's Rule and provide live <strong>Age of Gestation (AOG)</strong>.
                         </div>
 
@@ -241,7 +242,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     Last Menstrual Period (LMP) <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
                                     <input type="date" 
                                            name="lmp" 
                                            id="lmp" 
@@ -254,9 +255,9 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
 
                             <!-- Live Calculated AOG -->
                             <div class="col-12 col-sm-6 col-md-4">
-                                <label class="form-label fw-semibold text-secondary small">Live Calculated AOG (Current)</label>
+                                <span class="form-label fw-semibold text-secondary small d-block">Live Calculated AOG (Current)</span>
                                 <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between" style="min-height: 42px;">
-                                    <span class="fw-bold text-primary font-monospace" id="live_aog_display">-- weeks</span>
+                                    <span class="fw-bold text-primary font-monospace" id="live_aog_display" aria-live="polite" aria-atomic="true" style="font-variant-numeric: tabular-nums;">-- weeks</span>
                                     <span class="badge bg-secondary-subtle text-secondary" id="live_trimester_badge">Pending LMP</span>
                                 </div>
                                 <div class="form-text small">Calculated from LMP to today.</div>
@@ -264,9 +265,9 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
 
                             <!-- Live Calculated EDC -->
                             <div class="col-12 col-sm-6 col-md-4">
-                                <label class="form-label fw-semibold text-secondary small">Auto-calculated EDC (Due Date)</label>
+                                <span class="form-label fw-semibold text-secondary small d-block">Auto-calculated EDC (Due Date)</span>
                                 <div class="p-2 bg-light rounded border d-flex align-items-center justify-content-between" style="min-height: 42px;">
-                                    <span class="fw-bold text-pink font-monospace" id="live_edc_display">Select LMP...</span>
+                                    <span class="fw-bold text-pink font-monospace" id="live_edc_display" aria-live="polite" aria-atomic="true">Select LMP…</span>
                                     <span class="badge bg-pink text-white" style="font-size: 0.72rem;">Naegele's Rule</span>
                                 </div>
                                 <div class="form-text small">+1 year, -3 months, +7 days.</div>
@@ -276,12 +277,13 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                             <div class="col-12">
                                 <label for="husband_name" class="form-label fw-semibold text-secondary small">Husband / Partner Name</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person" aria-hidden="true"></i></span>
                                     <input type="text" 
                                            name="husband_name" 
                                            id="husband_name" 
                                            class="form-control" 
                                            placeholder="Full Name of Husband or Partner" 
+                                           autocomplete="name"
                                            value="<?= h($initialHusband) ?>">
                                 </div>
                             </div>
@@ -295,10 +297,10 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                                     <label class="form-label fw-bold text-dark mb-0">Obstetric History (GTPAL Score)</label>
                                     <span class="badge bg-light text-secondary border">
-                                        <i class="bi bi-pencil-square me-1"></i>Pre-filled from IHP &bull; Fully Editable
+                                        <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Pre-filled from IHP <span class="text-muted" aria-hidden="true">&bull;</span> Fully Editable
                                     </span>
                                 </div>
-                                <p class="text-muted small mb-3">
+                                <p class="text-muted small mb-3" style="text-wrap: pretty;">
                                     Review and verify the patient's baseline obstetric profile. If the patient reports recent miscarriages or deliveries not logged in their original IHP, adjust the values below.
                                 </p>
 
@@ -306,6 +308,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-4 col-sm-2">
                                         <label for="gravida" class="form-label small fw-semibold text-secondary mb-1">Gravida (G)</label>
                                         <input type="number" 
+                                               inputmode="numeric"
                                                name="gravida" 
                                                id="gravida" 
                                                class="form-control form-control-lg text-center font-monospace fw-bold text-pink" 
@@ -318,6 +321,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-4 col-sm-2">
                                         <label for="para" class="form-label small fw-semibold text-secondary mb-1">Para (P)</label>
                                         <input type="number" 
+                                               inputmode="numeric"
                                                name="para" 
                                                id="para" 
                                                class="form-control form-control-lg text-center font-monospace fw-semibold" 
@@ -329,6 +333,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-4 col-sm-2">
                                         <label for="term_births" class="form-label small fw-semibold text-secondary mb-1">Term (T)</label>
                                         <input type="number" 
+                                               inputmode="numeric"
                                                name="term_births" 
                                                id="term_births" 
                                                class="form-control form-control-lg text-center font-monospace" 
@@ -340,6 +345,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-4 col-sm-2">
                                         <label for="preterm_births" class="form-label small fw-semibold text-secondary mb-1">Preterm (P)</label>
                                         <input type="number" 
+                                               inputmode="numeric"
                                                name="preterm_births" 
                                                id="preterm_births" 
                                                class="form-control form-control-lg text-center font-monospace" 
@@ -351,6 +357,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-4 col-sm-2">
                                         <label for="abortions" class="form-label small fw-semibold text-secondary mb-1">Abortion (A)</label>
                                         <input type="number" 
+                                               inputmode="numeric"
                                                name="abortions" 
                                                id="abortions" 
                                                class="form-control form-control-lg text-center font-monospace" 
@@ -362,6 +369,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                     <div class="col-4 col-sm-2">
                                         <label for="living_children" class="form-label small fw-semibold text-secondary mb-1">Living (L)</label>
                                         <input type="number" 
+                                               inputmode="numeric"
                                                name="living_children" 
                                                id="living_children" 
                                                class="form-control form-control-lg text-center font-monospace fw-bold text-success" 
@@ -384,7 +392,8 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                           id="notes" 
                                           rows="3" 
                                           class="form-control" 
-                                          placeholder="Enter any initial health observations, high-risk screening notes, or referral alerts..."></textarea>
+                                          spellcheck="true"
+                                          placeholder="Enter any initial health observations, high-risk screening notes, or referral alerts…"></textarea>
                             </div>
                         </div>
                     </div>
@@ -395,7 +404,7 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                             Cancel
                         </a>
                         <button type="submit" class="btn btn-pink text-white px-4 py-2 fw-semibold shadow-sm" id="btnSubmitRegistration" <?= $hasActiveEpisode ? 'disabled' : '' ?>>
-                            <i class="bi bi-check2-circle me-1"></i> Register Pregnancy Episode
+                            <i class="bi bi-check2-circle me-1" aria-hidden="true"></i> Register Pregnancy Episode
                         </button>
                     </div>
                 </div>
@@ -512,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (patients.length === 0) {
             resultsContainer.innerHTML = `
                 <div class="list-group-item text-center py-4 text-muted">
-                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary"></i>
+                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary" aria-hidden="true"></i>
                     No female patients found matching your search.
                 </div>
             `;
@@ -521,8 +530,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         patients.forEach(p => {
-            const item = document.createElement('div');
-            item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action p-3 patient-search-item text-start w-100 border-0 border-bottom';
+            item.setAttribute('aria-label', `Select ${p.name}, Patient ID ${p.patient_no}`);
             
             const activeBadge = p.has_active_episode 
                 ? `<span class="badge bg-warning text-dark border">Active Episode</span>` 
@@ -533,10 +544,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div>
                         <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
                         <div class="small text-muted d-flex align-items-center gap-2 mt-1">
-                            <span class="badge bg-light text-secondary border font-monospace">${escapeHtml(p.patient_no)}</span>
-                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
+                            <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
+                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
                             <span>${p.age} yrs</span>
-                            <span>&bull;</span>
+                            <span class="text-muted" aria-hidden="true">&bull;</span>
                             <span class="text-truncate" style="max-width: 250px;">${escapeHtml(p.address)}</span>
                         </div>
                     </div>
@@ -676,7 +687,7 @@ document.addEventListener('DOMContentLoaded', function() {
             liveAogDisplay.textContent = '-- weeks';
             liveTrimesterBadge.textContent = 'Pending LMP';
             liveTrimesterBadge.className = 'badge bg-secondary-subtle text-secondary';
-            liveEdcDisplay.textContent = 'Select LMP...';
+            liveEdcDisplay.textContent = 'Select LMP…';
             return;
         }
 

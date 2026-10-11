@@ -92,7 +92,7 @@ class ReportController extends Controller {
             'vitals' => 'Recorded Vital Signs Log',
             'maternal_health' => 'Maternal & Prenatal Health Registry',
             'epi_coverage' => 'Childhood Routine Immunization (EPI) Coverage',
-            'chronic_morbidity' => 'Morbidity & Chronic Disease Registry (IHP)'
+            'chronic_morbidity' => 'Chronic Non-Communicable Disease (NCD) Registry'
         ];
 
         $reportTitle = $categoryLabels[$type] ?? ucwords(str_replace('_', ' ', $type));
@@ -125,12 +125,13 @@ class ReportController extends Controller {
                 break;
                 
             case 'consultations':
-                fputcsv($output, ['Date & Time', 'Patient ID', 'Patient Name', 'Assessment (Diagnosis)', 'Subjective (Complaint)', 'Clinician']);
+                fputcsv($output, ['Date & Time', 'Patient ID', 'Patient Name', 'DOH Morbidity Category', 'Assessment / Clinician Note', 'Subjective (Complaint)', 'Clinician']);
                 foreach ($data as $row) {
                     fputcsv($output, [
                         $row['consulted_at'],
                         $row['patient_no'],
                         "{$row['patient_last']}, {$row['patient_first']}",
+                        self::normalizeDiagnosisCategory($row['assessment'] ?? ''),
                         $row['assessment'],
                         $row['subjective'],
                         $row['clinician_name']
@@ -317,34 +318,45 @@ class ReportController extends Controller {
             
             switch ($type) {
                 case 'daily_visits':
-                    $sql = "SELECT q.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last 
-                            FROM queue_entries q
-                            JOIN patients p ON q.patient_id = p.id
-                            WHERE q.queue_date BETWEEN :date_from AND :date_to
-                              AND p.deleted_at IS NULL
-                            ORDER BY q.queue_date DESC, q.queue_no ASC";
-                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    if ($allTime) {
+                        $sql = "SELECT q.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last 
+                                FROM queue_entries q
+                                JOIN patients p ON q.patient_id = p.id
+                                WHERE p.deleted_at IS NULL
+                                ORDER BY q.queue_date DESC, q.queue_no ASC";
+                        $params = [];
+                    } else {
+                        $sql = "SELECT q.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last 
+                                FROM queue_entries q
+                                JOIN patients p ON q.patient_id = p.id
+                                WHERE q.queue_date BETWEEN :date_from AND :date_to
+                                  AND p.deleted_at IS NULL
+                                ORDER BY q.queue_date DESC, q.queue_no ASC";
+                        $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
+                    }
                     break;
                     
                 case 'consultations':
+                    $dateFilter = $allTime ? '' : 'AND c.consulted_at >= :date_from AND c.consulted_at < :date_to_exclusive';
+                    $params = $allTime ? [] : ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     $sql = "SELECT c.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last,
                                    COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician') AS clinician_name
                             FROM consultations c
                             JOIN patients p ON c.patient_id = p.id
                             LEFT JOIN users u ON c.consulted_by = u.id
-                            WHERE c.consulted_at >= :date_from AND c.consulted_at < :date_to_exclusive
-                              AND c.deleted_at IS NULL
+                            WHERE c.deleted_at IS NULL
                               AND p.deleted_at IS NULL
+                              {$dateFilter}
                             ORDER BY c.consulted_at DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
                     
                 case 'registrations':
+                    $dateFilter = $allTime ? '' : 'AND created_at >= :date_from AND created_at < :date_to_exclusive';
+                    $params = $allTime ? [] : ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     $sql = "SELECT *, TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) AS age 
                             FROM patients 
-                            WHERE deleted_at IS NULL AND created_at >= :date_from AND created_at < :date_to_exclusive
+                            WHERE deleted_at IS NULL {$dateFilter}
                             ORDER BY created_at DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
                     
                 case 'appointments':
@@ -371,6 +383,8 @@ class ReportController extends Controller {
                     break;
                     
                 case 'queue_summary':
+                    $whereClause = $allTime ? 'WHERE p.deleted_at IS NULL' : 'WHERE q.queue_date BETWEEN :date_from AND :date_to AND p.deleted_at IS NULL';
+                    $params = $allTime ? [] : ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     $sql = "SELECT q.queue_date AS date, 
                                    COUNT(*) AS total,
                                    SUM(CASE WHEN q.status = 'Completed' THEN 1 ELSE 0 END) AS completed,
@@ -379,24 +393,23 @@ class ReportController extends Controller {
                                    SUM(CASE WHEN q.status IN ('Called', 'Serving') THEN 1 ELSE 0 END) AS called_serving
                             FROM queue_entries q
                             JOIN patients p ON q.patient_id = p.id
-                            WHERE q.queue_date BETWEEN :date_from AND :date_to
-                              AND p.deleted_at IS NULL
+                            {$whereClause}
                             GROUP BY q.queue_date
                             ORDER BY q.queue_date DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     break;
                     
                 case 'vitals':
+                    $dateFilter = $allTime ? '' : 'AND v.recorded_at >= :date_from AND v.recorded_at < :date_to_exclusive';
+                    $params = $allTime ? [] : ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     $sql = "SELECT v.*, p.patient_no, p.first_name AS patient_first, p.last_name AS patient_last,
                                    CONCAT(u.first_name, ' ', u.last_name) AS recorded_by_name
                             FROM vital_signs v
                             JOIN patients p ON v.patient_id = p.id
                             JOIN users u ON v.recorded_by = u.id
-                            WHERE v.recorded_at >= :date_from AND v.recorded_at < :date_to_exclusive
-                              AND v.deleted_at IS NULL
+                            WHERE v.deleted_at IS NULL
                               AND p.deleted_at IS NULL
+                              {$dateFilter}
                             ORDER BY v.recorded_at DESC";
-                    $params = ['date_from' => $dateFrom, 'date_to_exclusive' => $dateToExclusive];
                     break;
 
                 case 'maternal_health':
@@ -640,13 +653,14 @@ class ReportController extends Controller {
                 $topDiagSub = '';
                 $topDiagFull = '-';
                 if (!empty($assessments)) {
-                    $counts = array_count_values($assessments);
+                    $normalizedAssessments = array_map([self::class, 'normalizeDiagnosisCategory'], $assessments);
+                    $counts = array_count_values($normalizedAssessments);
                     arsort($counts);
                     $topDiagFull = (string)array_key_first($counts);
                     $topCount = reset($counts);
                     $topPct = round(($topCount / max(1, count($assessments))) * 100, 1);
                     $topDiagSub = "{$topCount} case(s) ({$topPct}%)";
-                    $topDiag = strlen($topDiagFull) > 24 ? substr($topDiagFull, 0, 24) . '...' : $topDiagFull;
+                    $topDiag = strlen($topDiagFull) > 28 ? substr($topDiagFull, 0, 28) . '...' : $topDiagFull;
                 }
                 return [
                     ['label' => 'Total Consultations', 'value' => number_format($count), 'icon' => 'bi-journal-medical', 'color' => 'primary'],
@@ -767,6 +781,8 @@ class ReportController extends Controller {
 
     /**
      * Compute Top 10 Leading Causes of Morbidity according to DOH FHSIS standards.
+     * Uses clinical alias and keyword normalization so free-text entries (e.g. 'URTI')
+     * accurately group together with quick-chip selections without data fragmentation.
      */
     private function computeMorbidityBreakdown(array $results): array {
         $assessments = array_filter(array_column($results, 'assessment'));
@@ -775,7 +791,8 @@ class ReportController extends Controller {
         }
 
         $totalCount = count($assessments);
-        $counts = array_count_values($assessments);
+        $normalizedAssessments = array_map([self::class, 'normalizeDiagnosisCategory'], $assessments);
+        $counts = array_count_values($normalizedAssessments);
         arsort($counts);
 
         $breakdown = [];
@@ -791,6 +808,90 @@ class ReportController extends Controller {
         }
 
         return $breakdown;
+    }
+
+    /**
+     * Normalizes free-text clinical diagnoses and shorthand into standard DOH FHSIS categories.
+     * Preserves clinical specificity while preventing fragmentation in epidemiological reports.
+     */
+    public static function normalizeDiagnosisCategory(string $raw): string {
+        $text = trim($raw);
+        if ($text === '') {
+            return 'Unspecified / Pending Diagnosis';
+        }
+
+        // Standard clinical pattern rules for primary health care & DOH FHSIS leading causes
+        $patterns = [
+            // 1. Acute Upper Respiratory Tract Infection (URTI / ARI)
+            '/(\b(urti|auri)\b|upper respiratory|nasopharyngitis|rhinopharyngitis|common cold|cough and cold|cough & cold|acute pharyngitis|tonsillopharyngitis|tonsillitis|pharyngitis|laryngitis|tracheitis|sore throat)/i'
+                => 'Acute Upper Respiratory Tract Infection (URTI)',
+
+            // 2. Hypertension / Hypertensive Vascular Disease
+            '/(\b(htn|hpn)\b|hypertens|elevated bp|high blood pressure)/i'
+                => 'Hypertension / Hypertensive Vascular Disease',
+
+            // 3. Acute Gastroenteritis / Diarrhea
+            '/(\b(age|lbm)\b|gastroenteritis|diarrhea|diarrhoea|loose bowel|food poison|enteritis|gastrointestinal infection|watery stool)/i'
+                => 'Acute Gastroenteritis (AGE) / Diarrhea',
+
+            // 4. Urinary Tract Infection (UTI)
+            '/(\b(uti)\b|urinary tract|cystitis|pyelonephritis|dysuria)/i'
+                => 'Urinary Tract Infection (UTI)',
+
+            // 5. Diabetes Mellitus (T2DM / T1DM)
+            '/(\b(t2dm|t1dm|dm2|dm1|iddm|niddm)\b|\bdm\b|diabetes|hyperglycemia)/i'
+                => 'Type 2 Diabetes Mellitus (T2DM)',
+
+            // 6. Bronchial Asthma
+            '/(\b(ba)\b|asthma|bronchospasm|hyperreactive airway)/i'
+                => 'Bronchial Asthma',
+
+            // 7. Pneumonia / Bronchopneumonia
+            '/(\b(cap|hap)\b|pneumonia|bronchopneumonia)/i'
+                => 'Pneumonia / Bronchopneumonia',
+
+            // 8. Acute Bronchitis / Bronchiolitis
+            '/(bronchitis|bronchiolitis)/i'
+                => 'Acute Bronchitis / Bronchiolitis',
+
+            // 9. Dermatological Conditions & Skin Infections
+            '/(dermatitis|eczema|skin lesion|folliculitis|impetigo|scabies|tinea|fungal infection|cellulitis|abscess|furuncle|carbuncle|skin rash|allergic rash|pruritus)/i'
+                => 'Dermatological Conditions & Skin Infections',
+
+            // 10. Tension-type Headache / Cephalgia
+            '/(\bheadache\b|cephalgia|migraine|tension headache)/i'
+                => 'Tension-type Headache / Cephalgia',
+
+            // 11. Musculoskeletal Conditions / Myalgia
+            '/(\b(lbp)\b|myalgia|musculoskeletal|back pain|low back pain|muscle strain|arthralgia|arthritis|body malaise|osteoarthritis)/i'
+                => 'Musculoskeletal Conditions / Myalgia',
+
+            // 12. Dengue Fever / Viral Exanthem
+            '/(dengue|viral exanthem)/i'
+                => 'Dengue Fever / Viral Exanthem',
+
+            // 13. Pulmonary Tuberculosis (PTB)
+            '/(\b(tb|ptb)\b|tuberculosis)/i'
+                => 'Pulmonary Tuberculosis (PTB)',
+
+            // 14. Influenza-like Illness (ILI)
+            '/(\b(ili|flu)\b|influenza)/i'
+                => 'Influenza-like Illness (ILI)'
+        ];
+
+        foreach ($patterns as $pattern => $standardName) {
+            if (preg_match($pattern, $text)) {
+                return $standardName;
+            }
+        }
+
+        // Clean up unmapped free text: take first clause/line and title-case
+        $clean = preg_split('/[\r\n;,]+/', $text)[0];
+        $clean = trim(preg_replace('/\s+/', ' ', $clean));
+        if (strlen($clean) > 50) {
+            $clean = substr($clean, 0, 47) . '...';
+        }
+        return mb_convert_case($clean, MB_CASE_TITLE, 'UTF-8');
     }
 
     private function normalizeDateRange($dateFrom, $dateTo) {

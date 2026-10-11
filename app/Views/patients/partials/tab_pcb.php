@@ -1,7 +1,7 @@
                     <!-- ==============================================================
                        TAB: PHIC / PCB PATIENT LEDGER (ANNEX A1 PAGE 3)
                        ============================================================== -->
-                    <div class="tab-pane fade" id="tab-pcb" role="tabpanel">
+                    <div class="tab-pane fade" id="tab-pcb" role="tabpanel" aria-labelledby="tab-pcb-btn" tabindex="0">
                         
                         <!-- 1. Top PHIC Membership & Identity Card -->
                         <div class="card border rounded-3 p-3 shadow-xs mb-3 bg-white">

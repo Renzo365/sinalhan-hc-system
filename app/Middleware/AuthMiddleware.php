@@ -27,8 +27,21 @@ class AuthMiddleware {
             exit;
         }
 
-        // Server-Side Inactivity Timeout (Configurable via config/app.php, default 2 hours = 7200 seconds)
-        $idleTimeout = (int)config('session.idle_timeout', 7200);
+        // Hydrate personal accessibility/display preferences into session if not yet cached
+        if (!isset($_SESSION['user_preferences'])) {
+            try {
+                $db = \App\Core\Database::getInstance()->getConnection();
+                $stmt = $db->prepare("SELECT preferences FROM users WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $_SESSION['user_id']]);
+                $prefJson = $stmt->fetchColumn();
+                $_SESSION['user_preferences'] = !empty($prefJson) ? json_decode($prefJson, true) : [];
+            } catch (\Throwable $e) {
+                $_SESSION['user_preferences'] = [];
+            }
+        }
+
+        // Server-Side Inactivity Timeout (Configured dynamically via system_settings, fallback to config/app.php)
+        $idleTimeout = (int)setting('session_idle_timeout', config('session.idle_timeout', 7200));
         if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $idleTimeout) {
             $username = $_SESSION['username'] ?? 'User';
 

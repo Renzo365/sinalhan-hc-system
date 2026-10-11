@@ -21,13 +21,13 @@ $initialPatientId = !empty($preselectedPatient) ? $preselectedPatient['id'] : ''
 $isLockedPatient = !empty($isLockedPatient);
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Schedule Appointment</h2>
-        <p class="text-secondary small mb-0">Select a patient, date, and purpose to book a health center checkup.</p>
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Schedule Appointment</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">Select a patient, date, and purpose to book a health center checkup.</p>
     </div>
-    <a href="<?= isset($patient) && $patient ? url('/patients/' . $patient['id']) : url('/appointments') ?>" class="btn btn-outline-secondary">
-        &larr; Back to <?= isset($patient) && $patient ? 'Profile' : 'Appointments List' ?>
+    <a href="<?= isset($patient) && $patient ? url('/patients/' . $patient['id']) : url('/appointments') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1" style="min-height: 38px;">
+        <span aria-hidden="true">&larr;</span> Back to <?= isset($patient) && $patient ? 'Profile' : 'Appointments List' ?>
     </a>
 </div>
 
@@ -36,7 +36,7 @@ $isLockedPatient = !empty($isLockedPatient);
         <!-- Error Alert Banner -->
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger shadow-sm border-0 mb-4" role="alert" style="border-radius: 12px;">
-                <h5 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the following:</h5>
+                <h5 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Please correct the following:</h5>
                 <ul class="mb-0 small ps-3">
                     <?php foreach ($errors as $error): ?>
                         <li><?= h($error) ?></li>
@@ -48,9 +48,9 @@ $isLockedPatient = !empty($isLockedPatient);
         <!-- Form Card -->
         <div class="card card-premium">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                <h3 class="card-title h5 mb-0 fw-bold text-primary-dark">
+                <h2 class="card-title h5 mb-0 fw-bold text-primary-dark" style="text-wrap: balance;">
                     Appointment Booking Details
-                </h3>
+                </h2>
             </div>
             
             <form action="<?= url('/appointments') ?>" method="POST" id="appointmentForm">
@@ -61,15 +61,15 @@ $isLockedPatient = !empty($isLockedPatient);
                     <div class="mb-4">
                         <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
                             <div class="d-flex align-items-center">
-                                <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.75rem;">1</span>
-                                <h4 class="h6 fw-bold text-dark mb-0">Select Patient <span class="text-danger">*</span></h4>
+                                <span class="badge bg-primary rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 0.75rem;" aria-hidden="true">1</span>
+                                <h3 class="h6 fw-bold text-dark mb-0">Select Patient <span class="text-danger" aria-hidden="true">*</span></h3>
                             </div>
                             <?php if ($isLockedPatient): ?>
                                 <span class="badge bg-light text-secondary border px-3 py-1">
                                     Patient Locked
                                 </span>
                             <?php else: ?>
-                                <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient">
+                                <button type="button" class="btn btn-sm btn-outline-secondary <?= empty($preselectedPatient) ? 'd-none' : '' ?>" id="btnChangePatient" style="min-height: 32px;">
                                     Change Patient
                                 </button>
                             <?php endif; ?>
@@ -80,17 +80,23 @@ $isLockedPatient = !empty($isLockedPatient);
                         <!-- Patient Search Box -->
                         <div id="patientSearchSection" class="<?= !empty($preselectedPatient) ? 'd-none' : '' ?>">
                             <label for="patientSearchInput" class="form-label fw-semibold text-secondary small">
-                                Search Patient <span class="text-danger">*</span>
+                                Search Patient <span class="text-danger" aria-hidden="true">*</span>
                             </label>
                             <div class="input-group input-group-lg mb-2 shadow-xs">
-                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                <span class="input-group-text bg-light border-end-0 text-muted" aria-hidden="true"><i class="bi bi-search"></i></span>
                                 <input type="text" 
                                        id="patientSearchInput" 
                                        class="form-control bg-light border-start-0 fs-6" 
-                                       placeholder="Type patient name, patient ID (e.g. PAT-), or envelope #..." 
-                                       autocomplete="off">
-                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch">
-                                    <i class="bi bi-x-lg"></i>
+                                       placeholder="Type patient name, patient ID (e.g. PAT-), or envelope #…" 
+                                       autocomplete="off"
+                                       spellcheck="false"
+                                       inputmode="search"
+                                       role="combobox"
+                                       aria-autocomplete="list"
+                                       aria-expanded="false"
+                                       aria-controls="searchResultsContainer">
+                                <button type="button" class="btn btn-light border text-muted px-3 d-none" id="btnClearSearch" aria-label="Clear patient search" style="min-width: 38px; min-height: 38px;">
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <div class="form-text small text-muted mb-3">
@@ -98,12 +104,12 @@ $isLockedPatient = !empty($isLockedPatient);
                             </div>
 
                             <!-- Live Search Results Dropdown List -->
-                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" style="max-height: 280px; overflow-y: auto;">
+                            <div id="searchResultsContainer" class="list-group shadow-sm rounded-3 border mb-3 d-none" role="region" aria-live="polite" style="max-height: 280px; overflow-y: auto;">
                                 <!-- Injected dynamically via JS -->
                             </div>
-                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none">
-                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-                                <span class="small">Searching active patients...</span>
+                            <div id="searchLoadingSpinner" class="text-center py-3 text-muted d-none" aria-live="polite">
+                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status" aria-hidden="true"></div>
+                                <span class="small">Searching active patients…</span>
                             </div>
                         </div>
 
@@ -112,7 +118,7 @@ $isLockedPatient = !empty($isLockedPatient);
                             <div class="p-3 p-md-4 rounded-4" style="background-color: #f0fdfa; border: 1px solid #ccfbf1;">
                                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3" style="border-bottom: 1px solid #ccfbf1;">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #0D7377; color: #fff;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #0D7377; color: #fff;" aria-hidden="true">
                                             <span id="cardInitials">
                                                 <?php 
                                                     $init = '';
@@ -124,21 +130,21 @@ $isLockedPatient = !empty($isLockedPatient);
                                         </div>
                                         <div>
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <h5 class="h6 fw-bold text-dark mb-0" id="cardFullName">
+                                                <h4 class="h6 fw-bold text-dark mb-0" id="cardFullName">
                                                     <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '')) : '--' ?>
-                                                </h5>
+                                                </h4>
                                                 <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'female') ? 'bg-danger' : 'bg-primary' ?>" id="cardSex">
                                                     <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?>
                                                 </span>
-                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo">
+                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
                                                     <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
                                                 </span>
-                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge">
+                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge" style="font-variant-numeric: tabular-nums;">
                                                     Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
                                                 </span>
                                             </div>
                                             <small class="text-muted" id="cardCivilStatus">
-                                                <?= !empty($preselectedPatient['civil_status']) ? h($preselectedPatient['civil_status']) : 'Single' ?> &bull; Contact: <span id="cardContact"><?= h($preselectedPatient['contact_no'] ?? 'N/A') ?></span>
+                                                <?= !empty($preselectedPatient['civil_status']) ? h($preselectedPatient['civil_status']) : 'Single' ?> <span aria-hidden="true">&bull;</span> Contact: <span id="cardContact" style="font-variant-numeric: tabular-nums;"><?= h($preselectedPatient['contact_no'] ?? 'N/A') ?></span>
                                             </small>
                                         </div>
                                     </div>
@@ -154,7 +160,7 @@ $isLockedPatient = !empty($isLockedPatient);
                                     <div class="col-12 col-sm-6 col-md-3">
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Date of Birth</span>
-                                            <span class="fw-bold text-dark" id="cardDob">
+                                            <span class="fw-bold text-dark" id="cardDob" style="font-variant-numeric: tabular-nums;">
                                                 <?= !empty($preselectedPatient['dob']) ? date('M d, Y', strtotime($preselectedPatient['dob'])) : '--' ?>
                                             </span>
                                         </div>
@@ -162,7 +168,7 @@ $isLockedPatient = !empty($isLockedPatient);
                                     <div class="col-12 col-sm-6 col-md-3">
                                         <div class="p-2 bg-white rounded-3 border">
                                             <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
-                                            <span class="fw-bold text-dark" id="cardAge">
+                                            <span class="fw-bold text-dark" id="cardAge" style="font-variant-numeric: tabular-nums;">
                                                 <?= !empty($preselectedPatient['age']) ? h($preselectedPatient['age']) . ' years old' : '--' ?>
                                             </span>
                                         </div>
@@ -189,7 +195,7 @@ $isLockedPatient = !empty($isLockedPatient);
                     <!-- 2. Schedule Details & Service Category -->
                     <div>
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 border-bottom pb-2 gap-2">
-                            <h4 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger">*</span></h4>
+                            <h3 class="h6 fw-bold text-dark mb-0">2. Appointment Schedule & Time Slot <span class="text-danger" aria-hidden="true">*</span></h3>
                             <span class="badge bg-teal-subtle text-teal fw-semibold small" id="sessionIndicator" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
                                 Select a Time Slot
                             </span>
@@ -198,7 +204,7 @@ $isLockedPatient = !empty($isLockedPatient);
                         <div class="row g-3 mb-3">
                             <!-- Date Picker with Quick Sets -->
                             <div class="col-12 col-md-6">
-                                <label for="appointment_date" class="form-label fw-semibold text-secondary small">Appointment Date <span class="text-danger">*</span></label>
+                                <label for="appointment_date" class="form-label fw-semibold text-secondary small">Appointment Date <span class="text-danger" aria-hidden="true">*</span></label>
                                 <input type="date" 
                                        name="appointment_date" 
                                        id="appointment_date" 
@@ -207,15 +213,15 @@ $isLockedPatient = !empty($isLockedPatient);
                                        required>
                                 <div class="d-flex align-items-center gap-1">
                                     <span class="text-muted small me-1">Quick set:</span>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="0">Today</button>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="1">Tomorrow</button>
-                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="7">+1 Week</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="0" style="min-height: 31px; min-width: 44px;">Today</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="1" style="min-height: 31px; min-width: 44px;">Tomorrow</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary quick-date-btn" data-days="7" style="min-height: 31px; min-width: 44px;">+1 Week</button>
                                 </div>
                             </div>
 
                             <!-- Initial Status (Clinically streamlined) -->
                             <div class="col-12 col-md-6">
-                                <label for="status" class="form-label fw-semibold text-secondary small">Initial Status <span class="text-danger">*</span></label>
+                                <label for="status" class="form-label fw-semibold text-secondary small">Initial Status <span class="text-danger" aria-hidden="true">*</span></label>
                                 <select name="status" id="status" class="form-select bg-light">
                                     <option value="Scheduled" <?= (!isset($input['status']) || $input['status'] === 'Scheduled') ? 'selected' : '' ?>>Scheduled (Upcoming Visit)</option>
                                     <option value="Completed" <?= (isset($input['status']) && $input['status'] === 'Completed') ? 'selected' : '' ?>>Completed (Walk-in / Served)</option>
@@ -225,7 +231,7 @@ $isLockedPatient = !empty($isLockedPatient);
 
                             <!-- Service Category / Program Type -->
                             <div class="col-12 col-md-6">
-                                <label for="program_type" class="form-label fw-semibold text-secondary small">Service Category <span class="text-danger">*</span></label>
+                                <label for="program_type" class="form-label fw-semibold text-secondary small">Service Category <span class="text-danger" aria-hidden="true">*</span></label>
                                 <select name="program_type" id="program_type" class="form-select bg-light" required>
                                     <option value="General OPD" <?= (isset($input['program_type']) && $input['program_type'] === 'General OPD') ? 'selected' : '' ?>>General OPD / Consultation</option>
                                     <option value="Maternal Care" <?= (isset($input['program_type']) && ($input['program_type'] === 'Maternal Care' || $input['program_type'] === 'Prenatal Care')) ? 'selected' : '' ?>>Maternal Care (Prenatal / Postpartum)</option>
@@ -239,14 +245,15 @@ $isLockedPatient = !empty($isLockedPatient);
 
                             <!-- Purpose Input with Datalist Suggestions -->
                             <div class="col-12 col-md-6">
-                                <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger">*</span></label>
+                                <label for="purpose" class="form-label fw-semibold text-secondary small">Purpose of Visit <span class="text-danger" aria-hidden="true">*</span></label>
                                 <input type="text" 
                                        name="purpose" 
                                        id="purpose" 
                                        class="form-control bg-light" 
-                                       placeholder="e.g. Follow-up consultation, Routine EPI Vaccine, Blood pressure check..." 
+                                       placeholder="e.g. Follow-up consultation, Routine EPI Vaccine, Blood pressure check…" 
                                        value="<?= h($input['purpose'] ?? '') ?>" 
                                        list="purposeSuggestions" 
+                                       spellcheck="true"
                                        required>
                                 <datalist id="purposeSuggestions">
                                     <option value="Routine Prenatal Checkup">
@@ -331,11 +338,11 @@ $isLockedPatient = !empty($isLockedPatient);
                                              data-slot="<?= $s['slot'] ?>" 
                                              data-session="Morning OPD (08:30 AM - 12:00 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
+                                                <span class="fw-bold text-dark fs-6" style="font-variant-numeric: tabular-nums;"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
                                             </div>
                                             <div class="small text-secondary slot-subtext mt-1" style="font-size: 0.75rem;">
-                                                Slot #<?= $s['slot'] ?> &bull; <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
+                                                <span style="font-variant-numeric: tabular-nums;">Slot #<?= $s['slot'] ?></span> <span aria-hidden="true">&bull;</span> <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -373,11 +380,11 @@ $isLockedPatient = !empty($isLockedPatient);
                                              data-slot="<?= $s['slot'] ?>" 
                                              data-session="Afternoon OPD (01:00 PM - 04:30 PM)">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold text-dark fs-6"><?= $s['label'] ?></span>
+                                                <span class="fw-bold text-dark fs-6" style="font-variant-numeric: tabular-nums;"><?= $s['label'] ?></span>
                                                 <span class="slot-radio-dot"></span>
                                             </div>
                                             <div class="small text-secondary slot-subtext mt-1" style="font-size: 0.75rem;">
-                                                Slot #<?= $s['slot'] ?> &bull; <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
+                                                <span style="font-variant-numeric: tabular-nums;">Slot #<?= $s['slot'] ?></span> <span aria-hidden="true">&bull;</span> <span class="slot-status-label"><?= $isSelected ? 'Selected' : 'Available' ?></span>
                                             </div>
                                         </div>
                                     </div>
@@ -389,18 +396,20 @@ $isLockedPatient = !empty($isLockedPatient);
                         <!-- Notes / Symptoms -->
                         <div class="mb-3">
                             <label for="notes" class="form-label fw-semibold text-secondary small">Notes / Symptoms described</label>
-                            <textarea name="notes" id="notes" rows="3" class="form-control bg-light" placeholder="Describe symptoms or reasons (e.g. Patient requests follow-up for maternal care / high blood pressure check-up)..."><?= h($input['notes'] ?? '') ?></textarea>
+                            <textarea name="notes" id="notes" rows="3" class="form-control bg-light" placeholder="Describe symptoms or reasons (e.g. Patient requests follow-up for maternal care / high blood pressure check-up)…" spellcheck="true"><?= h($input['notes'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-footer bg-light py-3 border-0 d-flex justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                     <?php if ($patient): ?>
-                        <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-secondary d-inline-flex align-items-center" style="min-height: 38px;">Cancel</a>
                     <?php else: ?>
-                        <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="<?= url('/appointments') ?>" class="btn btn-outline-secondary d-inline-flex align-items-center" style="min-height: 38px;">Cancel</a>
                     <?php endif; ?>
-                    <button type="submit" class="btn btn-primary px-4">Schedule Appointment</button>
+                    <button type="submit" class="btn btn-primary px-4 d-inline-flex align-items-center gap-1" style="min-height: 38px;">
+                        <i class="bi bi-calendar-check me-1" aria-hidden="true"></i> Schedule Appointment
+                    </button>
                 </div>
             </form>
         </div>
@@ -414,7 +423,7 @@ $isLockedPatient = !empty($isLockedPatient);
     padding: 10px 12px;
     background: #ffffff;
     cursor: pointer;
-    transition: all 0.15s ease-in-out;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     user-select: none;
     height: 100%;
 }
@@ -461,6 +470,15 @@ $isLockedPatient = !empty($isLockedPatient);
     background-color: #0d9488;
     color: #fff;
     border-color: #0d9488;
+}
+@media (prefers-reduced-motion: reduce) {
+    .time-slot-card {
+        transition: none !important;
+        transform: none !important;
+    }
+    .time-slot-card:hover {
+        transform: none !important;
+    }
 }
 </style>
 
@@ -706,6 +724,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (query.length < 1) {
                 resultsContainer.classList.add('d-none');
                 resultsContainer.innerHTML = '';
+                if (searchInput) searchInput.setAttribute('aria-expanded', 'false');
                 return;
             }
 
@@ -730,7 +749,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearSearchBtn.classList.add('d-none');
                 resultsContainer.classList.add('d-none');
                 resultsContainer.innerHTML = '';
-                searchInput.focus();
+                if (searchInput) {
+                    searchInput.setAttribute('aria-expanded', 'false');
+                    searchInput.focus();
+                }
             });
         }
     }
@@ -740,11 +762,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (patients.length === 0) {
             resultsContainer.innerHTML = `
                 <div class="list-group-item text-center py-4 text-muted">
-                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary"></i>
+                    <i class="bi bi-person-x fs-3 d-block mb-1 text-secondary" aria-hidden="true"></i>
                     No registered patients found matching your search.
                 </div>
             `;
             resultsContainer.classList.remove('d-none');
+            if (searchInput) searchInput.setAttribute('aria-expanded', 'true');
             return;
         }
 
@@ -752,6 +775,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const item = document.createElement('div');
             item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
             item.style.cursor = 'pointer';
+            item.setAttribute('role', 'button');
+            item.setAttribute('tabindex', '0');
+            item.setAttribute('aria-label', `Select patient ${escapeHtml(p.name)}, ${escapeHtml(p.patient_no)}`);
 
             const sexBadgeClass = (p.sex && p.sex.toLowerCase() === 'female') ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-primary-subtle text-primary border-primary-subtle';
 
@@ -760,16 +786,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div>
                         <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
                         <div class="small text-muted d-flex align-items-center gap-2 mt-1 flex-wrap">
-                            <span class="badge bg-light text-secondary border font-monospace">${escapeHtml(p.patient_no)}</span>
-                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
+                            <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
+                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
                             <span class="badge ${sexBadgeClass} border">${escapeHtml(p.sex || 'N/A')}</span>
-                            <span>${p.age} yrs</span>
-                            <span>&bull;</span>
+                            <span style="font-variant-numeric: tabular-nums;">${p.age} yrs</span>
+                            <span aria-hidden="true">&bull;</span>
                             <span class="text-truncate" style="max-width: 250px;">${escapeHtml(p.address)}</span>
                         </div>
                     </div>
                     <div class="text-end">
-                        <span class="btn btn-sm btn-outline-primary py-1 px-3">
+                        <span class="btn btn-sm btn-outline-primary py-1 px-3" style="min-height: 32px;">
                             Select
                         </span>
                     </div>
@@ -777,16 +803,26 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             item.addEventListener('click', () => selectPatient(p));
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectPatient(p);
+                }
+            });
             resultsContainer.appendChild(item);
         });
 
         resultsContainer.classList.remove('d-none');
+        if (searchInput) searchInput.setAttribute('aria-expanded', 'true');
     }
 
     function selectPatient(patient) {
         resultsContainer.classList.add('d-none');
         resultsContainer.innerHTML = '';
-        if (searchInput) searchInput.value = '';
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.setAttribute('aria-expanded', 'false');
+        }
 
         selectedPatientIdInput.value = patient.id;
 

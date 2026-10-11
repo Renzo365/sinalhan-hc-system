@@ -149,13 +149,25 @@ class User extends Model {
         $params = [];
 
         if (!empty($filters['search'])) {
-            $sql .= " AND (username LIKE :search_user OR first_name LIKE :search_first OR last_name LIKE :search_last OR email LIKE :search_email OR job_title LIKE :search_job)";
+            $sql .= " AND (username LIKE :search_user 
+                        OR first_name LIKE :search_first 
+                        OR last_name LIKE :search_last 
+                        OR email LIKE :search_email 
+                        OR job_title LIKE :search_job
+                        OR employee_id LIKE :search_employee
+                        OR CONCAT(first_name, ' ', last_name) LIKE :search_full1
+                        OR CONCAT(last_name, ', ', first_name) LIKE :search_full2
+                        OR CONCAT(last_name, ' ', first_name) LIKE :search_full3)";
             $searchTerm = '%' . $filters['search'] . '%';
             $params['search_user'] = $searchTerm;
             $params['search_first'] = $searchTerm;
             $params['search_last'] = $searchTerm;
             $params['search_email'] = $searchTerm;
             $params['search_job'] = $searchTerm;
+            $params['search_employee'] = $searchTerm;
+            $params['search_full1'] = $searchTerm;
+            $params['search_full2'] = $searchTerm;
+            $params['search_full3'] = $searchTerm;
         }
 
         if (!empty($filters['role'])) {
@@ -353,7 +365,8 @@ class User extends Model {
         $attempts = (int)($user['failed_attempts'] ?? 0);
         $lastFailed = $user['last_failed_login_at'] ?? null;
 
-        if ($attempts < 5 || empty($lastFailed)) {
+        $maxAttempts = function_exists('setting') ? (int)setting('max_login_attempts', 5) : 5;
+        if ($attempts < $maxAttempts || empty($lastFailed)) {
             return ['is_locked' => false, 'remaining_seconds' => 0, 'remaining_formatted' => ''];
         }
 
@@ -453,5 +466,20 @@ class User extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchColumn() == 0;
+    }
+
+    /**
+     * Update user personal accessibility and display preferences.
+     *
+     * @param int $userId
+     * @param array $preferences
+     * @return bool
+     */
+    public function updatePreferences($userId, array $preferences) {
+        $stmt = $this->db->prepare("UPDATE users SET preferences = :pref, updated_at = CURRENT_TIMESTAMP WHERE id = :id");
+        return $stmt->execute([
+            ':pref' => json_encode($preferences),
+            ':id' => $userId
+        ]);
     }
 }

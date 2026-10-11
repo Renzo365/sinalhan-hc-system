@@ -13,6 +13,15 @@ class AdminMiddleware {
 
         // Check if role is admin or super_admin
         if (!is_admin()) {
+            $uri = $_SERVER['REQUEST_URI'] ?? '/admin';
+            $userLabel = ($_SESSION['username'] ?? 'User #' . ($_SESSION['user_id'] ?? 'unknown')) . ' (' . ($_SESSION['user_role'] ?? 'guest') . ')';
+
+            \App\Models\AuditLog::log(
+                'UNAUTHORIZED_ACCESS_BLOCKED',
+                'Security',
+                "Blocked unauthorized access probe to Admin endpoint [{$uri}] by {$userLabel}"
+            );
+
             if ($isAjax) {
                 http_response_code(403);
                 header('Content-Type: application/json');
@@ -20,6 +29,7 @@ class AdminMiddleware {
                 exit;
             }
 
+            $_SESSION['error_message'] = 'Access Denied: Administrator privilege is required for this area.';
             $scriptName = $_SERVER['SCRIPT_NAME'];
             $basePath = str_replace('/index.php', '', $scriptName);
             header("Location: " . rtrim($basePath, '/') . '/dashboard');

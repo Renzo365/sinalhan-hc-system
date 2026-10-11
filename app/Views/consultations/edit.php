@@ -11,11 +11,11 @@ require dirname(__DIR__) . '/layout/header.php';
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="h3 mb-1 fw-bold text-primary-dark">Edit Consultation</h2>
-        <p class="text-secondary small mb-0">
-            Consultation record originally recorded on <?= date('M d, Y h:i A', strtotime($consultation['consulted_at'] ?? $consultation['created_at'])) ?><?= !empty($consultation['creator_name']) ? ' by ' . h($consultation['creator_name']) : '' ?>.
+        <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Edit Consultation</h1>
+        <p class="text-secondary small mb-0" style="text-wrap: pretty;">
+            Consultation record originally recorded on <?= date('M d, Y h:i A', strtotime($consultation['consulted_at'] ?? $consultation['created_at'])) ?><?= !empty($consultation['creator_name']) ? ' by ' . h($consultation['creator_name']) : '' ?>
             <?php if (!empty($consultation['updated_at']) && !empty($consultation['updater_name'])): ?>
-                &bull; <span class="text-muted">Last edited on <?= date('M d, Y h:i A', strtotime($consultation['updated_at'])) ?> by <?= h($consultation['updater_name']) ?></span>
+                <span class="text-muted" aria-hidden="true">&bull;</span> <span class="text-muted">Last edited on <?= date('M d, Y h:i A', strtotime($consultation['updated_at'])) ?> by <?= h($consultation['updater_name']) ?></span>
             <?php endif; ?>
         </p>
     </div>
@@ -113,36 +113,36 @@ require dirname(__DIR__) . '/layout/header.php';
     <div class="card-body p-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div class="d-flex align-items-center gap-3 min-w-0">
-                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.1rem;" aria-hidden="true">
                     <?= !empty($pInitials) ? h($pInitials) : '<i class="bi bi-person-fill"></i>' ?>
                 </div>
                 <div class="min-w-0">
                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                         <strong class="text-dark fs-6 mb-0 lh-1"><?= h($pFullName) ?></strong>
-                        <span class="badge bg-light text-dark border font-monospace fs-7"><?= h($patient['patient_no']) ?></span>
+                        <span class="badge bg-light text-dark border font-monospace fs-7"><span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no']) ?></span>
                         <?php if (!empty($patient['envelope_no'])): ?>
                             <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
-                                Env #<?= h($patient['envelope_no']) ?>
+                                <span class="visually-hidden">Envelope Number: </span>Env #<?= h($patient['envelope_no']) ?>
                             </span>
                         <?php endif; ?>
                         <?php if (!empty($patient['family_no'])): ?>
                             <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" title="View household in directory">
-                                Fam #<?= h($patient['family_no']) ?>
+                                <span class="visually-hidden">Family Number: </span>Fam #<?= h($patient['family_no']) ?>
                             </a>
                         <?php endif; ?>
                     </div>
                     <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
-                        <span><strong><?= h($patient['age']) ?></strong> yrs &bull; <?= h($patient['sex']) ?></span>
-                        <span class="text-muted">&bull;</span>
+                        <span><strong><?= h($patient['age']) ?></strong> yrs <span class="text-muted" aria-hidden="true">&bull;</span> <?= h($patient['sex']) ?></span>
+                        <span class="text-muted" aria-hidden="true">&bull;</span>
                         <span>DOB: <strong class="text-dark"><?= h($pDobFormatted) ?></strong></span>
-                        <span class="text-muted">&bull;</span>
+                        <span class="text-muted" aria-hidden="true">&bull;</span>
                         <?php if ($hasBlood): ?>
                             <span>Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong></span>
                         <?php else: ?>
                             <span>Blood: <span class="text-muted">Unknown</span></span>
                         <?php endif; ?>
                         <?php if (!empty($patient['philhealth_no'])): ?>
-                            <span class="text-muted">&bull;</span>
+                            <span class="text-muted" aria-hidden="true">&bull;</span>
                             <span>PHIC: <span class="font-monospace text-dark"><?= h($patient['philhealth_no']) ?></span></span>
                         <?php endif; ?>
                     </div>
@@ -156,11 +156,11 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="d-flex align-items-center gap-2">
                 <?php if (!empty($activePrenatal)): ?>
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#pregnancyDetailsCollapse" aria-expanded="false" aria-controls="pregnancyDetailsCollapse">
-                        Obstetric Details <i class="bi bi-chevron-down ms-1"></i>
+                        Obstetric Details <i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
                     </button>
                 <?php endif; ?>
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#medicalBackgroundCollapse" aria-expanded="false" aria-controls="medicalBackgroundCollapse">
-                    Medical Background <i class="bi bi-chevron-down ms-1"></i>
+                    Medical Background <i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
@@ -170,7 +170,7 @@ require dirname(__DIR__) . '/layout/header.php';
             <div class="d-flex flex-wrap align-items-center gap-2 pt-2 mt-2 border-top small">
                 <?php foreach ($alerts['flags'] as $flag): ?>
                     <span class="badge <?= $flag['class'] ?> px-2 py-1">
-                        <i class="bi <?= $flag['icon'] ?> me-1"></i><?= h($flag['label']) ?>
+                        <i class="bi <?= $flag['icon'] ?> me-1" aria-hidden="true"></i><?= h($flag['label']) ?>
                     </span>
                 <?php endforeach; ?>
             </div>
@@ -184,11 +184,11 @@ require dirname(__DIR__) . '/layout/header.php';
                         Active Pregnancy
                     </span>
                     <span class="fw-bold text-dark">G<?= h($activePrenatal['gravida']) ?>P<?= h($activePrenatal['para']) ?></span>
-                    <span class="text-muted">&bull;</span>
+                    <span class="text-muted" aria-hidden="true">&bull;</span>
                     <span class="text-secondary">LMP: <strong class="text-dark"><?= date('M d, Y', strtotime($activePrenatal['lmp'])) ?></strong></span>
-                    <span class="text-muted">&bull;</span>
+                    <span class="text-muted" aria-hidden="true">&bull;</span>
                     <span class="text-secondary">EDC: <strong class="text-dark"><?= date('M d, Y', strtotime($activePrenatal['edc'])) ?></strong></span>
-                    <span class="text-muted">&bull;</span>
+                    <span class="text-muted" aria-hidden="true">&bull;</span>
                     <span class="text-secondary">AOG: <strong class="text-dark"><?= h($activePrenatal['aog_weeks'] ?? 'N/A') ?> wks</strong></span>
                     <?php if (!empty($activePrenatal['pre_eclampsia'])): ?>
                         <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1">Pre-Eclampsia Risk</span>
@@ -283,16 +283,16 @@ require dirname(__DIR__) . '/layout/header.php';
     </div>
 </div>
 
-<form action="<?= url('/consultations/' . $consultation['id']) ?>" method="POST" autocomplete="off" id="consultationForm">
+<form action="<?= url('/consultations/' . $consultation['id']) ?>" method="POST" autocomplete="off" id="consultationForm" style="padding-bottom: 5.5rem;">
     <?= csrf_field() ?>
     <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
 
     <!-- 2. Unified Clinical Consultation Ledger Entry Card -->
     <div class="card card-premium mb-4">
         <div class="card-header bg-white py-3 border-bottom">
-            <h3 class="card-title h6 mb-0 fw-bold text-dark">
+            <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
                 Clinical Consultation Ledger Entry
-            </h3>
+            </h2>
         </div>
         <div class="card-body p-4">
             <!-- Section A: Encounter Details & Vital Signs -->
@@ -312,9 +312,11 @@ require dirname(__DIR__) . '/layout/header.php';
                            list="providerSuggestions" 
                            value="<?= h($currentProvider) ?>" 
                            placeholder="Search active clinical staff or enter provider name" 
+                           aria-describedby="consulting_provider_help<?= $hasFieldError('consulting_provider') ? ' consulting_provider_error' : '' ?>"
+                           aria-invalid="<?= $hasFieldError('consulting_provider') ? 'true' : 'false' ?>"
                            required>
                     <?php if ($hasFieldError('consulting_provider')): ?>
-                        <div class="invalid-feedback d-block"><?= h($getFieldError('consulting_provider')) ?></div>
+                        <div id="consulting_provider_error" class="invalid-feedback d-block"><?= h($getFieldError('consulting_provider')) ?></div>
                     <?php endif; ?>
                     <datalist id="providerSuggestions">
                         <?php foreach ($clinicians as $c): 
@@ -326,7 +328,7 @@ require dirname(__DIR__) . '/layout/header.php';
                             <option value="<?= h($cName) ?>">
                         <?php endforeach; ?>
                     </datalist>
-                    <div class="form-text text-muted" style="font-size: 0.75rem;">
+                    <div id="consulting_provider_help" class="form-text text-muted" style="font-size: 0.75rem;">
                         Enter the clinician or midwife who conducted the consultation.
                     </div>
                 </div>
@@ -340,9 +342,11 @@ require dirname(__DIR__) . '/layout/header.php';
                            class="form-control bg-light <?= $hasFieldError('consulted_at') ? 'is-invalid' : '' ?>" 
                            value="<?= date('Y-m-d\TH:i', strtotime($input['consulted_at'] ?? $consultation['consulted_at'] ?? 'now')) ?>" 
                            max="<?= date('Y-m-d\TH:i') ?>"
+                           <?= $hasFieldError('consulted_at') ? 'aria-describedby="consulted_at_error"' : '' ?>
+                           aria-invalid="<?= $hasFieldError('consulted_at') ? 'true' : 'false' ?>"
                            required>
                     <?php if ($hasFieldError('consulted_at')): ?>
-                        <div class="invalid-feedback d-block"><?= h($getFieldError('consulted_at')) ?></div>
+                        <div id="consulted_at_error" class="invalid-feedback d-block"><?= h($getFieldError('consulted_at')) ?></div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -409,15 +413,18 @@ require dirname(__DIR__) . '/layout/header.php';
                 <label for="subjective" class="form-label fw-bold text-dark mb-1">
                     History of Present Illness <span class="text-danger">*</span>
                 </label>
-                <div class="form-text text-muted small mb-2">Patient's chief complaint, reported symptoms, timeline, and history of present illness.</div>
+                <div id="subjective_help" class="form-text text-muted small mb-2">Patient's chief complaint, reported symptoms, timeline, and history of present illness.</div>
                 <textarea name="subjective" 
                           id="subjective" 
                           rows="3" 
                           class="form-control <?= $hasFieldError('subjective') ? 'is-invalid' : '' ?>" 
                           placeholder="e.g. Patient reports persistent dry cough and low-grade fever for 3 days. No difficulty breathing..." 
+                          aria-describedby="subjective_help<?= $hasFieldError('subjective') ? ' subjective_error' : '' ?>"
+                          aria-invalid="<?= $hasFieldError('subjective') ? 'true' : 'false' ?>"
+                          spellcheck="true"
                           required><?= h($input['subjective'] ?? '') ?></textarea>
                 <?php if ($hasFieldError('subjective')): ?>
-                    <div class="invalid-feedback"><?= h($getFieldError('subjective')) ?></div>
+                    <div id="subjective_error" class="invalid-feedback"><?= h($getFieldError('subjective')) ?></div>
                 <?php endif; ?>
             </div>
 
@@ -428,7 +435,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         Physical Exam <span class="text-danger">*</span>
                     </label>
                 </div>
-                <div class="form-text text-muted small mb-2">Physical examination observations, organ findings, and linked diagnostic indicators.</div>
+                <div id="objective_help" class="form-text text-muted small mb-2">Physical examination observations, organ findings, and linked diagnostic indicators.</div>
                 
                 <!-- Quick PE Snippets Ribbon -->
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
@@ -452,9 +459,12 @@ require dirname(__DIR__) . '/layout/header.php';
                           rows="3" 
                           class="form-control <?= $hasFieldError('objective') ? 'is-invalid' : '' ?>" 
                           placeholder="e.g. Mild pharyngeal congestion, tonsils not enlarged. Clear breath sounds bilaterally, no rales or wheezing..." 
+                          aria-describedby="objective_help<?= $hasFieldError('objective') ? ' objective_error' : '' ?>"
+                          aria-invalid="<?= $hasFieldError('objective') ? 'true' : 'false' ?>"
+                          spellcheck="true"
                           required><?= h($input['objective'] ?? '') ?></textarea>
                 <?php if ($hasFieldError('objective')): ?>
-                    <div class="invalid-feedback"><?= h($getFieldError('objective')) ?></div>
+                    <div id="objective_error" class="invalid-feedback"><?= h($getFieldError('objective')) ?></div>
                 <?php endif; ?>
             </div>
 
@@ -465,7 +475,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         Assessment / Impression <span class="text-danger">*</span>
                     </label>
                 </div>
-                <div class="form-text text-muted small mb-2">Primary clinical diagnosis, secondary impressions, or differential diagnosis.</div>
+                <div id="assessment_help" class="form-text text-muted small mb-2">Primary clinical diagnosis, secondary impressions, or differential diagnosis.</div>
                 
                 <!-- Quick Diagnoses Chips Ribbon -->
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
@@ -501,9 +511,12 @@ require dirname(__DIR__) . '/layout/header.php';
                           rows="3" 
                           class="form-control <?= $hasFieldError('assessment') ? 'is-invalid' : '' ?>" 
                           placeholder="e.g. Acute Upper Respiratory Tract Infection (URTI) / Acute Nasopharyngitis" 
+                          aria-describedby="assessment_help<?= $hasFieldError('assessment') ? ' assessment_error' : '' ?>"
+                          aria-invalid="<?= $hasFieldError('assessment') ? 'true' : 'false' ?>"
+                          spellcheck="true"
                           required><?= h($input['assessment'] ?? '') ?></textarea>
                 <?php if ($hasFieldError('assessment')): ?>
-                    <div class="invalid-feedback"><?= h($getFieldError('assessment')) ?></div>
+                    <div id="assessment_error" class="invalid-feedback"><?= h($getFieldError('assessment')) ?></div>
                 <?php endif; ?>
             </div>
 
@@ -514,7 +527,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         Treatment <span class="text-danger">*</span>
                     </label>
                 </div>
-                <div class="form-text text-muted small mb-2">Non-pharmacological advice, lab recommendations, patient instructions, and follow-up return schedule.</div>
+                <div id="plan_help" class="form-text text-muted small mb-2">Non-pharmacological advice, lab recommendations, patient instructions, and follow-up return schedule.</div>
                 
                 <!-- Quick Advice Snippets Ribbon -->
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-2">
@@ -538,9 +551,12 @@ require dirname(__DIR__) . '/layout/header.php';
                           rows="3" 
                           class="form-control <?= $hasFieldError('plan') ? 'is-invalid' : '' ?>" 
                           placeholder="e.g. Increase oral fluid intake. Return if symptoms persist after 3 days. Follow up next week for re-evaluation." 
+                          aria-describedby="plan_help<?= $hasFieldError('plan') ? ' plan_error' : '' ?>"
+                          aria-invalid="<?= $hasFieldError('plan') ? 'true' : 'false' ?>"
+                          spellcheck="true"
                           required><?= h($input['plan'] ?? '') ?></textarea>
                 <?php if ($hasFieldError('plan')): ?>
-                    <div class="invalid-feedback"><?= h($getFieldError('plan')) ?></div>
+                    <div id="plan_error" class="invalid-feedback"><?= h($getFieldError('plan')) ?></div>
                 <?php endif; ?>
             </div>
 
@@ -613,9 +629,9 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
 
                 <!-- Allergy Conflict Alert Banner -->
-                <div id="rxAllergyAlertBanner" class="alert alert-danger py-2 px-3 mb-2 small d-none" role="alert">
+                <div id="rxAllergyAlertBanner" class="alert alert-danger py-2 px-3 mb-2 small d-none" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-exclamation-octagon-fill fs-5 text-danger flex-shrink-0"></i>
+                        <i class="bi bi-exclamation-octagon-fill fs-5 text-danger flex-shrink-0" aria-hidden="true"></i>
                         <div>
                             <strong>Allergy Conflict Alert:</strong> 
                             <span id="rxAllergyAlertText">One or more prescribed medications conflict with the patient's recorded allergies.</span>
@@ -627,12 +643,12 @@ require dirname(__DIR__) . '/layout/header.php';
                     <table class="table table-bordered table-sm align-middle mb-1" id="prescriptionsTable">
                         <thead class="table-light small text-muted">
                             <tr>
-                                <th style="width: 28%;">Medicine Name <span class="text-danger">*</span></th>
-                                <th style="width: 18%;">Dosage</th>
-                                <th style="width: 18%;">Frequency</th>
-                                <th style="width: 16%;">Duration</th>
-                                <th style="width: 15%;">Instructions / Sig</th>
-                                <th style="width: 5%;" class="text-center">Action</th>
+                                <th scope="col" style="width: 28%;">Medicine Name <span class="text-danger">*</span></th>
+                                <th scope="col" style="width: 18%;">Dosage</th>
+                                <th scope="col" style="width: 18%;">Frequency</th>
+                                <th scope="col" style="width: 16%;">Duration</th>
+                                <th scope="col" style="width: 15%;">Instructions / Sig</th>
+                                <th scope="col" style="width: 5%;" class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody id="prescriptionsTableBody">

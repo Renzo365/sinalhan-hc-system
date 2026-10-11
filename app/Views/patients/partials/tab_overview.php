@@ -1,7 +1,7 @@
                     <!-- ==============================================================
                        TAB 1: OVERVIEW & CLINICAL SNAPSHOT
                        ============================================================== -->
-                    <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                    <div class="tab-pane fade show active" id="tab-overview" role="tabpanel" aria-labelledby="tab-overview-btn" tabindex="0">
                         <div class="row g-3">
                             
                             <!-- 1. Demographic & Civil Profile Card -->

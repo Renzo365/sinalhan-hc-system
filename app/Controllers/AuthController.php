@@ -66,7 +66,7 @@ class AuthController extends Controller {
         if ($user) {
             // Check manual status deactivation
             if ($user['status'] === 'inactive') {
-                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$user['username']} / {$identifier})");
+                AuditLog::log('LOGIN_FAILED', 'Auth', "Blocked login attempt: inactive account ({$user['username']} / {$identifier})", null, $user['username']);
                 $this->setLoginError('This account is inactive. Please contact an administrator.', $identifier);
                 $this->redirect('/login');
                 return;
@@ -75,7 +75,7 @@ class AuthController extends Controller {
             // Check temporary 15-minute lockout cooldown
             $lockoutStatus = $this->userModel->isLockedOut($user);
             if ($lockoutStatus['is_locked']) {
-                AuditLog::log('LOGIN_BLOCKED_LOCKOUT', 'Auth', "Blocked login attempt during temporary lockout for: {$user['username']} ({$identifier})");
+                AuditLog::log('LOGIN_BLOCKED_LOCKOUT', 'Auth', "Blocked login attempt during temporary lockout for: {$user['username']} ({$identifier})", null, $user['username']);
                 $this->setLoginError('Too many failed login attempts. Please try again later or contact your administrator.', $identifier);
                 $this->redirect('/login');
                 return;
@@ -96,6 +96,7 @@ class AuthController extends Controller {
                 $_SESSION['user_fullname'] = trim($user['first_name'] . ' ' . $user['last_name']);
                 $_SESSION['must_change_password'] = (int)$user['must_change_password'];
                 $_SESSION['last_activity'] = time();
+                $_SESSION['user_preferences'] = !empty($user['preferences']) ? json_decode($user['preferences'], true) : [];
 
                 // Log successful login
                 AuditLog::log('LOGIN_SUCCESS', 'Auth', "User successfully logged in ({$user['username']}).");
@@ -104,15 +105,24 @@ class AuthController extends Controller {
                     $this->redirect('/change-password');
                 } else {
                     $_SESSION['login_welcome'] = true;
-                    $this->redirect('/dashboard');
+                    $targetLanding = user_pref('landing_page', 'dashboard');
+                    $allowedLandings = [
+                        'dashboard' => '/dashboard',
+                        'patients' => '/patients',
+                        'queue' => '/queue',
+                        'appointments' => '/appointments'
+                    ];
+                    $redirectUrl = $allowedLandings[$targetLanding] ?? '/dashboard';
+                    $this->redirect($redirectUrl);
                 }
             } else {
                 // Password incorrect - increment attempts
                 $attempts = $this->userModel->incrementFailedAttempts($user['username']);
-                AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (password mismatch) for: {$user['username']} ({$identifier}). Failed attempts count: {$attempts}/5");
+                $maxAttempts = function_exists('setting') ? (int)setting('max_login_attempts', 5) : 5;
+                AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (password mismatch) for: {$user['username']} ({$identifier}). Failed attempts count: {$attempts}/{$maxAttempts}", null, $user['username']);
 
-                if ($attempts >= 5) {
-                    AuditLog::log('ACCOUNT_LOCKED', 'Auth', "Account temporarily locked for 15 minutes due to 5 consecutive failed attempts: {$user['username']}");
+                if ($attempts >= $maxAttempts) {
+                    AuditLog::log('ACCOUNT_LOCKED', 'Auth', "Account temporarily locked for 15 minutes due to {$maxAttempts} consecutive failed attempts: {$user['username']}", null, $user['username']);
                     $error = 'Too many failed login attempts. Please try again later or contact your administrator.';
                 } else {
                     $error = 'Invalid username or password.';
@@ -123,7 +133,7 @@ class AuthController extends Controller {
             }
         } else {
             // User does not exist
-            AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (non-existent account) for: " . $identifier);
+            AuditLog::log('LOGIN_FAILED', 'Auth', "Failed login attempt (non-existent account) for: " . $identifier, null, $identifier);
             $this->setLoginError('Invalid username or password.', $identifier);
             $this->redirect('/login');
         }

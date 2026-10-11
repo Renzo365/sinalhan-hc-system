@@ -86,68 +86,68 @@ $curRole = $_SESSION['user_role'] ?? $_SESSION['role'] ?? 'staff';
     
     <!-- Sleek Single-Line Tab Bar -->
     <div class="card-header bg-white p-0 border-0 position-relative workstation-tabs-wrapper">
-        <button type="button" class="workstation-tab-scroll-btn scroll-prev" id="tabScrollPrev" title="Scroll left" aria-label="Scroll tabs left">
-            <i class="bi bi-chevron-left"></i>
+        <button type="button" class="workstation-tab-scroll-btn scroll-prev" id="tabScrollPrev" title="Scroll left" aria-label="Scroll tabs left" tabindex="-1">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
         </button>
-        <ul class="nav nav-tabs m-0 border-0 flex-nowrap" id="workstationTabs" role="tablist">
+        <ul class="nav nav-tabs m-0 border-0 flex-nowrap" id="workstationTabs" role="tablist" aria-label="Patient Workstation Sections">
             <!-- Tab 1: Overview -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link active fw-semibold text-nowrap" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab">
+                <button class="nav-link active fw-semibold text-nowrap" id="tab-overview-btn" data-bs-toggle="tab" data-bs-target="#tab-overview" type="button" role="tab" aria-selected="true" aria-controls="tab-overview">
                     Overview
                 </button>
             </li>
                     
             <!-- Tab 2: Clinical Consultations -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-consultations-btn" data-bs-toggle="tab" data-bs-target="#tab-consultations" type="button" role="tab">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-consultations-btn" data-bs-toggle="tab" data-bs-target="#tab-consultations" type="button" role="tab" aria-selected="false" aria-controls="tab-consultations">
                     Consultations
-                    <span class="badge bg-light text-secondary border ms-1"><?= count($consultationsHistory) ?></span>
+                    <span class="badge bg-light text-secondary border ms-1" aria-label="<?= count($consultationsHistory) ?> consultations"><?= count($consultationsHistory) ?></span>
                 </button>
             </li>
 
             <!-- Tab 3: Vital Signs History -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-vitals-btn" data-bs-toggle="tab" data-bs-target="#tab-vitals" type="button" role="tab">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-vitals-btn" data-bs-toggle="tab" data-bs-target="#tab-vitals" type="button" role="tab" aria-selected="false" aria-controls="tab-vitals">
                     Vital Signs
-                    <span class="badge bg-light text-secondary border ms-1"><?= count($vitalsHistory) ?></span>
+                    <span class="badge bg-light text-secondary border ms-1" aria-label="<?= count($vitalsHistory) ?> records"><?= count($vitalsHistory) ?></span>
                 </button>
             </li>
 
             <!-- Tab 4: Appointments & Queue -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-appointments-btn" data-bs-toggle="tab" data-bs-target="#tab-appointments" type="button" role="tab">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-appointments-btn" data-bs-toggle="tab" data-bs-target="#tab-appointments" type="button" role="tab" aria-selected="false" aria-controls="tab-appointments">
                     Appointments &amp; Queue
                 </button>
             </li>
 
             <!-- Tab 5: IHP Medical History -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-ihp-btn" data-bs-toggle="tab" data-bs-target="#tab-ihp" type="button" role="tab">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-ihp-btn" data-bs-toggle="tab" data-bs-target="#tab-ihp" type="button" role="tab" aria-selected="false" aria-controls="tab-ihp">
                     IHP History
                 </button>
             </li>
 
             <!-- Tab 6: PHIC / PCB Ledger (Page 3) -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-pcb-btn" data-bs-toggle="tab" data-bs-target="#tab-pcb" type="button" role="tab">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-pcb-btn" data-bs-toggle="tab" data-bs-target="#tab-pcb" type="button" role="tab" aria-selected="false" aria-controls="tab-pcb">
                     PHIC / PCB Ledger
                     <?php if (!empty($pcbServiceLogs)): ?>
-                        <span class="badge bg-light text-secondary border ms-1"><?= count($pcbServiceLogs) ?></span>
+                        <span class="badge bg-light text-secondary border ms-1" aria-label="<?= count($pcbServiceLogs) ?> entries"><?= count($pcbServiceLogs) ?></span>
                     <?php endif; ?>
                 </button>
             </li>
 
             <!-- Tab 7: Universal Immunizations -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link fw-semibold text-nowrap" id="tab-immunizations-btn" data-bs-toggle="tab" data-bs-target="#tab-immunizations" type="button" role="tab">
+                <button class="nav-link fw-semibold text-nowrap" id="tab-immunizations-btn" data-bs-toggle="tab" data-bs-target="#tab-immunizations" type="button" role="tab" aria-selected="false" aria-controls="tab-immunizations">
                     Immunizations
-                    <span class="badge bg-light text-secondary border ms-1"><?= count($patientImmunizations) ?></span>
+                    <span class="badge bg-light text-secondary border ms-1" aria-label="<?= count($patientImmunizations) ?> records"><?= count($patientImmunizations) ?></span>
                 </button>
             </li>
 
         </ul>
-        <button type="button" class="workstation-tab-scroll-btn scroll-next" id="tabScrollNext" title="Scroll right" aria-label="Scroll tabs right">
-            <i class="bi bi-chevron-right"></i>
+        <button type="button" class="workstation-tab-scroll-btn scroll-next" id="tabScrollNext" title="Scroll right" aria-label="Scroll tabs right" tabindex="-1">
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
         </button>
     </div>
 

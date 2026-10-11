@@ -10,11 +10,11 @@ require dirname(__DIR__) . '/layout/header.php';
 <div class="patient-form-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="h3 mb-1 fw-bold text-primary-dark">Register Patient (Stage 1 Intake)</h2>
-            <p class="text-secondary small mb-0">Fast clinical intake: Enter demographic, household, and basic identity details.</p>
+            <h1 class="h3 mb-1 fw-bold text-primary-dark" style="text-wrap: balance;">Register Patient (Stage 1 Intake)</h1>
+            <p class="text-secondary small mb-0" style="text-wrap: pretty;">Fast clinical intake: Enter demographic, household, and basic identity details.</p>
         </div>
-        <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary btn-nav-guard">
-            <i class="bi bi-arrow-left me-1"></i> Back to Patients List
+        <a href="<?= url('/patients') ?>" class="btn btn-outline-secondary btn-nav-guard d-inline-flex align-items-center" style="min-height: 38px;">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i> Back to Patients List
         </a>
     </div>
 
@@ -40,7 +40,7 @@ require dirname(__DIR__) . '/layout/header.php';
         ];
         ?>
         <div class="alert alert-danger mb-4 shadow-sm" role="alert">
-            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Please correct the following errors:</div>
+            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Please correct the following errors:</div>
             <ul class="mb-0 ps-3 small">
                 <?php foreach ($errors as $err): 
                     $targetId = '';
@@ -64,14 +64,14 @@ require dirname(__DIR__) . '/layout/header.php';
     <?php endif; ?>
 
     <!-- Duplicate Warning Banner -->
-    <div class="alert alert-warning mb-4 shadow-sm d-none" id="duplicateWarningBanner" role="alert">
+    <div class="alert alert-warning mb-4 shadow-sm d-none" id="duplicateWarningBanner" role="region" aria-live="polite" aria-label="Duplicate Patient Warning">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div>
-                <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Possible Duplicate Patient Detected</div>
+                <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>Possible Duplicate Patient Detected</div>
                 <div class="small text-dark" id="duplicateBannerText">Matching records were found in the database.</div>
             </div>
-            <button type="button" class="btn btn-warning btn-sm fw-semibold text-dark" id="btnViewDuplicates">
-                <i class="bi bi-eye me-1"></i> View Matches
+            <button type="button" class="btn btn-warning btn-sm fw-semibold text-dark d-inline-flex align-items-center" id="btnViewDuplicates" style="min-height: 38px;">
+                <i class="bi bi-eye me-1" aria-hidden="true"></i> View Matches
             </button>
         </div>
     </div>
@@ -81,26 +81,26 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content shadow border-0">
                 <div class="modal-header bg-warning-subtle text-dark border-bottom py-3">
-                    <h5 class="modal-title h6 fw-bold mb-0 d-flex align-items-center gap-2" id="duplicateWarningModalLabel">
-                        <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                    <h2 class="modal-title h6 fw-bold mb-0 d-flex align-items-center gap-2" id="duplicateWarningModalLabel" style="text-wrap: balance;">
+                        <i class="bi bi-exclamation-triangle-fill text-warning fs-5" aria-hidden="true"></i>
                         <span>Possible Duplicate Patient Record Detected</span>
-                    </h5>
+                    </h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-secondary mb-3">
+                    <p class="text-secondary mb-3" style="text-wrap: pretty;">
                         The system found existing patient record(s) matching the <strong>Full Name</strong> or <strong>Last Name + Date of Birth</strong> entered. Please verify whether this patient is already registered before proceeding.
                     </p>
                     <div class="table-responsive border rounded-3 mb-3">
                         <table class="table table-sm table-hover align-middle mb-0 small">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Patient No.</th>
-                                    <th>Full Name</th>
-                                    <th>Date of Birth</th>
-                                    <th>Sex</th>
-                                    <th>Address</th>
-                                    <th class="text-center">Action</th>
+                                    <th scope="col">Patient No.</th>
+                                    <th scope="col">Full Name</th>
+                                    <th scope="col">Date of Birth</th>
+                                    <th scope="col">Sex</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col" class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="duplicateModalTableBody">
@@ -108,16 +108,16 @@ require dirname(__DIR__) . '/layout/header.php';
                         </table>
                     </div>
                     <div class="alert alert-info py-2 px-3 small mb-0 d-flex align-items-center gap-2">
-                        <i class="bi bi-info-circle-fill text-primary"></i>
-                        <span>If this is indeed the same person, click <strong>Cancel & Review</strong> and search for their existing record. If this is a different individual with a similar name, you may click <strong>Proceed with Registration</strong>.</span>
+                        <i class="bi bi-info-circle-fill text-primary" aria-hidden="true"></i>
+                        <span style="text-wrap: pretty;">If this is indeed the same person, click <strong>Cancel & Review</strong> and search for their existing record. If this is a different individual with a similar name, you may click <strong>Proceed with Registration</strong>.</span>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-top py-2 px-3">
-                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal" id="btnCancelDuplicate">
-                        <i class="bi bi-x-circle me-1"></i> Cancel & Review
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center" data-bs-dismiss="modal" id="btnCancelDuplicate" style="min-height: 38px;">
+                        <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Cancel & Review
                     </button>
-                    <button type="button" class="btn btn-warning btn-sm px-3 fw-semibold text-dark" id="btnProceedDuplicate">
-                        <i class="bi bi-person-check-fill me-1"></i> Proceed with Registration
+                    <button type="button" class="btn btn-warning btn-sm px-3 fw-semibold text-dark d-inline-flex align-items-center" id="btnProceedDuplicate" style="min-height: 38px;">
+                        <i class="bi bi-person-check-fill me-1" aria-hidden="true"></i> Proceed with Registration
                     </button>
                 </div>
             </div>
@@ -131,10 +131,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- CARD 1: Personal Identity -->
         <div class="card card-premium mb-4">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">1</span>
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-person-badge text-primary me-2"></i>Personal Identity
-                </h3>
+                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1" aria-hidden="true">1</span>
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
+                    <i class="bi bi-person-badge text-primary me-2" aria-hidden="true"></i>Personal Identity
+                </h2>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -150,6 +150,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                maxlength="50"
                                minlength="2"
                                autocomplete="given-name"
+                               autocapitalize="words"
                                required>
                     </div>
                     <div class="col-12 col-sm-6 col-lg-3">
@@ -161,6 +162,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                placeholder="e.g. Mercado"
                                maxlength="50"
                                autocomplete="additional-name"
+                               autocapitalize="words"
                                value="<?= h($input['middle_name'] ?? '') ?>">
                     </div>
                     <div class="col-12 col-sm-6 col-lg-3">
@@ -174,6 +176,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                maxlength="50"
                                minlength="2"
                                autocomplete="family-name"
+                               autocapitalize="words"
                                required>
                     </div>
                     <div class="col-12 col-sm-6 col-lg-3">
@@ -185,6 +188,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                placeholder="e.g. Jr., III"
                                maxlength="20"
                                autocomplete="honorific-suffix"
+                               autocapitalize="words"
                                value="<?= h($input['suffix'] ?? '') ?>">
                     </div>
 
@@ -198,19 +202,21 @@ require dirname(__DIR__) . '/layout/header.php';
                                value="<?= h($input['dob'] ?? '') ?>" 
                                max="<?= date('Y-m-d') ?>"
                                autocomplete="bday"
+                               style="font-variant-numeric: tabular-nums;"
                                required>
                     </div>
 
                     <div class="col-12 col-sm-6 col-md-3">
                         <label for="calculated_age" class="form-label fw-semibold text-secondary-emphasis small">Calculated Age</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-clock-history"></i></span>
+                            <span class="input-group-text bg-light text-muted" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
                             <input type="text" 
                                    id="calculated_age" 
                                    class="form-control bg-light fw-bold text-dark font-monospace" 
                                    placeholder="Auto-calculated" 
                                    readonly 
-                                   tabindex="-1">
+                                   tabindex="-1"
+                                   style="font-variant-numeric: tabular-nums;">
                         </div>
                     </div>
 
@@ -250,16 +256,18 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <div class="col-12 col-md-4">
                         <label for="envelope_no" class="form-label fw-semibold text-secondary-emphasis small">
-                            Physical Envelope No. <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 font-monospace" style="font-size: 0.7rem;">Logbook #</span>
+                            Physical Envelope No. <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1 font-monospace" style="font-size: 0.7rem; font-variant-numeric: tabular-nums;">Logbook #</span>
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-folder2-open"></i></span>
+                            <span class="input-group-text bg-light text-muted" aria-hidden="true"><i class="bi bi-folder2-open"></i></span>
                             <input type="text" 
                                    name="envelope_no" 
                                    id="envelope_no" 
                                    class="form-control" 
                                    placeholder="e.g. 1001" 
                                    maxlength="50" 
+                                   inputmode="numeric"
+                                   style="font-variant-numeric: tabular-nums;"
                                    value="<?= h($input['envelope_no'] ?? '') ?>">
                         </div>
                     </div>
@@ -272,6 +280,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control" 
                                placeholder="e.g. Roman Catholic, INC, Islam" 
                                maxlength="100" 
+                               autocapitalize="words"
                                value="<?= h($input['religion'] ?? '') ?>">
                     </div>
 
@@ -284,6 +293,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control" 
                                placeholder="Please specify civil status" 
                                maxlength="100" 
+                               autocapitalize="words"
                                value="<?= h($input['civil_status_other'] ?? '') ?>"
                                <?= ($input['civil_status'] ?? '') === 'Others' ? '' : 'disabled' ?>>
                     </div>
@@ -294,10 +304,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- CARD 2: Household & Address -->
         <div class="card card-premium mb-4">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">2</span>
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-house-door text-primary me-2"></i>Household & Address
-                </h3>
+                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1" aria-hidden="true">2</span>
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
+                    <i class="bi bi-house-door text-primary me-2" aria-hidden="true"></i>Household & Address
+                </h2>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -307,13 +317,14 @@ require dirname(__DIR__) . '/layout/header.php';
                             Family Number (Household ID)
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-people-fill"></i></span>
+                            <span class="input-group-text bg-light text-muted" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
                             <input type="text" 
                                    name="family_no" 
                                    id="family_no" 
-                                   class="form-control" 
+                                   class="form-control font-monospace" 
                                    placeholder="e.g. FAM-0428" 
                                    maxlength="50"
+                                   style="font-variant-numeric: tabular-nums;"
                                    value="<?= h($input['family_no'] ?? '') ?>">
                         </div>
                         <div class="form-text small text-muted">Links household members together in the directory.</div>
@@ -322,14 +333,16 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 col-md-6">
                         <label for="contact_no" class="form-label fw-semibold text-secondary-emphasis small">Contact No. (Mobile)</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+                            <span class="input-group-text bg-light text-muted" aria-hidden="true"><i class="bi bi-telephone"></i></span>
                             <input type="tel" 
                                    name="contact_no" 
                                    id="contact_no" 
                                    class="form-control phone-input" 
                                    placeholder="09171234567" 
                                    maxlength="11"
+                                   inputmode="tel"
                                    autocomplete="tel"
+                                   style="font-variant-numeric: tabular-nums;"
                                    value="<?= h($input['contact_no'] ?? '') ?>">
                         </div>
                         <div class="form-text small text-muted">11-digit mobile number starting with 09.</div>
@@ -345,6 +358,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                placeholder="e.g. Blk 4 Lot 12 Purok 3, Barangay Sinalhan, Santa Rosa, Laguna" 
                                maxlength="500" 
                                autocomplete="street-address"
+                               autocapitalize="words"
                                value="<?= h($input['address'] ?? '') ?>" 
                                required>
                         <div class="form-text small text-muted">Enter complete residential address (House No., Street, Purok, Barangay, City/Municipality).</div>
@@ -356,10 +370,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- CARD 3: PhilHealth & Socioeconomic -->
         <div class="card card-premium mb-4">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">3</span>
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-card-heading text-primary me-2"></i>PhilHealth & Socioeconomic
-                </h3>
+                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1" aria-hidden="true">3</span>
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
+                    <i class="bi bi-card-heading text-primary me-2" aria-hidden="true"></i>PhilHealth & Socioeconomic
+                </h2>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -402,13 +416,15 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 col-md-6">
                         <label for="philhealth_no" class="form-label fw-semibold text-secondary-emphasis small">PhilHealth Identification No. (PIN)</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted"><i class="bi bi-credit-card-2-front"></i></span>
+                            <span class="input-group-text bg-light text-muted" aria-hidden="true"><i class="bi bi-credit-card-2-front"></i></span>
                             <input type="text" 
                                    name="philhealth_no" 
                                    id="philhealth_no" 
-                                   class="form-control phic-mask" 
+                                   class="form-control phic-mask font-monospace" 
                                    placeholder="XX-XXXXXXXXX-X" 
                                    maxlength="14"
+                                   inputmode="numeric"
+                                   style="font-variant-numeric: tabular-nums;"
                                    value="<?= h($input['philhealth_no'] ?? '') ?>">
                         </div>
                         <div class="form-text small text-muted" id="phicHelpText">Standard 12-digit PIN format (leave blank if none).</div>
@@ -435,6 +451,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control" 
                                placeholder="e.g. Vendor, Driver, Student" 
                                maxlength="100"
+                               autocapitalize="words"
                                value="<?= h($input['occupation'] ?? '') ?>">
                     </div>
                 </div>
@@ -444,10 +461,10 @@ require dirname(__DIR__) . '/layout/header.php';
         <!-- CARD 4: Immediate Family & Emergency Contacts -->
         <div class="card card-premium mb-4">
             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
-                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1">4</span>
-                <h3 class="card-title h6 mb-0 fw-bold text-dark">
-                    <i class="bi bi-people text-primary me-2"></i>Immediate Family & Emergency Contacts
-                </h3>
+                <span class="badge bg-primary-subtle text-primary fw-bold me-2 px-2 py-1" aria-hidden="true">4</span>
+                <h2 class="card-title h6 mb-0 fw-bold text-dark" style="text-wrap: balance;">
+                    <i class="bi bi-people text-primary me-2" aria-hidden="true"></i>Immediate Family & Emergency Contacts
+                </h2>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -455,7 +472,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 mb-1">
                         <div class="d-flex align-items-center justify-content-between pb-1 border-bottom">
                             <span class="fw-bold text-dark small text-uppercase">
-                                <i class="bi bi-person-heart text-primary me-1"></i>4A. Family Background (Parents & Spouse)
+                                <i class="bi bi-person-heart text-primary me-1" aria-hidden="true"></i>4A. Family Background (Parents & Spouse)
                             </span>
                             <span class="text-muted small" style="font-size: 0.75rem;">Optional demographic & hereditary reference</span>
                         </div>
@@ -470,6 +487,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control name-input" 
                                placeholder="Full Name of Father" 
                                maxlength="150"
+                               autocapitalize="words"
                                value="<?= h($input['father_name'] ?? '') ?>">
                     </div>
                     <div class="col-12 col-md-5">
@@ -479,6 +497,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                id="father_dob" 
                                class="form-control" 
                                max="<?= date('Y-m-d') ?>"
+                               style="font-variant-numeric: tabular-nums;"
                                value="<?= h($input['father_dob'] ?? '') ?>">
                     </div>
 
@@ -491,6 +510,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control name-input" 
                                placeholder="Maiden Name of Mother" 
                                maxlength="150"
+                               autocapitalize="words"
                                value="<?= h($input['mother_name'] ?? '') ?>">
                     </div>
                     <div class="col-12 col-md-5">
@@ -500,6 +520,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                id="mother_dob" 
                                class="form-control" 
                                max="<?= date('Y-m-d') ?>"
+                               style="font-variant-numeric: tabular-nums;"
                                value="<?= h($input['mother_dob'] ?? '') ?>">
                     </div>
 
@@ -512,6 +533,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control name-input" 
                                placeholder="Full Name of Spouse" 
                                maxlength="150"
+                               autocapitalize="words"
                                value="<?= h($input['spouse_name'] ?? '') ?>">
                     </div>
                     <div class="col-12 col-md-5">
@@ -521,6 +543,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                id="spouse_dob" 
                                class="form-control" 
                                max="<?= date('Y-m-d') ?>"
+                               style="font-variant-numeric: tabular-nums;"
                                value="<?= h($input['spouse_dob'] ?? '') ?>">
                     </div>
 
@@ -528,7 +551,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     <div class="col-12 mt-4 mb-1">
                         <div class="d-flex align-items-center justify-content-between pb-1 border-bottom">
                             <span class="fw-bold text-dark small text-uppercase">
-                                <i class="bi bi-telephone-plus-fill text-danger me-1"></i>4B. Emergency Contact & Notification
+                                <i class="bi bi-telephone-plus-fill text-danger me-1" aria-hidden="true"></i>4B. Emergency Contact & Notification
                             </span>
                             <span class="text-muted small" style="font-size: 0.75rem;">Primary contact person to notify</span>
                         </div>
@@ -543,6 +566,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control name-input" 
                                placeholder="e.g. Maria Dela Cruz" 
                                maxlength="100"
+                               autocapitalize="words"
                                value="<?= h($input['emergency_name'] ?? '') ?>">
                     </div>
 
@@ -554,6 +578,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                class="form-control" 
                                placeholder="e.g. Mother, Spouse, Sister" 
                                maxlength="50"
+                               autocapitalize="words"
                                value="<?= h($input['emergency_relationship'] ?? '') ?>">
                     </div>
 
@@ -566,6 +591,8 @@ require dirname(__DIR__) . '/layout/header.php';
                                placeholder="09187654321" 
                                maxlength="11"
                                autocomplete="tel"
+                               inputmode="tel"
+                               style="font-variant-numeric: tabular-nums;"
                                value="<?= h($input['emergency_no'] ?? '') ?>">
                         <div class="form-text small text-muted">11-digit mobile number starting with 09.</div>
                     </div>
@@ -577,12 +604,12 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="card card-premium sticky-form-action-bar mb-4 shadow">
             <div class="card-body p-3 px-md-4 py-md-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="text-secondary-emphasis small">
-                    <i class="bi bi-info-circle me-1 text-primary"></i> Fields marked with (<span class="text-danger">*</span>) are mandatory.
+                    <i class="bi bi-info-circle me-1 text-primary" aria-hidden="true"></i> Fields marked with (<span class="text-danger">*</span>) are mandatory.
                 </span>
                 <div class="d-flex gap-3">
-                    <a href="<?= url('/patients') ?>" class="btn btn-light px-4 btn-nav-guard">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btnSubmitPatient">
-                        <i class="bi bi-check2-circle me-1 fs-5 align-middle"></i> Register & View Profile
+                    <a href="<?= url('/patients') ?>" class="btn btn-light px-4 btn-nav-guard" style="min-height: 42px; display: inline-flex; align-items: center;">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btnSubmitPatient" style="min-height: 42px;">
+                        <i class="bi bi-check2-circle me-1 fs-5 align-middle" aria-hidden="true"></i> Register & View Profile
                     </button>
                 </div>
             </div>
