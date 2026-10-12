@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `patient_conditions`;
 DROP TABLE IF EXISTS `patient_medical_histories`;
 DROP TABLE IF EXISTS `child_health_records`;
 DROP TABLE IF EXISTS `maternal_records`;
+DROP TABLE IF EXISTS `system_settings`;
 DROP TABLE IF EXISTS `settings`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `immunizations`;
@@ -45,6 +46,7 @@ CREATE TABLE `users` (
   `username` VARCHAR(50) NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `role` ENUM('super_admin', 'admin', 'staff') NOT NULL,
+  `is_super_admin` TINYINT(1) NOT NULL DEFAULT 0,
   `first_name` VARCHAR(50) NOT NULL,
   `middle_name` VARCHAR(50) DEFAULT NULL,
   `last_name` VARCHAR(50) NOT NULL,
@@ -61,6 +63,7 @@ CREATE TABLE `users` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `preferences` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`),
   UNIQUE KEY `idx_email` (`email`)
@@ -186,16 +189,22 @@ CREATE TABLE `appointments` (
   `updated_by` INT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_appointments_deleted` (`deleted_at`),
   CONSTRAINT `fk_appointment_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_appointment_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `fk_appointment_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_appointment_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_appointment_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. Queue Entries Table
 CREATE TABLE `queue_entries` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
+  `appointment_id` INT DEFAULT NULL,
   `service_type` VARCHAR(50) DEFAULT 'General OPD',
   `priority_level` VARCHAR(30) NOT NULL DEFAULT 'Regular',
   `queue_date` DATE NOT NULL,
@@ -209,8 +218,10 @@ CREATE TABLE `queue_entries` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  INDEX `idx_queue_appointment_id` (`appointment_id`),
   UNIQUE KEY `uq_queue_date_no` (`queue_date`, `queue_no`),
   CONSTRAINT `fk_queue_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_queue_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT `fk_queue_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_queue_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -478,8 +489,10 @@ CREATE TABLE `wellbaby_records` (
   `birth_weight_kg` DECIMAL(4,2) NOT NULL,
   `birth_length_cm` DECIMAL(4,1) NOT NULL,
   `place_of_delivery` ENUM('Hospital', 'Lying-in', 'Home', 'Others') NOT NULL DEFAULT 'Lying-in',
+  `place_of_delivery_other` VARCHAR(150) NULL,
   `delivery_type` ENUM('Normal Spontaneous Delivery (NSD)', 'Caesarean Section (CS)', 'Others') NOT NULL DEFAULT 'Normal Spontaneous Delivery (NSD)',
   `attended_by` ENUM('Doctor', 'Nurse', 'Midwife', 'Hilot/TBA', 'Others') NOT NULL DEFAULT 'Midwife',
+  `attended_by_other` VARCHAR(150) NULL,
   `newborn_screening_done` TINYINT(1) NOT NULL DEFAULT 0,
   `newborn_screening_date` DATE NULL,
   `newborn_screening_result` VARCHAR(100) NULL,
@@ -540,6 +553,19 @@ CREATE TABLE `settings` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`setting_key`),
   CONSTRAINT `fk_settings_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 15b. System Settings Table (Global Clinic Profile, Clinical Details & Configuration)
+CREATE TABLE `system_settings` (
+  `setting_key` VARCHAR(64) NOT NULL,
+  `setting_value` TEXT NULL DEFAULT NULL,
+  `category` VARCHAR(32) NOT NULL DEFAULT 'general',
+  `updated_by` INT(11) NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`setting_key`),
+  KEY `idx_settings_category` (`category`),
+  KEY `idx_settings_updated_by` (`updated_by`),
+  CONSTRAINT `fk_sys_settings_user` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 16. Audit Logs Table

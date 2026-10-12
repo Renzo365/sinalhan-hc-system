@@ -62,6 +62,7 @@ class DashboardController extends Controller {
         $queueStats = [
             'waiting' => 0,
             'called' => 0,
+            'serving' => 0,
             'completed' => 0,
             'serving_no' => 0,
             'serving_service' => ''
@@ -209,19 +210,36 @@ class DashboardController extends Controller {
             ];
 
             // 6. Recent Clinical Encounters (exclude cancelled consultations)
-            $stmt = $db->prepare("
-                SELECT c.id, c.patient_id, c.consulted_at, c.subjective, c.assessment, c.status,
-                       p.patient_no, p.first_name, p.last_name, p.sex, p.dob, TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) as age,
-                       COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Staff') as clinician_name
-                FROM consultations c
-                JOIN patients p ON c.patient_id = p.id
-                LEFT JOIN users u ON c.consulted_by = u.id
-                WHERE c.deleted_at IS NULL AND p.deleted_at IS NULL AND c.status != 'Cancelled'
-                ORDER BY c.consulted_at DESC
-                LIMIT 5
-            ");
-            $stmt->execute();
-            $recentConsultations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            try {
+                $stmt = $db->prepare("
+                    SELECT c.id, c.patient_id, c.consulted_at, c.subjective, c.assessment, c.status,
+                           p.patient_no, p.first_name, p.last_name, p.sex, p.dob, TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) as age,
+                           COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Staff') as clinician_name
+                    FROM consultations c
+                    JOIN patients p ON c.patient_id = p.id
+                    LEFT JOIN users u ON c.consulted_by = u.id
+                    WHERE c.deleted_at IS NULL AND p.deleted_at IS NULL AND c.status != 'Cancelled'
+                    ORDER BY c.consulted_at DESC
+                    LIMIT 5
+                ");
+                $stmt->execute();
+                $recentConsultations = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            } catch (\PDOException $encEx) {
+                // Backward compatibility if consulting_provider column not yet migrated
+                $stmtFallback = $db->prepare("
+                    SELECT c.id, c.patient_id, c.consulted_at, c.subjective, c.assessment, c.status,
+                           p.patient_no, p.first_name, p.last_name, p.sex, p.dob, TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) as age,
+                           COALESCE(CONCAT(u.first_name, ' ', u.last_name), 'Staff') as clinician_name
+                    FROM consultations c
+                    JOIN patients p ON c.patient_id = p.id
+                    LEFT JOIN users u ON c.consulted_by = u.id
+                    WHERE c.deleted_at IS NULL AND p.deleted_at IS NULL AND c.status != 'Cancelled'
+                    ORDER BY c.consulted_at DESC
+                    LIMIT 5
+                ");
+                $stmtFallback->execute();
+                $recentConsultations = $stmtFallback->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            }
 
         } catch (\PDOException $e) {
             error_log("Failed to query dashboard stats: " . $e->getMessage());

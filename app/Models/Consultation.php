@@ -21,9 +21,25 @@ class Consultation extends Model {
                 WHERE c.patient_id = :patient_id AND c.deleted_at IS NULL
                 ORDER BY c.consulted_at DESC, c.id DESC";
         
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['patient_id' => $patientId]);
-        return $stmt->fetchAll();
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['patient_id' => $patientId]);
+            return $stmt->fetchAll();
+        } catch (\PDOException $e) {
+            if ((int)($e->errorInfo[1] ?? 0) === 1054) {
+                $this->autoAddConsultingProvider();
+                $fallbackSql = "SELECT c.*, 
+                               CONCAT(u.first_name, ' ', u.last_name) AS clinician_name
+                        FROM consultations c
+                        LEFT JOIN users u ON c.consulted_by = u.id
+                        WHERE c.patient_id = :patient_id AND c.deleted_at IS NULL
+                        ORDER BY c.consulted_at DESC, c.id DESC";
+                $stmt = $this->db->prepare($fallbackSql);
+                $stmt->execute(['patient_id' => $patientId]);
+                return $stmt->fetchAll();
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -52,9 +68,37 @@ class Consultation extends Model {
                 WHERE c.id = :id AND c.deleted_at IS NULL 
                 LIMIT 1";
         
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch();
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['id' => $id]);
+            return $stmt->fetch();
+        } catch (\PDOException $e) {
+            if ((int)($e->errorInfo[1] ?? 0) === 1054) {
+                $this->autoAddConsultingProvider();
+                $fallbackSql = "SELECT c.*, 
+                               CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                               CONCAT(creator.first_name, ' ', creator.last_name) AS creator_name,
+                               creator.role AS creator_role,
+                               creator.job_title AS creator_job_title,
+                               CONCAT(updater.first_name, ' ', updater.last_name) AS updater_name,
+                               updater.role AS updater_role,
+                               updater.job_title AS updater_job_title,
+                               p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last, p.dob AS pat_dob, p.sex AS pat_sex,
+                               vs.bp_systolic, vs.bp_diastolic, vs.heart_rate, vs.respiratory_rate, vs.temperature, vs.weight, vs.height, vs.bmi, vs.oxygen_saturation, vs.waist_circumference, vs.notes AS vital_notes, vs.recorded_at AS vital_recorded_at
+                        FROM consultations c
+                        LEFT JOIN users u ON c.consulted_by = u.id
+                        LEFT JOIN users creator ON c.created_by = creator.id
+                        LEFT JOIN users updater ON c.updated_by = updater.id
+                        LEFT JOIN patients p ON c.patient_id = p.id
+                        LEFT JOIN vital_signs vs ON c.vital_signs_id = vs.id
+                        WHERE c.id = :id AND c.deleted_at IS NULL 
+                        LIMIT 1";
+                $stmt = $this->db->prepare($fallbackSql);
+                $stmt->execute(['id' => $id]);
+                return $stmt->fetch();
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -278,9 +322,20 @@ class Consultation extends Model {
             $params['date_to'] = $filters['date_to'];
         }
         $sql .= " ORDER BY c.deleted_at DESC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll() ?: [];
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll() ?: [];
+        } catch (\PDOException $e) {
+            if ((int)($e->errorInfo[1] ?? 0) === 1054) {
+                $this->autoAddConsultingProvider();
+                $fallbackSql = str_replace("COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Unassigned Clinician')", "CONCAT(u.first_name, ' ', u.last_name)", $sql);
+                $stmt = $this->db->prepare($fallbackSql);
+                $stmt->execute($params);
+                return $stmt->fetchAll() ?: [];
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -298,8 +353,37 @@ class Consultation extends Model {
                 LEFT JOIN patients p ON c.patient_id = p.id
                 WHERE c.id = :id 
                 LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => (int)$id]);
-        return $stmt->fetch();
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['id' => (int)$id]);
+            return $stmt->fetch();
+        } catch (\PDOException $e) {
+            if ((int)($e->errorInfo[1] ?? 0) === 1054) {
+                $this->autoAddConsultingProvider();
+                $fallbackSql = "SELECT c.*, 
+                               CONCAT(u.first_name, ' ', u.last_name) AS clinician_name,
+                               p.patient_no, p.first_name AS pat_first, p.last_name AS pat_last
+                        FROM consultations c
+                        LEFT JOIN users u ON c.consulted_by = u.id
+                        LEFT JOIN patients p ON c.patient_id = p.id
+                        WHERE c.id = :id 
+                        LIMIT 1";
+                $stmt = $this->db->prepare($fallbackSql);
+                $stmt->execute(['id' => (int)$id]);
+                return $stmt->fetch();
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Self-heal: automatically add consulting_provider column if missing on older database.
+     */
+    private function autoAddConsultingProvider(): void {
+        try {
+            $this->db->exec("ALTER TABLE `consultations` ADD COLUMN `consulting_provider` VARCHAR(150) NULL DEFAULT NULL AFTER `status`");
+        } catch (\Exception $e) {
+            // Ignore if already added or restricted DB permissions
+        }
     }
 }

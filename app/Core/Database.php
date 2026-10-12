@@ -21,6 +21,9 @@ class Database {
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone = '+08:00'",
             ]);
+
+            // Self-healing: verify schema integrity and migrate missing columns/tables
+            SchemaMigrator::ensureCompatibility($this->connection);
         } catch (PDOException $e) {
             die("Database Connection Error: " . $e->getMessage());
         }

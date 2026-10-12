@@ -27,6 +27,7 @@ DROP TABLE IF EXISTS `child_health_records`;
 DROP TABLE IF EXISTS `maternal_records`;
 DROP TABLE IF EXISTS `lab_results`;
 DROP TABLE IF EXISTS `lab_requests`;
+DROP TABLE IF EXISTS `system_settings`;
 DROP TABLE IF EXISTS `settings`;
 DROP TABLE IF EXISTS `audit_logs`;
 DROP TABLE IF EXISTS `immunizations`;
@@ -46,7 +47,8 @@ CREATE TABLE `users` (
   `id` INT AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
-  `role` ENUM('admin', 'staff') NOT NULL,
+  `role` ENUM('super_admin', 'admin', 'staff') NOT NULL DEFAULT 'staff',
+  `is_super_admin` TINYINT(1) NOT NULL DEFAULT 0,
   `first_name` VARCHAR(50) NOT NULL,
   `middle_name` VARCHAR(50) DEFAULT NULL,
   `last_name` VARCHAR(50) NOT NULL,
@@ -63,6 +65,7 @@ CREATE TABLE `users` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `preferences` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`),
   UNIQUE KEY `idx_email` (`email`)
@@ -155,6 +158,7 @@ CREATE TABLE `consultations` (
   `assessment` TEXT NOT NULL,
   `plan` TEXT NOT NULL,
   `status` ENUM('Open', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Completed',
+  `consulting_provider` VARCHAR(150) DEFAULT NULL,
   `consulted_by` INT NOT NULL,
   `consulted_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `created_by` INT NOT NULL,
@@ -187,17 +191,24 @@ CREATE TABLE `appointments` (
   `updated_by` INT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  `deleted_by` INT DEFAULT NULL,
+  `archive_reason` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
+  INDEX `idx_appointments_deleted` (`deleted_at`),
   CONSTRAINT `fk_appointment_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_appointment_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
-  CONSTRAINT `fk_appointment_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `fk_appointment_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `fk_appointment_deleted_by` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. Queue Entries Table
 CREATE TABLE `queue_entries` (
   `id` INT AUTO_INCREMENT,
   `patient_id` INT NOT NULL,
+  `appointment_id` INT DEFAULT NULL,
   `service_type` VARCHAR(50) DEFAULT 'General OPD',
+  `priority_level` VARCHAR(30) NOT NULL DEFAULT 'Regular',
   `queue_date` DATE NOT NULL,
   `queue_no` INT NOT NULL,
   `status` ENUM('Waiting', 'Called', 'Serving', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Waiting',
@@ -209,8 +220,10 @@ CREATE TABLE `queue_entries` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  INDEX `idx_queue_appointment_id` (`appointment_id`),
   UNIQUE KEY `uq_queue_date_no` (`queue_date`, `queue_no`),
   CONSTRAINT `fk_queue_patient` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_queue_appointment` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT `fk_queue_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_queue_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -478,8 +491,10 @@ CREATE TABLE `wellbaby_records` (
   `birth_weight_kg` DECIMAL(4,2) NOT NULL,
   `birth_length_cm` DECIMAL(4,1) NOT NULL,
   `place_of_delivery` ENUM('Hospital', 'Lying-in', 'Home', 'Others') NOT NULL DEFAULT 'Lying-in',
+  `place_of_delivery_other` VARCHAR(150) NULL,
   `delivery_type` ENUM('Normal Spontaneous Delivery (NSD)', 'Caesarean Section (CS)', 'Others') NOT NULL DEFAULT 'Normal Spontaneous Delivery (NSD)',
   `attended_by` ENUM('Doctor', 'Nurse', 'Midwife', 'Hilot/TBA', 'Others') NOT NULL DEFAULT 'Midwife',
+  `attended_by_other` VARCHAR(150) NULL,
   `newborn_screening_done` TINYINT(1) NOT NULL DEFAULT 0,
   `newborn_screening_date` DATE NULL,
   `newborn_screening_result` VARCHAR(100) NULL,
@@ -581,6 +596,19 @@ CREATE TABLE `settings` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`setting_key`),
   CONSTRAINT `fk_settings_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 17b. System Settings Table (Global Clinic Profile, Clinical Details & Configuration)
+CREATE TABLE `system_settings` (
+  `setting_key` VARCHAR(64) NOT NULL,
+  `setting_value` TEXT NULL DEFAULT NULL,
+  `category` VARCHAR(32) NOT NULL DEFAULT 'general',
+  `updated_by` INT(11) NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`setting_key`),
+  KEY `idx_settings_category` (`category`),
+  KEY `idx_settings_updated_by` (`updated_by`),
+  CONSTRAINT `fk_sys_settings_user` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 18. Audit Logs Table
@@ -696,12 +724,13 @@ CREATE INDEX `idx_audit_logs_search` ON `audit_logs` (`created_at`, `module`, `a
 -- 1. Insert Default Admins and Staff
 -- Note: Default passwords are bcrypt hashes of 'admin1234' and 'staff1234'
 -- ALWAYS force password changes on first authentication!
-INSERT INTO `users` (`username`, `password_hash`, `role`, `first_name`, `last_name`, `job_title`, `status`, `must_change_password`)
+INSERT INTO `users` (`username`, `password_hash`, `role`, `is_super_admin`, `first_name`, `last_name`, `job_title`, `status`, `must_change_password`)
 VALUES 
 (
   'admin', 
   '$2y$10$Mp8OmLNojA8jzqN.PPLyBOUmHAuRNkqD0X6XCmDGB/4LfLJEc75rm', -- bcrypt hash for: admin1234
-  'admin', 
+  'super_admin', 
+  1,
   'System', 
   'Administrator', 
   'IT Support / Records Head', 
@@ -712,6 +741,7 @@ VALUES
   'records_staff', 
   '$2y$10$MQ1JTmlMiH24jODpgfuA5OHI9tH96t1pvwsAXm58YbcGWXOn.T5ba', -- bcrypt hash for: staff1234
   'staff', 
+  0,
   'Maria', 
   'Santos', 
   'Barangay Health Worker (BHW)', 
@@ -722,6 +752,7 @@ VALUES
   'midwife_user', 
   '$2y$10$MQ1JTmlMiH24jODpgfuA5OHI9tH96t1pvwsAXm58YbcGWXOn.T5ba', -- bcrypt hash for: staff1234
   'staff', 
+  0,
   'Juana', 
   'Dela Cruz', 
   'Midwife', 
@@ -737,3 +768,21 @@ VALUES
 ('queue_alert_sound', 'enabled', 'Plays a chime sound when a new queue number is called (enabled/disabled).', 1),
 ('public_queue_display_names', 'initials', 'Privacy option for queue display board: initials, none (number only), or full (show names).', 1),
 ('backup_interval_days', '7', 'Database reminder interval for admins to trigger a SQL backup.', 1);
+
+-- 3. Insert Default System Settings
+INSERT INTO `system_settings` (`setting_key`, `setting_value`, `category`) VALUES
+('facility_name', 'Barangay Health Station Sinalhan 2', 'general'),
+('facility_subtext', 'City Health Office I - Santa Rosa City, Laguna', 'general'),
+('facility_address', 'Barangay Sinalhan, Santa Rosa City, Laguna', 'general'),
+('facility_contact', '0912-345-6789', 'general'),
+('facility_email', 'bhs.sinalhan2@santarosacity.gov.ph', 'general'),
+('operating_hours', 'Monday - Friday: 8:00 AM - 5:00 PM', 'general'),
+('doctor_name', 'Dr. Maria Santos, MD', 'clinical'),
+('doctor_title', 'Municipal Health Officer', 'clinical'),
+('doctor_license', 'PRC #0123456', 'clinical'),
+('midwife_name', 'Juana Dela Cruz, RM', 'clinical'),
+('nurse_name', 'Elena Bautista, RN', 'clinical'),
+('system_timezone', 'Asia/Manila', 'technical'),
+('enable_audit_logging', '1', 'technical'),
+('session_lifetime_minutes', '120', 'technical'),
+('backup_retention_days', '30', 'technical');

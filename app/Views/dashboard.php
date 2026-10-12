@@ -282,19 +282,19 @@ $households = (int)($censusMetrics['households'] ?? 0);
                     
                     <div class="d-flex justify-content-around text-center mt-3">
                         <div>
-                            <div class="fs-4 fw-bold text-warning font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['waiting']) ?></div>
+                            <div class="fs-4 fw-bold text-warning font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['waiting'] ?? 0) ?></div>
                             <div class="text-muted small">Waiting</div>
                         </div>
                         <div>
-                            <div class="fs-4 fw-bold text-primary font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['called']) ?></div>
+                            <div class="fs-4 fw-bold text-primary font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['called'] ?? 0) ?></div>
                             <div class="text-muted small">Called</div>
                         </div>
                         <div>
-                            <div class="fs-4 fw-bold text-info-emphasis font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['serving']) ?></div>
+                            <div class="fs-4 fw-bold text-info-emphasis font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['serving'] ?? 0) ?></div>
                             <div class="text-muted small">Serving</div>
                         </div>
                         <div>
-                            <div class="fs-4 fw-bold text-success font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['completed']) ?></div>
+                            <div class="fs-4 fw-bold text-success font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['completed'] ?? 0) ?></div>
                             <div class="text-muted small">Completed</div>
                         </div>
                     </div>
