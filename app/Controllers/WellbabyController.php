@@ -186,39 +186,52 @@ class WellbabyController extends Controller {
             }
         }
 
-        $this->patientModel->updateParentalInfo($patientId, $fatherName, $fatherDob, $motherName, $motherDob, $userId);
+        $db = \App\Core\Database::getInstance()->getConnection();
+        try {
+            $db->beginTransaction();
 
-        // 2. Create the Well-Baby record
-        $placeOfDelivery = $_POST['place_of_delivery'] ?? 'Lying-in';
-        $placeOfDeliveryOther = ($placeOfDelivery === 'Others') ? trim($_POST['place_of_delivery_other'] ?? '') : null;
-        $attendedBy = trim($_POST['attended_by'] ?? 'Midwife');
-        $attendedByOther = ($attendedBy === 'Others') ? trim($_POST['attended_by_other'] ?? '') : null;
+            $this->patientModel->updateParentalInfo($patientId, $fatherName, $fatherDob, $motherName, $motherDob, $userId);
 
-        $data = [
-            'patient_id' => $patientId,
-            'mother_patient_id' => $motherPatientId,
-            'birth_time' => !empty($_POST['birth_time']) ? $_POST['birth_time'] : null,
-            'birth_weight_kg' => $birthWeight,
-            'birth_length_cm' => $birthLength,
-            'place_of_delivery' => $placeOfDelivery,
-            'place_of_delivery_other' => $placeOfDeliveryOther,
-            'delivery_type' => $_POST['delivery_type'] ?? 'Normal Spontaneous Delivery (NSD)',
-            'attended_by' => $attendedBy,
-            'attended_by_other' => $attendedByOther,
-            'newborn_screening_done' => $screeningDone,
-            'newborn_screening_date' => $screeningDate,
-            'newborn_screening_result' => $screeningResult,
-            'mother_cpab_tt' => trim($_POST['mother_cpab_tt'] ?? ''),
-            'feeding_method' => $_POST['feeding_method'] ?? 'LAM / Exclusive Breastfeeding',
-            'created_by' => $userId
-        ];
+            // 2. Create the Well-Baby record
+            $placeOfDelivery = $_POST['place_of_delivery'] ?? 'Lying-in';
+            $placeOfDeliveryOther = ($placeOfDelivery === 'Others') ? trim($_POST['place_of_delivery_other'] ?? '') : null;
+            $attendedBy = trim($_POST['attended_by'] ?? 'Midwife');
+            $attendedByOther = ($attendedBy === 'Others') ? trim($_POST['attended_by_other'] ?? '') : null;
 
-        $savedId = $this->wbModel->createRecord($data);
+            $data = [
+                'patient_id' => $patientId,
+                'mother_patient_id' => $motherPatientId,
+                'birth_time' => !empty($_POST['birth_time']) ? $_POST['birth_time'] : null,
+                'birth_weight_kg' => $birthWeight,
+                'birth_length_cm' => $birthLength,
+                'place_of_delivery' => $placeOfDelivery,
+                'place_of_delivery_other' => $placeOfDeliveryOther,
+                'delivery_type' => $_POST['delivery_type'] ?? 'Normal Spontaneous Delivery (NSD)',
+                'attended_by' => $attendedBy,
+                'attended_by_other' => $attendedByOther,
+                'newborn_screening_done' => $screeningDone,
+                'newborn_screening_date' => $screeningDate,
+                'newborn_screening_result' => $screeningResult,
+                'mother_cpab_tt' => trim($_POST['mother_cpab_tt'] ?? ''),
+                'feeding_method' => $_POST['feeding_method'] ?? 'LAM / Exclusive Breastfeeding',
+                'created_by' => $userId
+            ];
 
-        if ($savedId) {
+            $savedId = $this->wbModel->createRecord($data);
+
+            if (!$savedId) {
+                throw new \RuntimeException('Failed to insert wellbaby record into database.');
+            }
+
+            $db->commit();
+
             AuditLog::log('WELLBABY_RECORD_SAVED', 'Pediatric Care', "Registered Well Baby infant record for Child {$patient['patient_no']} ({$patient['first_name']} {$patient['last_name']})");
             $_SESSION['success_message'] = "Well Baby infant record successfully registered for {$patient['first_name']} {$patient['last_name']}!";
-        } else {
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed to register wellbaby record: " . $e->getMessage());
             $_SESSION['error_message'] = 'Failed to create Well Baby record. Please try again.';
         }
 

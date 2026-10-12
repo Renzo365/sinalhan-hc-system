@@ -56,7 +56,7 @@ class Patient extends Model {
         if (!empty($filters['age_group'])) {
             switch ($filters['age_group']) {
                 case 'under5':
-                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5";
+                    $sql .= " AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) < 5";
                     break;
                 case 'infant':
                     $sql .= " AND TIMESTAMPDIFF(MONTH, p.dob, CURRENT_DATE()) < 12";
@@ -107,7 +107,7 @@ class Patient extends Model {
         $sql = "SELECT 
                     COUNT(*) as total_patients,
                     SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) >= 60 THEN 1 ELSE 0 END) as seniors,
-                    SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) <= 5 THEN 1 ELSE 0 END) as under5,
+                    SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) < 5 THEN 1 ELSE 0 END) as under5,
                     SUM(CASE WHEN phic_status IN ('Member', 'Dependent') THEN 1 ELSE 0 END) as phic_covered,
                     COUNT(DISTINCT NULLIF(TRIM(family_no), '')) as households
                 FROM patients
@@ -501,11 +501,32 @@ class Patient extends Model {
                 WHERE id = :id";
         
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
+        $executed = $stmt->execute([
             'id' => $id,
             'deleted_by' => $userId,
             'archive_reason' => trim($reason)
         ]);
+
+        if ($executed) {
+            // Automatically void upcoming scheduled appointments so they do not ghost-occupy slot capacities
+            try {
+                $cancelAppts = $this->db->prepare("
+                    UPDATE appointments 
+                    SET status = 'Cancelled', 
+                        updated_by = :user_id,
+                        notes = CONCAT(COALESCE(notes, ''), ' [Cancelled due to patient record archival]') 
+                    WHERE patient_id = :id 
+                      AND status = 'Scheduled' 
+                      AND appointment_date >= CURRENT_DATE()
+                      AND deleted_at IS NULL
+                ");
+                $cancelAppts->execute(['id' => $id, 'user_id' => $userId]);
+            } catch (\Throwable $e) {
+                error_log("Failed to auto-cancel appointments on patient archival: " . $e->getMessage());
+            }
+        }
+
+        return $executed;
     }
 
     /**

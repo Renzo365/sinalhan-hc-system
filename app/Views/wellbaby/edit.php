@@ -101,36 +101,41 @@ if (!empty($wellbabyRecord['mother_age'])) {
                 <div class="card-body p-4 bg-white">
                     <div class="p-3 p-md-4 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3 border-bottom border-success border-opacity-25">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px;">
+                            <div class="d-flex align-items-start align-items-sm-center gap-3">
+                                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs flex-shrink-0" style="width: 52px; height: 52px;">
                                     <?= h($initials) ?>
                                 </div>
                                 <div>
-                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <h3 class="h6 fw-bold text-dark mb-0"><?= h($fullNameFormatted) ?></h3>
-                                        <span class="badge <?= (strtolower($patient['sex'] ?? '') === 'male') ? 'bg-primary' : 'bg-danger' ?>">
-                                            <?= ucfirst(h($patient['sex'] ?? 'Child')) ?>
-                                        </span>
-                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">
-                                            <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no']) ?>
+                                    <h3 class="h6 fw-bold text-dark mb-1.5 lh-sm" style="text-wrap: balance;"><?= h($fullNameFormatted) ?></h3>
+                                    
+                                    <div class="d-flex flex-wrap align-items-center gap-1.5 mb-2">
+                                        <span class="patient-id-tag font-monospace" title="System Patient Number">
+                                            <span class="tag-label">ID</span>
+                                            <span class="tag-value"><?= h($patient['patient_no']) ?></span>
                                         </span>
                                         <?php if (!empty($patient['envelope_no'])): ?>
-                                            <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">
-                                                <span class="visually-hidden">Envelope No: </span>Env #<?= h($patient['envelope_no']) ?>
+                                            <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                                <span class="tag-label">Env</span>
+                                                <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                             </span>
                                         <?php endif; ?>
                                         <?php if (!empty($patient['family_no'])): ?>
-                                            <span class="badge bg-info-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">
-                                                <span class="visually-hidden">Family No: </span>Fam #<?= h($patient['family_no']) ?>
+                                            <span class="patient-id-tag font-monospace" title="Family Number">
+                                                <span class="tag-label">Fam</span>
+                                                <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                             </span>
                                         <?php endif; ?>
+                                        <span class="patient-id-tag" style="background-color: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+                                            <span class="tag-label" style="color: #4ade80;">Sex</span>
+                                            <span class="tag-value" style="color: #15803d;"><?= ucfirst(h($patient['sex'] ?? 'Child')) ?></span>
+                                        </span>
                                     </div>
-                                    <small class="text-muted">
+                                    <div class="small text-muted">
                                         <i class="bi bi-geo-alt me-1" aria-hidden="true"></i><?= h(!empty(trim($patient['address'] ?? '')) ? trim($patient['address']) : 'Barangay Sinalhan') ?> <span aria-hidden="true">&bull;</span> Contact: <span style="font-variant-numeric: tabular-nums;"><?= h($patient['contact_no'] ?? 'N/A') ?></span>
-                                    </small>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="text-md-end">
+                            <div class="text-md-end flex-shrink-0">
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small" style="font-variant-numeric: tabular-nums;">
                                     <i class="bi bi-calendar-check me-1" aria-hidden="true"></i> Registered: <?= date('M d, Y', strtotime($wellbabyRecord['created_at'])) ?>
                                 </span>

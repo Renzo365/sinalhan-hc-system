@@ -19,7 +19,7 @@ class Consultation extends Model {
                 FROM consultations c
                 LEFT JOIN users u ON c.consulted_by = u.id
                 WHERE c.patient_id = :patient_id AND c.deleted_at IS NULL
-                ORDER BY c.consulted_at DESC";
+                ORDER BY c.consulted_at DESC, c.id DESC";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['patient_id' => $patientId]);

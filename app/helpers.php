@@ -220,6 +220,281 @@ if (!function_exists('classify_bmi')) {
     }
 }
 
+if (!function_exists('format_temperature')) {
+    /**
+     * Format body temperature to standard clinical single decimal precision (e.g. 37.5).
+     *
+     * @param float|int|string|null $temp
+     * @return string|null Formatted temperature string or null if empty
+     */
+    function format_temperature($temp): ?string {
+        if ($temp === null || trim((string)$temp) === '' || (float)$temp <= 0) {
+            return null;
+        }
+        return number_format((float)$temp, 1, '.', '');
+    }
+}
+
+if (!function_exists('classify_temperature')) {
+    /**
+     * Classify body temperature based on clinical vital sign triage protocols.
+     * Cutoffs:
+     * - Hypothermia: < 35.5 °C
+     * - Normal: 35.5 - 37.5 °C
+     * - Low Fever: 37.6 - 37.9 °C
+     * - Fever: >= 38.0 °C
+     * - High Fever: >= 39.0 °C
+     *
+     * @param float|int|string|null $temp
+     * @return array
+     */
+    function classify_temperature($temp): array {
+        $val = format_temperature($temp);
+        if ($val === null) {
+            return [
+                'value' => null,
+                'formatted' => '—',
+                'label' => '—',
+                'badge' => 'bg-light text-muted border',
+                'pill' => '',
+                'is_abnormal' => false
+            ];
+        }
+
+        $f = (float)$val;
+        if ($f >= 39.0) {
+            return [
+                'value' => $val,
+                'formatted' => "{$val} °C",
+                'label' => 'High Fever',
+                'badge' => 'bg-danger text-white border border-danger',
+                'pill' => '<span class="badge bg-danger text-white px-1">High Fever</span>',
+                'is_abnormal' => true
+            ];
+        } elseif ($f >= 38.0) {
+            return [
+                'value' => $val,
+                'formatted' => "{$val} °C",
+                'label' => 'Fever',
+                'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'pill' => '<span class="badge bg-danger text-white px-1">Fever</span>',
+                'is_abnormal' => true
+            ];
+        } elseif ($f >= 37.6) {
+            return [
+                'value' => $val,
+                'formatted' => "{$val} °C",
+                'label' => 'Low Fever',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Low Fever</span>',
+                'is_abnormal' => true
+            ];
+        } elseif ($f < 35.5) {
+            return [
+                'value' => $val,
+                'formatted' => "{$val} °C",
+                'label' => 'Hypothermia',
+                'badge' => 'bg-info-subtle text-info border border-info-subtle',
+                'pill' => '<span class="badge bg-info text-white px-1">Hypothermia</span>',
+                'is_abnormal' => true
+            ];
+        } else {
+            return [
+                'value' => $val,
+                'formatted' => "{$val} °C",
+                'label' => 'Normal',
+                'badge' => 'bg-light text-dark border',
+                'pill' => '',
+                'is_abnormal' => false
+            ];
+        }
+    }
+}
+
+if (!function_exists('classify_bp')) {
+    /**
+     * Classify Blood Pressure based on Philippine Society of Hypertension & JNC 8 / AHA guidelines.
+     * Cutoffs:
+     * - Hypertensive Crisis: Systolic >= 180 or Diastolic >= 120
+     * - Hypertension: Systolic >= 140 or Diastolic >= 90
+     * - Pre-HTN (Elevated): Systolic 120-139 or Diastolic 80-89
+     * - Hypotension: Systolic < 90 or Diastolic < 60
+     * - Normal: Systolic 90-119 and Diastolic 60-79
+     *
+     * @param int|float|string|null $sys
+     * @param int|float|string|null $dia
+     * @return array
+     */
+    function classify_bp($sys, $dia): array {
+        $s = (int)($sys ?? 0);
+        $d = (int)($dia ?? 0);
+
+        if ($s <= 0 || $d <= 0) {
+            return [
+                'sys' => null,
+                'dia' => null,
+                'formatted' => '—',
+                'label' => '—',
+                'badge' => 'bg-light text-muted border',
+                'pill' => '',
+                'is_abnormal' => false,
+                'is_high' => false
+            ];
+        }
+
+        $formatted = "{$s}/{$d} mmHg";
+
+        if ($s >= 180 || $d >= 120) {
+            return [
+                'sys' => $s,
+                'dia' => $d,
+                'formatted' => $formatted,
+                'label' => 'Crisis',
+                'badge' => 'bg-danger text-white border border-danger',
+                'pill' => '<span class="badge bg-danger text-white px-1">Crisis</span>',
+                'is_abnormal' => true,
+                'is_high' => true
+            ];
+        } elseif ($s >= 140 || $d >= 90) {
+            return [
+                'sys' => $s,
+                'dia' => $d,
+                'formatted' => $formatted,
+                'label' => 'Hypertension',
+                'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'pill' => '<span class="badge bg-danger text-white px-1">Hypertension</span>',
+                'is_abnormal' => true,
+                'is_high' => true
+            ];
+        } elseif (($s >= 120 && $s <= 139) || ($d >= 80 && $d <= 89)) {
+            return [
+                'sys' => $s,
+                'dia' => $d,
+                'formatted' => $formatted,
+                'label' => 'Pre-HTN',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Pre-HTN</span>',
+                'is_abnormal' => true,
+                'is_high' => false
+            ];
+        } elseif ($s < 90 || $d < 60) {
+            return [
+                'sys' => $s,
+                'dia' => $d,
+                'formatted' => $formatted,
+                'label' => 'Hypotension',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Hypotension</span>',
+                'is_abnormal' => true,
+                'is_high' => false
+            ];
+        } else {
+            return [
+                'sys' => $s,
+                'dia' => $d,
+                'formatted' => $formatted,
+                'label' => 'Normal',
+                'badge' => 'bg-light text-dark border',
+                'pill' => '',
+                'is_abnormal' => false,
+                'is_high' => false
+            ];
+        }
+    }
+}
+
+if (!function_exists('classify_heart_rate')) {
+    /**
+     * Classify resting heart/pulse rate.
+     * Normal: 60 - 100 bpm. Tachycardia: > 100 bpm. Bradycardia: < 60 bpm.
+     *
+     * @param int|float|string|null $hr
+     * @return array
+     */
+    function classify_heart_rate($hr): array {
+        $val = (int)($hr ?? 0);
+        if ($val <= 0) {
+            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'bg-light text-muted border', 'pill' => '', 'is_abnormal' => false];
+        }
+        $formatted = "{$val} bpm";
+        if ($val > 100) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Tachycardia', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Tachycardia</span>', 'is_abnormal' => true];
+        } elseif ($val < 60) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Bradycardia', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Bradycardia</span>', 'is_abnormal' => true];
+        }
+        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal', 'badge' => 'bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+    }
+}
+
+if (!function_exists('classify_respiratory_rate')) {
+    /**
+     * Classify respiratory rate.
+     * Normal: 12 - 20 cpm. Tachypnea: > 20 cpm. Bradypnea: < 12 cpm.
+     *
+     * @param int|float|string|null $rr
+     * @return array
+     */
+    function classify_respiratory_rate($rr): array {
+        $val = (int)($rr ?? 0);
+        if ($val <= 0) {
+            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'bg-light text-muted border', 'pill' => '', 'is_abnormal' => false];
+        }
+        $formatted = "{$val} cpm";
+        if ($val > 20) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Tachypnea', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Tachypnea</span>', 'is_abnormal' => true];
+        } elseif ($val < 12) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Bradypnea', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Bradypnea</span>', 'is_abnormal' => true];
+        }
+        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal', 'badge' => 'bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+    }
+}
+
+if (!function_exists('classify_spo2')) {
+    /**
+     * Classify pulse oximetry oxygen saturation.
+     * Normal: >= 95%. Hypoxia risk: < 95%.
+     *
+     * @param int|float|string|null $spo2
+     * @return array
+     */
+    function classify_spo2($spo2): array {
+        $val = (int)($spo2 ?? 0);
+        if ($val <= 0) {
+            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'bg-light text-muted border', 'pill' => '', 'is_abnormal' => false];
+        }
+        $formatted = "{$val}%";
+        if ($val < 95) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Hypoxia Risk', 'badge' => 'bg-danger-subtle text-danger border border-danger-subtle', 'pill' => '<span class="badge bg-danger text-white px-1">Hypoxia</span>', 'is_abnormal' => true];
+        }
+        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal', 'badge' => 'bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+    }
+}
+
+if (!function_exists('classify_fht')) {
+    /**
+     * Classify Fetal Heart Tone (FHT) based on WHO & Philippine clinical standards.
+     * Normal baseline: 110 - 160 bpm.
+     * Fetal Tachycardia: > 160 bpm.
+     * Fetal Bradycardia: < 110 bpm.
+     *
+     * @param int|float|string|null $fht
+     * @return array
+     */
+    function classify_fht($fht): array {
+        $val = (int)($fht ?? 0);
+        if ($val <= 0) {
+            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'badge bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+        }
+        $formatted = "{$val} bpm";
+        if ($val > 160) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Fetal Tachycardia', 'badge' => 'badge bg-danger-subtle text-danger border border-danger-subtle fw-bold', 'pill' => '<span class="badge bg-danger text-white px-1">Fetal Tachycardia</span>', 'is_abnormal' => true];
+        } elseif ($val < 110) {
+            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Fetal Bradycardia', 'badge' => 'badge bg-danger-subtle text-danger border border-danger-subtle fw-bold', 'pill' => '<span class="badge bg-danger text-white px-1">Fetal Bradycardia</span>', 'is_abnormal' => true];
+        }
+        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal FHT', 'badge' => 'badge bg-success-subtle text-success border border-success-subtle', 'pill' => '', 'is_abnormal' => false];
+    }
+}
+
 if (!function_exists('calculate_age')) {
     /**
      * Calculate age in full completed years from date of birth.

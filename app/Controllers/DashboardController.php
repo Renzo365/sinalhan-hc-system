@@ -105,12 +105,15 @@ class DashboardController extends Controller {
             $stmt = $db->prepare("
                 SELECT 
                     COUNT(*) as total_today,
-                    SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) as completed_today,
-                    SUM(CASE WHEN status = 'Scheduled' THEN 1 ELSE 0 END) as scheduled_today,
-                    SUM(CASE WHEN status = 'Missed' THEN 1 ELSE 0 END) as missed_today,
-                    SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled_today
-                FROM appointments 
-                WHERE appointment_date = CURRENT_DATE()
+                    SUM(CASE WHEN a.status = 'Completed' THEN 1 ELSE 0 END) as completed_today,
+                    SUM(CASE WHEN a.status = 'Scheduled' THEN 1 ELSE 0 END) as scheduled_today,
+                    SUM(CASE WHEN a.status = 'Missed' THEN 1 ELSE 0 END) as missed_today,
+                    SUM(CASE WHEN a.status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled_today
+                FROM appointments a
+                JOIN patients p ON a.patient_id = p.id
+                WHERE a.appointment_date = CURRENT_DATE()
+                  AND a.deleted_at IS NULL
+                  AND p.deleted_at IS NULL
             ");
             $stmt->execute();
             $apptRow = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -126,18 +129,27 @@ class DashboardController extends Controller {
             // 3. Queue Daily Stats
             $queueStats = $this->queueModel->getTodayStats();
             $stats['queue_now'] = (int)($queueStats['waiting'] ?? 0);
-            $stats['today_visits'] = (int)($queueStats['completed'] ?? 0);
+            
+            // True completed walk-ins (patients completed in queue who did NOT originate from a booked appointment)
+            $stmtWalkins = $db->query("
+                SELECT COUNT(*) FROM queue_entries 
+                WHERE queue_date = CURRENT_DATE() 
+                  AND status = 'Completed' 
+                  AND appointment_id IS NULL
+            ");
+            $walkinsCompleted = (int)($stmtWalkins ? $stmtWalkins->fetchColumn() : 0);
+            $stats['today_visits'] = $walkinsCompleted;
 
-            // Daily Patient Traffic (Appointments completed + Walk-in queue visits completed)
-            $stats['today_traffic'] = $apptStats['completed_today'] + $stats['today_visits'];
+            // Daily Patient Traffic: completed appointments + completed walk-in queue visits (no double-counting)
+            $stats['today_traffic'] = $apptStats['completed_today'] + $walkinsCompleted;
 
             // Today's scheduled appointment list
             $todayAppointments = $this->appointmentModel->getTodayAppointments();
 
-            // Build map of patients already enqueued today for fast check-in state detection
+            // Build map of patients already enqueued today for fast check-in state detection (exclude Cancelled)
             $todayQueueEntries = $this->queueModel->findAllToday();
             foreach ($todayQueueEntries as $qItem) {
-                if (!empty($qItem['patient_id'])) {
+                if (!empty($qItem['patient_id']) && $qItem['status'] !== 'Cancelled') {
                     $enqueuedMap[$qItem['patient_id']] = sprintf('%03d', $qItem['queue_no']);
                 }
             }
@@ -146,10 +158,11 @@ class DashboardController extends Controller {
             $stmt = $db->query("
                 SELECT 
                     COUNT(*) as active_pregnancies,
-                    SUM(CASE WHEN DATEDIFF(edc, CURRENT_DATE()) BETWEEN 0 AND 30 THEN 1 ELSE 0 END) as due_this_month,
-                    SUM(CASE WHEN DATEDIFF(edc, CURRENT_DATE()) < 0 THEN 1 ELSE 0 END) as past_due
-                FROM prenatal_records
-                WHERE is_active = 1 AND deleted_at IS NULL
+                    SUM(CASE WHEN DATEDIFF(pr.edc, CURRENT_DATE()) BETWEEN 0 AND 30 THEN 1 ELSE 0 END) as due_this_month,
+                    SUM(CASE WHEN DATEDIFF(pr.edc, CURRENT_DATE()) < 0 THEN 1 ELSE 0 END) as past_due
+                FROM prenatal_records pr
+                JOIN patients p ON pr.patient_id = p.id
+                WHERE pr.is_active = 1 AND pr.deleted_at IS NULL AND p.deleted_at IS NULL
             ");
             $maternalRow = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
             $maternalWatch = [
@@ -158,14 +171,14 @@ class DashboardController extends Controller {
                 'past_due' => (int)($maternalRow['past_due'] ?? 0)
             ];
 
-            // Next 3 upcoming deliveries
+            // Next 3 upcoming deliveries (including overdue cases, within clinical delivery window <= 30 days)
             $stmt = $db->prepare("
                 SELECT pr.id, pr.patient_id, pr.edc, pr.lmp, p.patient_no, p.first_name, p.last_name, p.contact_no, p.address,
                        DATEDIFF(pr.edc, CURRENT_DATE()) as days_to_delivery
                 FROM prenatal_records pr
                 JOIN patients p ON pr.patient_id = p.id
                 WHERE pr.is_active = 1 AND pr.deleted_at IS NULL AND p.deleted_at IS NULL
-                  AND DATEDIFF(pr.edc, CURRENT_DATE()) >= -7
+                  AND DATEDIFF(pr.edc, CURRENT_DATE()) <= 30
                 ORDER BY pr.edc ASC
                 LIMIT 3
             ");
@@ -176,9 +189,9 @@ class DashboardController extends Controller {
             $stmt = $db->query("
                 SELECT 
                     COUNT(*) as total_under5,
-                    SUM(CASE WHEN TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) <= 1 THEN 1 ELSE 0 END) as infants_under1
+                    SUM(CASE WHEN TIMESTAMPDIFF(MONTH, dob, CURRENT_DATE()) < 12 THEN 1 ELSE 0 END) as infants_under1
                 FROM patients
-                WHERE deleted_at IS NULL AND TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) <= 5
+                WHERE deleted_at IS NULL AND TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE()) < 5
             ");
             $childRow = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
@@ -195,15 +208,15 @@ class DashboardController extends Controller {
                 'total_wellbaby' => $totalWb
             ];
 
-            // 6. Recent Clinical Encounters
+            // 6. Recent Clinical Encounters (exclude cancelled consultations)
             $stmt = $db->prepare("
-                SELECT c.id, c.patient_id, c.consulted_at, c.subjective, c.assessment,
-                       p.patient_no, p.first_name, p.last_name, p.sex, TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) as age,
+                SELECT c.id, c.patient_id, c.consulted_at, c.subjective, c.assessment, c.status,
+                       p.patient_no, p.first_name, p.last_name, p.sex, p.dob, TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) as age,
                        COALESCE(NULLIF(TRIM(c.consulting_provider), ''), CONCAT(u.first_name, ' ', u.last_name), 'Staff') as clinician_name
                 FROM consultations c
                 JOIN patients p ON c.patient_id = p.id
                 LEFT JOIN users u ON c.consulted_by = u.id
-                WHERE c.deleted_at IS NULL AND p.deleted_at IS NULL
+                WHERE c.deleted_at IS NULL AND p.deleted_at IS NULL AND c.status != 'Cancelled'
                 ORDER BY c.consulted_at DESC
                 LIMIT 5
             ");

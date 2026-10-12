@@ -198,9 +198,9 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- 2. Compact Patient Identity Card -->
                     <div id="patientIdentityCard" class="<?= empty($preselectedPatient) ? 'd-none' : '' ?> mb-3">
-                        <div class="p-3 rounded-3" style="background-color: #f0fdfa; border: 1px solid #ccfbf1;">
+                        <div class="p-3 rounded-3 bg-light bg-opacity-50 border">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 48px; height: 48px; background-color: #0D7377; color: #fff;" aria-hidden="true">
+                                <div class="avatar-circle rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 48px; height: 48px;" aria-hidden="true">
                                     <span id="cardInitials">
                                         <?php 
                                             $init = '';
@@ -211,20 +211,23 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </span>
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
-                                    <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                                        <h3 class="h6 fw-bold text-dark mb-0 text-truncate" id="cardFullName">
-                                            <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name']) : '--' ?>
-                                        </h3>
+                                    <h3 class="h6 fw-bold text-dark mb-1 lh-sm text-truncate" id="cardFullName">
+                                        <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name']) : '--' ?>
+                                    </h3>
+                                    <div class="d-flex flex-wrap align-items-center gap-1.5 small text-secondary mb-1.5" style="font-size: 0.8rem;">
                                         <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'female') ? 'bg-danger' : 'bg-primary' ?>" id="cardSex">
                                             <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?>
                                         </span>
-                                        <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
-                                            <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
-                                        </span>
+                                        <span class="text-muted" aria-hidden="true">&bull;</span>
+                                        <span id="cardAge" style="font-variant-numeric: tabular-nums;"><?= (!empty($preselectedPatient['age']) || (isset($preselectedPatient['age']) && $preselectedPatient['age'] === 0)) ? h($preselectedPatient['age']) . ' yrs' : '--' ?></span>
+                                        <span class="text-muted" aria-hidden="true">&bull;</span>
+                                        <span id="cardAddress" class="text-truncate d-inline-block" style="max-width: 170px;"><?= h($preselectedPatient['address'] ?? 'Barangay Sinalhan') ?></span>
                                     </div>
-                                    <div class="text-muted small mt-1">
-                                        <span id="cardAge" style="font-variant-numeric: tabular-nums;"><?= (!empty($preselectedPatient['age']) || (isset($preselectedPatient['age']) && $preselectedPatient['age'] === 0)) ? h($preselectedPatient['age']) . ' yrs' : '--' ?></span> <span aria-hidden="true">&bull;</span> 
-                                        <span id="cardAddress" class="text-truncate d-inline-block" style="max-width: 170px; vertical-align: bottom;"><?= h($preselectedPatient['address'] ?? 'Barangay Sinalhan') ?></span>
+                                    <div class="patient-id-tags-row d-flex flex-wrap align-items-center gap-1">
+                                        <span class="patient-id-tag font-monospace" title="System Patient Number" style="font-size: 0.75rem; padding: 0.15rem 0.4rem;">
+                                            <span class="tag-label">ID</span>
+                                            <span class="tag-value" id="cardPatientNo"><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?></span>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

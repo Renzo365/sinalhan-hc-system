@@ -158,13 +158,27 @@ class PrenatalController extends Controller {
             'created_by' => $userId
         ];
 
-        $episodeId = $this->prenatalModel->createEpisode($data);
+        $db = \App\Core\Database::getInstance()->getConnection();
+        try {
+            $db->beginTransaction();
 
-        if ($episodeId) {
+            $episodeId = $this->prenatalModel->createEpisode($data);
+
+            if (!$episodeId) {
+                throw new \RuntimeException('Failed to insert prenatal record into database.');
+            }
+
             $this->syncObstetricHistoryToIhp($patientId, $data, $userId);
+
+            $db->commit();
+
             AuditLog::log('PRENATAL_EPISODE_CREATED', 'Prenatal Care', "Started Pregnancy Episode #{$episodeId} for {$patient['patient_no']} (EDC: {$data['edc']})");
             $_SESSION['success_message'] = 'Maternal pregnancy episode started successfully! EDC calculated: ' . date('M d, Y', strtotime($data['edc']));
-        } else {
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed to create prenatal episode: " . $e->getMessage());
             $_SESSION['error_message'] = 'Failed to create pregnancy episode. Please try again.';
             $this->redirect("/prenatal/register?patient_id={$patientId}");
             return;

@@ -100,8 +100,8 @@ $todayMetrics = $todayMetrics ?? [
 <div class="card card-premium mb-4">
     <div class="card-body p-4">
         <!-- Quick Date Filter Chips -->
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 pb-3 border-bottom">
-            <span class="small fw-semibold text-muted me-1">Quick Filters:</span>
+        <div class="filter-presets-scroll d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+            <span class="small fw-semibold text-muted me-1" style="white-space: nowrap;">Quick Filters:</span>
             <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="all">
                 All Dates
             </button>
@@ -204,7 +204,7 @@ $todayMetrics = $todayMetrics ?? [
 <div class="card card-premium">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 small" id="appointmentsTable">
+            <table class="table table-hover align-middle mb-0 small table-min-width-md" id="appointmentsTable">
                 <thead class="table-light">
                     <tr>
                         <th scope="col" class="text-start ps-4">Scheduled Date</th>

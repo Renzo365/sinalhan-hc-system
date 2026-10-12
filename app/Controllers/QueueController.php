@@ -81,11 +81,15 @@ class QueueController extends Controller {
         if ($this->queueModel->isPatientQueuedToday($patientId)) {
             $_SESSION['error_message'] = 'Patient is already registered in today\'s active queue.';
             $_SESSION['form_errors'] = ['Patient is already registered in today\'s active queue.'];
-            $referrer = $_SERVER['HTTP_REFERER'] ?? '';
-            if (strpos($referrer, 'patients') !== false) {
-                $this->redirect("/patients/{$patientId}#tab-appointments");
+            if (!empty($_POST['redirect_to'])) {
+                $this->redirect($_POST['redirect_to']);
             } else {
-                $this->redirect('/queue');
+                $referrer = $_SERVER['HTTP_REFERER'] ?? '';
+                if (strpos($referrer, 'patients') !== false) {
+                    $this->redirect("/patients/{$patientId}#tab-appointments");
+                } else {
+                    $this->redirect('/queue');
+                }
             }
             return;
         }
@@ -96,8 +100,11 @@ class QueueController extends Controller {
             $serviceType = 'General OPD';
         }
 
+        $appointmentId = !empty($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : null;
+
         $data = [
             'patient_id' => $patientId,
+            'appointment_id' => $appointmentId,
             'service_type' => $serviceType,
             'created_by' => $_SESSION['user_id']
         ];
@@ -107,7 +114,6 @@ class QueueController extends Controller {
         if ($newId) {
             $queueEntry = $this->queueModel->findById($newId);
             $queueNoStr = sprintf('%03d', $queueEntry['queue_no']);
-            $appointmentId = !empty($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : null;
             
             $logExtra = $appointmentId ? " (Checked in from Appointment #{$appointmentId})" : "";
             AuditLog::log('QUEUE_REGISTERED', 'Queue', "Enqueued patient: {$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']}) for [{$serviceType}] with Queue No: {$queueNoStr}{$logExtra}");

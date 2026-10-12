@@ -276,66 +276,86 @@ require dirname(__DIR__) . '/layout/header.php';
         <div class="col-12 col-xl-11">
 
             <!-- Patient Master Header (Identical to Clinical Care Workstation Design) -->
-            <div class="card card-premium shadow-sm border-0 mb-4">
-                <div class="card-body p-3">
+            <div class="card card-premium shadow-sm border-0 mb-4 patient-master-card">
+                <div class="card-body p-3 p-md-4">
                     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
                         
-                        <!-- Left: Avatar, Name, Badges & Baseline Demographics -->
-                        <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                            <div class="avatar-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.15rem;" aria-hidden="true">
+                        <!-- Left: Avatar, Name, Demographics & Metadata Tags -->
+                        <div class="d-flex align-items-start align-items-sm-center gap-3 min-w-0 flex-grow-1 patient-header-identity">
+                            <div class="avatar-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.25rem;" aria-hidden="true">
                                 <?= h($initials) ?>
                             </div>
 
-                            <div class="min-w-0">
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                    <span class="badge bg-light text-dark border font-monospace fs-7">
-                                        <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no'] ?? 'N/A') ?>
-                                    </span>
-                                    <?php if (!empty($patient['envelope_no'])): ?>
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" title="Physical Logbook Envelope No.">
-                                            <span class="visually-hidden">Envelope Number: </span>Env #<?= h($patient['envelope_no']) ?>
-                                        </span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($patient['family_no'])): ?>
-                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7" title="Family No.">
-                                            <span class="visually-hidden">Family Number: </span>Fam #<?= h($patient['family_no']) ?>
-                                        </span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($activePrenatal)): ?>
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-7">
-                                            <span class="visually-hidden">Maternal Status: </span>Pregnant
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-
-                                <h2 class="h5 fw-bold text-primary-dark mb-1 lh-1" style="text-wrap: balance;">
+                            <div class="min-w-0 flex-grow-1">
+                                <!-- Primary Patient Name (Hero Title) -->
+                                <h2 class="h5 fw-bold text-primary-dark mb-1.5 lh-sm" style="text-wrap: balance;">
                                     <?= h($fullNameFormatted) ?>
                                 </h2>
 
-                                <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary">
+                                <!-- Patient Core Demographics -->
+                                <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary mb-2" style="font-size: 0.85rem;">
                                     <?= implode('<span class="text-muted" aria-hidden="true">&bull;</span>', $demographicsItems) ?>
                                 </div>
 
-                                <?php if (!empty($cdsAlerts['has_alerts'])): ?>
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mt-2 pt-2 border-top small">
-                                        <span class="text-muted small fw-semibold me-1"><i class="bi bi-shield-exclamation text-danger me-1" aria-hidden="true"></i>Clinical Alerts:</span>
-                                        <?php foreach ($cdsAlerts['flags'] as $flag): ?>
-                                            <span class="badge <?= $flag['class'] ?> px-2 py-1">
-                                                <i class="bi <?= $flag['icon'] ?> me-1" aria-hidden="true"></i><?= h($flag['label']) ?>
-                                            </span>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
+                                <!-- Clean Muted Identifier Tags Row -->
+                                <div class="patient-id-tags-row d-flex flex-wrap align-items-center gap-1.5">
+                                    <span class="patient-id-tag font-monospace" title="System Patient Number">
+                                        <span class="tag-label">ID</span>
+                                        <span class="tag-value"><?= h($patient['patient_no'] ?? 'N/A') ?></span>
+                                    </span>
+
+                                    <?php if (!empty($patient['envelope_no'])): ?>
+                                        <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                            <span class="tag-label">Env</span>
+                                            <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
+                                        </span>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($patient['family_no'])): ?>
+                                        <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                                            <span class="tag-label">Fam</span>
+                                            <span class="tag-value">#<?= h($patient['family_no']) ?></span>
+                                            <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
+                                        </a>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($activePrenatal)): ?>
+                                        <span class="patient-id-tag tag-status-pregnant">
+                                            <i class="bi bi-heart-pulse-fill me-0.5" aria-hidden="true"></i>
+                                            <span class="tag-label">PREGNANCY</span>
+                                            <span class="tag-value"><?= !empty($activePrenatal['calculated_aog']['weeks']) ? $activePrenatal['calculated_aog']['weeks'] . 'w' : 'Active' ?></span>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Right: Context link back to profile -->
-                        <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
-                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-1.5 shadow-xs text-nowrap" onclick="confirmCancelIhpEdit()" title="Return to Clinical Care Workstation">
-                                <i class="bi bi-person-badge me-1" aria-hidden="true"></i> View Patient Profile
+                        <div class="patient-actions-group d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-2 shadow-xs text-nowrap" onclick="confirmCancelIhpEdit()" title="Return to Clinical Care Workstation" style="min-height: 38px;">
+                                <i class="bi bi-person-badge me-1.5" aria-hidden="true"></i> View Patient Profile
                             </button>
                         </div>
                     </div>
+
+                    <!-- Clinical Alerts Safety Bar (If Any Alerts Recorded) -->
+                    <?php if (!empty($cdsAlerts['has_alerts'])): ?>
+                        <div class="clinical-alerts-bar mt-3" role="region" aria-label="Patient Safety and Clinical Alerts">
+                            <span class="clinical-alerts-label">
+                                <i class="bi bi-shield-exclamation text-danger" aria-hidden="true"></i>
+                                <span>Clinical Alerts:</span>
+                            </span>
+                            <div class="d-flex flex-wrap align-items-center gap-1.5">
+                                <?php foreach ($cdsAlerts['flags'] as $flag): ?>
+                                    <?php $isDangerAlert = ($flag['type'] === 'danger' || strpos($flag['code'] ?? '', 'ALLERGY') !== false); ?>
+                                    <span class="clinical-chip <?= $isDangerAlert ? 'clinical-chip-danger' : 'clinical-chip-neutral' ?>">
+                                        <i class="bi <?= $flag['icon'] ?> chip-icon" aria-hidden="true"></i>
+                                        <span><?= h($flag['label']) ?></span>
+                                    </span>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

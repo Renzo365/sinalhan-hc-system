@@ -62,53 +62,34 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- ==========================================================================
        PATIENT MASTER HEADER (Compact Universal Identity & Actions Banner)
        ========================================================================== -->
-    <div class="card card-premium shadow-sm border-0 mb-4">
-        <div class="card-body p-3">
+    <div class="card card-premium shadow-sm border-0 mb-4 patient-master-card">
+        <div class="card-body p-3 p-md-4">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
                 
-                <!-- Left: Avatar, Name, Badges & Baseline Demographics -->
-                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                    <div class="avatar-circle bg-success-subtle text-success fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 48px; height: 48px; font-size: 1.15rem;">
+                <!-- Left: Avatar, Name, Demographics & Metadata Tags -->
+                <div class="d-flex align-items-start align-items-sm-center gap-3 min-w-0 flex-grow-1 patient-header-identity">
+                    <div class="avatar-circle bg-success-subtle text-success fw-bold d-flex align-items-center justify-content-center rounded-circle shadow-xs flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.25rem;">
                         <?php if (!empty($avatarInitials)): ?>
                             <?= h($avatarInitials) ?>
                         <?php else: ?>
-                            <i class="bi bi-emoji-smile fs-4" aria-hidden="true"></i>
+                            <i class="bi bi-emoji-smile fs-3" aria-hidden="true"></i>
                         <?php endif; ?>
                     </div>
 
-                    <div class="min-w-0">
-                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                            <span class="badge bg-light text-dark border font-monospace fs-7" style="font-variant-numeric: tabular-nums;">
-                                <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no']) ?>
-                            </span>
-                            <?php if (!empty($patient['envelope_no'])): ?>
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace fs-7" style="font-variant-numeric: tabular-nums;" title="Physical Logbook Envelope No.">
-                                    <span class="visually-hidden">Envelope No: </span>Env #<?= h($patient['envelope_no']) ?>
-                                </span>
-                            <?php endif; ?>
-                            <?php if (!empty($patient['family_no'])): ?>
-                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="badge bg-info-subtle text-info-emphasis border border-info-subtle font-monospace fs-7 text-decoration-none" style="font-variant-numeric: tabular-nums;" title="View household in directory">
-                                    <span class="visually-hidden">Family No: </span>Fam #<?= h($patient['family_no']) ?>
-                                </a>
-                            <?php endif; ?>
-                            <?php if ($wellbabyRecord): ?>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle fs-7">Registered Infant</span>
-                            <?php else: ?>
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fs-7">Unregistered</span>
-                            <?php endif; ?>
-                        </div>
-
-                        <h2 class="h5 fw-bold text-primary-dark mb-1 lh-1" style="text-wrap: balance;">
+                    <div class="min-w-0 flex-grow-1">
+                        <!-- Primary Patient Name (Hero Title) -->
+                        <h2 class="h5 fw-bold text-primary-dark mb-1.5 lh-sm" style="text-wrap: balance;">
                             <?= h($fullNameFormatted) ?>
                         </h2>
 
-                        <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small">
+                        <!-- Patient Core Demographics -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 text-secondary small mb-2" style="font-size: 0.85rem;">
                             <span style="font-variant-numeric: tabular-nums;">
-                                <strong><?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : (!empty($patient['age']) ? h($patient['age']) . ' yrs' : 'Age not recorded') ?></strong>
-                                <span aria-hidden="true">&bull;</span> <?= !empty($patient['gender'] ?? $patient['sex'] ?? '') ? h($patient['gender'] ?? $patient['sex']) : 'Sex not recorded' ?>
+                                <strong class="text-dark"><?= !empty($patient['dob']) ? h(calculate_pediatric_age($patient['dob'])) : (!empty($patient['age']) ? h($patient['age']) . ' yrs' : 'Age not recorded') ?></strong>
+                                <span class="text-muted" aria-hidden="true">&bull;</span> <?= !empty($patient['gender'] ?? $patient['sex'] ?? '') ? h($patient['gender'] ?? $patient['sex']) : 'Child' ?>
                             </span>
                             <span class="text-muted" aria-hidden="true">&bull;</span>
-                            <span style="font-variant-numeric: tabular-nums;">DOB: <strong class="text-dark"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
+                            <span>DOB: <strong class="text-dark font-monospace" style="font-variant-numeric: tabular-nums;"><?= (!empty($patient['dob']) && $patient['dob'] !== '0000-00-00') ? date('M d, Y', strtotime($patient['dob'])) : 'Unspecified' ?></strong></span>
                             <span class="text-muted" aria-hidden="true">&bull;</span>
                             <?php if (!empty($patient['blood_type']) && strtolower(trim($patient['blood_type'])) !== 'unknown'): ?>
                                 <span>Blood: <strong class="text-danger"><?= h($patient['blood_type']) ?></strong></span>
@@ -121,20 +102,56 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php endif; ?>
                             <?php if (!empty($patient['mother_name'])): ?>
                                 <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span>Mother: <?= h($patient['mother_name']) ?></span>
+                                <span>Mother: <strong class="text-dark"><?= h($patient['mother_name']) ?></strong></span>
+                            <?php endif; ?>
+                            <?php if (!empty(trim($patient['address'] ?? ''))): ?>
+                                <span class="text-muted" aria-hidden="true">&bull;</span>
+                                <span><i class="bi bi-geo-alt text-muted me-0.5" aria-hidden="true"></i><?= h(trim($patient['address'])) ?></span>
                             <?php endif; ?>
                         </div>
-                        <div class="mt-1 small text-secondary d-flex align-items-center gap-1">
-                            <i class="bi bi-geo-alt text-muted flex-shrink-0" aria-hidden="true"></i>
-                            <span><?= !empty(trim($patient['address'] ?? '')) ? h(trim($patient['address'])) : '<span class="text-muted fst-italic">No address recorded</span>' ?></span>
+
+                        <!-- Clean Muted Identifier Tags Row -->
+                        <div class="patient-id-tags-row d-flex flex-wrap align-items-center gap-1.5">
+                            <span class="patient-id-tag font-monospace" title="System Patient Number">
+                                <span class="tag-label">ID</span>
+                                <span class="tag-value"><?= h($patient['patient_no']) ?></span>
+                            </span>
+
+                            <?php if (!empty($patient['envelope_no'])): ?>
+                                <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                    <span class="tag-label">Env</span>
+                                    <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
+                                </span>
+                            <?php endif; ?>
+
+                            <?php if (!empty($patient['family_no'])): ?>
+                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                                    <span class="tag-label">Fam</span>
+                                    <span class="tag-value">#<?= h($patient['family_no']) ?></span>
+                                    <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if ($wellbabyRecord): ?>
+                                <span class="patient-id-tag" style="background-color: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+                                    <i class="bi bi-check-circle-fill me-0.5 text-success" aria-hidden="true"></i>
+                                    <span class="tag-label" style="color: #4ade80;">STATUS</span>
+                                    <span class="tag-value" style="color: #15803d;">Registered Infant</span>
+                                </span>
+                            <?php else: ?>
+                                <span class="patient-id-tag" style="background-color: #fefce8; border-color: #fef08a; color: #854d0e;">
+                                    <span class="tag-label" style="color: #eab308;">STATUS</span>
+                                    <span class="tag-value" style="color: #a16207;">Unregistered</span>
+                                </span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right: Action Buttons -->
-                <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0">
-                    <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-3 shadow-xs">
-                        <i class="bi bi-person-badge me-1" aria-hidden="true"></i> Full Patient Profile
+                <div class="patient-actions-group d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                    <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-3 py-2 shadow-xs d-flex align-items-center" style="min-height: 38px;">
+                        <i class="bi bi-person-badge me-1.5" aria-hidden="true"></i> Full Patient Profile
                     </a>
                 </div>
             </div>
@@ -532,6 +549,15 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <span class="fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><?= h($gl['weight_kg']) ?> kg</span>
                                         <span class="text-muted mx-1" aria-hidden="true">&bull;</span>
                                         <span class="text-secondary" style="font-variant-numeric: tabular-nums;"><?= h($gl['height_cm']) ?> cm</span>
+                                        <?php if (!empty($gl['temperature']) && (float)$gl['temperature'] > 0): 
+                                            $glTempInfo = classify_temperature($gl['temperature']);
+                                        ?>
+                                            <span class="text-muted mx-1" aria-hidden="true">&bull;</span>
+                                            <span class="<?= $glTempInfo['is_abnormal'] ? 'text-danger fw-bold' : 'text-secondary' ?>" style="font-variant-numeric: tabular-nums;" title="<?= $glTempInfo['label'] ?>">
+                                                <?= $glTempInfo['formatted'] ?>
+                                            </span>
+                                            <?= $glTempInfo['pill'] ?>
+                                        <?php endif; ?>
                                     </td>
                                     <td><span class="badge bg-light text-dark border"><?= h($gl['feeding_method']) ?></span></td>
                                     <td>
@@ -540,6 +566,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <td class="pe-3 text-end text-nowrap">
                                         <?php 
                                             $canDeleteGrowth = is_admin();
+                                            $formattedGlTemp = format_temperature($gl['temperature'] ?? null);
                                         ?>
                                         <div class="d-inline-flex gap-1 justify-content-end align-items-center">
                                             <button type="button" class="btn btn-sm btn-outline-primary border-0 p-1 btn-view-growth-log" 
@@ -549,7 +576,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 data-height="<?= h($gl['height_cm']) ?> cm" 
                                                 data-head="<?= h($gl['head_circumference_cm'] ?? '--') ?>" 
                                                 data-chest="<?= h($gl['chest_circumference_cm'] ?? '--') ?>" 
-                                                data-temp="<?= h($gl['temperature'] ?? '--') ?>" 
+                                                data-temp="<?= h($formattedGlTemp ?? '--') ?>" 
                                                 data-feeding="<?= h($gl['feeding_method']) ?>" 
                                                 data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>" 
                                                 data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>" 
@@ -566,10 +593,10 @@ require dirname(__DIR__) . '/layout/header.php';
                                                 data-height="<?= h($gl['height_cm']) ?>"
                                                 data-head="<?= h($gl['head_circumference_cm'] ?? '') ?>"
                                                 data-chest="<?= h($gl['chest_circumference_cm'] ?? '') ?>"
-                                                data-temp="<?= h($gl['temperature'] ?? '') ?>"
-                                                data-feeding="<?= h($gl['feeding_method']) ?>"
-                                                data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>"
-                                                data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>"
+                                                data-temp="<?= h($formattedGlTemp ?? '') ?>" 
+                                                data-feeding="<?= h($gl['feeding_method']) ?>" 
+                                                data-vaccines="<?= h($gl['vaccines_administered'] ?? '') ?>" 
+                                                data-tcb="<?= h($gl['tcb_notes'] ?? '') ?>" 
                                                 title="Edit Growth Visit"
                                                 aria-label="Edit growth visit from <?= date('M d, Y', strtotime($gl['log_date'])) ?>"
                                                 style="min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center;">
@@ -847,8 +874,11 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Temperature</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Temperature</span>
+                                <span id="modalGrowthTempBadge"></span>
+                            </div>
                             <span class="fs-6 fw-bold text-dark" style="font-variant-numeric: tabular-nums;"><span id="modalGrowthTemp">--</span> <small class="text-muted fw-normal">&deg;C</small></span>
                         </div>
                     </div>
@@ -1009,7 +1039,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (elHeight) elHeight.textContent = height;
             if (elHead) elHead.textContent = head;
             if (elChest) elChest.textContent = chest;
-            if (elTemp) elTemp.textContent = temp;
+            let tempDisplay = '--';
+            let tempBadgeHtml = '';
+            const tVal = parseFloat(temp);
+            if (!isNaN(tVal) && tVal > 0) {
+                tempDisplay = tVal.toFixed(1);
+                if (tVal >= 39.0) tempBadgeHtml = '<span class="badge bg-danger text-white">High Fever</span>';
+                else if (tVal >= 38.0) tempBadgeHtml = '<span class="badge bg-danger text-white">Fever</span>';
+                else if (tVal >= 37.6) tempBadgeHtml = '<span class="badge bg-warning text-dark">Low Fever</span>';
+                else if (tVal < 35.5) tempBadgeHtml = '<span class="badge bg-info text-white">Hypothermia</span>';
+                else tempBadgeHtml = '<span class="badge bg-success-subtle text-success border border-success-subtle">Normal</span>';
+            }
+            if (elTemp) elTemp.textContent = tempDisplay;
+            const elTempBadge = document.getElementById('modalGrowthTempBadge');
+            if (elTempBadge) elTempBadge.innerHTML = tempBadgeHtml;
+
             if (elFeeding) elFeeding.textContent = feeding;
             if (elVaccines) elVaccines.textContent = vaccines || '--';
 

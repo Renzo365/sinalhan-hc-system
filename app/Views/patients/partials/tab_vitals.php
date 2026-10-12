@@ -41,29 +41,73 @@
                                         <?php foreach ($vitalsHistory as $v): 
                                             $canDeleteVital = is_admin();
                                             $canEditVital = in_array($curRole, ['admin', 'super_admin', 'staff'], true);
-                                            $sys = (int)($v['bp_systolic'] ?? 0);
-                                            $dia = (int)($v['bp_diastolic'] ?? 0);
-                                            $isHighBp = ($sys >= 140 || $dia >= 90);
+                                            $bpInfo = classify_bp($v['bp_systolic'] ?? null, $v['bp_diastolic'] ?? null);
+                                            $hrInfo = classify_heart_rate($v['heart_rate'] ?? null);
+                                            $tempInfo = classify_temperature($v['temperature'] ?? null);
+                                            $spo2Info = classify_spo2($v['oxygen_saturation'] ?? null);
+                                            $bmiInfo = classify_bmi($v['bmi'] ?? null);
+                                            $formattedTemp = format_temperature($v['temperature'] ?? null);
                                         ?>
                                             <tr>
                                                 <td class="text-start ps-3 fw-medium text-dark text-nowrap"><?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?></td>
                                                 <td class="text-nowrap">
-                                                    <?php if ($sys > 0 && $dia > 0): ?>
-                                                        <?php if ($isHighBp): ?>
-                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle font-monospace px-2 py-1" title="Hypertensive BP (&ge; 140/90 mmHg)">
-                                                                <?= $sys ?>/<?= $dia ?>
+                                                    <?php if ($bpInfo['sys'] !== null): ?>
+                                                        <div class="d-inline-flex align-items-center gap-1">
+                                                            <span class="font-monospace fw-bold <?= $bpInfo['is_high'] ? 'text-danger' : ($bpInfo['is_abnormal'] ? 'text-warning-emphasis' : 'text-dark') ?>">
+                                                                <?= $bpInfo['sys'] ?>/<?= $bpInfo['dia'] ?>
                                                             </span>
-                                                        <?php else: ?>
-                                                            <span class="fw-bold font-monospace text-dark"><?= $sys ?>/<?= $dia ?></span>
-                                                        <?php endif; ?>
+                                                            <?= $bpInfo['pill'] ?>
+                                                        </div>
                                                     <?php else: ?>
                                                         <span class="text-muted">&mdash;</span>
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><?= !empty($v['heart_rate']) ? h($v['heart_rate']) : '<span class="text-muted">&mdash;</span>' ?></td>
-                                                <td><?= !empty($v['temperature']) ? h($v['temperature']) . '°' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                                <td><?= !empty($v['oxygen_saturation']) ? h($v['oxygen_saturation']) . '%' : '<span class="text-muted">&mdash;</span>' ?></td>
-                                                <td><?= !empty($v['bmi']) ? number_format((float)$v['bmi'], 1) : '<span class="text-muted">&mdash;</span>' ?></td>
+                                                <td class="text-nowrap">
+                                                    <?php if ($hrInfo['value'] !== null): ?>
+                                                        <div class="d-inline-flex align-items-center gap-1">
+                                                            <span class="<?= $hrInfo['is_abnormal'] ? 'fw-bold text-warning-emphasis' : 'text-dark' ?>">
+                                                                <?= $hrInfo['value'] ?>
+                                                            </span>
+                                                            <?= $hrInfo['pill'] ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">&mdash;</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-nowrap">
+                                                    <?php if ($tempInfo['value'] !== null): ?>
+                                                        <div class="d-inline-flex align-items-center gap-1">
+                                                            <span class="<?= $tempInfo['is_abnormal'] ? 'fw-bold ' . ($tempInfo['label'] === 'Hypothermia' ? 'text-info' : 'text-danger') : 'text-dark' ?>">
+                                                                <?= $tempInfo['formatted'] ?>
+                                                            </span>
+                                                            <?= $tempInfo['pill'] ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">&mdash;</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-nowrap">
+                                                    <?php if ($spo2Info['value'] !== null): ?>
+                                                        <div class="d-inline-flex align-items-center gap-1">
+                                                            <span class="<?= $spo2Info['is_abnormal'] ? 'fw-bold text-danger' : 'text-dark' ?>">
+                                                                <?= $spo2Info['formatted'] ?>
+                                                            </span>
+                                                            <?= $spo2Info['pill'] ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">&mdash;</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-nowrap">
+                                                    <?php if (!empty($v['bmi']) && (float)$v['bmi'] > 0): ?>
+                                                        <div class="d-inline-flex align-items-center gap-1">
+                                                            <span class="fw-bold text-dark"><?= number_format((float)$v['bmi'], 1) ?></span>
+                                                            <span class="badge <?= $bmiInfo['badge'] ?>" style="font-size: 0.7rem;"><?= $bmiInfo['label'] ?></span>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">&mdash;</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td class="text-muted"><?= h($v['recorder_name'] ?? 'Clinician') ?></td>
                                                 <td class="pe-3 text-end text-nowrap">
                                                     <div class="d-inline-flex gap-1 justify-content-end align-items-center">
@@ -72,12 +116,12 @@
                                                             data-date="<?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?>"
                                                             data-bp="<?= h(($v['bp_systolic'] ?? '--') . '/' . ($v['bp_diastolic'] ?? '--')) ?>"
                                                             data-pulse="<?= h($v['heart_rate'] ?? '--') ?>"
-                                                            data-temp="<?= h($v['temperature'] ?? '--') ?>"
+                                                            data-temp="<?= h($formattedTemp ?? '--') ?>"
                                                             data-resp="<?= h($v['respiratory_rate'] ?? '--') ?>"
                                                             data-spo2="<?= h($v['oxygen_saturation'] ?? '--') ?>"
                                                             data-weight="<?= h($v['weight'] ?? '--') ?>"
                                                             data-height="<?= h($v['height'] ?? '--') ?>"
-                                                            data-bmi="<?= h($v['bmi'] ?? '--') ?>"
+                                                            data-bmi="<?= h(!empty($v['bmi']) ? number_format((float)$v['bmi'], 1) : '--') ?>"
                                                             data-waist="<?= h($v['waist_circumference'] ?? '--') ?>"
                                                             data-notes="<?= h($v['notes'] ?? '') ?>"
                                                             data-recorder="<?= h($v['recorder_name'] ?? 'Clinician') ?>"
@@ -91,7 +135,7 @@
                                                                 data-bp-systolic="<?= h($v['bp_systolic'] ?? '') ?>"
                                                                 data-bp-diastolic="<?= h($v['bp_diastolic'] ?? '') ?>"
                                                                 data-pulse="<?= h($v['heart_rate'] ?? '') ?>"
-                                                                data-temp="<?= h($v['temperature'] ?? '') ?>"
+                                                                data-temp="<?= h($formattedTemp ?? '') ?>"
                                                                 data-resp="<?= h($v['respiratory_rate'] ?? '') ?>"
                                                                 data-spo2="<?= h($v['oxygen_saturation'] ?? '') ?>"
                                                                 data-weight="<?= h($v['weight'] ?? '') ?>"

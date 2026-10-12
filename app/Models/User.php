@@ -469,6 +469,28 @@ class User extends Model {
     }
 
     /**
+     * Check if employee_id is unique across active and non-deleted accounts,
+     * and ensure it does not conflict with an existing username.
+     */
+    public function isEmployeeIdUnique($employeeId, $excludeId = null) {
+        if (empty($employeeId)) return true;
+        $cleanId = trim($employeeId);
+        
+        $sql = "SELECT COUNT(*) FROM users WHERE (employee_id = :emp_id OR username = :u_id) AND deleted_at IS NULL";
+        $params = [
+            'emp_id' => $cleanId,
+            'u_id' => $cleanId
+        ];
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params['id'] = (int)$excludeId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() == 0;
+    }
+
+    /**
      * Update user personal accessibility and display preferences.
      *
      * @param int $userId

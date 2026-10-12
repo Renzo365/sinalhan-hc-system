@@ -277,50 +277,71 @@
                 <!-- Grid of Vitals Cards -->
                 <div class="row g-2 mb-3">
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Blood Pressure</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Blood Pressure</span>
+                                <span id="modalVitalBpBadge"></span>
+                            </div>
                             <span class="fs-6 fw-bold font-monospace text-dark" id="modalVitalBP">--</span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Heart / Pulse Rate</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Heart / Pulse Rate</span>
+                                <span id="modalVitalPulseBadge"></span>
+                            </div>
                             <span class="fs-6 fw-bold text-dark"><span id="modalVitalPulse">--</span> <small class="text-muted fw-normal">bpm</small></span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Temperature</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Temperature</span>
+                                <span id="modalVitalTempBadge"></span>
+                            </div>
                             <span class="fs-6 fw-bold text-dark"><span id="modalVitalTemp">--</span> <small class="text-muted fw-normal">°C</small></span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Respiratory Rate</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Respiratory Rate</span>
+                                <span id="modalVitalRespBadge"></span>
+                            </div>
                             <span class="fs-6 fw-bold text-dark"><span id="modalVitalResp">--</span> <small class="text-muted fw-normal">cpm</small></span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Oxygen Saturation (SpO2)</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Oxygen Saturation</span>
+                                <span id="modalVitalSpo2Badge"></span>
+                            </div>
                             <span class="fs-6 fw-bold text-dark"><span id="modalVitalSpo2">--</span><small class="text-muted fw-normal">%</small></span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Waist Circumference</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Waist Circumference</span>
+                            </div>
                             <span class="fs-6 fw-bold text-dark"><span id="modalVitalWaist">--</span> <small class="text-muted fw-normal">cm</small></span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">Weight & Height</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">Weight & Height</span>
+                            </div>
                             <span class="fs-7 fw-bold text-dark"><span id="modalVitalWeight">--</span> kg / <span id="modalVitalHeight">--</span> cm</span>
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="p-2 bg-light rounded border">
-                            <span class="text-muted small d-block">BMI & Category</span>
+                        <div class="p-2 bg-light rounded border h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-muted small">BMI & Category</span>
+                            </div>
                             <span class="fs-7 fw-bold" id="modalVitalBmi">--</span>
                         </div>
                     </div>

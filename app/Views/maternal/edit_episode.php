@@ -75,30 +75,36 @@ $initials = strtoupper($initials ?: 'PT');
                 <div class="card-body p-4 bg-white">
                     <div class="p-3 p-md-4 rounded-4" style="background-color: #fff0f5; border: 1px solid #fbcfe8;">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3" style="border-bottom: 1px solid #fbcfe8;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #d63384; color: #fff;" aria-hidden="true">
+                            <div class="d-flex align-items-start align-items-sm-center gap-3">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs flex-shrink-0" style="width: 52px; height: 52px; background-color: #d63384; color: #fff;" aria-hidden="true">
                                     <?= h($initials) ?>
                                 </div>
                                 <div>
-                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <h3 class="h6 fw-bold text-dark mb-0"><?= h($fullNameFormatted) ?></h3>
-                                        <span class="badge text-white" style="background-color: #d63384;">Female</span>
-                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">
-                                            <span class="visually-hidden">Patient ID: </span><?= h($patient['patient_no']) ?>
+                                    <h3 class="h6 fw-bold text-dark mb-1.5 lh-sm" style="text-wrap: balance;"><?= h($fullNameFormatted) ?></h3>
+                                    
+                                    <div class="d-flex flex-wrap align-items-center gap-1.5 mb-2">
+                                        <span class="patient-id-tag font-monospace" title="System Patient Number">
+                                            <span class="tag-label">ID</span>
+                                            <span class="tag-value"><?= h($patient['patient_no']) ?></span>
                                         </span>
                                         <?php if (!empty($patient['envelope_no'])): ?>
-                                            <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">
-                                                <span class="visually-hidden">Envelope No: </span>Env #<?= h($patient['envelope_no']) ?>
+                                            <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                                <span class="tag-label">Env</span>
+                                                <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                             </span>
                                         <?php endif; ?>
+                                        <span class="patient-id-tag tag-status-pregnant">
+                                            <span class="tag-label">Sex</span>
+                                            <span class="tag-value">Female</span>
+                                        </span>
                                     </div>
-                                    <small class="text-muted">
-                                        <?= h($patient['civil_status'] ?? 'Single') ?> <span class="text-muted" aria-hidden="true">&bull;</span> Contact: <?= h($patient['contact_no'] ?? 'N/A') ?>
-                                    </small>
+                                    <div class="small text-muted">
+                                        <?= h($patient['civil_status'] ?? 'Single') ?> <span class="text-muted" aria-hidden="true">&bull;</span> Contact: <span style="font-variant-numeric: tabular-nums;"><?= h($patient['contact_no'] ?? 'N/A') ?></span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="text-md-end">
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill font-monospace small">
+                            <div class="text-md-end flex-shrink-0">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill font-monospace small" style="font-variant-numeric: tabular-nums;">
                                     <i class="bi bi-calendar-check me-1" aria-hidden="true"></i> Enrolled: <?= !empty($episode['created_at']) ? date('M d, Y', strtotime($episode['created_at'])) : 'Active' ?>
                                 </span>
                             </div>

@@ -82,6 +82,11 @@ class UserValidator extends BaseValidator {
             $this->addError('Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).');
         }
 
+        $employeeId = trim($input['employee_id'] ?? '');
+        if (!empty($employeeId) && $this->userModel && !$this->userModel->isEmployeeIdUnique($employeeId)) {
+            $this->addError('Employee ID is already registered or matches an existing username.');
+        }
+
         return $this->errors;
     }
 
@@ -117,6 +122,11 @@ class UserValidator extends BaseValidator {
 
         if (!empty($rawContact) && !preg_match('/^09\d{9}$/', $contactNo)) {
             $this->addError('Contact number must be an 11-digit Philippine mobile number starting with 09 (e.g., 09171234567).');
+        }
+
+        $employeeId = trim($input['employee_id'] ?? '');
+        if (!empty($employeeId) && $this->userModel && !$this->userModel->isEmployeeIdUnique($employeeId, $id)) {
+            $this->addError('Employee ID is already registered or matches an existing username.');
         }
 
         if ($id == $currentUserId && $role !== ($_SESSION['user_role'] ?? 'staff')) {

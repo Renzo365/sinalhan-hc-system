@@ -200,16 +200,18 @@ class Appointment extends Model {
         // Format time to HH:MM:00 for strict match
         $formattedTime = date('H:i:00', strtotime($time));
 
-        $sql = "SELECT COUNT(*) FROM appointments 
-                WHERE appointment_date = :date 
-                  AND appointment_time = :time
-                  AND status = 'Scheduled'
-                  AND deleted_at IS NULL";
+        $sql = "SELECT COUNT(*) FROM appointments a
+                JOIN patients p ON a.patient_id = p.id
+                WHERE a.appointment_date = :date 
+                  AND a.appointment_time = :time
+                  AND a.status = 'Scheduled'
+                  AND a.deleted_at IS NULL
+                  AND p.deleted_at IS NULL";
         
         $params = ['date' => $date, 'time' => $formattedTime];
         
         if ($excludeId) {
-            $sql .= " AND id != :exclude_id";
+            $sql .= " AND a.id != :exclude_id";
             $params['exclude_id'] = (int)$excludeId;
         }
         
@@ -226,19 +228,21 @@ class Appointment extends Model {
      * @return array Associative array of time => count (e.g., ['09:00:00' => 3])
      */
     public function getDayCapacity($date, $excludeId = null) {
-        $sql = "SELECT appointment_time, COUNT(*) as booked_count 
-                FROM appointments 
-                WHERE appointment_date = :date 
-                  AND status = 'Scheduled'
-                  AND deleted_at IS NULL";
+        $sql = "SELECT a.appointment_time, COUNT(*) as booked_count 
+                FROM appointments a
+                JOIN patients p ON a.patient_id = p.id
+                WHERE a.appointment_date = :date 
+                  AND a.status = 'Scheduled'
+                  AND a.deleted_at IS NULL
+                  AND p.deleted_at IS NULL";
         
         $params = ['date' => $date];
         if ($excludeId) {
-            $sql .= " AND id != :exclude_id";
+            $sql .= " AND a.id != :exclude_id";
             $params['exclude_id'] = (int)$excludeId;
         }
         
-        $sql .= " GROUP BY appointment_time";
+        $sql .= " GROUP BY a.appointment_time";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);

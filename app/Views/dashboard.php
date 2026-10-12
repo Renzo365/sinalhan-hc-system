@@ -138,7 +138,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                 <th scope="col" style="min-width: 175px;">Patient Details</th>
                                 <th scope="col">Program &amp; Purpose</th>
                                 <th scope="col" style="width: 110px;">Status</th>
-                                <th scope="col" class="pe-4 text-end" style="width: 115px;">Action</th>
+                                <th scope="col" class="pe-3 text-end" style="width: 125px; white-space: nowrap;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,12 +181,11 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 <a href="<?= url('/patients/' . $appt['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" style="font-variant-numeric: tabular-nums;" title="View Patient Record">
                                                     <?= h($appt['patient_no']) ?>
                                                 </a>
+                                                <span class="mx-1 text-muted opacity-50" aria-hidden="true">&bull;</span>
                                                 <?php if (!empty($appt['contact_no'])): ?>
-                                                    <span aria-hidden="true">&bull;</span>
                                                     <span style="font-variant-numeric: tabular-nums;"><?= h($appt['contact_no']) ?></span>
                                                 <?php else: ?>
-                                                    <span aria-hidden="true">&bull;</span>
-                                                    <span>Brgy. Sinalhan</span>
+                                                    <span class="text-muted fst-italic">No contact #</span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -221,8 +220,8 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><?= h($appt['status']) ?></span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="pe-4 text-end">
-                                            <?php if ($isEnqueued): ?>
+                                        <td class="pe-3 text-end text-nowrap">
+                                            <?php if ($appt['status'] === 'Scheduled' && $isEnqueued): ?>
                                                 <span class="badge bg-success-subtle text-success border border-success-subtle py-1.5 px-2" style="font-variant-numeric: tabular-nums;" title="Patient is already enqueued today">
                                                     Queue #<?= $qNo ?>
                                                 </span>
@@ -233,7 +232,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                     <input type="hidden" name="service_type" value="<?= h($serviceVal) ?>">
                                                     <input type="hidden" name="appointment_id" value="<?= (int)$appt['id'] ?>">
                                                     <input type="hidden" name="redirect_to" value="<?= url('/dashboard') ?>">
-                                                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2.5 d-inline-flex align-items-center shadow-xs" style="min-height: 31px;" title="Issue Queue Ticket for <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>" aria-label="Check in <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?> to queue">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2.5 d-inline-flex align-items-center text-nowrap shadow-xs" style="font-size: 0.8125rem;" title="Issue Queue Ticket for <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?>" aria-label="Check in <?= h($appt['patient_first'] . ' ' . $appt['patient_last']) ?> to queue">
                                                         <i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i>
                                                         <span>Check In</span>
                                                     </button>
@@ -289,6 +288,10 @@ $households = (int)($censusMetrics['households'] ?? 0);
                         <div>
                             <div class="fs-4 fw-bold text-primary font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['called']) ?></div>
                             <div class="text-muted small">Called</div>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold text-info-emphasis font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['serving']) ?></div>
+                            <div class="text-muted small">Serving</div>
                         </div>
                         <div>
                             <div class="fs-4 fw-bold text-success font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($queueStats['completed']) ?></div>
@@ -401,14 +404,14 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                 <?= h($del['last_name']) ?>, <?= h($del['first_name']) ?>
                                             </a>
                                         </div>
-                                        <div class="text-muted d-flex align-items-center gap-1.5 flex-wrap mt-0.5" style="font-size: 0.72rem;">
+                                        <div class="text-muted d-flex align-items-center gap-1 flex-wrap mt-0.5" style="font-size: 0.72rem;">
                                             <a href="<?= url('/patients/' . $del['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" style="font-variant-numeric: tabular-nums;" title="View Patient Record">
                                                 <?= h($del['patient_no']) ?>
                                             </a>
-                                            <span aria-hidden="true">&bull;</span>
+                                            <span class="mx-1 text-muted opacity-50" aria-hidden="true">&bull;</span>
                                             <span>EDC: <strong style="font-variant-numeric: tabular-nums;"><?= date('M d, Y', strtotime($del['edc'])) ?></strong></span>
                                             <?php if (!empty($del['contact_no'])): ?>
-                                                <span aria-hidden="true">&bull;</span>
+                                                <span class="mx-1 text-muted opacity-50" aria-hidden="true">&bull;</span>
                                                 <span style="font-variant-numeric: tabular-nums;"><?= h($del['contact_no']) ?></span>
                                             <?php endif; ?>
                                         </div>
@@ -503,7 +506,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                             <div class="col-6">
                                 <div class="lh-1">
                                     <div class="fw-bold text-dark small font-monospace" style="font-variant-numeric: tabular-nums;"><?= number_format($childHealth['total_wellbaby'] ?? 0) ?> Folders</div>
-                                    <span class="text-muted" style="font-size: 0.68rem;">Well-Baby Growth Logs</span>
+                                    <span class="text-muted" style="font-size: 0.68rem;">Registered Child Folders</span>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -586,12 +589,16 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                                     <?= h($enc['last_name']) ?>, <?= h($enc['first_name']) ?>
                                                 </a>
                                             </div>
-                                            <div class="text-muted small d-flex align-items-center gap-1.5 mt-0.5" style="font-size: 0.75rem; white-space: nowrap;">
+                                            <div class="text-muted small d-flex align-items-center gap-1 mt-0.5" style="font-size: 0.75rem; white-space: nowrap;">
                                                 <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="font-monospace text-secondary text-decoration-none fw-semibold" style="font-variant-numeric: tabular-nums;" title="View Patient Profile">
                                                     <?= h($enc['patient_no']) ?>
                                                 </a>
-                                                <span aria-hidden="true">&bull;</span>
-                                                <span><span style="font-variant-numeric: tabular-nums;"><?= (int)$enc['age'] ?></span> yrs, <?= h($enc['sex'] ?? 'Unknown') ?></span>
+                                                <span class="mx-1 text-muted opacity-50" aria-hidden="true">&bull;</span>
+                                                <?php
+                                                    $ageYears = (int)($enc['age'] ?? 0);
+                                                    $displayAge = $ageYears > 0 ? "{$ageYears} yrs" : calculate_pediatric_age($enc['dob'] ?? null);
+                                                ?>
+                                                <span><span style="font-variant-numeric: tabular-nums;"><?= h($displayAge) ?></span>, <?= h($enc['sex'] ?? 'Unknown') ?></span>
                                             </div>
                                         </td>
                                         <td>
@@ -610,7 +617,7 @@ $households = (int)($censusMetrics['households'] ?? 0);
                                             </div>
                                         </td>
                                         <td class="pe-4 text-end">
-                                            <a href="<?= url('/patients/' . $enc['patient_id']) ?>" class="btn btn-sm btn-outline-primary py-1 px-2.5 d-inline-flex align-items-center shadow-xs" style="min-height: 32px;" title="Open Patient Medical Chart" aria-label="Open Medical Chart for <?= h($enc['first_name'] . ' ' . $enc['last_name']) ?>">
+                                            <a href="<?= url('/patients/' . $enc['patient_id'] . '#tab-consultations') ?>" class="btn btn-sm btn-outline-primary py-1 px-2.5 d-inline-flex align-items-center shadow-xs" style="min-height: 32px;" title="Open Patient Medical Chart" aria-label="Open Medical Chart for <?= h($enc['first_name'] . ' ' . $enc['last_name']) ?>">
                                                 <span>View Chart</span>
                                             </a>
                                         </td>

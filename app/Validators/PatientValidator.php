@@ -41,8 +41,8 @@ class PatientValidator extends BaseValidator {
             }
         }
 
-        // 2. Name fields regex & length validation (Letters, spaces, hyphens, apostrophes, dots, ñ/Ñ)
-        $namePattern = '/^[a-zA-ZñÑ\s\-\'\.]{2,50}$/u';
+        // 2. Name fields regex & length validation (Unicode letters \p{L}, spaces, hyphens, apostrophes, dots)
+        $namePattern = '/^[\p{L}\s\-\'\.]{2,50}$/u';
 
         if (!empty($input['first_name'])) {
             $firstName = trim($input['first_name']);
@@ -67,7 +67,7 @@ class PatientValidator extends BaseValidator {
 
         if (!empty($input['emergency_name']) && trim($input['emergency_name']) !== '') {
             $emergencyName = trim($input['emergency_name']);
-            if (!preg_match('/^[a-zA-ZñÑ\s\-\'\.\,]{2,100}$/u', $emergencyName)) {
+            if (!preg_match('/^[\p{L}\s\-\'\.\,]{2,100}$/u', $emergencyName)) {
                 $this->addError('Emergency Contact Person Name must contain only letters, spaces, hyphens, commas, or apostrophes (2 to 100 characters).');
             }
         }
@@ -194,7 +194,7 @@ class PatientValidator extends BaseValidator {
         foreach ($familyNames as $field => $fieldLabel) {
             if (!empty($input[$field]) && trim($input[$field]) !== '') {
                 $val = trim($input[$field]);
-                if (mb_strlen($val) > 150 || !preg_match('/^[a-zA-ZñÑ\s\-\'\.\,]{2,150}$/u', $val)) {
+                if (mb_strlen($val) > 150 || !preg_match('/^[\p{L}\s\-\'\.\,]{2,150}$/u', $val)) {
                     $this->addError("{$fieldLabel} must contain only letters, spaces, hyphens, commas, or apostrophes (2 to 150 characters).");
                 }
             }

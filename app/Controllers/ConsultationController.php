@@ -111,18 +111,30 @@ class ConsultationController extends Controller {
         $data['status'] = 'Completed';
         $data['created_by'] = $_SESSION['user_id'];
 
-        $newId = $this->consultationModel->create($data);
+        $db = \App\Core\Database::getInstance()->getConnection();
+        try {
+            $db->beginTransaction();
 
-        if ($newId) {
+            $newId = $this->consultationModel->create($data);
+
+            if (!$newId) {
+                throw new \RuntimeException('Database insertion failed for consultation.');
+            }
+
             if (!empty($_POST['prescriptions']) && is_array($_POST['prescriptions'])) {
-                (new \App\Models\Prescription())->syncForConsultation(
+                $syncOk = (new \App\Models\Prescription())->syncForConsultation(
                     $newId,
                     $patientId,
                     $_SESSION['user_id'],
                     $_POST['prescriptions'],
                     $data['consulted_at'] ?? null
                 );
+                if (!$syncOk) {
+                    throw new \RuntimeException('Failed to sync prescriptions.');
+                }
             }
+
+            $db->commit();
 
             $rxCount = (!empty($_POST['prescriptions']) && is_array($_POST['prescriptions'])) 
                 ? count(array_filter($_POST['prescriptions'], function($r) { return !empty(trim($r['medicine_name'] ?? '')); })) 
@@ -133,7 +145,11 @@ class ConsultationController extends Controller {
             
             $_SESSION['success_message'] = 'Consultation record saved successfully!';
             $this->redirect("/patients/{$patientId}#tab-consultations");
-        } else {
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed to create consultation: " . $e->getMessage());
             $_SESSION['form_errors'] = ['Database insertion failed. Please try again.'];
             $_SESSION['form_input'] = $_POST;
             $this->redirect("/patients/{$patientId}/consultations/create");
@@ -257,17 +273,29 @@ class ConsultationController extends Controller {
         $data['status'] = 'Completed';
         $data['updated_by'] = $currentUserId;
 
-        $updated = $this->consultationModel->update($id, $data);
+        $db = \App\Core\Database::getInstance()->getConnection();
+        try {
+            $db->beginTransaction();
 
-        if ($updated) {
+            $updated = $this->consultationModel->update($id, $data);
+            if (!$updated) {
+                throw new \RuntimeException('Database update failed for consultation.');
+            }
+
             $prescriptionItems = !empty($_POST['prescriptions']) && is_array($_POST['prescriptions']) ? $_POST['prescriptions'] : [];
-            (new \App\Models\Prescription())->syncForConsultation(
+            $syncOk = (new \App\Models\Prescription())->syncForConsultation(
                 $id,
                 $patientId,
                 $currentUserId,
                 $prescriptionItems,
                 $data['consulted_at'] ?? $consultation['consulted_at'] ?? null
             );
+
+            if (!$syncOk) {
+                throw new \RuntimeException('Failed to synchronize prescriptions.');
+            }
+
+            $db->commit();
 
             $patientLabel = $patient ? "{$patient['first_name']} {$patient['last_name']} ({$patient['patient_no']})" : "Patient #{$patientId}";
             $rxUpdatedCount = count($prescriptionItems);
@@ -276,7 +304,11 @@ class ConsultationController extends Controller {
 
             $_SESSION['success_message'] = 'Consultation record updated successfully!';
             $this->redirect("/patients/{$patientId}#tab-consultations");
-        } else {
+        } catch (\Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log("Failed to update consultation: " . $e->getMessage());
             $_SESSION['form_errors'] = ['Database update failed. Please try again.'];
             $_SESSION['form_input'] = $_POST;
             $this->redirect("/consultations/{$id}/edit");

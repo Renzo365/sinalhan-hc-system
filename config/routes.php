@@ -113,7 +113,7 @@ return function (\App\Core\Router $router) {
     $router->get('/consultations/{id}', 'ConsultationController@show', [AuthMiddleware::class]);
     $router->get('/consultations/{id}/edit', 'ConsultationController@edit', [AuthMiddleware::class]);
     $router->post('/consultations/{id}', 'ConsultationController@update', [AuthMiddleware::class]);
-    $router->post('/consultations/{id}/archive', 'ConsultationController@archive', [AuthMiddleware::class]);
+    $router->post('/consultations/{id}/archive', 'ConsultationController@archive', [AdminMiddleware::class]);
     $router->post('/archive/consultations/{id}/restore', 'ConsultationController@restore', [AdminMiddleware::class]);
 
     // Appointment Routes

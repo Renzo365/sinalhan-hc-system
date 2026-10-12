@@ -91,8 +91,11 @@ class Prescription extends Model {
      * @return bool
      */
     public function syncForConsultation($consultationId, $patientId, $userId, array $items, $consultedAt = null) {
+        $shouldManageTransaction = !$this->db->inTransaction();
         try {
-            $this->db->beginTransaction();
+            if ($shouldManageTransaction) {
+                $this->db->beginTransaction();
+            }
 
             // Permanently remove previous items for this consultation to avoid stale rows upon re-edit
             // (Since consultations are soft-deletable and prescriptions cascade-delete with them)
@@ -128,10 +131,12 @@ class Prescription extends Model {
                 ]);
             }
 
-            $this->db->commit();
+            if ($shouldManageTransaction) {
+                $this->db->commit();
+            }
             return true;
         } catch (\Exception $e) {
-            if ($this->db->inTransaction()) {
+            if ($shouldManageTransaction && $this->db->inTransaction()) {
                 $this->db->rollBack();
             }
             error_log("Failed to sync prescriptions: " . $e->getMessage());

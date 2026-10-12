@@ -332,30 +332,75 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Vitals strip formatting
                     let vitalsHtml = '';
                     if (data.bp_systolic || data.temperature || data.heart_rate || data.weight || data.height) {
-                        const isHighBp = (parseInt(data.bp_systolic) >= 140 || parseInt(data.bp_diastolic) >= 90);
+                        const sys = parseInt(data.bp_systolic || 0, 10);
+                        const dia = parseInt(data.bp_diastolic || 0, 10);
+                        const isHighBp = (sys >= 140 || dia >= 90);
+                        const isPreHtn = ((sys >= 120 && sys <= 139) || (dia >= 80 && dia <= 89));
+                        const isHypotension = (sys > 0 && sys < 90) || (dia > 0 && dia < 60);
+
+                        let bpBadge = '';
+                        if (sys > 0 && dia > 0) {
+                            if (isHighBp) bpBadge = '<span class="badge bg-danger text-white ms-1">Hypertension</span>';
+                            else if (isPreHtn) bpBadge = '<span class="badge bg-warning text-dark ms-1">Pre-HTN</span>';
+                            else if (isHypotension) bpBadge = '<span class="badge bg-warning text-dark ms-1">Hypotension</span>';
+                        }
+
+                        const tVal = parseFloat(data.temperature);
+                        let tempBadge = '';
+                        let formattedTemp = '';
+                        if (!isNaN(tVal) && tVal > 0) {
+                            formattedTemp = tVal.toFixed(1) + ' °C';
+                            if (tVal >= 38.0) tempBadge = '<span class="badge bg-danger text-white ms-1">Fever</span>';
+                            else if (tVal >= 37.6) tempBadge = '<span class="badge bg-warning text-dark ms-1">Low Fever</span>';
+                            else if (tVal < 35.5) tempBadge = '<span class="badge bg-info text-white ms-1">Hypothermia</span>';
+                        }
+
+                        const hrVal = parseInt(data.heart_rate || 0, 10);
+                        let hrBadge = '';
+                        if (hrVal > 100) hrBadge = '<span class="badge bg-warning text-dark ms-1">Tachycardia</span>';
+                        else if (hrVal > 0 && hrVal < 60) hrBadge = '<span class="badge bg-warning text-dark ms-1">Bradycardia</span>';
+
+                        const rrVal = parseInt(data.respiratory_rate || 0, 10);
+                        let rrBadge = '';
+                        if (rrVal > 20) rrBadge = '<span class="badge bg-warning text-dark ms-1">Tachypnea</span>';
+                        else if (rrVal > 0 && rrVal < 12) rrBadge = '<span class="badge bg-warning text-dark ms-1">Bradypnea</span>';
+
+                        const spo2Val = parseInt(data.oxygen_saturation || 0, 10);
+                        let spo2Badge = '';
+                        if (spo2Val > 0 && spo2Val < 95) spo2Badge = '<span class="badge bg-danger text-white ms-1">Hypoxia</span>';
+
+                        const bmiVal = parseFloat(data.bmi);
+                        let bmiBadge = '';
+                        if (!isNaN(bmiVal) && bmiVal > 0) {
+                            if (bmiVal < 18.5) bmiBadge = '<span class="badge bg-info-subtle text-info border border-info-subtle ms-1">Underweight</span>';
+                            else if (bmiVal <= 22.9) bmiBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle ms-1">Normal</span>';
+                            else if (bmiVal <= 27.4) bmiBadge = '<span class="badge bg-warning-subtle text-dark border border-warning-subtle ms-1">Overweight</span>';
+                            else bmiBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1">Obese</span>';
+                        }
+
                         vitalsHtml = `
                             <div class="p-3 bg-light rounded-3 mb-3 border">
                                 <div class="d-flex flex-wrap align-items-center gap-2 small">
                                     <span class="fw-bold text-dark me-1">Linked Vital Signs:</span>
                                     ${data.bp_systolic && data.bp_diastolic ? `
                                         <span class="badge ${isHighBp ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
-                                            BP: <strong class="${isHighBp ? 'text-danger' : 'text-dark'}">${escapeHtml(data.bp_systolic)}/${escapeHtml(data.bp_diastolic)} mmHg</strong>
+                                            BP: <strong class="${isHighBp ? 'text-danger' : 'text-dark'}">${escapeHtml(data.bp_systolic)}/${escapeHtml(data.bp_diastolic)} mmHg</strong>${bpBadge}
                                         </span>` : ''}
-                                    ${data.temperature ? `
-                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
-                                            Temp: <strong class="text-dark">${escapeHtml(data.temperature)} °C</strong>
+                                    ${formattedTemp ? `
+                                        <span class="badge ${tVal >= 38.0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : (tVal >= 37.6 ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-white text-dark border')} py-2 px-2 fw-normal">
+                                            Temp: <strong class="${tVal >= 38.0 ? 'text-danger' : 'text-dark'}">${escapeHtml(formattedTemp)}</strong>${tempBadge}
                                         </span>` : ''}
                                     ${data.heart_rate ? `
-                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
-                                            HR: <strong class="text-dark">${escapeHtml(data.heart_rate)} bpm</strong>
+                                        <span class="badge ${hrBadge ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
+                                            HR: <strong class="text-dark">${escapeHtml(data.heart_rate)} bpm</strong>${hrBadge}
                                         </span>` : ''}
                                     ${data.respiratory_rate ? `
-                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
-                                            RR: <strong class="text-dark">${escapeHtml(data.respiratory_rate)} cpm</strong>
+                                        <span class="badge ${rrBadge ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
+                                            RR: <strong class="text-dark">${escapeHtml(data.respiratory_rate)} cpm</strong>${rrBadge}
                                         </span>` : ''}
                                     ${data.oxygen_saturation ? `
-                                        <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
-                                            SpO2: <strong class="text-dark">${escapeHtml(data.oxygen_saturation)}%</strong>
+                                        <span class="badge ${spo2Val < 95 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-white text-dark border'} py-2 px-2 fw-normal">
+                                            SpO2: <strong class="${spo2Val < 95 ? 'text-danger' : 'text-dark'}">${escapeHtml(data.oxygen_saturation)}%</strong>${spo2Badge}
                                         </span>` : ''}
                                     ${data.weight ? `
                                         <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
@@ -367,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </span>` : ''}
                                     ${data.bmi ? `
                                         <span class="badge bg-white text-dark border py-2 px-2 fw-normal">
-                                            BMI: <strong class="text-dark">${escapeHtml(data.bmi)}</strong>
+                                            BMI: <strong class="text-dark">${parseFloat(data.bmi).toFixed(1)}</strong>${bmiBadge}
                                         </span>` : ''}
                                 </div>
                             </div>
@@ -570,11 +615,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('modalVitalDate').textContent = date;
             document.getElementById('modalVitalRecorder').textContent = recorder;
+
+            // BP evaluation & badge
+            const bpParts = (bp || '').split('/');
+            const sys = bpParts.length > 0 ? parseInt(bpParts[0], 10) : 0;
+            const dia = bpParts.length > 1 ? parseInt(bpParts[1], 10) : 0;
+            let bpBadgeHtml = '';
+            if (sys > 0 && dia > 0) {
+                if (sys >= 180 || dia >= 120) bpBadgeHtml = '<span class="badge bg-danger text-white">Crisis</span>';
+                else if (sys >= 140 || dia >= 90) bpBadgeHtml = '<span class="badge bg-danger text-white">Hypertension</span>';
+                else if ((sys >= 120 && sys <= 139) || (dia >= 80 && dia <= 89)) bpBadgeHtml = '<span class="badge bg-warning text-dark">Pre-HTN</span>';
+                else if (sys < 90 || dia < 60) bpBadgeHtml = '<span class="badge bg-warning text-dark">Hypotension</span>';
+                else bpBadgeHtml = '<span class="badge bg-success-subtle text-success border border-success-subtle">Normal</span>';
+            }
             document.getElementById('modalVitalBP').textContent = bp;
+            const elBpBadge = document.getElementById('modalVitalBpBadge');
+            if (elBpBadge) elBpBadge.innerHTML = bpBadgeHtml;
+
+            // Heart rate evaluation & badge
+            const hrVal = parseInt(pulse, 10);
+            let hrBadgeHtml = '';
+            if (!isNaN(hrVal) && hrVal > 0) {
+                if (hrVal > 100) hrBadgeHtml = '<span class="badge bg-warning text-dark">Tachycardia</span>';
+                else if (hrVal < 60) hrBadgeHtml = '<span class="badge bg-warning text-dark">Bradycardia</span>';
+                else hrBadgeHtml = '<span class="badge bg-success-subtle text-success border border-success-subtle">Normal</span>';
+            }
             document.getElementById('modalVitalPulse').textContent = pulse;
-            document.getElementById('modalVitalTemp').textContent = temp;
+            const elHrBadge = document.getElementById('modalVitalPulseBadge');
+            if (elHrBadge) elHrBadge.innerHTML = hrBadgeHtml;
+
+            // Temperature evaluation (strictly 1 decimal) & badge
+            let tempDisplay = '--';
+            let tempBadgeHtml = '';
+            const tVal = parseFloat(temp);
+            if (!isNaN(tVal) && tVal > 0) {
+                tempDisplay = tVal.toFixed(1);
+                if (tVal >= 39.0) tempBadgeHtml = '<span class="badge bg-danger text-white">High Fever</span>';
+                else if (tVal >= 38.0) tempBadgeHtml = '<span class="badge bg-danger text-white">Fever</span>';
+                else if (tVal >= 37.6) tempBadgeHtml = '<span class="badge bg-warning text-dark">Low Fever</span>';
+                else if (tVal < 35.5) tempBadgeHtml = '<span class="badge bg-info text-white">Hypothermia</span>';
+                else tempBadgeHtml = '<span class="badge bg-success-subtle text-success border border-success-subtle">Normal</span>';
+            }
+            document.getElementById('modalVitalTemp').textContent = tempDisplay;
+            const elTempBadge = document.getElementById('modalVitalTempBadge');
+            if (elTempBadge) elTempBadge.innerHTML = tempBadgeHtml;
+
+            // Respiratory rate evaluation & badge
+            const rrVal = parseInt(resp, 10);
+            let respBadgeHtml = '';
+            if (!isNaN(rrVal) && rrVal > 0) {
+                if (rrVal > 20) respBadgeHtml = '<span class="badge bg-warning text-dark">Tachypnea</span>';
+                else if (rrVal < 12) respBadgeHtml = '<span class="badge bg-warning text-dark">Bradypnea</span>';
+                else respBadgeHtml = '<span class="badge bg-success-subtle text-success border border-success-subtle">Normal</span>';
+            }
             document.getElementById('modalVitalResp').textContent = resp;
+            const elRespBadge = document.getElementById('modalVitalRespBadge');
+            if (elRespBadge) elRespBadge.innerHTML = respBadgeHtml;
+
+            // SpO2 evaluation & badge
+            const spo2Val = parseInt(spo2, 10);
+            let spo2BadgeHtml = '';
+            if (!isNaN(spo2Val) && spo2Val > 0) {
+                if (spo2Val < 95) spo2BadgeHtml = '<span class="badge bg-danger text-white">Hypoxia Risk</span>';
+                else spo2BadgeHtml = '<span class="badge bg-success-subtle text-success border border-success-subtle">Normal</span>';
+            }
             document.getElementById('modalVitalSpo2').textContent = spo2;
+            const elSpo2Badge = document.getElementById('modalVitalSpo2Badge');
+            if (elSpo2Badge) elSpo2Badge.innerHTML = spo2BadgeHtml;
+
             document.getElementById('modalVitalWeight').textContent = weight;
             document.getElementById('modalVitalHeight').textContent = height;
             document.getElementById('modalVitalWaist').textContent = waist;
@@ -598,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     cat = 'Obese';
                     badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
                 }
-                bmiDisplay = `${bmi} <span class="badge ${badgeClass} ms-1">${cat}</span>`;
+                bmiDisplay = `${bmiVal.toFixed(1)} <span class="badge ${badgeClass} ms-1">${cat}</span>`;
             }
             document.getElementById('modalVitalBmi').innerHTML = bmiDisplay;
 

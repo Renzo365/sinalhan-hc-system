@@ -25,13 +25,13 @@
                                     <i class="bi bi-box-arrow-up-right me-1"></i> Open Well-Baby Workstation
                                 </a>
                             </div>
-                        <?php elseif (isset($patient['age']) && (int)$patient['age'] <= 5): ?>
+                        <?php elseif (isset($patient['age']) && (int)$patient['age'] < 5): ?>
                             <div class="alert alert-info d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3 mb-3 border-info-subtle rounded-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-info-circle-fill fs-5 text-primary"></i>
                                     <div>
                                         <strong class="text-primary">Child is Eligible for Well-Baby Care:</strong>
-                                        <span class="text-muted small ms-1">This patient (aged &le; 5) can be enrolled for structured EPI milestone tracking and growth monitoring.</span>
+                                        <span class="text-muted small ms-1">This patient (aged &lt; 5) can be enrolled for structured EPI milestone tracking and growth monitoring.</span>
                                     </div>
                                 </div>
                                 <a href="<?= url('/well-baby/register?patient_id=' . $patient['id']) ?>" class="btn btn-sm btn-primary text-nowrap">

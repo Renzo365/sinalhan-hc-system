@@ -105,11 +105,12 @@ class QueueEntry extends Model {
     public function create($data) {
         $date = date('Y-m-d');
         $serviceType = !empty($data['service_type']) ? trim($data['service_type']) : 'General OPD';
+        $appointmentId = !empty($data['appointment_id']) ? (int)$data['appointment_id'] : null;
         $sql = "INSERT INTO queue_entries (
-                    patient_id, queue_date, queue_no,
+                    patient_id, appointment_id, queue_date, queue_no,
                     service_type, status, time_in, created_by
                 ) VALUES (
-                    :patient_id, :queue_date, :queue_no,
+                    :patient_id, :appointment_id, :queue_date, :queue_no,
                     :service_type, 'Waiting', CURRENT_TIME(), :created_by
                 )";
 
@@ -120,6 +121,7 @@ class QueueEntry extends Model {
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute([
                     'patient_id' => (int)$data['patient_id'],
+                    'appointment_id' => $appointmentId,
                     'queue_date' => $date,
                     'queue_no' => $queueNo,
                     'service_type' => $serviceType,
@@ -189,7 +191,32 @@ class QueueEntry extends Model {
         
         $sql = "UPDATE queue_entries SET {$fields} WHERE id = :id";
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        if ($stmt->execute($params)) {
+            // Automatically synchronize linked appointment to Completed if this queue entry originated from an appointment
+            if ($status === 'Completed') {
+                try {
+                    $apptStmt = $this->db->prepare("SELECT appointment_id FROM queue_entries WHERE id = :id LIMIT 1");
+                    $apptStmt->execute(['id' => (int)$id]);
+                    $linkedApptId = $apptStmt->fetchColumn();
+                    if (!empty($linkedApptId)) {
+                        $updateAppt = $this->db->prepare(
+                            "UPDATE appointments 
+                             SET status = 'Completed', updated_by = :user_id 
+                             WHERE id = :appt_id AND status = 'Scheduled' AND deleted_at IS NULL"
+                        );
+                        $updateAppt->execute([
+                            'user_id' => $userId,
+                            'appt_id' => (int)$linkedApptId
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    error_log("Failed to sync linked appointment on queue completion: " . $e->getMessage());
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -210,11 +237,13 @@ class QueueEntry extends Model {
 
         $sqlCounts = "SELECT 
             COUNT(*) AS total_today,
-            COUNT(CASE WHEN status = 'Waiting' THEN 1 END) AS waiting,
-            COUNT(CASE WHEN status = 'Called' THEN 1 END) AS called,
-            COUNT(CASE WHEN status = 'Serving' THEN 1 END) AS serving,
-            COUNT(CASE WHEN status = 'Completed' THEN 1 END) AS completed
-            FROM queue_entries WHERE queue_date = CURRENT_DATE()";
+            COUNT(CASE WHEN q.status = 'Waiting' THEN 1 END) AS waiting,
+            COUNT(CASE WHEN q.status = 'Called' THEN 1 END) AS called,
+            COUNT(CASE WHEN q.status = 'Serving' THEN 1 END) AS serving,
+            COUNT(CASE WHEN q.status = 'Completed' THEN 1 END) AS completed
+            FROM queue_entries q
+            JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL
+            WHERE q.queue_date = CURRENT_DATE()";
         
         $counts = $this->db->query($sqlCounts)->fetch(PDO::FETCH_ASSOC);
         if ($counts) {
@@ -226,14 +255,16 @@ class QueueEntry extends Model {
         }
 
         // Find the current serving queue number & service (Serving, or Called if none is serving)
-        $sqlServing = "SELECT queue_no, service_type FROM queue_entries 
-                       WHERE queue_date = CURRENT_DATE() AND status = 'Serving' 
+        $sqlServing = "SELECT q.queue_no, q.service_type FROM queue_entries q
+                       JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL
+                       WHERE q.queue_date = CURRENT_DATE() AND q.status = 'Serving' 
                        LIMIT 1";
         $servingRow = $this->db->query($sqlServing)->fetch(PDO::FETCH_ASSOC);
         if (!$servingRow) {
-            $sqlLastCalled = "SELECT queue_no, service_type FROM queue_entries 
-                              WHERE queue_date = CURRENT_DATE() AND status = 'Called' 
-                              ORDER BY time_called DESC LIMIT 1";
+            $sqlLastCalled = "SELECT q.queue_no, q.service_type FROM queue_entries q
+                              JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL
+                              WHERE q.queue_date = CURRENT_DATE() AND q.status = 'Called' 
+                              ORDER BY q.time_called DESC LIMIT 1";
             $servingRow = $this->db->query($sqlLastCalled)->fetch(PDO::FETCH_ASSOC);
         }
 
@@ -254,11 +285,11 @@ class QueueEntry extends Model {
         $date = date('Y-m-d');
         
         // Serving: status = 'Serving' or last 'Called'
-        $stmtServing = $this->db->query("SELECT queue_no, service_type FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Serving' LIMIT 1");
+        $stmtServing = $this->db->query("SELECT q.queue_no, q.service_type FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.status = 'Serving' LIMIT 1");
         $servingRow = $stmtServing->fetch();
         
         if (!$servingRow) {
-            $stmtLastCalled = $this->db->query("SELECT queue_no, service_type FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Called' ORDER BY time_called DESC LIMIT 1");
+            $stmtLastCalled = $this->db->query("SELECT q.queue_no, q.service_type FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.status = 'Called' ORDER BY q.time_called DESC LIMIT 1");
             $servingRow = $stmtLastCalled->fetch();
         }
 
@@ -266,11 +297,11 @@ class QueueEntry extends Model {
         $servingService = $servingRow ? ($servingRow['service_type'] ?: 'General OPD') : '';
 
         // Waiting list (Waiting status)
-        $stmtWaiting = $this->db->query("SELECT queue_no FROM queue_entries WHERE queue_date = '{$date}' AND status = 'Waiting' ORDER BY queue_no ASC");
+        $stmtWaiting = $this->db->query("SELECT q.queue_no FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.status = 'Waiting' ORDER BY q.queue_no ASC");
         $waiting = $stmtWaiting->fetchAll(PDO::FETCH_COLUMN) ?: [];
 
         // Recently Called (Any status where they have been called, excluding Cancelled)
-        $stmtCalled = $this->db->query("SELECT queue_no FROM queue_entries WHERE queue_date = '{$date}' AND time_called IS NOT NULL AND status != 'Cancelled' ORDER BY time_called DESC LIMIT 5");
+        $stmtCalled = $this->db->query("SELECT q.queue_no FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.time_called IS NOT NULL AND q.status != 'Cancelled' ORDER BY q.time_called DESC LIMIT 5");
         $called = $stmtCalled->fetchAll(PDO::FETCH_COLUMN) ?: [];
 
         return [

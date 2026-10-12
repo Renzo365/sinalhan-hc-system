@@ -205,7 +205,10 @@
                                             $bpTileClass = 'bg-light text-dark';
                                             $bpBadge = ($bpSys !== null && $bpDia !== null) ? '<span class="text-muted" style="font-size: 0.7rem;">Normal</span>' : '<span class="text-muted" style="font-size: 0.7rem;">—</span>';
                                             if ($bpSys !== null && $bpDia !== null) {
-                                                if ($bpSys >= 140 || $bpDia >= 90) {
+                                                if ($bpSys >= 180 || $bpDia >= 120) {
+                                                    $bpTileClass = 'bg-danger text-white border-danger';
+                                                    $bpBadge = '<span class="badge bg-danger text-white px-1">Crisis</span>';
+                                                } elseif ($bpSys >= 140 || $bpDia >= 90) {
                                                     $bpTileClass = 'bg-danger-subtle border-danger-subtle text-danger';
                                                     $bpBadge = '<span class="badge bg-danger text-white px-1">Hypertension</span>';
                                                 } elseif (($bpSys >= 120 && $bpSys <= 139) || ($bpDia >= 80 && $bpDia <= 89)) {
@@ -234,7 +237,10 @@
                                             $tempTileClass = 'bg-light text-dark';
                                             $tempBadge = ($temp !== null && $temp > 0) ? '<span class="text-muted" style="font-size: 0.7rem;">Normal (36.5-37.5)</span>' : '<span class="text-muted" style="font-size: 0.7rem;">—</span>';
                                             if ($temp !== null && $temp > 0) {
-                                                if ($temp >= 38.0) {
+                                                if ($temp >= 39.0) {
+                                                    $tempTileClass = 'bg-danger text-white border-danger';
+                                                    $tempBadge = '<span class="badge bg-danger text-white px-1">High Fever</span>';
+                                                } elseif ($temp >= 38.0) {
                                                     $tempTileClass = 'bg-danger-subtle border-danger-subtle text-danger';
                                                     $tempBadge = '<span class="badge bg-danger text-white px-1">Fever</span>';
                                                 } elseif ($temp >= 37.6) {

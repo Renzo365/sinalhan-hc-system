@@ -367,6 +367,7 @@ class ReportController extends Controller {
                                 JOIN patients p ON a.patient_id = p.id
                                 LEFT JOIN users u ON a.created_by = u.id
                                 WHERE p.deleted_at IS NULL
+                                  AND a.deleted_at IS NULL
                                 ORDER BY a.appointment_date DESC, a.appointment_time ASC";
                         $params = [];
                     } else {
@@ -377,6 +378,7 @@ class ReportController extends Controller {
                                 LEFT JOIN users u ON a.created_by = u.id
                                 WHERE a.appointment_date BETWEEN :date_from AND :date_to
                                   AND p.deleted_at IS NULL
+                                  AND a.deleted_at IS NULL
                                 ORDER BY a.appointment_date ASC, a.appointment_time ASC";
                         $params = ['date_from' => $dateFrom, 'date_to' => $dateTo];
                     }
@@ -500,7 +502,7 @@ class ReportController extends Controller {
                                    (SELECT administered_date FROM immunizations WHERE patient_id = p.id AND (UPPER(vaccine_name) LIKE '%MCV%' OR UPPER(vaccine_name) LIKE '%MMR%') AND dose_number = 2 AND deleted_at IS NULL LIMIT 1) AS mcv2_date
                             FROM patients p
                             LEFT JOIN wellbaby_records wb ON wb.patient_id = p.id AND wb.deleted_at IS NULL
-                            WHERE p.deleted_at IS NULL AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) <= 5
+                            WHERE p.deleted_at IS NULL AND TIMESTAMPDIFF(YEAR, p.dob, CURRENT_DATE()) < 5
                               {$dateFilter}
                             ORDER BY p.dob DESC";
                     
@@ -513,8 +515,8 @@ class ReportController extends Controller {
                             && !empty($r['penta1_date']) && !empty($r['penta2_date']) && !empty($r['penta3_date']) 
                             && !empty($r['opv1_date']) && !empty($r['opv2_date']) && !empty($r['opv3_date']) 
                             && !empty($r['ipv_date']) && !empty($r['mcv1_date']));
-                        $r['is_fic'] = $hasAll && ($r['age_months'] <= 12);
-                        $r['is_cic'] = $hasAll && ($r['age_months'] > 12);
+                        $r['is_fic'] = $hasAll && ($r['age_months'] < 12);
+                        $r['is_cic'] = $hasAll && ($r['age_months'] >= 12);
                         $r['fic_status'] = $r['is_fic'] ? 'FIC' : ($r['is_cic'] ? 'CIC' : 'Incomplete');
                     }
                     unset($r);
@@ -691,7 +693,7 @@ class ReportController extends Controller {
                 foreach ($results as $r) {
                     if ($r['status'] === 'Completed') $completed++;
                     elseif ($r['status'] === 'Scheduled') $scheduled++;
-                    elseif ($r['status'] === 'Cancelled') $cancelled++;
+                    elseif (in_array($r['status'], ['Cancelled', 'Missed'], true)) $cancelled++;
                 }
                 $showRate = round(($completed / max(1, $count)) * 100, 1);
                 return [

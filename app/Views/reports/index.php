@@ -704,7 +704,11 @@ if (!$allTime) {
                                         <tr><td colspan="10" class="text-muted py-4">No vital signs logged in this period.</td></tr>
                                     <?php else: ?>
                                         <?php foreach ($results as $row): 
-                                            $isHighBp = ($row['bp_systolic'] >= 140 || $row['bp_diastolic'] >= 90);
+                                            $bpInfo = classify_bp($row['bp_systolic'] ?? null, $row['bp_diastolic'] ?? null);
+                                            $hrInfo = classify_heart_rate($row['heart_rate'] ?? null);
+                                            $tempInfo = classify_temperature($row['temperature'] ?? null);
+                                            $rrInfo = classify_respiratory_rate($row['respiratory_rate'] ?? null);
+                                            $spo2Info = classify_spo2($row['oxygen_saturation'] ?? null);
                                         ?>
                                             <tr>
                                                 <td data-order="<?= date('Y-m-d H:i:s', strtotime($row['recorded_at'])) ?>"><?= date('Y-m-d', strtotime($row['recorded_at'])) ?></td>
@@ -719,26 +723,37 @@ if (!$allTime) {
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <?php if ($row['bp_systolic'] && $row['bp_diastolic']): ?>
-                                                        <span class="badge <?= $isHighBp ? 'bg-danger text-white' : 'bg-light text-dark border' ?>">
-                                                             <?= "{$row['bp_systolic']}/{$row['bp_diastolic']}" ?>
+                                                    <?php if ($bpInfo['sys'] && $bpInfo['dia']): ?>
+                                                        <span class="badge <?= $bpInfo['badge'] ?>">
+                                                             <?= "{$bpInfo['sys']}/{$bpInfo['dia']}" ?>
                                                         </span>
+                                                        <?= $bpInfo['pill'] ?>
                                                     <?php else: ?>
                                                         -
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><?= h($row['heart_rate'] ?? '-') ?></td>
                                                 <td>
-                                                    <?php if ($row['temperature']): ?>
-                                                        <span class="<?= (float)$row['temperature'] >= 37.8 ? 'text-danger fw-bold' : '' ?>">
-                                                            <?= number_format((float)$row['temperature'], 1) ?>°C
+                                                    <?= h($row['heart_rate'] ?? '-') ?>
+                                                    <?= $hrInfo['pill'] ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($tempInfo['value']): ?>
+                                                        <span class="<?= $tempInfo['is_abnormal'] ? 'text-danger fw-bold' : '' ?>">
+                                                            <?= $tempInfo['formatted'] ?>
                                                         </span>
+                                                        <?= $tempInfo['pill'] ?>
                                                     <?php else: ?>
                                                         -
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><?= h($row['respiratory_rate'] ?? '-') ?></td>
-                                                <td><?= $row['oxygen_saturation'] ? "{$row['oxygen_saturation']}%" : '-' ?></td>
+                                                <td>
+                                                    <?= h($row['respiratory_rate'] ?? '-') ?>
+                                                    <?= $rrInfo['pill'] ?>
+                                                </td>
+                                                <td>
+                                                    <?= $row['oxygen_saturation'] ? "{$row['oxygen_saturation']}%" : '-' ?>
+                                                    <?= $spo2Info['pill'] ?>
+                                                </td>
                                                 <td><span class="badge bg-light text-dark border"><?= h($row['bmi'] ?? '-') ?></span></td>
                                                 <td><?= h($row['recorded_by_name']) ?></td>
                                             </tr>
