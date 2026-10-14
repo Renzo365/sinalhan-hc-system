@@ -96,18 +96,6 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php else: ?>
                                 <span>Blood: <span class="text-muted">Unknown</span></span>
                             <?php endif; ?>
-                            <?php if (!empty($patient['philhealth_no'])): ?>
-                                <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span>PHIC: <span class="font-monospace text-dark" style="font-variant-numeric: tabular-nums;"><?= h($patient['philhealth_no']) ?></span></span>
-                            <?php endif; ?>
-                            <?php if (!empty($patient['mother_name'])): ?>
-                                <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span>Mother: <strong class="text-dark"><?= h($patient['mother_name']) ?></strong></span>
-                            <?php endif; ?>
-                            <?php if (!empty(trim($patient['address'] ?? ''))): ?>
-                                <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span><i class="bi bi-geo-alt text-muted me-0.5" aria-hidden="true"></i><?= h(trim($patient['address'])) ?></span>
-                            <?php endif; ?>
                         </div>
 
                         <!-- Clean Muted Identifier Tags Row -->
@@ -118,14 +106,14 @@ require dirname(__DIR__) . '/layout/header.php';
                             </span>
 
                             <?php if (!empty($patient['envelope_no'])): ?>
-                                <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                     <span class="tag-label">Env</span>
                                     <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                 </span>
                             <?php endif; ?>
 
                             <?php if (!empty($patient['family_no'])): ?>
-                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-family tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
                                     <span class="tag-label">Fam</span>
                                     <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                     <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
@@ -133,28 +121,50 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php endif; ?>
 
                             <?php if ($wellbabyRecord): ?>
-                                <span class="patient-id-tag" style="background-color: #f0fdf4; border-color: #bbf7d0; color: #166534;">
-                                    <i class="bi bi-check-circle-fill me-0.5 text-success" aria-hidden="true"></i>
-                                    <span class="tag-label" style="color: #4ade80;">STATUS</span>
-                                    <span class="tag-value" style="color: #15803d;">Registered Infant</span>
-                                </span>
+                                <span class="patient-id-tag tag-status-wellbaby">Registered Infant</span>
                             <?php else: ?>
-                                <span class="patient-id-tag" style="background-color: #fefce8; border-color: #fef08a; color: #854d0e;">
-                                    <span class="tag-label" style="color: #eab308;">STATUS</span>
-                                    <span class="tag-value" style="color: #a16207;">Unregistered</span>
-                                </span>
+                                <span class="patient-id-tag tag-status-info">Unregistered Infant</span>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right: Action Buttons -->
-                <div class="patient-actions-group d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
-                    <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-3 py-2 shadow-xs d-flex align-items-center" style="min-height: 38px;">
-                        <i class="bi bi-person-badge me-1.5" aria-hidden="true"></i> Full Patient Profile
+                <div class="patient-actions-group d-flex flex-wrap align-items-center gap-1.5 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-2.5 py-1 shadow-xs d-flex align-items-center text-nowrap btn-toggle-demographics" data-bs-toggle="collapse" data-bs-target="#patientDemographicsCollapse" aria-expanded="false" aria-controls="patientDemographicsCollapse" title="View Full Demographics & Family Contacts" style="min-height: 32px; font-size: 0.8125rem;">
+                        Demographics &amp; Contacts <i class="bi bi-chevron-down ms-1 collapse-indicator" aria-hidden="true"></i>
+                    </button>
+                    <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-2.5 py-1 shadow-xs d-flex align-items-center" style="min-height: 32px; font-size: 0.8125rem;">
+                        <i class="bi bi-person-badge me-1" aria-hidden="true"></i> Full Profile
                     </a>
                 </div>
             </div>
+
+            <!-- Clinical Alerts Safety Bar (If Any Alerts Recorded) -->
+            <?php if (!empty($cdsAlerts['has_alerts'])): ?>
+                <div class="clinical-alerts-bar mt-3" role="region" aria-label="Patient Safety and Clinical Alerts">
+                    <span class="clinical-alerts-label">
+                        <i class="bi bi-shield-exclamation text-danger" aria-hidden="true"></i>
+                        <span>Clinical Alerts:</span>
+                    </span>
+                    <div class="d-flex flex-wrap align-items-center gap-1.5">
+                        <?php foreach ($cdsAlerts['flags'] as $flag): ?>
+                            <?php 
+                            $isDangerAlert = ($flag['type'] === 'danger' || strpos($flag['code'] ?? '', 'ALLERGY') !== false); 
+                            $isWarningAlert = ($flag['type'] === 'warning' || in_array($flag['code'] ?? '', ['HYPERTENSIVE', 'DIABETIC', 'ASTHMA', 'PREECLAMPSIA_RISK'], true));
+                            $chipClass = $isDangerAlert ? 'clinical-chip-danger' : ($isWarningAlert ? 'clinical-chip-warning' : 'clinical-chip-neutral');
+                            ?>
+                            <span class="clinical-chip <?= $chipClass ?>">
+                                <i class="bi <?= $flag['icon'] ?> chip-icon" aria-hidden="true"></i>
+                                <span><?= h($flag['label']) ?></span>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Reusable Collapsible Demographics & Contacts Drawer -->
+            <?php require dirname(__DIR__) . '/patients/partials/demographics_accordion.php'; ?>
         </div>
     </div>
 
@@ -553,10 +563,12 @@ require dirname(__DIR__) . '/layout/header.php';
                                             $glTempInfo = classify_temperature($gl['temperature']);
                                         ?>
                                             <span class="text-muted mx-1" aria-hidden="true">&bull;</span>
-                                            <span class="<?= $glTempInfo['is_abnormal'] ? 'text-danger fw-bold' : 'text-secondary' ?>" style="font-variant-numeric: tabular-nums;" title="<?= $glTempInfo['label'] ?>">
+                                            <span class="<?= $glTempInfo['text_class'] ?>" style="font-variant-numeric: tabular-nums;" title="<?= $glTempInfo['label'] ?>">
                                                 <?= $glTempInfo['formatted'] ?>
                                             </span>
-                                            <?= $glTempInfo['pill'] ?>
+                                            <?php if (!empty($glTempInfo['sub_badge'])): ?>
+                                                <span class="ms-1"><?= $glTempInfo['sub_badge'] ?></span>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
                                     <td><span class="badge bg-light text-dark border"><?= h($gl['feeding_method']) ?></span></td>
@@ -645,8 +657,8 @@ require dirname(__DIR__) . '/layout/header.php';
 <?php if ($wellbabyRecord): ?>
     <div class="modal fade" id="addGrowthLogModal" tabindex="-1" aria-labelledby="addGrowthLogModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-success">
                     <h2 class="modal-title h5 fw-bold" id="addGrowthLogModalLabel" style="text-wrap: balance;">
                         <i class="bi bi-activity me-2" aria-hidden="true"></i>Record Pediatric Anthropometrics &amp; Growth Visit
                     </h2>
@@ -727,7 +739,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                     
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <div class="modal-footer modal-footer-clean">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-success text-white px-4 fw-semibold">Save Growth Visit</button>
                     </div>
@@ -740,8 +752,8 @@ require dirname(__DIR__) . '/layout/header.php';
 <!-- EDIT CHILD GROWTH VISIT DETAILS MODAL -->
 <div class="modal fade" id="editGrowthLogModal" tabindex="-1" aria-labelledby="editGrowthLogModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-success">
                 <h2 class="modal-title h5 fw-bold" id="editGrowthLogModalLabel" style="text-wrap: balance;">
                     <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit Pediatric Anthropometrics &amp; Growth Visit
                 </h2>
@@ -821,7 +833,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success text-white px-4 fw-semibold">Save Changes</button>
                 </div>
@@ -833,8 +845,8 @@ require dirname(__DIR__) . '/layout/header.php';
 <!-- 3. VIEW CHILD GROWTH VISIT DETAILS MODAL -->
 <div class="modal fade" id="viewGrowthLogModal" tabindex="-1" aria-labelledby="viewGrowthLogModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-success">
                 <h2 class="modal-title h5 fw-bold" id="viewGrowthLogModalLabel" style="text-wrap: balance;">
                     <i class="bi bi-activity me-2" aria-hidden="true"></i>Child Growth Visit Details
                 </h2>
@@ -906,7 +918,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="modal-footer modal-footer-clean">
                 <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

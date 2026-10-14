@@ -192,28 +192,36 @@ if (!function_exists('classify_bmi')) {
             return [
                 'label' => 'Underweight',
                 'class' => 'text-info',
+                'text_class' => 'text-info fw-bold',
                 'badge' => 'bg-info-subtle text-info border border-info-subtle',
+                'sub_badge' => '<span class="badge bg-info-subtle text-info border border-info-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Underweight</span>',
                 'category' => 'Underweight'
             ];
         } elseif ($val <= 22.9) {
             return [
                 'label' => 'Normal',
                 'class' => 'text-success',
+                'text_class' => 'text-dark fw-bold',
                 'badge' => 'bg-success-subtle text-success border border-success-subtle',
+                'sub_badge' => '',
                 'category' => 'Normal'
             ];
         } elseif ($val <= 27.4) {
             return [
                 'label' => 'Overweight',
                 'class' => 'text-warning',
+                'text_class' => 'text-warning-emphasis fw-bold',
                 'badge' => 'bg-warning-subtle text-dark border border-warning-subtle',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Overweight</span>',
                 'category' => 'Overweight'
             ];
         } else {
             return [
                 'label' => 'Obese',
                 'class' => 'text-danger',
+                'text_class' => 'text-danger fw-bold',
                 'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'sub_badge' => '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Obese</span>',
                 'category' => 'Obese'
             ];
         }
@@ -257,6 +265,8 @@ if (!function_exists('classify_temperature')) {
                 'label' => '—',
                 'badge' => 'bg-light text-muted border',
                 'pill' => '',
+                'text_class' => 'text-muted',
+                'sub_badge' => '',
                 'is_abnormal' => false
             ];
         }
@@ -269,6 +279,8 @@ if (!function_exists('classify_temperature')) {
                 'label' => 'High Fever',
                 'badge' => 'bg-danger text-white border border-danger',
                 'pill' => '<span class="badge bg-danger text-white px-1">High Fever</span>',
+                'text_class' => 'text-danger fw-bold',
+                'sub_badge' => '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">High Fever</span>',
                 'is_abnormal' => true
             ];
         } elseif ($f >= 38.0) {
@@ -278,6 +290,8 @@ if (!function_exists('classify_temperature')) {
                 'label' => 'Fever',
                 'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
                 'pill' => '<span class="badge bg-danger text-white px-1">Fever</span>',
+                'text_class' => 'text-danger fw-bold',
+                'sub_badge' => '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Fever</span>',
                 'is_abnormal' => true
             ];
         } elseif ($f >= 37.6) {
@@ -287,6 +301,8 @@ if (!function_exists('classify_temperature')) {
                 'label' => 'Low Fever',
                 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                 'pill' => '<span class="badge bg-warning text-dark px-1">Low Fever</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Low Fever</span>',
                 'is_abnormal' => true
             ];
         } elseif ($f < 35.5) {
@@ -296,6 +312,8 @@ if (!function_exists('classify_temperature')) {
                 'label' => 'Hypothermia',
                 'badge' => 'bg-info-subtle text-info border border-info-subtle',
                 'pill' => '<span class="badge bg-info text-white px-1">Hypothermia</span>',
+                'text_class' => 'text-info fw-bold',
+                'sub_badge' => '<span class="badge bg-info-subtle text-info border border-info-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Hypothermia</span>',
                 'is_abnormal' => true
             ];
         } else {
@@ -305,6 +323,8 @@ if (!function_exists('classify_temperature')) {
                 'label' => 'Normal',
                 'badge' => 'bg-light text-dark border',
                 'pill' => '',
+                'text_class' => 'text-dark',
+                'sub_badge' => '',
                 'is_abnormal' => false
             ];
         }
@@ -337,6 +357,8 @@ if (!function_exists('classify_bp')) {
                 'label' => '—',
                 'badge' => 'bg-light text-muted border',
                 'pill' => '',
+                'text_class' => 'text-muted',
+                'sub_badge' => '',
                 'is_abnormal' => false,
                 'is_high' => false
             ];
@@ -352,6 +374,8 @@ if (!function_exists('classify_bp')) {
                 'label' => 'Crisis',
                 'badge' => 'bg-danger text-white border border-danger',
                 'pill' => '<span class="badge bg-danger text-white px-1">Crisis</span>',
+                'text_class' => 'text-danger fw-bold',
+                'sub_badge' => '<span class="badge bg-danger text-white" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Crisis</span>',
                 'is_abnormal' => true,
                 'is_high' => true
             ];
@@ -363,6 +387,8 @@ if (!function_exists('classify_bp')) {
                 'label' => 'Hypertension',
                 'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
                 'pill' => '<span class="badge bg-danger text-white px-1">Hypertension</span>',
+                'text_class' => 'text-danger fw-bold',
+                'sub_badge' => '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Hypertension</span>',
                 'is_abnormal' => true,
                 'is_high' => true
             ];
@@ -374,6 +400,8 @@ if (!function_exists('classify_bp')) {
                 'label' => 'Pre-HTN',
                 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                 'pill' => '<span class="badge bg-warning text-dark px-1">Pre-HTN</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Pre-HTN</span>',
                 'is_abnormal' => true,
                 'is_high' => false
             ];
@@ -385,6 +413,8 @@ if (!function_exists('classify_bp')) {
                 'label' => 'Hypotension',
                 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
                 'pill' => '<span class="badge bg-warning text-dark px-1">Hypotension</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Hypotension</span>',
                 'is_abnormal' => true,
                 'is_high' => false
             ];
@@ -396,6 +426,8 @@ if (!function_exists('classify_bp')) {
                 'label' => 'Normal',
                 'badge' => 'bg-light text-dark border',
                 'pill' => '',
+                'text_class' => 'text-dark',
+                'sub_badge' => '',
                 'is_abnormal' => false,
                 'is_high' => false
             ];
@@ -414,15 +446,51 @@ if (!function_exists('classify_heart_rate')) {
     function classify_heart_rate($hr): array {
         $val = (int)($hr ?? 0);
         if ($val <= 0) {
-            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'bg-light text-muted border', 'pill' => '', 'is_abnormal' => false];
+            return [
+                'value' => null,
+                'formatted' => '—',
+                'label' => '—',
+                'badge' => 'bg-light text-muted border',
+                'pill' => '',
+                'text_class' => 'text-muted',
+                'sub_badge' => '',
+                'is_abnormal' => false
+            ];
         }
         $formatted = "{$val} bpm";
         if ($val > 100) {
-            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Tachycardia', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Tachycardia</span>', 'is_abnormal' => true];
+            return [
+                'value' => $val,
+                'formatted' => $formatted,
+                'label' => 'Tachycardia',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Tachycardia</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Tachycardia</span>',
+                'is_abnormal' => true
+            ];
         } elseif ($val < 60) {
-            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Bradycardia', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Bradycardia</span>', 'is_abnormal' => true];
+            return [
+                'value' => $val,
+                'formatted' => $formatted,
+                'label' => 'Bradycardia',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Bradycardia</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Bradycardia</span>',
+                'is_abnormal' => true
+            ];
         }
-        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal', 'badge' => 'bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+        return [
+            'value' => $val,
+            'formatted' => $formatted,
+            'label' => 'Normal',
+            'badge' => 'bg-light text-dark border',
+            'pill' => '',
+            'text_class' => 'text-dark',
+            'sub_badge' => '',
+            'is_abnormal' => false
+        ];
     }
 }
 
@@ -437,15 +505,51 @@ if (!function_exists('classify_respiratory_rate')) {
     function classify_respiratory_rate($rr): array {
         $val = (int)($rr ?? 0);
         if ($val <= 0) {
-            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'bg-light text-muted border', 'pill' => '', 'is_abnormal' => false];
+            return [
+                'value' => null,
+                'formatted' => '—',
+                'label' => '—',
+                'badge' => 'bg-light text-muted border',
+                'pill' => '',
+                'text_class' => 'text-muted',
+                'sub_badge' => '',
+                'is_abnormal' => false
+            ];
         }
         $formatted = "{$val} cpm";
         if ($val > 20) {
-            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Tachypnea', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Tachypnea</span>', 'is_abnormal' => true];
+            return [
+                'value' => $val,
+                'formatted' => $formatted,
+                'label' => 'Tachypnea',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Tachypnea</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Tachypnea</span>',
+                'is_abnormal' => true
+            ];
         } elseif ($val < 12) {
-            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Bradypnea', 'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle', 'pill' => '<span class="badge bg-warning text-dark px-1">Bradypnea</span>', 'is_abnormal' => true];
+            return [
+                'value' => $val,
+                'formatted' => $formatted,
+                'label' => 'Bradypnea',
+                'badge' => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+                'pill' => '<span class="badge bg-warning text-dark px-1">Bradypnea</span>',
+                'text_class' => 'text-warning-emphasis fw-bold',
+                'sub_badge' => '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Bradypnea</span>',
+                'is_abnormal' => true
+            ];
         }
-        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal', 'badge' => 'bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+        return [
+            'value' => $val,
+            'formatted' => $formatted,
+            'label' => 'Normal',
+            'badge' => 'bg-light text-dark border',
+            'pill' => '',
+            'text_class' => 'text-dark',
+            'sub_badge' => '',
+            'is_abnormal' => false
+        ];
     }
 }
 
@@ -460,13 +564,40 @@ if (!function_exists('classify_spo2')) {
     function classify_spo2($spo2): array {
         $val = (int)($spo2 ?? 0);
         if ($val <= 0) {
-            return ['value' => null, 'formatted' => '—', 'label' => '—', 'badge' => 'bg-light text-muted border', 'pill' => '', 'is_abnormal' => false];
+            return [
+                'value' => null,
+                'formatted' => '—',
+                'label' => '—',
+                'badge' => 'bg-light text-muted border',
+                'pill' => '',
+                'text_class' => 'text-muted',
+                'sub_badge' => '',
+                'is_abnormal' => false
+            ];
         }
         $formatted = "{$val}%";
         if ($val < 95) {
-            return ['value' => $val, 'formatted' => $formatted, 'label' => 'Hypoxia Risk', 'badge' => 'bg-danger-subtle text-danger border border-danger-subtle', 'pill' => '<span class="badge bg-danger text-white px-1">Hypoxia</span>', 'is_abnormal' => true];
+            return [
+                'value' => $val,
+                'formatted' => $formatted,
+                'label' => 'Hypoxia Risk',
+                'badge' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                'pill' => '<span class="badge bg-danger text-white px-1">Hypoxia</span>',
+                'text_class' => 'text-danger fw-bold',
+                'sub_badge' => '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">Hypoxia</span>',
+                'is_abnormal' => true
+            ];
         }
-        return ['value' => $val, 'formatted' => $formatted, 'label' => 'Normal', 'badge' => 'bg-light text-dark border', 'pill' => '', 'is_abnormal' => false];
+        return [
+            'value' => $val,
+            'formatted' => $formatted,
+            'label' => 'Normal',
+            'badge' => 'bg-light text-dark border',
+            'pill' => '',
+            'text_class' => 'text-dark',
+            'sub_badge' => '',
+            'is_abnormal' => false
+        ];
     }
 }
 

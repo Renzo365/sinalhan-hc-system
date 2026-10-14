@@ -27,10 +27,7 @@
                                         <tr>
                                             <td colspan="8" class="text-center py-5 text-muted">
                                                 <i class="bi bi-activity fs-3 d-block mb-2 text-secondary"></i>
-                                                <div class="mb-2">No vital signs recorded.</div>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addVitalsModal">
-                                                    <i class="bi bi-plus-lg me-1"></i> Record Vitals
-                                                </button>
+                                                <div class="mb-0">No vital signs recorded.</div>
                                             </td>
                                         </tr>
                                     <?php else: ?>
@@ -52,11 +49,13 @@
                                                 <td class="text-start ps-3 fw-medium text-dark text-nowrap"><?= date('M d, Y h:i A', strtotime($v['recorded_at'])) ?></td>
                                                 <td class="text-nowrap">
                                                     <?php if ($bpInfo['sys'] !== null): ?>
-                                                        <div class="d-inline-flex align-items-center gap-1">
-                                                            <span class="font-monospace fw-bold <?= $bpInfo['is_high'] ? 'text-danger' : ($bpInfo['is_abnormal'] ? 'text-warning-emphasis' : 'text-dark') ?>">
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="font-monospace <?= $bpInfo['text_class'] ?> fs-7">
                                                                 <?= $bpInfo['sys'] ?>/<?= $bpInfo['dia'] ?>
                                                             </span>
-                                                            <?= $bpInfo['pill'] ?>
+                                                            <?php if (!empty($bpInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $bpInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
                                                         </div>
                                                     <?php else: ?>
                                                         <span class="text-muted">&mdash;</span>
@@ -64,11 +63,13 @@
                                                 </td>
                                                 <td class="text-nowrap">
                                                     <?php if ($hrInfo['value'] !== null): ?>
-                                                        <div class="d-inline-flex align-items-center gap-1">
-                                                            <span class="<?= $hrInfo['is_abnormal'] ? 'fw-bold text-warning-emphasis' : 'text-dark' ?>">
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $hrInfo['text_class'] ?> fs-7">
                                                                 <?= $hrInfo['value'] ?>
                                                             </span>
-                                                            <?= $hrInfo['pill'] ?>
+                                                            <?php if (!empty($hrInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $hrInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
                                                         </div>
                                                     <?php else: ?>
                                                         <span class="text-muted">&mdash;</span>
@@ -76,11 +77,13 @@
                                                 </td>
                                                 <td class="text-nowrap">
                                                     <?php if ($tempInfo['value'] !== null): ?>
-                                                        <div class="d-inline-flex align-items-center gap-1">
-                                                            <span class="<?= $tempInfo['is_abnormal'] ? 'fw-bold ' . ($tempInfo['label'] === 'Hypothermia' ? 'text-info' : 'text-danger') : 'text-dark' ?>">
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $tempInfo['text_class'] ?> fs-7">
                                                                 <?= $tempInfo['formatted'] ?>
                                                             </span>
-                                                            <?= $tempInfo['pill'] ?>
+                                                            <?php if (!empty($tempInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $tempInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
                                                         </div>
                                                     <?php else: ?>
                                                         <span class="text-muted">&mdash;</span>
@@ -88,11 +91,13 @@
                                                 </td>
                                                 <td class="text-nowrap">
                                                     <?php if ($spo2Info['value'] !== null): ?>
-                                                        <div class="d-inline-flex align-items-center gap-1">
-                                                            <span class="<?= $spo2Info['is_abnormal'] ? 'fw-bold text-danger' : 'text-dark' ?>">
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $spo2Info['text_class'] ?> fs-7">
                                                                 <?= $spo2Info['formatted'] ?>
                                                             </span>
-                                                            <?= $spo2Info['pill'] ?>
+                                                            <?php if (!empty($spo2Info['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $spo2Info['sub_badge'] ?></div>
+                                                            <?php endif; ?>
                                                         </div>
                                                     <?php else: ?>
                                                         <span class="text-muted">&mdash;</span>
@@ -100,9 +105,11 @@
                                                 </td>
                                                 <td class="text-nowrap">
                                                     <?php if (!empty($v['bmi']) && (float)$v['bmi'] > 0): ?>
-                                                        <div class="d-inline-flex align-items-center gap-1">
-                                                            <span class="fw-bold text-dark"><?= number_format((float)$v['bmi'], 1) ?></span>
-                                                            <span class="badge <?= $bmiInfo['badge'] ?>" style="font-size: 0.7rem;"><?= $bmiInfo['label'] ?></span>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $bmiInfo['text_class'] ?> fs-7"><?= number_format((float)$v['bmi'], 1) ?></span>
+                                                            <?php if (!empty($bmiInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $bmiInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
                                                         </div>
                                                     <?php else: ?>
                                                         <span class="text-muted">&mdash;</span>

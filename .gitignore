@@ -11,6 +11,7 @@ yarn-error.log*
 
 # Local Database Backups
 /storage/backups/*.sql
+/storage/backups/*.sql.gz
 !/storage/backups/.gitkeep
 
 # Environment & Local Secrets

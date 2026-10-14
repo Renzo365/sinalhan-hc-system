@@ -233,11 +233,11 @@ $deliveredCount = count($recentlyDelivered);
                                                 <?= h($row['last_name']) ?>, <?= h($row['first_name']) ?> <?= !empty($row['middle_name']) ? h(mb_substr($row['middle_name'], 0, 1)) . '.' : '' ?>
                                             </a>
                                             <div class="small text-muted d-flex align-items-center gap-1 mt-1">
-                                                <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                <span class="badge badge-patient-id font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                     <span class="visually-hidden">Patient ID: </span><?= h($row['patient_no']) ?>
                                                 </span>
                                                 <?php if (!empty($row['envelope_no'])): ?>
-                                                    <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                    <span class="badge badge-envelope-no font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                         <span class="visually-hidden">Envelope No: </span>Env #<?= h($row['envelope_no']) ?>
                                                     </span>
                                                 <?php endif; ?>
@@ -279,7 +279,7 @@ $deliveredCount = count($recentlyDelivered);
                                         </span>
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/prenatal/' . $row['patient_id']) ?>" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
+                                        <a href="<?= url('/prenatal/' . $row['patient_id']) ?>" class="btn btn-sm btn-primary px-3 shadow-xs">
                                             Open Workstation
                                         </a>
                                     </td>
@@ -319,7 +319,7 @@ $deliveredCount = count($recentlyDelivered);
                                         <div class="fw-bold text-dark">
                                             <?= h($deliv['last_name']) ?>, <?= h($deliv['first_name']) ?> <?= !empty($deliv['middle_name']) ? h(mb_substr($deliv['middle_name'], 0, 1)) . '.' : '' ?>
                                         </div>
-                                        <div class="small text-muted font-monospace"><?= h($deliv['patient_no']) ?></div>
+                                        <span class="badge badge-patient-id font-monospace" style="font-size: 0.72rem;"><?= h($deliv['patient_no']) ?></span>
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary text-white">G<?= h($deliv['gravida']) ?> P<?= h($deliv['para']) ?></span>
@@ -343,7 +343,7 @@ $deliveredCount = count($recentlyDelivered);
                                         <span class="badge bg-light text-secondary border"><?= (int)$deliv['visit_count'] ?> visits</span>
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/prenatal/' . $deliv['patient_id']) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <a href="<?= url('/prenatal/' . $deliv['patient_id']) ?>" class="btn btn-sm btn-outline-primary px-3 shadow-xs">
                                             View Records
                                         </a>
                                     </td>

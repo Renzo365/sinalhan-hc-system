@@ -20,7 +20,7 @@ ini_set('session.gc_maxlifetime', (string)($sessionConfig['lifetime'] ?? 28800))
 session_name($sessionConfig['name'] ?? 'SINALHAN_HC_SESSION');
 session_set_cookie_params([
     'lifetime' => $sessionConfig['lifetime'] ?? 28800,
-    'path' => str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']) ?: '/',
+    'path' => str_replace('/index.php', '', $_SERVER['SCRIPT_NAME'] ?? '') ?: '/',
     'domain' => $sessionConfig['domain'] ?? '',
     'secure' => $sessionConfig['secure'] ?? false,
     'httponly' => $sessionConfig['httponly'] ?? true,
@@ -42,7 +42,8 @@ require_once dirname(__DIR__) . '/app/helpers.php';
 // --- Global Security Checks ---
 
 // Verify CSRF token for all state-changing operations (POST requests)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? (php_sapi_name() === 'cli' ? 'CLI' : 'GET');
+if ($requestMethod === 'POST') {
     if (!verify_csrf_token()) {
         http_response_code(403);
         // Clean session and throw error page
@@ -60,7 +61,8 @@ try {
     $routeLoader($router);
 
     // Dispatch
-    $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $router->dispatch($requestUri, $requestMethod !== 'CLI' ? $requestMethod : 'GET');
 } catch (\Throwable $e) {
     \App\Core\ErrorHandler::handleException($e);
 }

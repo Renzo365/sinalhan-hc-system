@@ -58,10 +58,7 @@
                                         <tr>
                                             <td colspan="7" class="text-center py-5 text-muted">
                                                 <i class="bi bi-shield-slash fs-3 d-block mb-2 text-secondary"></i>
-                                                <div class="mb-2">No immunizations recorded.</div>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recordImmunizationModal">
-                                                    <i class="bi bi-plus-lg me-1"></i> Record Immunization
-                                                </button>
+                                                <div class="mb-0">No immunizations recorded.</div>
                                             </td>
                                         </tr>
                                     <?php else: ?>

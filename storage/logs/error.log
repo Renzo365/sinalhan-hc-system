@@ -151,3 +151,9 @@ Stack Trace:
 #2 c:\xampp\htdocs\sinalhan-hc-system\public\index.php(64): App\Core\Router->dispatch('/sinalhealth/pu...', 'GET')
 #3 {main}
 --------------------------------------------------------------------------------
+[2026-10-13 22:27:55] [ErrorException] User: guest | IP: 127.0.0.1 | URI: CLI/Unknown
+Exception: ErrorException: Undefined array key "REQUEST_METHOD" in C:\xampp\htdocs\sinalhan-hc-system\public\index.php:45
+Stack Trace:
+#0 C:\xampp\htdocs\sinalhan-hc-system\public\index.php(45): App\Core\ErrorHandler::handleError(2, 'Undefined array...', 'C:\\xampp\\htdocs...', 45)
+#1 {main}
+--------------------------------------------------------------------------------

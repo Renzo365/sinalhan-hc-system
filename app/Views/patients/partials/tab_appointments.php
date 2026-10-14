@@ -13,11 +13,8 @@
                                         </a>
                                     </div>
                                     <?php if (empty($appointmentsHistory)): ?>
-                                        <div class="text-muted small text-center py-3">
-                                            <div class="mb-2">No upcoming appointments scheduled.</div>
-                                            <a href="<?= url('/appointments/create?patient_id=' . $patient['id']) ?>" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center" style="min-height: 32px;">
-                                                <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Schedule Appointment
-                                            </a>
+                                        <div class="text-muted small text-center py-4">
+                                            <div>No upcoming appointments scheduled.</div>
                                         </div>
                                     <?php else: ?>
                                         <ul class="list-group list-group-flush small">
@@ -79,7 +76,12 @@
                             <!-- Queue Logs -->
                             <div class="col-12 col-md-6">
                                 <div class="card border rounded-3 p-3 shadow-xs h-100">
-                                    <h3 class="h6 fw-bold mb-2 text-dark" style="text-wrap: balance;">Daily Queue Visits</h3>
+                                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                        <h3 class="h6 fw-bold mb-0 text-dark" style="text-wrap: balance;">Daily Queue Visits</h3>
+                                        <button type="button" class="btn btn-sm btn-outline-primary px-2.5 py-1 d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#enqueuePatientModal" title="Check-in Patient to Today's Queue" style="min-height: 31px; font-size: 0.8125rem;">
+                                            <i class="bi bi-person-check-fill me-1" aria-hidden="true"></i> Check-in to Queue
+                                        </button>
+                                    </div>
                                     <?php if (empty($queueHistory)): ?>
                                         <p class="text-muted small text-center py-3 mb-0">No daily queue visits recorded.</p>
                                     <?php else: ?>

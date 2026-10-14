@@ -113,7 +113,8 @@ class MaternalController extends Controller {
             'allPrenatalEpisodes' => $allPrenatalEpisodes,
             'pastEpisodesVisits' => $pastEpisodesVisits,
             'medicalHistory' => $medicalHistory,
-            'latestVitals' => $latestVitals
+            'latestVitals' => $latestVitals,
+            'cdsAlerts' => \App\Services\ClinicalDecisionService::getAlertsForPatient($patientId)
         ]);
     }
 }

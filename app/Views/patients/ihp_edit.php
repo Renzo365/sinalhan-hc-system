@@ -305,14 +305,14 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </span>
 
                                     <?php if (!empty($patient['envelope_no'])): ?>
-                                        <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                        <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                             <span class="tag-label">Env</span>
                                             <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                         </span>
                                     <?php endif; ?>
 
                                     <?php if (!empty($patient['family_no'])): ?>
-                                        <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                                        <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-family tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
                                             <span class="tag-label">Fam</span>
                                             <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                             <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
@@ -320,20 +320,19 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <?php endif; ?>
 
                                     <?php if (!empty($activePrenatal)): ?>
-                                        <span class="patient-id-tag tag-status-pregnant">
-                                            <i class="bi bi-heart-pulse-fill me-0.5" aria-hidden="true"></i>
-                                            <span class="tag-label">PREGNANCY</span>
-                                            <span class="tag-value"><?= !empty($activePrenatal['calculated_aog']['weeks']) ? $activePrenatal['calculated_aog']['weeks'] . 'w' : 'Active' ?></span>
-                                        </span>
+                                        <span class="patient-id-tag tag-status-pregnant">Active Pregnancy</span>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Right: Context link back to profile -->
-                        <div class="patient-actions-group d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
-                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-3 py-2 shadow-xs text-nowrap" onclick="confirmCancelIhpEdit()" title="Return to Clinical Care Workstation" style="min-height: 38px;">
-                                <i class="bi bi-person-badge me-1.5" aria-hidden="true"></i> View Patient Profile
+                        <div class="patient-actions-group d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-2.5 py-1 shadow-xs text-nowrap btn-toggle-demographics" data-bs-toggle="collapse" data-bs-target="#patientDemographicsCollapse" aria-expanded="false" aria-controls="patientDemographicsCollapse" title="View Full Demographics & Family Contacts" style="min-height: 32px; font-size: 0.8125rem;">
+                                Demographics &amp; Contacts <i class="bi bi-chevron-down ms-1 collapse-indicator" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center px-2.5 py-1 shadow-xs text-nowrap" onclick="confirmCancelIhpEdit()" title="Return to Clinical Care Workstation" style="min-height: 32px; font-size: 0.8125rem;">
+                                <i class="bi bi-person-badge me-1" aria-hidden="true"></i> View Profile
                             </button>
                         </div>
                     </div>
@@ -356,6 +355,9 @@ require dirname(__DIR__) . '/layout/header.php';
                             </div>
                         </div>
                     <?php endif; ?>
+
+                    <!-- Reusable Collapsible Demographics & Contacts Drawer -->
+                    <?php require __DIR__ . '/partials/demographics_accordion.php'; ?>
                 </div>
             </div>
 

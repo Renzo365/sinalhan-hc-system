@@ -125,14 +125,6 @@ require dirname(__DIR__) . '/layout/header.php';
                         <?php else: ?>
                             <span>Blood: <span class="text-muted">Unknown</span></span>
                         <?php endif; ?>
-                        <?php if (!empty($patient['philhealth_no'])): ?>
-                            <span class="text-muted" aria-hidden="true">&bull;</span>
-                            <span>PHIC: <span class="font-monospace text-dark" style="font-variant-numeric: tabular-nums;"><?= h($patient['philhealth_no']) ?></span></span>
-                        <?php endif; ?>
-                        <?php if (!empty(trim($patient['address'] ?? ''))): ?>
-                            <span class="text-muted" aria-hidden="true">&bull;</span>
-                            <span><i class="bi bi-geo-alt text-muted me-0.5" aria-hidden="true"></i><?= h(trim($patient['address'])) ?></span>
-                        <?php endif; ?>
                     </div>
 
                     <!-- Clean Muted Identifier Tags Row -->
@@ -143,14 +135,14 @@ require dirname(__DIR__) . '/layout/header.php';
                         </span>
 
                         <?php if (!empty($patient['envelope_no'])): ?>
-                            <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                            <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                 <span class="tag-label">Env</span>
                                 <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                             </span>
                         <?php endif; ?>
 
                         <?php if (!empty($patient['family_no'])): ?>
-                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-family tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
                                 <span class="tag-label">Fam</span>
                                 <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                 <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
@@ -158,24 +150,23 @@ require dirname(__DIR__) . '/layout/header.php';
                         <?php endif; ?>
 
                         <?php if (!empty($activePrenatal)): ?>
-                            <span class="patient-id-tag tag-status-pregnant" title="Active Pregnancy Episode">
-                                <i class="bi bi-heart-pulse-fill me-0.5" aria-hidden="true"></i>
-                                <span class="tag-label">PREGNANCY</span>
-                                <span class="tag-value"><?= !empty($activePrenatal['calculated_aog']['weeks']) ? $activePrenatal['calculated_aog']['weeks'] . 'w' : 'Active' ?></span>
-                            </span>
+                            <span class="patient-id-tag tag-status-pregnant" title="Active Pregnancy Episode">Active Pregnancy</span>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
 
             <!-- Profile Context Action Buttons -->
-            <div class="patient-actions-group d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
+            <div class="patient-actions-group d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center px-2.5 py-1 shadow-xs text-nowrap btn-toggle-demographics" data-bs-toggle="collapse" data-bs-target="#patientDemographicsCollapse" aria-expanded="false" aria-controls="patientDemographicsCollapse" title="View Full Demographics & Family Contacts" style="min-height: 32px; font-size: 0.8125rem;">
+                    Demographics &amp; Contacts <i class="bi bi-chevron-down ms-1 collapse-indicator"></i>
+                </button>
                 <?php if (!empty($activePrenatal)): ?>
-                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center px-3 py-2 shadow-xs" data-bs-toggle="collapse" data-bs-target="#pregnancyDetailsCollapse" aria-expanded="false" aria-controls="pregnancyDetailsCollapse" style="min-height: 38px;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center px-2.5 py-1 shadow-xs text-nowrap" data-bs-toggle="collapse" data-bs-target="#pregnancyDetailsCollapse" aria-expanded="false" aria-controls="pregnancyDetailsCollapse" style="min-height: 32px; font-size: 0.8125rem;">
                         Obstetric Details <i class="bi bi-chevron-down ms-1"></i>
                     </button>
                 <?php endif; ?>
-                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center px-3 py-2 shadow-xs" data-bs-toggle="collapse" data-bs-target="#medicalBackgroundCollapse" aria-expanded="false" aria-controls="medicalBackgroundCollapse" style="min-height: 38px;">
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center px-2.5 py-1 shadow-xs text-nowrap" data-bs-toggle="collapse" data-bs-target="#medicalBackgroundCollapse" aria-expanded="false" aria-controls="medicalBackgroundCollapse" style="min-height: 32px; font-size: 0.8125rem;">
                     Medical Background <i class="bi bi-chevron-down ms-1"></i>
                 </button>
             </div>
@@ -229,6 +220,9 @@ require dirname(__DIR__) . '/layout/header.php';
                 </div>
             </div>
         <?php endif; ?>
+
+        <!-- Reusable Collapsible Demographics & Contacts Drawer -->
+        <?php require dirname(__DIR__) . '/patients/partials/demographics_accordion.php'; ?>
     </div>
 
     <!-- Collapsible IHP Medical & Social Background Drawer -->
@@ -745,12 +739,12 @@ require dirname(__DIR__) . '/layout/header.php';
    ========================================================================== -->
 <div class="modal fade" id="addVitalsModal" tabindex="-1" aria-labelledby="addVitalsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="addVitalsModalLabel">
-                    Record Vital Signs
+                    <i class="bi bi-heart-pulse-fill me-2"></i>Record Vital Signs
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
             <form action="<?= url('/vital-signs') ?>" method="POST" id="vitalsForm">
@@ -861,7 +855,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4">Save Vitals</button>
                 </div>

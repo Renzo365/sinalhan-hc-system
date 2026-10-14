@@ -114,13 +114,13 @@ if (!empty($wellbabyRecord['mother_age'])) {
                                             <span class="tag-value"><?= h($patient['patient_no']) ?></span>
                                         </span>
                                         <?php if (!empty($patient['envelope_no'])): ?>
-                                            <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                            <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                                 <span class="tag-label">Env</span>
                                                 <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                             </span>
                                         <?php endif; ?>
                                         <?php if (!empty($patient['family_no'])): ?>
-                                            <span class="patient-id-tag font-monospace" title="Family Number">
+                                            <span class="patient-id-tag tag-family font-monospace" title="Family Number">
                                                 <span class="tag-label">Fam</span>
                                                 <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                             </span>
@@ -645,12 +645,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             item.innerHTML = `
                                 <div>
                                     <span class="fw-bold text-dark">${escapeHtml(mom.name)}</span>
-                                    <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${escapeHtml(mom.patient_no)}</span>
+                                    <span class="badge badge-patient-id font-monospace ms-1" style="font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${escapeHtml(mom.patient_no)}</span>
                                     <div class="text-muted" style="font-size: 0.72rem;">
                                         <span style="font-variant-numeric: tabular-nums;">${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'}</span> <span aria-hidden="true">•</span> <span style="font-variant-numeric: tabular-nums;">${mom.age ? mom.age + ' yrs' : ''}</span> <span aria-hidden="true">•</span> Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
                                     </div>
                                 </div>
-                                <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7 rounded-pill">Select &amp; Link</span>
+                                <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7">Select &amp; Link</span>
                             `;
                             item.addEventListener('click', function(e) {
                                 e.preventDefault();

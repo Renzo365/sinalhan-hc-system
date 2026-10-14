@@ -646,7 +646,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         results.forEach(child => {
             const initials = ((child.first_name ? child.first_name[0] : '') + (child.last_name ? child.last_name[0] : '')).toUpperCase();
-            const sexBadgeClass = (child.sex && child.sex.toLowerCase() === 'male') ? 'bg-primary' : 'bg-danger';
+            const sexBadgeClass = (child.sex && child.sex.toLowerCase() === 'male') ? 'badge-sex-male' : 'badge-sex-female';
             
             html += `
                 <button type="button" class="list-group-item list-group-item-action p-3 text-start btn-select-child" 
@@ -660,14 +660,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div>
                                 <div class="fw-bold text-dark">${child.name}</div>
                                 <div class="small text-muted">
-                                    <span class="badge ${sexBadgeClass} text-white" style="font-size: 0.68rem;">${child.sex}</span>
-                                    <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${child.patient_no}</span>
-                                    ${child.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;"><span class="visually-hidden">Envelope No: </span>Env #${child.envelope_no}</span>` : ''}
+                                    <span class="badge ${sexBadgeClass}" style="font-size: 0.68rem;">${child.sex}</span>
+                                    <span class="badge badge-patient-id font-monospace" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${child.patient_no}</span>
+                                    ${child.envelope_no ? `<span class="badge badge-envelope-no font-monospace" style="font-size: 0.68rem; font-variant-numeric: tabular-nums;"><span class="visually-hidden">Envelope No: </span>Env #${child.envelope_no}</span>` : ''}
                                     <span aria-hidden="true">&bull;</span> Age: <strong style="font-variant-numeric: tabular-nums;">${child.age_label}</strong> (DOB: <span style="font-variant-numeric: tabular-nums;">${child.dob_formatted}</span>)
                                 </div>
                             </div>
                         </div>
-                        <span class="btn btn-sm btn-outline-success rounded-pill px-3">
+                        <span class="btn btn-sm btn-outline-success px-3">
                             Select <i class="bi bi-chevron-right ms-1" aria-hidden="true"></i>
                         </span>
                     </div>
@@ -786,12 +786,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             item.innerHTML = `
                                 <div>
                                     <span class="fw-bold text-dark">${escapeHtml(mom.name)}</span>
-                                    <span class="badge bg-light text-secondary border font-monospace ms-1" style="font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${escapeHtml(mom.patient_no)}</span>
+                                    <span class="badge badge-patient-id font-monospace ms-1" style="font-variant-numeric: tabular-nums;"><span class="visually-hidden">Patient ID: </span>${escapeHtml(mom.patient_no)}</span>
                                     <div class="text-muted" style="font-size: 0.72rem;">
                                         <span style="font-variant-numeric: tabular-nums;">${mom.dob_formatted ? mom.dob_formatted : 'DOB N/A'}</span> <span aria-hidden="true">•</span> <span style="font-variant-numeric: tabular-nums;">${mom.age ? mom.age + ' yrs' : ''}</span> <span aria-hidden="true">•</span> Brgy. ${escapeHtml(mom.address || 'Sinalhan')}
                                     </div>
                                 </div>
-                                <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7 rounded-pill">Select &amp; Link</span>
+                                <span class="btn btn-sm btn-outline-success py-0 px-2.5 fs-7">Select &amp; Link</span>
                             `;
                             item.addEventListener('click', function(e) {
                                 e.preventDefault();

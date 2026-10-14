@@ -271,7 +271,8 @@ class WellbabyController extends Controller {
             'growthLogs' => $growthLogs,
             'patientImmunizations' => $patientImmunizations,
             'vaccineMap' => $vaccineMap,
-            'potentialMothers' => $potentialMothers
+            'potentialMothers' => $potentialMothers,
+            'cdsAlerts' => \App\Services\ClinicalDecisionService::getAlertsForPatient($patientId)
         ]);
     }
 

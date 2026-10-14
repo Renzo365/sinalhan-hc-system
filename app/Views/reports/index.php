@@ -724,37 +724,89 @@ if (!$allTime) {
                                                 </td>
                                                 <td>
                                                     <?php if ($bpInfo['sys'] && $bpInfo['dia']): ?>
-                                                        <span class="badge <?= $bpInfo['badge'] ?>">
-                                                             <?= "{$bpInfo['sys']}/{$bpInfo['dia']}" ?>
-                                                        </span>
-                                                        <?= $bpInfo['pill'] ?>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="font-monospace <?= $bpInfo['text_class'] ?> fs-7">
+                                                                <?= "{$bpInfo['sys']}/{$bpInfo['dia']}" ?>
+                                                            </span>
+                                                            <?php if (!empty($bpInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $bpInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
+                                                        </div>
                                                     <?php else: ?>
-                                                        -
+                                                        <span class="text-muted">-</span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <?= h($row['heart_rate'] ?? '-') ?>
-                                                    <?= $hrInfo['pill'] ?>
+                                                    <?php if ($hrInfo['value']): ?>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $hrInfo['text_class'] ?> fs-7">
+                                                                <?= $hrInfo['value'] ?>
+                                                            </span>
+                                                            <?php if (!empty($hrInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $hrInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">-</span>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td>
                                                     <?php if ($tempInfo['value']): ?>
-                                                        <span class="<?= $tempInfo['is_abnormal'] ? 'text-danger fw-bold' : '' ?>">
-                                                            <?= $tempInfo['formatted'] ?>
-                                                        </span>
-                                                        <?= $tempInfo['pill'] ?>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $tempInfo['text_class'] ?> fs-7">
+                                                                <?= $tempInfo['formatted'] ?>
+                                                            </span>
+                                                            <?php if (!empty($tempInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $tempInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
+                                                        </div>
                                                     <?php else: ?>
-                                                        -
+                                                        <span class="text-muted">-</span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <?= h($row['respiratory_rate'] ?? '-') ?>
-                                                    <?= $rrInfo['pill'] ?>
+                                                    <?php if ($rrInfo['value']): ?>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $rrInfo['text_class'] ?> fs-7">
+                                                                <?= $rrInfo['value'] ?>
+                                                            </span>
+                                                            <?php if (!empty($rrInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $rrInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">-</span>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <?= $row['oxygen_saturation'] ? "{$row['oxygen_saturation']}%" : '-' ?>
-                                                    <?= $spo2Info['pill'] ?>
+                                                    <?php if ($spo2Info['value']): ?>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $spo2Info['text_class'] ?> fs-7">
+                                                                <?= $spo2Info['formatted'] ?>
+                                                            </span>
+                                                            <?php if (!empty($spo2Info['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $spo2Info['sub_badge'] ?></div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">-</span>
+                                                    <?php endif; ?>
                                                 </td>
-                                                <td><span class="badge bg-light text-dark border"><?= h($row['bmi'] ?? '-') ?></span></td>
+                                                <td>
+                                                    <?php 
+                                                        $rBmiInfo = classify_bmi($row['bmi'] ?? null);
+                                                    ?>
+                                                    <?php if (!empty($row['bmi']) && (float)$row['bmi'] > 0): ?>
+                                                        <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                            <span class="<?= $rBmiInfo['text_class'] ?> fs-7"><?= number_format((float)$row['bmi'], 1) ?></span>
+                                                            <?php if (!empty($rBmiInfo['sub_badge'])): ?>
+                                                                <div class="mt-0.5"><?= $rBmiInfo['sub_badge'] ?></div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">-</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td><?= h($row['recorded_by_name']) ?></td>
                                             </tr>
                                         <?php endforeach; ?>

@@ -278,6 +278,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
             const ctx = new AudioContext();
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
             
             function playTone(freq, startTime, duration) {
                 const osc = ctx.createOscillator();
@@ -294,13 +297,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const now = ctx.currentTime;
-            playTone(659.25, now, 0.35);        // E5
-            playTone(523.25, now + 0.22, 0.55); // C5
+            playTone(587.33, now, 0.20);        // D5
+            playTone(880.00, now + 0.18, 0.40); // A5
         } catch (e) {
             console.warn('Web Audio chime could not play:', e);
         }
     };
+
+    // Global 1-Click Clipboard Copy Handler
+    document.addEventListener('click', function(e) {
+        const copyBtn = e.target.closest('.copy-clipboard-btn');
+        if (!copyBtn) return;
+        const textToCopy = copyBtn.getAttribute('data-clipboard');
+        if (!textToCopy) return;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg text-success"></i>';
+            copyBtn.setAttribute('title', 'Copied!');
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHtml;
+                copyBtn.setAttribute('title', copyBtn.getAttribute('aria-label') || 'Copy');
+            }, 1500);
+        }).catch(err => {
+            console.error('Failed to copy to clipboard: ', err);
+        });
+    });
 });
 </script>
 </body>
+
 </html>

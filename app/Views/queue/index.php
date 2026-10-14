@@ -198,9 +198,9 @@ require dirname(__DIR__) . '/layout/header.php';
 
                     <!-- 2. Compact Patient Identity Card -->
                     <div id="patientIdentityCard" class="<?= empty($preselectedPatient) ? 'd-none' : '' ?> mb-3">
-                        <div class="p-3 rounded-3 bg-light bg-opacity-50 border">
+                        <div class="p-3 rounded-3 bg-light border">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="avatar-circle rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 48px; height: 48px;" aria-hidden="true">
+                                <div class="avatar-circle rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 44px; height: 44px;" aria-hidden="true">
                                     <span id="cardInitials">
                                         <?php 
                                             $init = '';
@@ -211,23 +211,15 @@ require dirname(__DIR__) . '/layout/header.php';
                                     </span>
                                 </div>
                                 <div class="flex-grow-1 min-w-0">
-                                    <h3 class="h6 fw-bold text-dark mb-1 lh-sm text-truncate" id="cardFullName">
+                                    <h3 class="h6 fw-bold text-dark mb-0.5 lh-sm text-truncate" id="cardFullName">
                                         <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name']) : '--' ?>
                                     </h3>
-                                    <div class="d-flex flex-wrap align-items-center gap-1.5 small text-secondary mb-1.5" style="font-size: 0.8rem;">
-                                        <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'female') ? 'bg-danger' : 'bg-primary' ?>" id="cardSex">
-                                            <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?>
-                                        </span>
-                                        <span class="text-muted" aria-hidden="true">&bull;</span>
+                                    <div class="small text-secondary d-flex flex-wrap align-items-center" style="font-size: 0.8125rem; gap: 0.35rem;">
                                         <span id="cardAge" style="font-variant-numeric: tabular-nums;"><?= (!empty($preselectedPatient['age']) || (isset($preselectedPatient['age']) && $preselectedPatient['age'] === 0)) ? h($preselectedPatient['age']) . ' yrs' : '--' ?></span>
-                                        <span class="text-muted" aria-hidden="true">&bull;</span>
-                                        <span id="cardAddress" class="text-truncate d-inline-block" style="max-width: 170px;"><?= h($preselectedPatient['address'] ?? 'Barangay Sinalhan') ?></span>
-                                    </div>
-                                    <div class="patient-id-tags-row d-flex flex-wrap align-items-center gap-1">
-                                        <span class="patient-id-tag font-monospace" title="System Patient Number" style="font-size: 0.75rem; padding: 0.15rem 0.4rem;">
-                                            <span class="tag-label">ID</span>
-                                            <span class="tag-value" id="cardPatientNo"><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?></span>
-                                        </span>
+                                        <span class="text-secondary" aria-hidden="true">&bull;</span>
+                                        <span id="cardSex"><?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?></span>
+                                        <span class="text-secondary" aria-hidden="true">&bull;</span>
+                                        <span class="font-monospace text-muted" id="cardPatientNo"><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -306,7 +298,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                         <?= h($appt['patient_last']) ?>, <?= h($appt['patient_first']) ?>
                                     </div>
                                     <div class="text-muted d-flex align-items-center gap-1.5 flex-wrap mt-0.5" style="font-size: 0.73rem;">
-                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;"><?= h($appt['patient_no']) ?></span>
+                                        <span class="badge-patient-id"><?= h($appt['patient_no']) ?></span>
                                         <span style="font-variant-numeric: tabular-nums;"><?= date('h:i A', strtotime($appt['appointment_time'])) ?></span>
                                         <span aria-hidden="true">&bull;</span>
                                         <span class="badge bg-light text-primary border"><?= h($serviceVal) ?></span>
@@ -643,31 +635,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         patients.forEach(p => {
             const item = document.createElement('div');
-            item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
+            item.className = 'list-group-item list-group-item-action py-2.5 px-3 patient-search-item';
             item.style.cursor = 'pointer';
             item.setAttribute('role', 'button');
             item.setAttribute('tabindex', '0');
             item.setAttribute('aria-label', `Select patient ${p.name || ''}, ${p.patient_no || ''}`);
 
-            const sexBadgeClass = (p.sex && p.sex.toLowerCase() === 'female') ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-primary-subtle text-primary border-primary-subtle';
+            const ageText = (p.age !== undefined && p.age !== null) ? `${p.age} yrs` : '--';
+            const sexText = p.sex ? escapeHtml(p.sex) : 'N/A';
+            const idText = p.patient_no ? escapeHtml(p.patient_no) : '';
 
             item.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
-                        <div class="small text-muted d-flex align-items-center gap-2 mt-1 flex-wrap">
-                            <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
-                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
-                            <span class="badge ${sexBadgeClass} border">${escapeHtml(p.sex || 'N/A')}</span>
-                            <span style="font-variant-numeric: tabular-nums;">${p.age !== undefined && p.age !== null ? p.age + ' yrs' : '--'}</span>
-                            <span aria-hidden="true">&bull;</span>
-                            <span class="text-truncate" style="max-width: 200px;">${escapeHtml(p.address)}</span>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <span class="btn btn-sm btn-outline-primary py-1 px-3" style="min-height: 32px; display: inline-flex; align-items: center;">
-                            Select
-                        </span>
+                <div>
+                    <div class="fw-bold text-dark fs-6 mb-0.5">${escapeHtml(p.name)}</div>
+                    <div class="small text-muted d-flex align-items-center flex-wrap" style="gap: 0.35rem;">
+                        <span>${ageText}</span>
+                        <span class="text-secondary" aria-hidden="true">&bull;</span>
+                        <span>${sexText}</span>
+                        ${idText ? `<span class="text-secondary" aria-hidden="true">&bull;</span><span class="font-monospace text-secondary">${idText}</span>` : ''}
                     </div>
                 </div>
             `;
@@ -699,18 +684,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update Identity Card
         document.getElementById('cardFullName').textContent = patient.name;
-        document.getElementById('cardPatientNo').textContent = patient.patient_no;
+        document.getElementById('cardPatientNo').textContent = patient.patient_no || '--';
         document.getElementById('cardAge').textContent = (patient.age !== undefined && patient.age !== null) ? (patient.age + ' yrs') : '--';
-        document.getElementById('cardAddress').textContent = patient.address || 'Barangay Sinalhan';
+        const cardAddressEl = document.getElementById('cardAddress');
+        if (cardAddressEl) cardAddressEl.textContent = patient.address || 'Barangay Sinalhan';
 
-        const sexBadge = document.getElementById('cardSex');
-        if (sexBadge) {
-            sexBadge.textContent = patient.sex || 'N/A';
-            if (patient.sex && patient.sex.toLowerCase() === 'female') {
-                sexBadge.className = 'badge bg-danger';
-            } else {
-                sexBadge.className = 'badge bg-primary';
-            }
+        const sexEl = document.getElementById('cardSex');
+        if (sexEl) {
+            sexEl.textContent = patient.sex || 'N/A';
+            sexEl.className = '';
         }
 
         const initials = ((patient.first_name ? patient.first_name[0] : '') + (patient.last_name ? patient.last_name[0] : '')).toUpperCase() || 'PT';
@@ -856,6 +838,61 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmColor = '#198754';
             }
 
+            const executeAction = () => {
+                if ((action === 'call' || action === 'recall') && typeof window.playHospitalChime === 'function') {
+                    window.playHospitalChime(true);
+                }
+
+                // Temporary loading state on action button
+                actionBtn.disabled = true;
+                const originalHtml = actionBtn.innerHTML;
+                actionBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: action === 'recall' ? 'Announcement Re-triggered!' : 'Success',
+                                text: data.message,
+                                timer: 1500,
+                                timerProgressBar: true,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            window.location.reload();
+                        }
+                    } else {
+                        actionBtn.disabled = false;
+                        actionBtn.innerHTML = originalHtml;
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Action Failed',
+                                text: data.error || 'Failed to update queue status.'
+                            });
+                        } else {
+                            alert(data.error || 'Failed to update queue status.');
+                        }
+                    }
+                })
+                .catch(err => {
+                    // Fallback to traditional form submit if network fails
+                    form.submit();
+                });
+            };
+
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     title: title,
@@ -868,18 +905,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     cancelButtonText: 'Cancel'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        if ((action === 'call' || action === 'recall') && typeof window.playHospitalChime === 'function') {
-                            window.playHospitalChime();
-                        }
-                        form.submit();
+                        executeAction();
                     }
                 });
             } else {
                 if (confirm(text)) {
-                    if ((action === 'call' || action === 'recall') && typeof window.playHospitalChime === 'function') {
-                        window.playHospitalChime();
-                    }
-                    form.submit();
+                    executeAction();
                 }
             }
             return;

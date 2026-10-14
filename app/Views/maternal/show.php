@@ -101,18 +101,6 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php else: ?>
                                 <span>Blood: <span class="text-muted">Unknown</span></span>
                             <?php endif; ?>
-                            <?php if (!empty($patient['philhealth_no'])): ?>
-                                <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span>PHIC: <span class="font-monospace text-dark" style="font-variant-numeric: tabular-nums;"><?= h($patient['philhealth_no']) ?></span></span>
-                            <?php endif; ?>
-                            <?php if (!empty($patient['contact_no'])): ?>
-                                <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span><i class="bi bi-telephone text-muted me-1" aria-hidden="true"></i><span style="font-variant-numeric: tabular-nums;"><?= h($patient['contact_no']) ?></span></span>
-                            <?php endif; ?>
-                            <?php if (!empty(trim($patient['address'] ?? ''))): ?>
-                                <span class="text-muted" aria-hidden="true">&bull;</span>
-                                <span><i class="bi bi-geo-alt text-muted me-0.5" aria-hidden="true"></i><?= h(trim($patient['address'])) ?></span>
-                            <?php endif; ?>
                         </div>
 
                         <!-- Clean Muted Identifier Tags Row -->
@@ -123,14 +111,14 @@ require dirname(__DIR__) . '/layout/header.php';
                             </span>
 
                             <?php if (!empty($patient['envelope_no'])): ?>
-                                <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                     <span class="tag-label">Env</span>
                                     <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                 </span>
                             <?php endif; ?>
 
                             <?php if (!empty($patient['family_no'])): ?>
-                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                                <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-family tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
                                     <span class="tag-label">Fam</span>
                                     <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                     <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
@@ -138,28 +126,53 @@ require dirname(__DIR__) . '/layout/header.php';
                             <?php endif; ?>
 
                             <?php if ($activePrenatal): ?>
-                                <span class="patient-id-tag tag-status-pregnant">
-                                    <i class="bi bi-heart-pulse-fill me-0.5" aria-hidden="true"></i>
-                                    <span class="tag-label">Status</span>
-                                    <span class="tag-value">Active Pregnancy</span>
-                                </span>
+                                <span class="patient-id-tag tag-status-pregnant">Active Pregnancy</span>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right: Action Buttons -->
-                <div class="patient-actions-group d-flex flex-wrap align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
-                    <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-3 py-2 shadow-xs d-flex align-items-center" style="min-height: 38px;">
-                        <i class="bi bi-person-badge me-1.5" aria-hidden="true"></i> Full Patient Profile
+                <div class="patient-actions-group d-flex flex-wrap align-items-center gap-1.5 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-2.5 py-1 shadow-xs d-flex align-items-center text-nowrap btn-toggle-demographics" data-bs-toggle="collapse" data-bs-target="#patientDemographicsCollapse" aria-expanded="false" aria-controls="patientDemographicsCollapse" title="View Full Demographics & Family Contacts" style="min-height: 32px; font-size: 0.8125rem;">
+                        Demographics &amp; Contacts <i class="bi bi-chevron-down ms-1 collapse-indicator" aria-hidden="true"></i>
+                    </button>
+                    <a href="<?= url('/patients/' . $patient['id']) ?>" class="btn btn-outline-primary btn-sm px-2.5 py-1 shadow-xs d-flex align-items-center" style="min-height: 32px; font-size: 0.8125rem;">
+                        <i class="bi bi-person-badge me-1" aria-hidden="true"></i> Full Profile
                     </a>
                     <?php if (!$activePrenatal): ?>
-                        <a href="<?= url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="btn btn-pink text-white btn-sm px-3 py-2 shadow-xs fw-semibold d-flex align-items-center" style="min-height: 38px;">
-                            <i class="bi bi-plus-circle me-1.5" aria-hidden="true"></i> Start Pregnancy Episode
+                        <a href="<?= url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="btn btn-pink text-white btn-sm px-2.5 py-1 shadow-xs fw-semibold d-flex align-items-center" style="min-height: 32px; font-size: 0.8125rem;">
+                            <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Start Pregnancy Episode
                         </a>
                     <?php endif; ?>
                 </div>
             </div>
+
+            <!-- Clinical Alerts Safety Bar (If Any Alerts Recorded) -->
+            <?php if (!empty($cdsAlerts['has_alerts'])): ?>
+                <div class="clinical-alerts-bar mt-3" role="region" aria-label="Patient Safety and Clinical Alerts">
+                    <span class="clinical-alerts-label">
+                        <i class="bi bi-shield-exclamation text-danger" aria-hidden="true"></i>
+                        <span>Clinical Alerts:</span>
+                    </span>
+                    <div class="d-flex flex-wrap align-items-center gap-1.5">
+                        <?php foreach ($cdsAlerts['flags'] as $flag): ?>
+                            <?php 
+                            $isDangerAlert = ($flag['type'] === 'danger' || strpos($flag['code'] ?? '', 'ALLERGY') !== false); 
+                            $isWarningAlert = ($flag['type'] === 'warning' || in_array($flag['code'] ?? '', ['HYPERTENSIVE', 'DIABETIC', 'ASTHMA', 'PREECLAMPSIA_RISK'], true));
+                            $chipClass = $isDangerAlert ? 'clinical-chip-danger' : ($isWarningAlert ? 'clinical-chip-warning' : 'clinical-chip-neutral');
+                            ?>
+                            <span class="clinical-chip <?= $chipClass ?>">
+                                <i class="bi <?= $flag['icon'] ?> chip-icon" aria-hidden="true"></i>
+                                <span><?= h($flag['label']) ?></span>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <!-- Reusable Collapsible Demographics & Contacts Drawer -->
+            <?php require dirname(__DIR__) . '/patients/partials/demographics_accordion.php'; ?>
         </div>
     </div>
 
@@ -275,7 +288,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     </h2>
                     <small class="text-muted" style="text-wrap: pretty;">Monitor vital signs, fetal presentation, heart tones, and fundic height</small>
                 </div>
-                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
+                <button type="button" class="btn btn-sm btn-primary px-3 shadow-xs" data-bs-toggle="modal" data-bs-target="#addPrenatalVisitModal">
                     <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Log Checkup Visit
                 </button>
             </div>
@@ -320,18 +333,37 @@ require dirname(__DIR__) . '/layout/header.php';
                                     <td class="font-monospace fw-semibold" style="font-variant-numeric: tabular-nums;"><?= h($pv['aog_weeks']) ?> wks</td>
                                     <td class="font-monospace text-nowrap" style="font-variant-numeric: tabular-nums;">
                                         <?php if ($bpInfo['sys'] !== null): ?>
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <span class="font-monospace fw-bold <?= $bpInfo['is_high'] ? 'text-danger' : ($bpInfo['is_abnormal'] ? 'text-warning-emphasis' : 'text-dark') ?>">
+                                            <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                <span class="font-monospace <?= $bpInfo['text_class'] ?> fs-7">
                                                     <?= $bpInfo['sys'] ?>/<?= $bpInfo['dia'] ?>
                                                 </span>
-                                                <?= $bpInfo['pill'] ?>
+                                                <?php if (!empty($bpInfo['sub_badge'])): ?>
+                                                    <div class="mt-0.5"><?= $bpInfo['sub_badge'] ?></div>
+                                                <?php endif; ?>
                                             </div>
                                         <?php else: ?>
                                             <span class="text-muted">--</span>
                                         <?php endif; ?>
                                     </td>
                                     <td style="font-variant-numeric: tabular-nums;"><?= h($pv['weight_kg'] ?? '--') ?></td>
-                                    <td class="text-nowrap"><span class="<?= $fhtInfo['badge'] ?>" style="font-variant-numeric: tabular-nums;"><?= $fht > 0 ? $fht . ' bpm' : '--' ?></span> <?= $fhtInfo['pill'] ?></td>
+                                    <td class="text-nowrap" style="font-variant-numeric: tabular-nums;">
+                                        <?php if ($fht > 0): ?>
+                                            <div class="d-flex flex-column align-items-center justify-content-center py-0.5">
+                                                <span class="fs-7 <?= $fhtInfo['is_abnormal'] ? 'text-danger fw-bold' : 'text-dark fw-medium' ?>">
+                                                    <?= $fht ?> bpm
+                                                </span>
+                                                <?php if (!empty($fhtInfo['is_abnormal'])): ?>
+                                                    <div class="mt-0.5">
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.65rem; padding: 1.5px 5px; font-weight: 600;">
+                                                            <?= $fhtInfo['label'] ?>
+                                                        </span>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-muted">--</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td style="font-variant-numeric: tabular-nums;"><?= h($pv['fundal_height_cm'] ?? '--') ?></td>
                                     <td><span class="badge bg-light text-dark border"><?= h($pv['fetal_presentation'] ?? 'Cephalic') ?></span></td>
                                     <td class="text-muted"><?= h($pv['tcb'] ?? '--') ?></td>
@@ -417,7 +449,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 Enrolling this patient into the CHO I Prenatal Record tracks gestational progress (LMP, EDC, AOG), serial fetal heart tones, and clinical care outcomes.
             </p>
             <div>
-                <a href="<?= url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="btn btn-pink text-white px-4 py-2 rounded-pill shadow-sm fw-semibold">
+                <a href="<?= url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="btn btn-pink text-white px-4 py-2 shadow-xs fw-semibold">
                     <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Start Pregnancy Episode
                 </a>
             </div>
@@ -433,7 +465,7 @@ require dirname(__DIR__) . '/layout/header.php';
                 </h2>
                 <span class="text-muted small" style="text-wrap: pretty;">Historical delivery outcomes, birth places, attendants, and maternal TT vaccination status.</span>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addPastObstetricModal">
+            <button type="button" class="btn btn-sm btn-outline-primary px-3 shadow-xs" data-bs-toggle="modal" data-bs-target="#addPastObstetricModal">
                 <i class="bi bi-plus-lg me-1" aria-hidden="true"></i> Add Past Delivery
             </button>
         </div>
@@ -597,7 +629,7 @@ require dirname(__DIR__) . '/layout/header.php';
                                 </td>
                                 <td class="text-muted small"><?= h($pe['creator_name'] ?? 'Clinician') ?></td>
                                 <td class="pe-3 text-end text-nowrap">
-                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 rounded-pill shadow-2xs" 
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2.5 shadow-2xs" 
                                             style="min-height: 32px; display: inline-flex; align-items: center; justify-content: center;"
                                             aria-label="View visits for Episode #<?= h($pe['id']) ?> (Gravida <?= h($pe['gravida']) ?> Para <?= h($pe['para']) ?>)"
                                             data-bs-toggle="modal" data-bs-target="#pastVisitsModal-<?= $pe['id'] ?>" title="View Checkup Visits">
@@ -621,8 +653,8 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- 2. LOG SERIAL PRENATAL VISIT MODAL -->
     <div class="modal fade" id="addPrenatalVisitModal" tabindex="-1" aria-labelledby="addPrenatalVisitModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-teal">
                     <h2 class="h5 modal-title fw-bold" id="addPrenatalVisitModalLabel">
                         <i class="bi bi-journal-medical me-2" aria-hidden="true"></i>Record Serial Prenatal Follow-Up Visit
                     </h2>
@@ -710,7 +742,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                     
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <div class="modal-footer modal-footer-clean">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Prenatal Visit</button>
                     </div>
@@ -722,8 +754,8 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- 2b. EDIT SERIAL PRENATAL VISIT MODAL -->
     <div class="modal fade" id="editPrenatalVisitModal" tabindex="-1" aria-labelledby="editPrenatalVisitModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-teal">
                     <h2 class="h5 modal-title fw-bold" id="editPrenatalVisitModalLabel">
                         <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit Serial Prenatal Follow-Up Visit
                     </h2>
@@ -811,7 +843,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                     
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <div class="modal-footer modal-footer-clean">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
                     </div>
@@ -823,8 +855,8 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- 2c. VIEW SERIAL PRENATAL VISIT DETAILS MODAL -->
     <div class="modal fade" id="viewPrenatalVisitModal" tabindex="-1" aria-labelledby="viewPrenatalVisitModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-info bg-gradient text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-info">
                     <h2 class="h5 modal-title fw-bold" id="viewPrenatalVisitModalLabel">
                         <i class="bi bi-eye-fill me-2" aria-hidden="true"></i>Prenatal Visit Details
                     </h2>
@@ -920,7 +952,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -930,8 +962,8 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- 3. CONCLUDE PREGNANCY EPISODE MODAL -->
     <div class="modal fade" id="concludePrenatalModal" tabindex="-1" aria-labelledby="concludePrenatalModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-danger text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-danger">
                     <h2 class="h5 modal-title fw-bold" id="concludePrenatalModalLabel">
                         <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>Conclude Pregnancy Episode
                     </h2>
@@ -1046,7 +1078,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                     
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <div class="modal-footer modal-footer-clean">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-danger px-4 fw-semibold">
                             <i class="bi bi-check2-circle me-1" aria-hidden="true"></i>Confirm Conclusion & Sync IHP
@@ -1060,12 +1092,12 @@ require dirname(__DIR__) . '/layout/header.php';
     <!-- 5. CANCEL PREGNANCY EPISODE MODAL -->
     <div class="modal fade" id="cancelPrenatalModal" tabindex="-1" aria-labelledby="cancelPrenatalModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-dark text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-clean">
                     <h2 class="h5 modal-title fw-bold" id="cancelPrenatalModalLabel">
                         <i class="bi bi-exclamation-triangle-fill text-warning me-2" aria-hidden="true"></i>Cancel Pregnancy Episode
                     </h2>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
                 <form action="<?= url('/prenatal/' . $activePrenatal['id'] . '/cancel') ?>" method="POST" id="cancelPrenatalForm">
@@ -1095,7 +1127,7 @@ require dirname(__DIR__) . '/layout/header.php';
                         </div>
                     </div>
                     
-                    <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <div class="modal-footer modal-footer-clean">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Episode</button>
                         <button type="submit" class="btn btn-danger px-4 fw-semibold">
                             <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Cancel & Remove Episode
@@ -1110,8 +1142,8 @@ require dirname(__DIR__) . '/layout/header.php';
 <!-- 6. ADD PAST OBSTETRIC DELIVERY MODAL -->
 <div class="modal fade" id="addPastObstetricModal" tabindex="-1" aria-labelledby="addPastObstetricModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h2 class="h5 modal-title fw-bold" id="addPastObstetricModalLabel">
                     <i class="bi bi-clock-history me-2" aria-hidden="true"></i>Add Past Delivery Record (G1, G2…)
                 </h2>
@@ -1185,7 +1217,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Past Delivery</button>
                 </div>
@@ -1197,8 +1229,8 @@ require dirname(__DIR__) . '/layout/header.php';
 <!-- 6b. EDIT PAST OBSTETRIC DELIVERY MODAL -->
 <div class="modal fade" id="editPastObstetricModal" tabindex="-1" aria-labelledby="editPastObstetricModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h2 class="h5 modal-title fw-bold" id="editPastObstetricModalLabel">
                     <i class="bi bi-pencil-square me-2" aria-hidden="true"></i>Edit Past Delivery Record
                 </h2>
@@ -1273,7 +1305,7 @@ require dirname(__DIR__) . '/layout/header.php';
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
                 </div>
@@ -1289,8 +1321,8 @@ require dirname(__DIR__) . '/layout/header.php';
     ?>
     <div class="modal fade" id="pastVisitsModal-<?= $pe['id'] ?>" tabindex="-1" aria-labelledby="pastVisitsModalLabel-<?= $pe['id'] ?>" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="modal-header bg-pink text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="modal-content">
+                <div class="modal-header modal-header-pink">
                     <div>
                         <h2 class="h5 modal-title fw-bold mb-0 text-white" id="pastVisitsModalLabel-<?= $pe['id'] ?>">
                             <i class="bi bi-clock-history me-2" aria-hidden="true"></i>Past Prenatal Checkup Visits <span class="opacity-75" aria-hidden="true">&bull;</span> Episode #<?= h($pe['id']) ?>
@@ -1383,8 +1415,8 @@ require dirname(__DIR__) . '/layout/header.php';
                         </table>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-2">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer modal-footer-clean">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

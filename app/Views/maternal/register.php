@@ -163,11 +163,11 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                                 <h3 class="h6 fw-bold text-dark mb-0" id="cardFullName">
                                                     <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '')) : '--' ?>
                                                 </h3>
-                                                <span class="badge text-white" style="background-color: #d63384;" id="cardSex">Female</span>
-                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
+                                                <span class="badge badge-sex-female" id="cardSex">Female</span>
+                                                <span class="badge badge-patient-id font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
                                                     <span class="visually-hidden">Patient ID: </span><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
                                                 </span>
-                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge" style="font-variant-numeric: tabular-nums;">
+                                                <span class="badge badge-envelope-no font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge" style="font-variant-numeric: tabular-nums;">
                                                     <span class="visually-hidden">Envelope No: </span>Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
                                                 </span>
                                             </div>
@@ -544,8 +544,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div>
                         <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
                         <div class="small text-muted d-flex align-items-center gap-2 mt-1">
-                            <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
-                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
+                            <span class="badge badge-patient-id font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
+                            ${p.envelope_no ? `<span class="badge badge-envelope-no font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
                             <span>${p.age} yrs</span>
                             <span class="text-muted" aria-hidden="true">&bull;</span>
                             <span class="text-truncate" style="max-width: 250px;">${escapeHtml(p.address)}</span>

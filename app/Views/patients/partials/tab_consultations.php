@@ -24,10 +24,7 @@
                     <tr>
                         <td colspan="5" class="text-center py-5 text-muted">
                             <i class="bi bi-clipboard2-x fs-3 d-block mb-2 text-secondary"></i>
-                            <div class="mb-2">No consultations recorded.</div>
-                            <a href="<?= url('/patients/' . $patient['id'] . '/consultations/create') ?>" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-plus-lg me-1"></i> Add Consultation
-                            </a>
+                            <div class="mb-0">No consultations recorded.</div>
                         </td>
                     </tr>
                 <?php else: ?>

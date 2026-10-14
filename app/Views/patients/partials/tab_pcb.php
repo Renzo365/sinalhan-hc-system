@@ -27,7 +27,7 @@
                                     </div>
                                     <div class="p-2 rounded bg-light border text-center">
                                         <span class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Membership Status</span>
-                                        <span class="badge <?= ($patient['phic_status'] ?? '') === 'Member' ? 'bg-success' : (($patient['phic_status'] ?? '') === 'Dependent' ? 'bg-info text-dark' : 'bg-secondary') ?>">
+                                        <span class="badge <?= ($patient['phic_status'] ?? '') === 'Member' ? 'badge-phic-member' : (($patient['phic_status'] ?? '') === 'Dependent' ? 'badge-phic-dependent' : 'badge-phic-none') ?>">
                                             <?= h($patient['phic_status'] ?? 'Non-Member') ?>
                                         </span>
                                     </div>
@@ -198,10 +198,7 @@
                                                 <td colspan="7" class="text-center py-5 text-muted">
                                                     <i class="bi bi-clipboard2-pulse fs-3 d-block mb-2 text-secondary"></i>
                                                     <p class="fw-medium mb-1">No diagnostic or PCB services recorded yet</p>
-                                                    <p class="small text-muted mb-3">Click below to record lab examinations, diagnostic tests, or primary care benefit encounters.</p>
-                                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recordPcbServiceModal">
-                                                        <i class="bi bi-plus-lg me-1"></i> Record Service
-                                                    </button>
+                                                    <p class="small text-muted mb-0">Use the "+ Record PCB / Diagnostic Service" button above to record lab examinations, diagnostic tests, or primary care benefit encounters.</p>
                                                 </td>
                                             </tr>
                                         <?php else: ?>

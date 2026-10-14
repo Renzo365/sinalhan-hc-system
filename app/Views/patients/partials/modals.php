@@ -3,8 +3,8 @@
    ========================================================================== -->
 <div class="modal fade" id="recordImmunizationModal" tabindex="-1" aria-labelledby="recordImmunizationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="recordImmunizationModalLabel">
                     <i class="bi bi-shield-plus me-2"></i>Record Vaccine Dose
                 </h5>
@@ -77,7 +77,7 @@
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">Record Immunization</button>
                 </div>
@@ -91,8 +91,8 @@
    ========================================================================== -->
 <div class="modal fade" id="addVitalsModal" tabindex="-1" aria-labelledby="addVitalsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="addVitalsModalLabel">
                     <i class="bi bi-heart-pulse-fill me-2"></i>Record Vital Signs
                 </h5>
@@ -206,7 +206,7 @@
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4">Save Vitals</button>
                 </div>
@@ -220,8 +220,8 @@
    ========================================================================== -->
 <div class="modal fade" id="viewConsultationModal" tabindex="-1" aria-labelledby="viewConsultationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-white py-3 border-bottom" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-clean">
                 <h5 class="modal-title fw-bold text-dark" id="viewConsultationModalLabel">
                     Clinical Consultation Record
                 </h5>
@@ -237,7 +237,7 @@
                 </div>
             </div>
             
-            <div class="modal-footer bg-light py-2.5 px-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="modal-footer modal-footer-clean d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="window.print()">
                     Print Record
                 </button>
@@ -254,8 +254,8 @@
    ========================================================================== -->
 <div class="modal fade" id="viewVitalsModal" tabindex="-1" aria-labelledby="viewVitalsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="viewVitalsModalLabel">
                     <i class="bi bi-activity me-2"></i>Vital Signs Details
                 </h5>
@@ -357,7 +357,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="modal-footer modal-footer-clean">
                 <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -369,8 +369,8 @@
    ========================================================================== -->
 <div class="modal fade" id="editVitalsModal" tabindex="-1" aria-labelledby="editVitalsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="editVitalsModalLabel">
                     <i class="bi bi-pencil-square me-2"></i>Edit Vital Signs
                 </h5>
@@ -483,7 +483,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
                 </div>
@@ -497,8 +497,8 @@
    ========================================================================== -->
 <div class="modal fade" id="editPcbServiceModal" tabindex="-1" aria-labelledby="editPcbServiceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="editPcbServiceModalLabel">
                     <i class="bi bi-pencil-square me-2"></i>Edit Diagnostic / PCB Service
                 </h5>
@@ -568,7 +568,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
                 </div>
@@ -582,8 +582,8 @@
    ========================================================================== -->
 <div class="modal fade" id="viewPcbServiceModal" tabindex="-1" aria-labelledby="viewPcbServiceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="viewPcbServiceModalLabel">
                     <i class="bi bi-journal-medical me-2"></i>PCB Encounter Details
                 </h5>
@@ -628,7 +628,7 @@
                     <div class="text-secondary small" id="viewPcbRemarks">--</div>
                 </div>
             </div>
-            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="modal-footer modal-footer-clean">
                 <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -640,8 +640,8 @@
    ========================================================================== -->
 <div class="modal fade" id="viewImmunizationModal" tabindex="-1" aria-labelledby="viewImmunizationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="viewImmunizationModalLabel">
                     <i class="bi bi-shield-check me-2"></i>Immunization Record Details
                 </h5>
@@ -685,7 +685,7 @@
                     <div class="text-secondary small" id="viewImmRemarks">--</div>
                 </div>
             </div>
-            <div class="modal-footer bg-light py-2 px-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+            <div class="modal-footer modal-footer-clean">
                 <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -697,8 +697,8 @@
    ========================================================================== -->
 <div class="modal fade" id="editImmunizationModal" tabindex="-1" aria-labelledby="editImmunizationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="editImmunizationModalLabel">
                     <i class="bi bi-pencil-square me-2"></i>Edit Vaccine Dose
                 </h5>
@@ -771,7 +771,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
                 </div>
@@ -818,8 +818,8 @@
    ========================================================================== -->
 <div class="modal fade" id="archivePatientModal" tabindex="-1" aria-labelledby="archivePatientModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-danger text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-danger">
                 <h5 class="modal-title fw-bold" id="archivePatientModalLabel">
                     <i class="bi bi-archive-fill me-2"></i>Archive Patient Record
                 </h5>
@@ -839,7 +839,7 @@
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger">Confirm Archive</button>
                 </div>
@@ -854,8 +854,8 @@
    ========================================================================== -->
 <div class="modal fade" id="enqueuePatientModal" tabindex="-1" aria-labelledby="enqueuePatientModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h2 class="modal-title h5 fw-bold mb-0" id="enqueuePatientModalLabel" style="text-wrap: balance;">
                     <i class="bi bi-person-check-fill me-2" aria-hidden="true"></i>Check-in Patient to Today's Queue
                 </h2>
@@ -882,7 +882,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-2 px-4 border-top" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal" style="min-height: 38px;">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-semibold" style="min-height: 38px;">
                         <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Issue Queue Number
@@ -898,8 +898,8 @@
    ========================================================================== -->
 <div class="modal fade" id="recordPcbServiceModal" tabindex="-1" aria-labelledby="recordPcbServiceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="recordPcbServiceModalLabel">
                     <i class="bi bi-journal-plus me-2"></i>Record Diagnostic / PCB Service
                 </h5>
@@ -985,7 +985,7 @@
                     </div>
                 </div>
                 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Service Encounter</button>
                 </div>
@@ -999,8 +999,8 @@
    ========================================================================== -->
 <div class="modal fade" id="obligatedEditModal" tabindex="-1" aria-labelledby="obligatedEditModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <div class="modal-content">
+            <div class="modal-header modal-header-teal">
                 <h5 class="modal-title fw-bold" id="obligatedEditModalLabel">
                     <i class="bi bi-calendar-check me-2"></i>Update Obligated Preventive Services (<?= $pcbYear ?>)
                 </h5>
@@ -1109,7 +1109,7 @@
                     </div>
                 </div>
 
-                <div class="modal-footer bg-light py-3 border-0" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <div class="modal-footer modal-footer-clean">
                     <button type="button" class="btn btn-outline-secondary btn-sm px-4" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary btn-sm px-4 fw-medium">Save Obligated Dates</button>
                 </div>

@@ -88,7 +88,7 @@ $initials = strtoupper($initials ?: 'PT');
                                             <span class="tag-value"><?= h($patient['patient_no']) ?></span>
                                         </span>
                                         <?php if (!empty($patient['envelope_no'])): ?>
-                                            <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                                            <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                                 <span class="tag-label">Env</span>
                                                 <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                                             </span>

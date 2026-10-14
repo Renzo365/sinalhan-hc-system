@@ -6,7 +6,7 @@ use PDO;
 use Exception;
 
 class SchemaMigrator {
-    private const CURRENT_VERSION = '2026_10_12_v2';
+    private const CURRENT_VERSION = '2026_10_14_v1';
 
     /**
      * Check and ensure database schema is compatible with the latest codebase.
@@ -188,6 +188,16 @@ class SchemaMigrator {
                 }
             } catch (Exception $e) {
                 error_log("SchemaMigrator error on system_settings: " . $e->getMessage());
+            }
+        }
+
+        // 7. queue_entries.call_count for tracking calls and recalls
+        if (!self::columnExists($db, 'queue_entries', 'call_count')) {
+            try {
+                $db->exec("ALTER TABLE `queue_entries` ADD COLUMN `call_count` INT NOT NULL DEFAULT 0 AFTER `time_called`");
+                $changes[] = "Added queue_entries.call_count";
+            } catch (Exception $e) {
+                error_log("SchemaMigrator error on queue_entries.call_count: " . $e->getMessage());
             }
         }
 

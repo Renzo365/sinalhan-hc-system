@@ -72,14 +72,14 @@
                         </span>
 
                         <?php if (!empty($patient['envelope_no'])): ?>
-                            <span class="patient-id-tag font-monospace" title="Physical Logbook Envelope No.">
+                            <span class="patient-id-tag tag-envelope font-monospace" title="Physical Logbook Envelope No.">
                                 <span class="tag-label">Env</span>
                                 <span class="tag-value">#<?= h($patient['envelope_no']) ?></span>
                             </span>
                         <?php endif; ?>
 
                         <?php if (!empty($patient['family_no'])): ?>
-                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
+                            <a href="<?= url('/patients?search=' . urlencode($patient['family_no'])) ?>" class="patient-id-tag tag-family tag-interactive font-monospace" title="Click to view household in directory" aria-label="View household directory for Family <?= h($patient['family_no']) ?>">
                                 <span class="tag-label">Fam</span>
                                 <span class="tag-value">#<?= h($patient['family_no']) ?></span>
                                 <i class="bi bi-box-arrow-up-right ms-0.5 text-muted" style="font-size: 0.65rem;" aria-hidden="true"></i>
@@ -87,29 +87,34 @@
                         <?php endif; ?>
 
                         <?php if (!empty($activePrenatal)): ?>
-                            <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="patient-id-tag tag-status-pregnant" title="Active Pregnancy Episode - EDC: <?= !empty($activePrenatal['edc']) ? date('M d, Y', strtotime($activePrenatal['edc'])) : 'N/A' ?>">
-                                <i class="bi bi-heart-pulse-fill me-0.5" aria-hidden="true"></i>
-                                <span class="tag-label">Pregnancy</span>
-                                <span class="tag-value"><?= !empty($activePrenatal['calculated_aog']['weeks']) ? $activePrenatal['calculated_aog']['weeks'] . 'w' : 'Active' ?></span>
-                            </a>
+                            <a href="<?= url('/prenatal/' . $patient['id']) ?>" class="patient-id-tag tag-status-pregnant" title="Active Pregnancy Episode - EDC: <?= !empty($activePrenatal['edc']) ? date('M d, Y', strtotime($activePrenatal['edc'])) : 'N/A' ?>">Active Pregnancy</a>
+                        <?php endif; ?>
+                        <?php if (!empty($wellbabyRecord)): ?>
+                            <a href="<?= url('/well-baby/' . $patient['id']) ?>" class="patient-id-tag tag-status-wellbaby" title="Registered Infant Record">Registered Infant</a>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
 
             <!-- Right: Patient-Level Action Controls -->
-            <div class="patient-actions-group d-flex align-items-center gap-2 flex-shrink-0 ms-auto ms-lg-0 no-print">
-                <button type="button" class="btn btn-primary btn-sm d-flex align-items-center px-3 py-2 shadow-xs text-nowrap" data-bs-toggle="modal" data-bs-target="#enqueuePatientModal" title="Check-in Patient to Today's Queue" style="min-height: 38px;">
-                    <i class="bi bi-person-check-fill me-1.5" aria-hidden="true"></i> Check-in to Queue
+            <div class="patient-actions-group d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto ms-lg-0 no-print">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-2.5 py-1 text-nowrap btn-toggle-demographics d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#patientDemographicsCollapse" aria-expanded="false" aria-controls="patientDemographicsCollapse" title="View Full Demographics & Family Contacts" style="min-height: 32px; font-size: 0.8125rem;">
+                    Demographics &amp; Contacts <i class="bi bi-chevron-down ms-1 collapse-indicator" aria-hidden="true"></i>
                 </button>
-                <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-2 shadow-xs text-nowrap" title="Edit Patient Identity & Demographics" style="min-height: 38px;">
-                    <i class="bi bi-pencil-square me-1.5" aria-hidden="true"></i> Edit Patient Information
+                <a href="<?= url('/patients/' . $patient['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm px-2.5 py-1 text-nowrap d-flex align-items-center" title="Edit Patient Identity & Demographics" style="min-height: 32px; font-size: 0.8125rem;">
+                    <i class="bi bi-pencil-square me-1" aria-hidden="true"></i> Edit Profile
                 </a>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm px-2.5 py-2 shadow-xs d-flex align-items-center justify-content-center" type="button" id="patientMoreActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More patient actions" title="More Actions" style="min-height: 38px; min-width: 38px;">
+                    <button class="btn btn-outline-secondary btn-sm px-2 py-1 d-flex align-items-center justify-content-center shadow-xs" type="button" id="patientMoreActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More patient actions" title="More Actions" style="min-height: 32px; min-width: 32px;">
                         <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1" aria-labelledby="patientMoreActionsDropdown">
+                        <li>
+                            <button type="button" class="dropdown-item small d-flex align-items-center py-2 text-primary fw-medium" data-bs-toggle="modal" data-bs-target="#enqueuePatientModal">
+                                <i class="bi bi-person-check-fill me-2 text-primary" aria-hidden="true"></i> Check-in to Queue
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
                         <?php if (!empty($activePrenatal) || (strtolower($patient['sex'] ?? '') === 'female' && ($ageVal === null || ($ageVal >= 10 && $ageVal <= 55)))): ?>
                             <li>
                                 <a href="<?= !empty($activePrenatal) ? url('/prenatal/' . $patient['id']) : url('/prenatal/register?patient_id=' . $patient['id']) ?>" class="dropdown-item small d-flex align-items-center py-2 text-danger">
@@ -154,8 +159,12 @@
                 </span>
                 <div class="d-flex flex-wrap align-items-center gap-1.5">
                     <?php foreach ($cdsAlerts['flags'] as $flag): ?>
-                        <?php $isDangerAlert = ($flag['type'] === 'danger' || strpos($flag['code'] ?? '', 'ALLERGY') !== false); ?>
-                        <span class="clinical-chip <?= $isDangerAlert ? 'clinical-chip-danger' : 'clinical-chip-neutral' ?>">
+                        <?php 
+                        $isDangerAlert = ($flag['type'] === 'danger' || strpos($flag['code'] ?? '', 'ALLERGY') !== false); 
+                        $isWarningAlert = ($flag['type'] === 'warning' || in_array($flag['code'] ?? '', ['HYPERTENSIVE', 'DIABETIC', 'ASTHMA', 'PREECLAMPSIA_RISK'], true));
+                        $chipClass = $isDangerAlert ? 'clinical-chip-danger' : ($isWarningAlert ? 'clinical-chip-warning' : 'clinical-chip-neutral');
+                        ?>
+                        <span class="clinical-chip <?= $chipClass ?>">
                             <i class="bi <?= $flag['icon'] ?> chip-icon" aria-hidden="true"></i>
                             <span><?= h($flag['label']) ?></span>
                         </span>
@@ -163,5 +172,8 @@
                 </div>
             </div>
         <?php endif; ?>
+
+        <!-- Reusable Collapsible Demographics & Contacts Drawer -->
+        <?php require __DIR__ . '/demographics_accordion.php'; ?>
     </div>
 </div>

@@ -678,7 +678,7 @@ $totalUsers = (int)($tabCounts['users'] ?? count($users ?? []));
    ========================================================================== -->
 <div class="modal fade" id="modalPatientArchiveDetails" tabindex="-1" aria-labelledby="modalPatientArchiveDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+        <div class="modal-content">
             <div class="modal-header bg-white py-3 border-bottom">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-circle bg-teal-subtle text-teal p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
@@ -761,7 +761,7 @@ $totalUsers = (int)($tabCounts['users'] ?? count($users ?? []));
    ========================================================================== -->
 <div class="modal fade" id="modalConsultationArchiveDetails" tabindex="-1" aria-labelledby="modalConsultationArchiveDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+        <div class="modal-content">
             <div class="modal-header bg-white py-3 border-bottom">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-circle bg-teal-subtle text-teal p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
@@ -903,7 +903,7 @@ $totalUsers = (int)($tabCounts['users'] ?? count($users ?? []));
    ========================================================================== -->
 <div class="modal fade" id="modalUserArchiveDetails" tabindex="-1" aria-labelledby="modalUserArchiveDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+        <div class="modal-content">
             <div class="modal-header bg-white py-3 border-bottom">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-circle bg-warning-subtle text-warning p-2.5 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">

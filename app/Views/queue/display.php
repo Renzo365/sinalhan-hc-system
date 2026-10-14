@@ -103,7 +103,8 @@
             transition: all 0.3s ease;
         }
 
-        .queue-number-badge.first-called {
+        .queue-number-badge.first-called,
+        .queue-number-badge.waiting-called-pulse {
             background-color: #ffc107;
             border-color: #ffc107;
             color: #2d3436;
@@ -116,11 +117,25 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
         }
 
+        @keyframes announce-pulse {
+            0% { transform: scale(1); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 0 50px rgba(20, 163, 168, 0.95), 0 0 25px rgba(255, 193, 7, 0.85); }
+            100% { transform: scale(1); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3); }
+        }
+
+        .now-serving-card.announcement-flash {
+            animation: announce-pulse 1.2s ease-out;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-            .queue-number-badge.first-called {
+            .queue-number-badge.first-called,
+            .queue-number-badge.waiting-called-pulse {
                 animation: none !important;
                 transform: none !important;
                 box-shadow: 0 0 0 3px #ffc107 !important;
+            }
+            .now-serving-card.announcement-flash {
+                animation: none !important;
             }
         }
 
@@ -145,7 +160,7 @@
         <p class="text-white-50 fs-5 mb-4" style="max-width: 500px; text-wrap: pretty;">
             Lobby Waiting Room Monitor is ready. Click below to start live queue updates and enable audio chimes.
         </p>
-        <button id="btnStartMonitor" class="btn btn-info btn-lg px-5 py-3 fw-bold fs-4 rounded-pill shadow-lg text-dark" style="min-height: 48px;">
+        <button id="btnStartMonitor" class="btn btn-info btn-lg px-5 py-3 fw-bold fs-4 rounded-3 shadow-lg text-dark" style="min-height: 48px;">
             <i class="bi bi-play-circle-fill me-2" aria-hidden="true"></i> Start Monitor &amp; Enable Audio
         </button>
         <div class="mt-4 text-white-50 small">
@@ -226,6 +241,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         let currentServing = '000';
+        let currentCallToken = null;
         let initialLoad = true;
         let audioCtx = null;
         let pollInterval = null;
@@ -263,7 +279,7 @@
             }
         }
 
-        // Double chime: low then high
+        // Resonant, pleasant 2-tone hospital ding-dong chime
         function playCallChime() {
             if (!audioCtx) {
                 initAudio();
@@ -274,8 +290,8 @@
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
-                playNote(audioCtx, 587.33, 0.15, 0); // D5
-                playNote(audioCtx, 880.00, 0.30, 0.15); // A5
+                playNote(audioCtx, 587.33, 0.20, 0);    // D5
+                playNote(audioCtx, 880.00, 0.45, 0.20); // A5
             } catch (e) {
                 console.error('AudioContext chime failed:', e);
             }
@@ -292,11 +308,20 @@
             osc.frequency.setValueAtTime(frequency, context.currentTime + startTimeOffset);
             
             gain.gain.setValueAtTime(0, context.currentTime + startTimeOffset);
-            gain.gain.linearRampToValueAtTime(0.15, context.currentTime + startTimeOffset + 0.05);
+            gain.gain.linearRampToValueAtTime(0.20, context.currentTime + startTimeOffset + 0.04);
             gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + startTimeOffset + duration);
             
             osc.start(context.currentTime + startTimeOffset);
             osc.stop(context.currentTime + startTimeOffset + duration);
+        }
+
+        function flashServingCard() {
+            const card = document.querySelector('.now-serving-card');
+            if (card) {
+                card.classList.remove('announcement-flash');
+                void card.offsetWidth; // trigger DOM reflow for animation restart
+                card.classList.add('announcement-flash');
+            }
         }
 
         // 3. AJAX Poller
@@ -313,41 +338,47 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Update Now Serving
-                    if (data.serving !== currentServing) {
-                        servingEl.textContent = data.serving;
-                        
-                        // Don't chime on initial page load
-                        if (!initialLoad && data.serving !== '000') {
-                            playCallChime();
-                        }
-                        currentServing = data.serving;
-                    }
+                    const isNewCallOrRecall = (data.call_token && data.call_token !== currentCallToken);
+                    const isServingChanged = (data.serving !== currentServing);
 
+                    // Update Now Serving Number
+                    servingEl.textContent = data.serving || '000';
+
+                    // Update Service Category Badge
                     if (data.serving && data.serving !== '000' && data.serving_service) {
                         servingServiceEl.textContent = data.serving_service;
                         servingServiceContainer.style.display = 'block';
                     } else {
                         servingServiceContainer.style.display = 'none';
                     }
-                    initialLoad = false;
 
-                    // Update Waiting Queue List
-                    if (data.waiting.length === 0) {
-                        waitingEl.innerHTML = '<span class="text-muted small">No patients in waiting line.</span>';
-                    } else {
-                        waitingEl.innerHTML = data.waiting.map(no => 
-                            `<span class="queue-number-badge" role="listitem">${no}</span>`
-                        ).join('');
+                    // Trigger Audio Chime & Announcement Flash on new call OR re-call!
+                    if (!initialLoad && data.serving && data.serving !== '000' && (isNewCallOrRecall || isServingChanged)) {
+                        playCallChime();
+                        flashServingCard();
                     }
 
-                    // Update Recently Called List
-                    if (data.called.length === 0) {
+                    currentCallToken = data.call_token || null;
+                    currentServing = data.serving || '000';
+                    initialLoad = false;
+
+                    // Update Waiting Queue List (includes active Waiting and Called patients)
+                    if (!data.waiting || data.waiting.length === 0) {
+                        waitingEl.innerHTML = '<span class="text-muted small">No patients in waiting line.</span>';
+                    } else {
+                        waitingEl.innerHTML = data.waiting.map(no => {
+                            const isCurrent = (data.serving === no && data.serving !== '000');
+                            const extraClass = isCurrent ? 'waiting-called-pulse' : '';
+                            return `<span class="queue-number-badge ${extraClass}" role="listitem">${no}</span>`;
+                        }).join('');
+                    }
+
+                    // Update Recently Called List (past called numbers, strictly excluding current serving)
+                    if (!data.called || data.called.length === 0) {
                         calledEl.innerHTML = '<span class="text-muted small">No recently called numbers.</span>';
                     } else {
-                        calledEl.innerHTML = data.called.map((no, idx) => {
-                            const extraClass = (idx === 0 && data.serving === no) ? 'first-called' : '';
-                            return `<span class="queue-number-badge ${extraClass}" role="listitem">${no}</span>`;
+                        calledEl.innerHTML = data.called.map(no => {
+                            return `<span class="queue-number-badge" role="listitem">${no}</span>`;
                         }).join('');
                     }
                 })
@@ -381,16 +412,16 @@
                     audioBadge.style.display = 'inline-block';
                 }
 
-                // Start polling immediately and then every 5 seconds
+                // Start polling immediately and then every 3 seconds for responsive announcements
                 pollQueueData();
                 if (!pollInterval) {
-                    pollInterval = setInterval(pollQueueData, 5000);
+                    pollInterval = setInterval(pollQueueData, 3000);
                 }
             });
         } else {
             // Fallback if overlay button not found
             pollQueueData();
-            pollInterval = setInterval(pollQueueData, 5000);
+            pollInterval = setInterval(pollQueueData, 3000);
         }
     });
     </script>

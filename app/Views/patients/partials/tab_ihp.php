@@ -242,24 +242,29 @@
                                                         $det = $item['detail'];
                                                         ?>
                                                         <?php if (stripos($cond, 'Allergy') !== false || stripos($det, 'Allergy') !== false): ?>
-                                                            <span class="badge bg-danger text-white px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            <span class="clinical-chip clinical-chip-danger">
+                                                                <i class="bi bi-shield-fill-exclamation chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?></span>
                                                             </span>
-                                                        <?php elseif (stripos($cond, 'Hypertension') !== false): ?>
-                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                        <?php elseif (stripos($cond, 'Hypertension') !== false || stripos($cond, 'Diabetes') !== false || stripos($cond, 'Heart') !== false): ?>
+                                                            <span class="clinical-chip clinical-chip-warning">
+                                                                <i class="bi bi-activity chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?></span>
                                                             </span>
                                                         <?php elseif (stripos($cond, 'Cancer') !== false): ?>
-                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            <span class="clinical-chip clinical-chip-warning">
+                                                                <i class="bi bi-exclamation-triangle-fill chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?></span>
                                                             </span>
-                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false): ?>
-                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false || stripos($cond, 'Asthma') !== false): ?>
+                                                            <span class="clinical-chip clinical-chip-info">
+                                                                <i class="bi bi-lungs-fill chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?></span>
                                                             </span>
                                                         <?php else: ?>
-                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            <span class="clinical-chip clinical-chip-neutral">
+                                                                <i class="bi bi-clipboard2-pulse chip-icon text-muted" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?></span>
                                                             </span>
                                                         <?php endif; ?>
                                                     <?php endforeach; ?>
@@ -288,24 +293,29 @@
                                                         $det = $item['detail'];
                                                         ?>
                                                         <?php if (stripos($cond, 'Allergy') !== false || stripos($det, 'Allergy') !== false): ?>
-                                                            <span class="badge bg-danger text-white px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            <span class="clinical-chip clinical-chip-danger">
+                                                                <i class="bi bi-shield-fill-exclamation chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?></span>
                                                             </span>
-                                                        <?php elseif (stripos($cond, 'Hypertension') !== false): ?>
-                                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                        <?php elseif (stripos($cond, 'Hypertension') !== false || stripos($cond, 'Diabetes') !== false || stripos($cond, 'Heart') !== false): ?>
+                                                            <span class="clinical-chip clinical-chip-warning">
+                                                                <i class="bi bi-activity chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?></span>
                                                             </span>
                                                         <?php elseif (stripos($cond, 'Cancer') !== false): ?>
-                                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                            <span class="clinical-chip clinical-chip-warning">
+                                                                <i class="bi bi-exclamation-triangle-fill chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?></span>
                                                             </span>
-                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false): ?>
-                                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?>
+                                                        <?php elseif (stripos($cond, 'PTB') !== false || stripos($cond, 'Tuberculosis') !== false || stripos($cond, 'Asthma') !== false): ?>
+                                                            <span class="clinical-chip clinical-chip-info">
+                                                                <i class="bi bi-lungs-fill chip-icon" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ' (' . h($det) . ')' : '' ?></span>
                                                             </span>
                                                         <?php else: ?>
-                                                            <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7">
-                                                                <?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?>
+                                                            <span class="clinical-chip clinical-chip-neutral">
+                                                                <i class="bi bi-clipboard2-pulse chip-icon text-muted" aria-hidden="true"></i>
+                                                                <span><?= h($cond) ?><?= !empty($det) ? ': ' . h($det) : '' ?></span>
                                                             </span>
                                                         <?php endif; ?>
                                                     <?php endforeach; ?>

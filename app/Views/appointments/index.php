@@ -102,22 +102,22 @@ $todayMetrics = $todayMetrics ?? [
         <!-- Quick Date Filter Chips -->
         <div class="filter-presets-scroll d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
             <span class="small fw-semibold text-muted me-1" style="white-space: nowrap;">Quick Filters:</span>
-            <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="all">
+            <button type="button" class="filter-pill quick-dir-btn" data-preset="all">
                 All Dates
             </button>
-            <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="today">
+            <button type="button" class="filter-pill quick-dir-btn" data-preset="today">
                 Today
             </button>
-            <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="tomorrow">
+            <button type="button" class="filter-pill quick-dir-btn" data-preset="tomorrow">
                 Tomorrow
             </button>
-            <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="this_week">
+            <button type="button" class="filter-pill quick-dir-btn" data-preset="this_week">
                 Next 7 Days
             </button>
-            <button type="button" class="btn btn-sm btn-light border quick-dir-btn" data-preset="pending_today">
+            <button type="button" class="filter-pill quick-dir-btn" data-preset="pending_today">
                 Pending Today
             </button>
-            <button type="button" class="btn btn-sm btn-light border quick-dir-btn text-warning-emphasis" data-preset="overdue">
+            <button type="button" class="filter-pill quick-dir-btn" data-preset="overdue">
                 <i class="bi bi-exclamation-triangle-fill me-1 text-warning" aria-hidden="true"></i>Overdue<?= !empty($todayMetrics['overdue_count']) ? ' <span class="badge bg-danger ms-1" style="font-variant-numeric: tabular-nums;">' . $todayMetrics['overdue_count'] . '</span>' : '' ?>
             </button>
         </div>
@@ -606,12 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (isActive) {
-            btn.classList.remove('btn-light', 'border');
-            if (preset === 'overdue') {
-                btn.classList.add('btn-warning', 'text-dark', 'fw-semibold');
-            } else {
-                btn.classList.add('btn-primary', 'text-white', 'fw-semibold');
-            }
+            btn.classList.add('active');
         }
 
         btn.addEventListener('click', function() {

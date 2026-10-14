@@ -184,7 +184,7 @@ class QueueEntry extends Model {
         $params = ['id' => $id, 'status' => $status, 'updated_by' => $userId];
         
         if ($status === 'Called') {
-            $fields .= ", time_called = CURRENT_TIME()";
+            $fields .= ", time_called = CURRENT_TIME(), call_count = call_count + 1";
         } elseif ($status === 'Completed') {
             $fields .= ", time_completed = CURRENT_TIME()";
         }
@@ -254,18 +254,18 @@ class QueueEntry extends Model {
             $stats['completed'] = (int)$counts['completed'];
         }
 
-        // Find the current serving queue number & service (Serving, or Called if none is serving)
+        // Find the current serving queue number & service (prioritize actively 'Called' then 'Serving')
         $sqlServing = "SELECT q.queue_no, q.service_type FROM queue_entries q
                        JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL
-                       WHERE q.queue_date = CURRENT_DATE() AND q.status = 'Serving' 
-                       LIMIT 1";
+                       WHERE q.queue_date = CURRENT_DATE() AND q.status = 'Called' 
+                       ORDER BY q.time_called DESC, q.id DESC LIMIT 1";
         $servingRow = $this->db->query($sqlServing)->fetch(PDO::FETCH_ASSOC);
         if (!$servingRow) {
-            $sqlLastCalled = "SELECT q.queue_no, q.service_type FROM queue_entries q
-                              JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL
-                              WHERE q.queue_date = CURRENT_DATE() AND q.status = 'Called' 
-                              ORDER BY q.time_called DESC LIMIT 1";
-            $servingRow = $this->db->query($sqlLastCalled)->fetch(PDO::FETCH_ASSOC);
+            $sqlServing = "SELECT q.queue_no, q.service_type FROM queue_entries q
+                           JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL
+                           WHERE q.queue_date = CURRENT_DATE() AND q.status = 'Serving' 
+                           ORDER BY q.time_called DESC, q.id DESC LIMIT 1";
+            $servingRow = $this->db->query($sqlServing)->fetch(PDO::FETCH_ASSOC);
         }
 
         if ($servingRow) {
@@ -284,30 +284,67 @@ class QueueEntry extends Model {
     public function getPublicDisplayData() {
         $date = date('Y-m-d');
         
-        // Serving: status = 'Serving' or last 'Called'
-        $stmtServing = $this->db->query("SELECT q.queue_no, q.service_type FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.status = 'Serving' LIMIT 1");
+        // 1. Serving: Prioritize actively 'Called' ticket announcement, otherwise active 'Serving'
+        $stmtServing = $this->db->query(
+            "SELECT q.queue_no, q.service_type, q.status, q.call_count, q.time_called, UNIX_TIMESTAMP(q.updated_at) AS updated_ts 
+             FROM queue_entries q 
+             JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL 
+             WHERE q.queue_date = '{$date}' AND q.status = 'Called' 
+             ORDER BY q.time_called DESC, q.id DESC 
+             LIMIT 1"
+        );
         $servingRow = $stmtServing->fetch();
         
         if (!$servingRow) {
-            $stmtLastCalled = $this->db->query("SELECT q.queue_no, q.service_type FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.status = 'Called' ORDER BY q.time_called DESC LIMIT 1");
-            $servingRow = $stmtLastCalled->fetch();
+            $stmtServing = $this->db->query(
+                "SELECT q.queue_no, q.service_type, q.status, q.call_count, q.time_called, UNIX_TIMESTAMP(q.updated_at) AS updated_ts 
+                 FROM queue_entries q 
+                 JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL 
+                 WHERE q.queue_date = '{$date}' AND q.status = 'Serving' 
+                 ORDER BY q.time_called DESC, q.id DESC 
+                 LIMIT 1"
+            );
+            $servingRow = $stmtServing->fetch();
         }
 
-        $serving = $servingRow ? $servingRow['queue_no'] : null;
+        $serving = $servingRow ? (int)$servingRow['queue_no'] : null;
         $servingService = $servingRow ? ($servingRow['service_type'] ?: 'General OPD') : '';
+        $callToken = $servingRow ? ($servingRow['queue_no'] . '-' . ($servingRow['call_count'] ?? 1) . '-' . ($servingRow['time_called'] ?? '') . '-' . ($servingRow['updated_ts'] ?? '')) : '';
 
-        // Waiting list (Waiting status)
-        $stmtWaiting = $this->db->query("SELECT q.queue_no FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.status = 'Waiting' ORDER BY q.queue_no ASC");
-        $waiting = $stmtWaiting->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        // 2. Waiting Queue: Patients who are in line waiting to be served (both 'Waiting' and 'Called')
+        $stmtWaiting = $this->db->query(
+            "SELECT q.queue_no, q.status 
+             FROM queue_entries q 
+             JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL 
+             WHERE q.queue_date = '{$date}' AND q.status IN ('Waiting', 'Called') 
+             ORDER BY q.queue_no ASC"
+        );
+        $waitingRows = $stmtWaiting->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $waiting = array_map(function($row) { 
+            return sprintf('%03d', $row['queue_no']); 
+        }, $waitingRows);
 
-        // Recently Called (Any status where they have been called, excluding Cancelled)
-        $stmtCalled = $this->db->query("SELECT q.queue_no FROM queue_entries q JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL WHERE q.queue_date = '{$date}' AND q.time_called IS NOT NULL AND q.status != 'Cancelled' ORDER BY q.time_called DESC LIMIT 5");
+        // 3. Recently Called: Previously called patients, strictly EXCLUDING the currently active serving/called number
+        $excludeServingSql = $serving ? "AND q.queue_no != {$serving}" : "";
+        $stmtCalled = $this->db->query(
+            "SELECT q.queue_no 
+             FROM queue_entries q 
+             JOIN patients p ON q.patient_id = p.id AND p.deleted_at IS NULL 
+             WHERE q.queue_date = '{$date}' 
+               AND q.time_called IS NOT NULL 
+               AND q.status != 'Cancelled' 
+               {$excludeServingSql}
+             ORDER BY q.time_called DESC, q.id DESC 
+             LIMIT 5"
+        );
         $called = $stmtCalled->fetchAll(PDO::FETCH_COLUMN) ?: [];
 
         return [
             'serving' => $serving ? sprintf('%03d', $serving) : '000',
             'serving_service' => $servingService,
-            'waiting' => array_map(function($no) { return sprintf('%03d', $no); }, $waiting),
+            'status' => $servingRow['status'] ?? '',
+            'call_token' => $callToken,
+            'waiting' => $waiting,
             'called' => array_map(function($no) { return sprintf('%03d', $no); }, $called)
         ];
     }

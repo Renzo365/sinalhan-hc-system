@@ -214,6 +214,7 @@ CREATE TABLE `queue_entries` (
   `status` ENUM('Waiting', 'Called', 'Serving', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Waiting',
   `time_in` TIME NOT NULL,
   `time_called` TIME DEFAULT NULL,
+  `call_count` INT NOT NULL DEFAULT 0,
   `time_completed` TIME DEFAULT NULL,
   `created_by` INT NOT NULL,
   `updated_by` INT DEFAULT NULL,

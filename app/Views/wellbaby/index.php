@@ -189,8 +189,8 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                             <?php foreach ($registeredRoster as $child): 
                                 $ageLabel = !empty($child['dob']) ? calculate_pediatric_age($child['dob']) : ((int)($child['age_months'] ?? 0) . ' mos');
                                 $sexBadge = strtolower($child['sex'] ?? '') === 'male' 
-                                    ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">Male</span>'
-                                    : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.7rem;">Female</span>';
+                                    ? '<span class="badge badge-sex-male" style="font-size: 0.7rem;">Male</span>'
+                                    : '<span class="badge badge-sex-female" style="font-size: 0.7rem;">Female</span>';
                             ?>
                                 <tr>
                                     <td class="ps-4 py-3">
@@ -199,11 +199,11 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                                 <?= h($child['last_name']) ?>, <?= h($child['first_name']) ?> <?= !empty($child['middle_name']) ? h(mb_substr($child['middle_name'], 0, 1)) . '.' : '' ?>
                                             </a>
                                             <div class="small text-muted d-flex align-items-center gap-1 mt-1">
-                                                <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                <span class="badge badge-patient-id font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                     <span class="visually-hidden">Patient ID: </span><?= h($child['patient_no']) ?>
                                                 </span>
                                                 <?php if (!empty($child['envelope_no'])): ?>
-                                                    <span class="badge bg-warning-subtle text-dark border font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
+                                                    <span class="badge badge-envelope-no font-monospace" style="font-size: 0.72rem; font-variant-numeric: tabular-nums;">
                                                         <span class="visually-hidden">Envelope No: </span>Env #<?= h($child['envelope_no']) ?>
                                                     </span>
                                                 <?php endif; ?>
@@ -251,7 +251,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                         <?php endif; ?>
                                     </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/well-baby/' . $child['patient_id']) ?>" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm text-white d-inline-flex align-items-center" aria-label="Open clinical workstation for <?= h($child['last_name']) ?>, <?= h($child['first_name']) ?>">
+                                        <a href="<?= url('/well-baby/' . $child['patient_id']) ?>" class="btn btn-sm btn-success px-3 shadow-xs text-white d-inline-flex align-items-center" aria-label="Open clinical workstation for <?= h($child['last_name']) ?>, <?= h($child['first_name']) ?>">
                                             Open Workstation
                                         </a>
                                     </td>
@@ -295,7 +295,7 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                         <?= h($unreg['last_name']) ?>, <?= h($unreg['first_name']) ?> <?= !empty($unreg['middle_name']) ? h(mb_substr($unreg['middle_name'], 0, 1)) . '.' : '' ?>
                                     </td>
                                     <td>
-                                        <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">
+                                        <span class="badge-patient-id">
                                             <span class="visually-hidden">Patient ID: </span><?= h($unreg['patient_no']) ?>
                                         </span>
                                     </td>
@@ -303,9 +303,17 @@ $totalUnregistered = count($allUnregistered ?? $unregisteredChildren);
                                         <span class="fw-semibold"><?= $uAgeLabel ?></span>
                                         <div class="small text-muted"><?= !empty($unreg['dob']) ? date('M d, Y', strtotime($unreg['dob'])) : '--' ?></div>
                                     </td>
-                                    <td><?= h($unreg['sex'] ?? 'Unknown') ?></td>
+                                    <td>
+                                        <?php if (($unreg['sex'] ?? '') === 'Male'): ?>
+                                            <span class="badge-sex-male">Male</span>
+                                        <?php elseif (($unreg['sex'] ?? '') === 'Female'): ?>
+                                            <span class="badge-sex-female">Female</span>
+                                        <?php else: ?>
+                                            <span class="text-muted small">&mdash;</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="pe-4 text-end">
-                                        <a href="<?= url('/well-baby/register?patient_id=' . $unreg['id']) ?>" class="btn btn-sm btn-outline-success rounded-pill px-3 d-inline-flex align-items-center" aria-label="Initialize well-baby record for <?= h($unreg['last_name']) ?>, <?= h($unreg['first_name']) ?>">
+                                        <a href="<?= url('/well-baby/register?patient_id=' . $unreg['id']) ?>" class="btn btn-sm btn-outline-success px-3 shadow-xs d-inline-flex align-items-center" aria-label="Initialize well-baby record for <?= h($unreg['last_name']) ?>, <?= h($unreg['first_name']) ?>">
                                             Initialize Record
                                         </a>
                                     </td>

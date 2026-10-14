@@ -115,76 +115,28 @@ $isLockedPatient = !empty($isLockedPatient);
 
                         <!-- Compact Patient Identity Card -->
                         <div id="patientIdentityCard" class="<?= empty($preselectedPatient) ? 'd-none' : '' ?>">
-                            <div class="p-3 p-md-4 rounded-4" style="background-color: #f0fdfa; border: 1px solid #ccfbf1;">
-                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 pb-3" style="border-bottom: 1px solid #ccfbf1;">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 shadow-xs" style="width: 54px; height: 54px; background-color: #0D7377; color: #fff;" aria-hidden="true">
-                                            <span id="cardInitials">
-                                                <?php 
-                                                    $init = '';
-                                                    if (!empty($preselectedPatient['first_name'])) $init .= mb_substr($preselectedPatient['first_name'], 0, 1);
-                                                    if (!empty($preselectedPatient['last_name'])) $init .= mb_substr($preselectedPatient['last_name'], 0, 1);
-                                                    echo strtoupper($init ?: 'PT');
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                <h4 class="h6 fw-bold text-dark mb-0" id="cardFullName">
-                                                    <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '')) : '--' ?>
-                                                </h4>
-                                                <span class="badge <?= (!empty($preselectedPatient['sex']) && strtolower($preselectedPatient['sex']) === 'female') ? 'bg-danger' : 'bg-primary' ?>" id="cardSex">
-                                                    <?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?>
-                                                </span>
-                                                <span class="badge bg-light text-secondary border font-monospace" id="cardPatientNo" style="font-variant-numeric: tabular-nums;">
-                                                    <?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?>
-                                                </span>
-                                                <span class="badge bg-warning-subtle text-dark border font-monospace <?= empty($preselectedPatient['envelope_no']) ? 'd-none' : '' ?>" id="cardEnvelopeBadge" style="font-variant-numeric: tabular-nums;">
-                                                    Env #<span id="cardEnvelopeNo"><?= h($preselectedPatient['envelope_no'] ?? '') ?></span>
-                                                </span>
-                                            </div>
-                                            <small class="text-muted" id="cardCivilStatus">
-                                                <?= !empty($preselectedPatient['civil_status']) ? h($preselectedPatient['civil_status']) : 'Single' ?> <span aria-hidden="true">&bull;</span> Contact: <span id="cardContact" style="font-variant-numeric: tabular-nums;"><?= h($preselectedPatient['contact_no'] ?? 'N/A') ?></span>
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div class="text-md-end">
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-monospace small">
-                                            Patient Selected
+                            <div class="p-3 rounded-3 bg-light border">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-circle rounded-circle bg-primary-subtle text-primary border border-primary-subtle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-xs flex-shrink-0" style="width: 44px; height: 44px;" aria-hidden="true">
+                                        <span id="cardInitials">
+                                            <?php 
+                                                $init = '';
+                                                if (!empty($preselectedPatient['first_name'])) $init .= mb_substr($preselectedPatient['first_name'], 0, 1);
+                                                if (!empty($preselectedPatient['last_name'])) $init .= mb_substr($preselectedPatient['last_name'], 0, 1);
+                                                echo strtoupper($init ?: 'PT');
+                                            ?>
                                         </span>
                                     </div>
-                                </div>
-
-                                <!-- Demographic Grid: DOB, Age, Complete Address -->
-                                <div class="row g-3 small">
-                                    <div class="col-12 col-sm-6 col-md-3">
-                                        <div class="p-2 bg-white rounded-3 border">
-                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Date of Birth</span>
-                                            <span class="fw-bold text-dark" id="cardDob" style="font-variant-numeric: tabular-nums;">
-                                                <?= !empty($preselectedPatient['dob']) ? date('M d, Y', strtotime($preselectedPatient['dob'])) : '--' ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-6 col-md-3">
-                                        <div class="p-2 bg-white rounded-3 border">
-                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Current Age</span>
-                                            <span class="fw-bold text-dark" id="cardAge" style="font-variant-numeric: tabular-nums;">
-                                                <?= !empty($preselectedPatient['age']) ? h($preselectedPatient['age']) . ' years old' : '--' ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-md-6">
-                                        <div class="p-2 bg-white rounded-3 border">
-                                            <span class="text-muted d-block" style="font-size: 0.75rem;">Complete Address</span>
-                                            <span class="fw-semibold text-dark text-truncate d-block" id="cardAddress">
-                                                <?php 
-                                                    if (!empty($preselectedPatient)) {
-                                                        echo h(!empty(trim($preselectedPatient['address'] ?? '')) ? trim($preselectedPatient['address']) : 'Barangay Sinalhan, Santa Rosa, Laguna');
-                                                    } else {
-                                                        echo '--';
-                                                    }
-                                                ?>
-                                            </span>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <h3 class="h6 fw-bold text-dark mb-0.5 lh-sm text-truncate" id="cardFullName">
+                                            <?= !empty($preselectedPatient) ? h($preselectedPatient['last_name'] . ', ' . $preselectedPatient['first_name'] . ' ' . (!empty($preselectedPatient['middle_name']) ? mb_substr($preselectedPatient['middle_name'], 0, 1) . '.' : '')) : '--' ?>
+                                        </h3>
+                                        <div class="small text-secondary d-flex flex-wrap align-items-center" style="font-size: 0.8125rem; gap: 0.35rem;">
+                                            <span id="cardAge" style="font-variant-numeric: tabular-nums;"><?= (!empty($preselectedPatient['age']) || (isset($preselectedPatient['age']) && $preselectedPatient['age'] === 0)) ? h($preselectedPatient['age']) . ' yrs' : '--' ?></span>
+                                            <span class="text-secondary" aria-hidden="true">&bull;</span>
+                                            <span id="cardSex"><?= !empty($preselectedPatient['sex']) ? ucfirst(h($preselectedPatient['sex'])) : '--' ?></span>
+                                            <span class="text-secondary" aria-hidden="true">&bull;</span>
+                                            <span class="font-monospace text-muted" id="cardPatientNo"><?= !empty($preselectedPatient['patient_no']) ? h($preselectedPatient['patient_no']) : '--' ?></span>
                                         </div>
                                     </div>
                                 </div>
@@ -773,31 +725,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         patients.forEach(p => {
             const item = document.createElement('div');
-            item.className = 'list-group-item list-group-item-action p-3 patient-search-item';
+            item.className = 'list-group-item list-group-item-action py-2.5 px-3 patient-search-item';
             item.style.cursor = 'pointer';
             item.setAttribute('role', 'button');
             item.setAttribute('tabindex', '0');
             item.setAttribute('aria-label', `Select patient ${escapeHtml(p.name)}, ${escapeHtml(p.patient_no)}`);
 
-            const sexBadgeClass = (p.sex && p.sex.toLowerCase() === 'female') ? 'bg-danger-subtle text-danger border-danger-subtle' : 'bg-primary-subtle text-primary border-primary-subtle';
+            const ageText = (p.age !== undefined && p.age !== null) ? `${p.age} yrs` : '--';
+            const sexText = p.sex ? escapeHtml(p.sex) : 'N/A';
+            const idText = p.patient_no ? escapeHtml(p.patient_no) : '';
 
             item.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="fw-bold text-dark fs-6">${escapeHtml(p.name)}</div>
-                        <div class="small text-muted d-flex align-items-center gap-2 mt-1 flex-wrap">
-                            <span class="badge bg-light text-secondary border font-monospace" style="font-variant-numeric: tabular-nums;">${escapeHtml(p.patient_no)}</span>
-                            ${p.envelope_no ? `<span class="badge bg-warning-subtle text-dark border font-monospace" style="font-variant-numeric: tabular-nums;">Env #${escapeHtml(p.envelope_no)}</span>` : ''}
-                            <span class="badge ${sexBadgeClass} border">${escapeHtml(p.sex || 'N/A')}</span>
-                            <span style="font-variant-numeric: tabular-nums;">${p.age} yrs</span>
-                            <span aria-hidden="true">&bull;</span>
-                            <span class="text-truncate" style="max-width: 250px;">${escapeHtml(p.address)}</span>
-                        </div>
-                    </div>
-                    <div class="text-end">
-                        <span class="btn btn-sm btn-outline-primary py-1 px-3" style="min-height: 32px;">
-                            Select
-                        </span>
+                <div>
+                    <div class="fw-bold text-dark fs-6 mb-0.5">${escapeHtml(p.name)}</div>
+                    <div class="small text-muted d-flex align-items-center flex-wrap" style="gap: 0.35rem;">
+                        <span>${ageText}</span>
+                        <span class="text-secondary" aria-hidden="true">&bull;</span>
+                        <span>${sexText}</span>
+                        ${idText ? `<span class="text-secondary" aria-hidden="true">&bull;</span><span class="font-monospace text-secondary">${idText}</span>` : ''}
                     </div>
                 </div>
             `;
@@ -828,29 +773,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update Compact Patient Identity Card
         document.getElementById('cardFullName').textContent = patient.name;
-        document.getElementById('cardPatientNo').textContent = patient.patient_no;
-        document.getElementById('cardDob').textContent = patient.dob_formatted || '--';
-        document.getElementById('cardAge').textContent = (patient.age !== undefined && patient.age !== null) ? (patient.age + ' years old') : '--';
-        document.getElementById('cardAddress').textContent = patient.address || 'Barangay Sinalhan, Santa Rosa, Laguna';
-        document.getElementById('cardCivilStatus').innerHTML = `${escapeHtml(patient.civil_status || 'Single')} &bull; Contact: <span>${escapeHtml(patient.contact_no || 'N/A')}</span>`;
+        document.getElementById('cardPatientNo').textContent = patient.patient_no || '--';
+        document.getElementById('cardAge').textContent = (patient.age !== undefined && patient.age !== null) ? (patient.age + ' yrs') : '--';
 
-        const sexBadge = document.getElementById('cardSex');
-        if (sexBadge) {
-            sexBadge.textContent = patient.sex || 'N/A';
-            if (patient.sex && patient.sex.toLowerCase() === 'female') {
-                sexBadge.className = 'badge bg-danger';
-            } else {
-                sexBadge.className = 'badge bg-primary';
-            }
-        }
-
-        const envBadge = document.getElementById('cardEnvelopeBadge');
-        const envNo = document.getElementById('cardEnvelopeNo');
-        if (patient.envelope_no) {
-            envNo.textContent = patient.envelope_no;
-            envBadge.classList.remove('d-none');
-        } else {
-            envBadge.classList.add('d-none');
+        const sexEl = document.getElementById('cardSex');
+        if (sexEl) {
+            sexEl.textContent = patient.sex || 'N/A';
+            sexEl.className = '';
         }
 
         const initials = ((patient.first_name ? patient.first_name[0] : '') + (patient.last_name ? patient.last_name[0] : '')).toUpperCase() || 'PT';
