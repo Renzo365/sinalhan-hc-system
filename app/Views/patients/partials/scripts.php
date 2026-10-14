@@ -306,11 +306,77 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         consultationDetailsContent.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+            <div class="p-2">
+                <!-- Header Skeleton -->
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <div style="flex: 1;">
+                        <div class="skeleton-shimmer skeleton-line-title mb-2"></div>
+                        <div class="skeleton-shimmer skeleton-line skeleton-line-short mb-0"></div>
+                    </div>
+                    <div class="skeleton-shimmer skeleton-badge"></div>
                 </div>
-                <p class="text-muted mt-2 small">Fetching consultation record...</p>
+
+                <!-- Linked Vitals Strip Skeleton -->
+                <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="skeleton-shimmer skeleton-badge" style="width: 130px;"></div>
+                        <div class="skeleton-shimmer skeleton-badge" style="width: 140px;"></div>
+                        <div class="skeleton-shimmer skeleton-badge" style="width: 110px;"></div>
+                        <div class="skeleton-shimmer skeleton-badge" style="width: 110px;"></div>
+                        <div class="skeleton-shimmer skeleton-badge" style="width: 100px;"></div>
+                    </div>
+                </div>
+
+                <!-- SOAP Cards Shimmer Skeletons -->
+                <div class="d-flex flex-column gap-3 mb-3">
+                    <!-- Subjective Card -->
+                    <div class="card border rounded-3 bg-white">
+                        <div class="card-header bg-light py-2 px-3 border-bottom">
+                            <div class="skeleton-shimmer skeleton-line" style="width: 180px; height: 16px; margin-bottom: 0;"></div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="skeleton-shimmer skeleton-line mb-2"></div>
+                            <div class="skeleton-shimmer skeleton-line skeleton-line-short mb-0"></div>
+                        </div>
+                    </div>
+
+                    <!-- Objective Card -->
+                    <div class="card border rounded-3 bg-white">
+                        <div class="card-header bg-light py-2 px-3 border-bottom">
+                            <div class="skeleton-shimmer skeleton-line" style="width: 160px; height: 16px; margin-bottom: 0;"></div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="skeleton-shimmer skeleton-line mb-2"></div>
+                            <div class="skeleton-shimmer skeleton-line" style="width: 75%; margin-bottom: 0;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Assessment Card -->
+                    <div class="card border rounded-3 bg-white">
+                        <div class="card-header bg-light py-2 px-3 border-bottom">
+                            <div class="skeleton-shimmer skeleton-line" style="width: 170px; height: 16px; margin-bottom: 0;"></div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="skeleton-shimmer skeleton-line" style="width: 60%; margin-bottom: 0;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Treatment Plan Card -->
+                    <div class="card border rounded-3 bg-white">
+                        <div class="card-header bg-light py-2 px-3 border-bottom">
+                            <div class="skeleton-shimmer skeleton-line" style="width: 190px; height: 16px; margin-bottom: 0;"></div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="skeleton-shimmer skeleton-line mb-2"></div>
+                            <div class="skeleton-shimmer skeleton-line skeleton-line-short mb-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Audit Strip Skeleton -->
+                <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-3">
+                    <div class="skeleton-shimmer skeleton-line" style="width: 250px; height: 12px; margin-bottom: 0;"></div>
+                </div>
             </div>
         `;
 

@@ -438,8 +438,17 @@ body.auth-redesign-body {
 .btn-auth-primary:active {
   background-color: #095B5E;
   border-color: #095B5E;
-
 }
+
+.btn-auth-primary:disabled,
+.btn-auth-primary.btn-loading {
+  opacity: 0.8;
+  cursor: not-allowed;
+  pointer-events: none;
+  background-color: #0D7377 !important;
+  border-color: #0D7377 !important;
+}
+
 
 /* Secondary Action (Cancel & Sign Out) */
 .auth-secondary-actions {

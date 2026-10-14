@@ -514,11 +514,33 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmationPhraseInput.addEventListener('input', validateRestoreReadiness);
     adminPasswordInput.addEventListener('input', validateRestoreReadiness);
 
-    // Form submission spinner
+    // Form submission spinner & unclosable safety overlay
     restoreForm.addEventListener('submit', function() {
         btnExecuteRestore.disabled = true;
         btnExecuteRestoreText.textContent = 'Restoring Database... Please wait.';
         btnExecuteRestore.insertAdjacentHTML('afterbegin', '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>');
+
+        // Close bootstrap modal to prevent layered modal stacking
+        const modalInstance = bootstrap.Modal.getInstance(restoreModal);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Restoring Database Snapshot',
+                html: 'Restoring tables and clinical records.<br><strong class="text-danger mt-2 d-inline-block"><i class="bi bi-exclamation-triangle-fill me-1"></i> Do not close, reload, or navigate away from this window.</strong>',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+        if (window.SinalHealthLoader) {
+            window.SinalHealthLoader.start();
+        }
     });
 
     // Upload form submission feedback

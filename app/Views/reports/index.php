@@ -286,7 +286,7 @@ if (!$allTime) {
                     <button type="button" onclick="window.print()" class="btn btn-outline-primary d-flex align-items-center">
                         <i class="bi bi-printer me-2 fs-5"></i> Print Report
                     </button>
-                    <a href="<?= url('/reports/export?type=' . urlencode($type) . '&date_from=' . urlencode($dateFrom) . '&date_to=' . urlencode($dateTo) . ($allTime ? '&all_time=1' : '')) ?>" class="btn btn-primary d-flex align-items-center">
+                    <a href="<?= url('/reports/export?type=' . urlencode($type) . '&date_from=' . urlencode($dateFrom) . '&date_to=' . urlencode($dateTo) . ($allTime ? '&all_time=1' : '')) ?>" class="btn btn-primary d-flex align-items-center" download data-no-loader id="btnExportCsv">
                         <i class="bi bi-file-earmark-spreadsheet me-2 fs-5"></i> Export CSV
                     </a>
                 </div>
@@ -1166,6 +1166,36 @@ function toggleAllTime(isChecked) {
         toInput.setAttribute('required', 'required');
     }
 }
+
+// Export CSV Feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const btnExport = document.getElementById('btnExportCsv');
+    if (btnExport) {
+        btnExport.addEventListener('click', function() {
+            const originalHtml = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Exporting...';
+            this.classList.add('disabled');
+            setTimeout(() => {
+                this.innerHTML = originalHtml;
+                this.classList.remove('disabled');
+            }, 3000);
+            if (typeof Swal !== 'undefined') {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Exporting report CSV...'
+                });
+            }
+        });
+    }
+});
 </script>
 
 <?php require dirname(__DIR__) . '/layout/footer.php'; ?>
+

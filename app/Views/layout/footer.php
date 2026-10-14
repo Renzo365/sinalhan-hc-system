@@ -15,7 +15,11 @@
 if (typeof $ !== 'undefined' && typeof $.fn.dataTable !== 'undefined') {
     $.extend(true, $.fn.dataTable.defaults, {
         pageLength: <?= (int)user_pref('default_page_size', 10) ?>,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        processing: true,
+        language: {
+            processing: '<div class="d-flex align-items-center justify-content-center p-3 text-secondary"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div> Loading records...</div>'
+        }
     });
 }
 
@@ -25,6 +29,76 @@ window.escapeHtml = function(str) {
     div.textContent = String(str);
     return div.innerHTML;
 };
+
+// --- Global Top Slim Progress Bar Controller ---
+window.SinalHealthLoader = (function() {
+    let bar = null;
+    let timer = null;
+    let progress = 0;
+
+    function getBar() {
+        if (!bar) {
+            bar = document.getElementById('sinalhealth-top-loader');
+            if (!bar) {
+                bar = document.createElement('div');
+                bar.id = 'sinalhealth-top-loader';
+                document.body.appendChild(bar);
+            }
+        }
+        return bar;
+    }
+
+    function setProgress(p) {
+        progress = p;
+        const b = getBar();
+        b.style.width = p + '%';
+        if (p > 0) {
+            b.classList.add('active');
+        }
+    }
+
+    return {
+        start: function() {
+            if (timer) clearInterval(timer);
+            setProgress(15);
+            timer = setInterval(function() {
+                if (progress < 65) {
+                    setProgress(progress + 15);
+                } else if (progress < 85) {
+                    setProgress(progress + 5);
+                } else if (progress < 95) {
+                    setProgress(progress + 1);
+                }
+            }, 250);
+        },
+        done: function() {
+            if (timer) clearInterval(timer);
+            setProgress(100);
+            setTimeout(function() {
+                const b = getBar();
+                b.classList.remove('active');
+                setTimeout(function() {
+                    b.style.width = '0%';
+                }, 200);
+            }, 300);
+        }
+    };
+})();
+
+// Reset loader and submit buttons if restored from bfcache
+window.addEventListener('pageshow', function() {
+    if (window.SinalHealthLoader) {
+        window.SinalHealthLoader.done();
+    }
+    document.querySelectorAll('button[type="submit"].btn-loading, input[type="submit"].btn-loading').forEach(function(btn) {
+        if (btn.dataset.originalHtml) {
+            btn.innerHTML = btn.dataset.originalHtml;
+        }
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        btn.removeAttribute('aria-busy');
+    });
+});
 </script>
 
 <!-- SweetAlert Flash Messages & System-Wide Event Handlers -->
@@ -67,6 +141,77 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php unset($_SESSION['error_message']); ?>
     <?php endif; ?>
 
+    // Page navigation progress on internal link clicks
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
+        if (link.hasAttribute('download') || link.getAttribute('target') === '_blank') return;
+        if (link.getAttribute('data-bs-toggle') || link.hasAttribute('data-no-loader') || link.hasAttribute('data-confirm')) return;
+
+        try {
+            const url = new URL(link.href, window.location.origin);
+            if (url.origin === window.location.origin && url.pathname !== window.location.pathname) {
+                window.SinalHealthLoader.start();
+            }
+        } catch (err) {}
+    });
+
+    // Universal Form Submission Loading & Double-Submit Protection
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (!form || form.hasAttribute('data-no-loader') || form.getAttribute('target') === '_blank') {
+            return;
+        }
+
+        // Respect HTML5 client-side validation
+        if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+            return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]:not([data-no-loader]), input[type="submit"]:not([data-no-loader])');
+        if (!submitBtn || submitBtn.disabled || submitBtn.classList.contains('btn-loading')) {
+            return;
+        }
+
+        // Determine smart verb based on context
+        const btnText = (submitBtn.innerText || submitBtn.value || '').trim();
+        let loadingVerb = 'Processing...';
+
+        if (/log in|sign in|portal/i.test(btnText)) {
+            loadingVerb = 'Authenticating...';
+        } else if (/backup|snapshot/i.test(btnText)) {
+            loadingVerb = 'Creating Snapshot...';
+        } else if (/register|enroll/i.test(btnText)) {
+            loadingVerb = 'Registering...';
+        } else if (/save|record|create|add/i.test(btnText)) {
+            loadingVerb = 'Saving...';
+        } else if (/update|edit/i.test(btnText)) {
+            loadingVerb = 'Updating...';
+        } else if (/generate|filter|run/i.test(btnText)) {
+            loadingVerb = 'Generating...';
+        } else if (/restore/i.test(btnText)) {
+            loadingVerb = 'Restoring Database...';
+        } else if (/upload/i.test(btnText)) {
+            loadingVerb = 'Uploading...';
+        }
+
+        submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+        submitBtn.classList.add('btn-loading');
+        submitBtn.setAttribute('aria-busy', 'true');
+
+        setTimeout(function() {
+            submitBtn.disabled = true;
+        }, 0);
+
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' + escapeHtml(loadingVerb);
+
+        if (window.SinalHealthLoader) {
+            window.SinalHealthLoader.start();
+        }
+    });
+
     // Confirm Destructive Actions (Delete, Log Out, Database backup etc.)
     const confirmActions = document.querySelectorAll('[data-confirm]');
     confirmActions.forEach(element => {
@@ -86,6 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    Swal.showLoading();
+                    if (window.SinalHealthLoader) window.SinalHealthLoader.start();
                     if (form) {
                         form.submit();
                     } else if (this.href) {
