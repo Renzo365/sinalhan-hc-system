@@ -1009,6 +1009,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // No duplicate detected -> submit normally
             if (ackInput) ackInput.value = '1';
             if (patientForm.checkValidity()) {
+                const btnSubmit = document.getElementById('btnSubmitPatient');
+                if (window.setButtonLoading && btnSubmit) {
+                    window.setButtonLoading(btnSubmit, 'Registering Patient...');
+                }
                 patientForm.submit();
             } else {
                 patientForm.reportValidity();
@@ -1027,6 +1031,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (patientForm) {
                 if (patientForm.checkValidity()) {
+                    const btnSubmit = document.getElementById('btnSubmitPatient');
+                    if (window.setButtonLoading && btnSubmit) {
+                        window.setButtonLoading(btnSubmit, 'Registering Patient...');
+                    }
                     patientForm.submit();
                 } else {
                     patientForm.reportValidity();

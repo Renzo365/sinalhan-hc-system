@@ -85,19 +85,52 @@ window.SinalHealthLoader = (function() {
     };
 })();
 
+// Global helpers to safely control button loading states
+window.resetSubmitButton = function(btnOrForm) {
+    if (!btnOrForm) return;
+    let btn = btnOrForm;
+    if (btnOrForm instanceof HTMLFormElement) {
+        btn = btnOrForm.querySelector('button[type="submit"], input[type="submit"]');
+    }
+    if (!btn) return;
+    if (btn.dataset.originalHtml) {
+        btn.innerHTML = btn.dataset.originalHtml;
+    }
+    btn.disabled = false;
+    btn.classList.remove('btn-loading');
+    btn.removeAttribute('aria-busy');
+    if (window.SinalHealthLoader) {
+        window.SinalHealthLoader.done();
+    }
+};
+
+window.setButtonLoading = function(btnOrForm, loadingText) {
+    if (!btnOrForm) return;
+    let btn = btnOrForm;
+    if (btnOrForm instanceof HTMLFormElement) {
+        btn = btnOrForm.querySelector('button[type="submit"]:not([data-no-loader]), input[type="submit"]:not([data-no-loader])');
+    }
+    if (!btn || btn.disabled || btn.classList.contains('btn-loading')) return;
+    if (!btn.dataset.originalHtml) {
+        btn.dataset.originalHtml = btn.innerHTML;
+    }
+    btn.classList.add('btn-loading');
+    btn.setAttribute('aria-busy', 'true');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' + escapeHtml(loadingText || 'Processing...');
+    setTimeout(function() {
+        btn.disabled = true;
+    }, 0);
+    if (window.SinalHealthLoader) {
+        window.SinalHealthLoader.start();
+    }
+};
+
 // Reset loader and submit buttons if restored from bfcache
 window.addEventListener('pageshow', function() {
     if (window.SinalHealthLoader) {
         window.SinalHealthLoader.done();
     }
-    document.querySelectorAll('button[type="submit"].btn-loading, input[type="submit"].btn-loading').forEach(function(btn) {
-        if (btn.dataset.originalHtml) {
-            btn.innerHTML = btn.dataset.originalHtml;
-        }
-        btn.disabled = false;
-        btn.classList.remove('btn-loading');
-        btn.removeAttribute('aria-busy');
-    });
+    document.querySelectorAll('button[type="submit"].btn-loading, input[type="submit"].btn-loading').forEach(window.resetSubmitButton);
 });
 </script>
 
@@ -160,6 +193,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Universal Form Submission Loading & Double-Submit Protection
     document.addEventListener('submit', function(e) {
+        // Critical safeguard: If custom validation, duplicate check, or confirmation modal called e.preventDefault(),
+        // NEVER activate button loading or lock the form!
+        if (e.defaultPrevented) {
+            return;
+        }
+
         const form = e.target;
         if (!form || form.hasAttribute('data-no-loader') || form.getAttribute('target') === '_blank') {
             return;
@@ -197,19 +236,33 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingVerb = 'Uploading...';
         }
 
-        submitBtn.dataset.originalHtml = submitBtn.innerHTML;
-        submitBtn.classList.add('btn-loading');
-        submitBtn.setAttribute('aria-busy', 'true');
+        window.setButtonLoading(submitBtn, loadingVerb);
+    });
 
-        setTimeout(function() {
-            submitBtn.disabled = true;
-        }, 0);
-
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>' + escapeHtml(loadingVerb);
-
-        if (window.SinalHealthLoader) {
-            window.SinalHealthLoader.start();
+    // Automatically recover submit buttons if user interacts or changes inputs after a prevented submit
+    document.addEventListener('input', function(e) {
+        const form = e.target.closest('form');
+        if (form) {
+            const btn = form.querySelector('button[type="submit"].btn-loading, input[type="submit"].btn-loading');
+            if (btn) {
+                window.resetSubmitButton(btn);
+            }
         }
+    });
+
+    document.addEventListener('change', function(e) {
+        const form = e.target.closest('form');
+        if (form) {
+            const btn = form.querySelector('button[type="submit"].btn-loading, input[type="submit"].btn-loading');
+            if (btn) {
+                window.resetSubmitButton(btn);
+            }
+        }
+    });
+
+    // Reset stuck loading states when any bootstrap modal is closed
+    document.addEventListener('hidden.bs.modal', function() {
+        document.querySelectorAll('button[type="submit"].btn-loading, input[type="submit"].btn-loading').forEach(window.resetSubmitButton);
     });
 
     // Confirm Destructive Actions (Delete, Log Out, Database backup etc.)

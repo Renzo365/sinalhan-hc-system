@@ -619,6 +619,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         clearTimeSlotError();
         applyCapacities(currentCapacities);
+
+        // Reset submit button if it was in loading state
+        const submitBtn = form?.querySelector('button[type="submit"]');
+        if (window.resetSubmitButton && submitBtn) {
+            window.resetSubmitButton(submitBtn);
+        }
     }
 
     // Time slot selection (click and keyboard)
@@ -809,8 +815,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (form) {
         form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+
             if (!selectedPatientIdInput || !selectedPatientIdInput.value) {
                 e.preventDefault();
+                if (window.resetSubmitButton && submitBtn) {
+                    window.resetSubmitButton(submitBtn);
+                }
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'warning',
@@ -828,6 +839,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!timeInput.value) {
                 e.preventDefault();
+                if (window.resetSubmitButton && submitBtn) {
+                    window.resetSubmitButton(submitBtn);
+                }
                 showTimeSlotError('An available morning or afternoon consultation time slot is required.');
                 const firstCard = document.querySelector('.time-slot-card');
                 if (firstCard) firstCard.focus();
@@ -839,6 +853,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (count > 0 && !doubleBookingConfirmed) {
                 e.preventDefault();
+                if (window.resetSubmitButton && submitBtn) {
+                    window.resetSubmitButton(submitBtn);
+                }
                 const activeCard = document.querySelector('.time-slot-card.active');
                 const slotLabel = activeCard?.querySelector('.fs-6')?.textContent.trim() || time;
 
@@ -855,15 +872,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     }).then((result) => {
                         if (result.isConfirmed) {
                             doubleBookingConfirmed = true;
+                            if (window.setButtonLoading && submitBtn) {
+                                window.setButtonLoading(submitBtn, 'Confirming Appointment...');
+                            }
                             form.submit();
+                        } else {
+                            if (window.resetSubmitButton && submitBtn) {
+                                window.resetSubmitButton(submitBtn);
+                            }
                         }
                     });
                 } else {
                     if (confirm(`Notice: ${slotLabel} already has ${count} scheduled appointment(s). Do you wish to proceed?`)) {
                         doubleBookingConfirmed = true;
+                        if (window.setButtonLoading && submitBtn) {
+                            window.setButtonLoading(submitBtn, 'Confirming Appointment...');
+                        }
                         form.submit();
+                    } else {
+                        if (window.resetSubmitButton && submitBtn) {
+                            window.resetSubmitButton(submitBtn);
+                        }
                     }
                 }
+                return;
             }
         });
     }

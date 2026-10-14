@@ -1010,6 +1010,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // No duplicate detected -> submit normally
             if (ackInput) ackInput.value = '1';
             if (patientEditForm.checkValidity()) {
+                const btnSubmit = document.getElementById('btnUpdatePatient');
+                if (window.setButtonLoading && btnSubmit) {
+                    window.setButtonLoading(btnSubmit, 'Updating Patient...');
+                }
                 patientEditForm.submit();
             } else {
                 patientEditForm.reportValidity();
@@ -1028,6 +1032,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (patientEditForm) {
                 if (patientEditForm.checkValidity()) {
+                    const btnSubmit = document.getElementById('btnUpdatePatient');
+                    if (window.setButtonLoading && btnSubmit) {
+                        window.setButtonLoading(btnSubmit, 'Updating Patient...');
+                    }
                     patientEditForm.submit();
                 } else {
                     patientEditForm.reportValidity();
