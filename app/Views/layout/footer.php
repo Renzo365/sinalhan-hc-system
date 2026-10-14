@@ -18,6 +18,13 @@ if (typeof $ !== 'undefined' && typeof $.fn.dataTable !== 'undefined') {
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]]
     });
 }
+
+window.escapeHtml = function(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+};
 </script>
 
 <!-- SweetAlert Flash Messages & System-Wide Event Handlers -->

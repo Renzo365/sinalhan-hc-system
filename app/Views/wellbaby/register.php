@@ -404,6 +404,9 @@ $isLockedPatient = !empty($_GET['patient_id']) && !empty($preselectedPatient);
                                        placeholder="Type mother's name or patient ID to link and auto-fill…" 
                                        autocomplete="off"
                                        spellcheck="false">
+                                <span class="input-group-text bg-white text-success d-none" id="motherSearchSpinner" aria-hidden="true">
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                </span>
                                 <button type="button" class="btn btn-outline-secondary d-none" id="btnClearMotherSearch" aria-label="Clear mother search">
                                     <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Clear
                                 </button>
@@ -741,6 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const motherSearchInput = document.getElementById('motherSearchInput');
     const motherSearchWrapper = document.getElementById('motherSearchWrapper');
     const motherSearchResults = document.getElementById('motherSearchResults');
+    const motherSearchSpinner = document.getElementById('motherSearchSpinner');
     const motherPatientIdInput = document.getElementById('mother_patient_id');
     const linkedMotherBadge = document.getElementById('linkedMotherBadge');
     const motherSelectedCard = document.getElementById('motherSelectedCard');
@@ -749,9 +753,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnClearMotherSearch = document.getElementById('btnClearMotherSearch');
     const btnRemoveMotherLink = document.getElementById('btnRemoveMotherLink');
 
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
     let motherSearchTimer = null;
 
     if (motherSearchInput) {
+        // Prevent accidental form submission when pressing Enter in search field
+        motherSearchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
+        });
+
+        // Re-show results on focus if input has value
+        motherSearchInput.addEventListener('focus', function() {
+            if (this.value.trim().length >= 1 && motherSearchResults && motherSearchResults.children.length > 0) {
+                motherSearchResults.classList.remove('d-none');
+            }
+        });
+
         motherSearchInput.addEventListener('input', function() {
             clearTimeout(motherSearchTimer);
             const query = this.value.trim();
@@ -760,16 +785,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnClearMotherSearch.classList.toggle('d-none', query.length === 0);
             }
 
-            if (query.length < 2) {
+            if (query.length < 1) {
+                if (motherSearchSpinner) motherSearchSpinner.classList.add('d-none');
                 motherSearchResults.classList.add('d-none');
                 motherSearchResults.innerHTML = '';
                 return;
             }
 
+            if (motherSearchSpinner) motherSearchSpinner.classList.remove('d-none');
+
             motherSearchTimer = setTimeout(() => {
                 fetch('<?= url('/api/patients/search/female?q=') ?>' + encodeURIComponent(query))
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error('Search failed');
+                        return res.json();
+                    })
                     .then(data => {
+                        if (motherSearchSpinner) motherSearchSpinner.classList.add('d-none');
                         motherSearchResults.innerHTML = '';
                         if (!data.results || data.results.length === 0) {
                             motherSearchResults.innerHTML = '<div class="p-3 text-muted text-center small"><i class="bi bi-info-circle me-1"></i> No registered female patients found matching "' + escapeHtml(query) + '"</div>';
@@ -802,12 +834,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         motherSearchResults.classList.remove('d-none');
                     })
-                    .catch(() => {
+                    .catch(err => {
+                        if (motherSearchSpinner) motherSearchSpinner.classList.add('d-none');
+                        console.error('Mother search error:', err);
                         motherSearchResults.classList.add('d-none');
                     });
             }, 300);
         });
     }
+
+    // Dismiss search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (motherSearchResults && motherSearchWrapper && !motherSearchResults.contains(e.target) && !motherSearchWrapper.contains(e.target)) {
+            motherSearchResults.classList.add('d-none');
+        }
+    });
 
     if (btnClearMotherSearch) {
         btnClearMotherSearch.addEventListener('click', function() {
@@ -815,6 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 motherSearchInput.value = '';
                 motherSearchInput.focus();
             }
+            if (motherSearchSpinner) motherSearchSpinner.classList.add('d-none');
             btnClearMotherSearch.classList.add('d-none');
             motherSearchResults.classList.add('d-none');
             motherSearchResults.innerHTML = '';
